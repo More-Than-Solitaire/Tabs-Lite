@@ -15,7 +15,7 @@
         android:layout_marginBottom="@dimen/margin_large"
         app:showFingerNumbers="true"
         app:showFretNumbers="true"
-
+        app:stringLabelState="label"
         app:fretColor="?attr/colorOnSurface"
         app:noteColor="?attr/colorOnSurface"
         app:stringColor="?attr/colorOnSurface"

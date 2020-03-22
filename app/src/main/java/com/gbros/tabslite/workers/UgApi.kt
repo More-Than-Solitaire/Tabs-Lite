@@ -17,9 +17,7 @@ import java.net.URL
 import java.net.URLEncoder
 
 class UgApi(
-        val context: Context,
-        val ugClientId: String = ApiHelper.getDeviceId(),
-        val ugApiKey: String = "c16dc56e71da51deeb676b36aa321316"
+        val context: Context
 ) {
     private val gson = Gson()
 
@@ -59,9 +57,10 @@ class UgApi(
     }
 
     suspend fun search(q: String, pageNum: Int = 1): SearchRequestType = coroutineScope {
+        val apiKey = ApiHelper.apiKey
+        val deviceId = ApiHelper.getDeviceId()
+
         try {
-            val apiKey = ApiHelper.apiKey
-            val deviceId = ApiHelper.getDeviceId()
 
             // type[]=300 means just chords (all instruments? use 300, 400, 700, and 800)
             var conn = URL("https://api.ultimate-guitar.com/api/v1/tab/search?title=$q&page=$pageNum&type[]=300&official[]=0").openConnection() as HttpURLConnection
@@ -109,7 +108,7 @@ class UgApi(
 
             result
         } catch (ex: FileNotFoundException) {
-            Log.v(javaClass.simpleName, "404 returned on search (End of results). '$q'.", ex)
+            Log.v(javaClass.simpleName, "404 returned on search (End of results). '$q'. Token $apiKey", ex)
             this.cancel("End of results (404 returned).", ex)
             SearchRequestType()
         } catch (ex: Exception) {

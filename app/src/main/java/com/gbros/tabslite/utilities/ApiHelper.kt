@@ -1,11 +1,13 @@
 package com.gbros.tabslite.utilities
 
 import android.content.SharedPreferences
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.gbros.tabslite.data.ServerTimestampType
 import kotlinx.coroutines.*
+import java.lang.Exception
 import java.math.BigInteger
 import java.net.HttpURLConnection
 import java.net.URL
@@ -35,19 +37,25 @@ object ApiHelper {
     }
 
     private fun updaterJobAsync() = GlobalScope.async(start = CoroutineStart.LAZY) {
+        val devId = getDeviceId()
         val lastResult: ServerTimestampType
         val conn = URL("https://api.ultimate-guitar.com/api/v1/common/hello").openConnection() as HttpURLConnection
         conn.setRequestProperty("Accept", "application/json")
         conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.11 (")  // actual value "UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)". 5.10.11 is the app version.
-        conn.setRequestProperty("x-ug-client-id", getDeviceId())                   // stays constant over time; api key and client id are related to each other.
+        conn.setRequestProperty("x-ug-client-id", devId)                   // stays constant over time; api key and client id are related to each other.
 
-        val inputStream = conn.getInputStream()
-        val jsonReader = JsonReader(inputStream.reader())
-        val serverTimestampTypeToken = object : TypeToken<ServerTimestampType>() {}.type
-        lastResult = Gson().fromJson(jsonReader, serverTimestampTypeToken)
-        inputStream.close()
+        try {
+            val inputStream = conn.getInputStream()
+            val jsonReader = JsonReader(inputStream.reader())
+            val serverTimestampTypeToken = object : TypeToken<ServerTimestampType>() {}.type
+            lastResult = Gson().fromJson(jsonReader, serverTimestampTypeToken)
+            inputStream.close()
+            lastResult
+        } catch (ex: Exception){
+            Log.e(javaClass.simpleName, "Error getting hello handshake.", ex)
+            throw ex
+        }
 
-        lastResult
     }
 
     private fun getMd5(paramString: String): String {
@@ -72,15 +80,12 @@ object ApiHelper {
     fun getDeviceId(): String {
         if (! this::myDeviceId.isInitialized) {
             // generate a device id
-            myDeviceId = ""
+            var newId = ""
             val charList = charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
-            for (int in Random().ints(0, 15)) {
-                if (myDeviceId.length < 16) {
-                    myDeviceId += charList[int]
-                } else {
-                    break
-                }
+            while(newId.length < 16) {
+                newId += charList[Random.nextInt(0, 16)]
             }
+            myDeviceId = newId
         }
         return myDeviceId
     }

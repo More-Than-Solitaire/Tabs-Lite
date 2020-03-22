@@ -1,18 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ug_black">#de000000</color>
-    <color name="ug_gray_50">#fafafa</color>
-    <color name="ug_dark_grey">#3e3e3e</color>
-    <color name="ug_gray_50_a600">#99fafafa</color>
-    <color name="ug_light_grey">#7e7e7e</color>
-    <color name="ug_yellow_300">#ffd666</color>
-    <color name="ug_yellow_500">#ffc600</color>
-    <color name="ug_yellow_700">#966f00</color>
-    <color name="ug_yellow_900">#332500</color>
-    <color name="ug_white">#deffffff</color>
-    <color name="ug_black_300">#b3b3b3</color>
-    <color name="ug_black_500">#808080</color>
+    <color name="primaryColor">#fbc02d</color>
+    <color name="primaryLightColor">#fff263</color>
+    <color name="primaryDarkColor">#c49000</color>
+    <color name="secondaryColor">#ffa000</color>
+    <color name="secondaryLightColor">#ffd149</color>
+    <color name="secondaryDarkColor">#c67100</color>
+    <color name="primaryTextColor">#000000</color>
+    <color name="secondaryTextColor">#000000</color>
+    <color name="surfaceColor">#f9f9f9</color>
+    <color name="surfaceAccent">#e4e4e4</color>
+    <color name="emptyStar">#3e3e3e</color>
+
+    <color name="darkPrimaryColor">#424242</color>
+    <color name="darkPrimaryLightColor">#6d6d6d</color>
+    <color name="darkPrimaryDarkColor">#1b1b1b</color>
+    <color name="darkSecondaryColor">#fbc02d</color>
+    <color name="darkSecondaryLightColor">#fbc02d</color>
+    <color name="darkSecondaryDarkColor">#c49000</color>
+    <color name="darkPrimaryTextColor">#ffffff</color>
+    <color name="darkSecondaryTextColor">#000000</color>
+    <color name="darkSurfaceColor">#000000</color>
+    <color name="darkSurfaceAccent">#3e3e3e</color>
+    <color name="darkEmptyStar">#1b1b1b</color>
+
     <color name="ug_red">#ff5d55</color>
-    <color name="ug_black_100">#e6e6e6</color>
 
 </resources>

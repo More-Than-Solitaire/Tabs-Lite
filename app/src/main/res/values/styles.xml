@@ -1,15 +1,20 @@
 <resources>
     <!-- To see how these attributes are used, please visit https://material.io/develop/android/theming/color/ -->
     <style name="Base.Theme.TabsLite" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/ug_yellow_500</item>
-        <item name="colorOnPrimary">@color/ug_black_500</item>
-        <item name="colorPrimaryDark">@color/ug_yellow_700</item>
-        <item name="colorOnSurface">@color/ug_black</item>
-        <item name="colorAccent">@color/ug_yellow_700</item>
-        <item name="colorSurface">@color/ug_gray_50</item>
-        <item name="colorControlNormal">@color/ug_black_100</item>
-        <item name="colorSecondary">@color/ug_black_500</item>
-        <item name="android:colorBackground">@color/ug_yellow_500</item>
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorOnPrimary">@color/primaryTextColor</item>
+        <item name="colorOnSurface">@color/primaryTextColor</item>
+        <item name="colorPrimaryDark">@color/primaryDarkColor</item>
+        <item name="colorPrimaryVariant">@color/primaryColor</item>
+        <item name="colorSurface">@color/surfaceColor</item>
+        <item name="colorSecondary">@color/secondaryColor</item>
+        <item name="colorSecondaryVariant">@color/secondaryLightColor</item>
+        <item name="colorAccent">@color/secondaryDarkColor</item>
+        <item name="colorOnSecondary">@color/secondaryTextColor</item>
+        <item name="colorPrimarySurface">@color/surfaceAccent</item>
+
+        <item name="colorOnBackground">@color/emptyStar</item>
+
     </style>
 
     <style name="Theme.WindowTranslucent.NoActionBar">

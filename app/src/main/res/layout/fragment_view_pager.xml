@@ -47,6 +47,7 @@
                     android:layout_width="?attr/actionBarSize"
                     android:layout_height="?attr/actionBarSize"
                     android:layout_weight="1"
+                    android:tint="?attr/colorOnPrimary"
                     android:contentDescription="TODO"
                     app:srcCompat="@drawable/ic_launcher_foreground" />
 
@@ -60,7 +61,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:tabIconTint="@drawable/tab_icon_color_selector"
-                app:tabTextColor="?attr/colorPrimaryDark"/>
+                app:tabTextColor="?attr/colorOnPrimary"/>
 
         </com.google.android.material.appbar.AppBarLayout>
 

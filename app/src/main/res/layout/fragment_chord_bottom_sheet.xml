@@ -26,6 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+<!--
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabDots"
         android:layout_width="match_parent"
@@ -35,5 +36,6 @@
         app:tabIndicator="@null"
         app:tabPaddingEnd="6dp"
         app:tabPaddingStart="6dp" />
+-->
 
 </LinearLayout>

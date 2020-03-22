@@ -396,8 +396,8 @@ class TabDetailFragment : Fragment() {
             override fun updateDrawState(ds: TextPaint) {
                 super.updateDrawState(ds)
                 if(context != null) {
-                    ds.color = context!!.getColorFromAttr(R.attr.colorOnSurface)
-                    ds.bgColor = context!!.getColorFromAttr(R.attr.colorControlNormal)
+                    ds.color = context!!.getColorFromAttr(R.attr.colorOnSecondary)
+                    ds.bgColor = context!!.getColorFromAttr(R.attr.colorPrimarySurface)
                 }
             }
 
