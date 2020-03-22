@@ -11,11 +11,11 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Sunflower">
+        android:theme="@style/Theme.WindowTranslucent">
 
         <activity
             android:name="com.gbros.tabslite.HomeActivity"
-            android:theme="@style/Theme.Sunflower.NoActionBar">
+            android:theme="@style/Theme.WindowTranslucent.NoActionBar">
             <meta-data android:name="android.app.default_searchable" android:value=".SearchResultsActivity" />
 
             <intent-filter>

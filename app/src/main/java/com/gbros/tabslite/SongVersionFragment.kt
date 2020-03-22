@@ -53,8 +53,7 @@ class SongVersionFragment : Fragment() {
             with(rView) {
                 listener = object: OnListFragmentInteractionListener {
                     override fun onListFragmentInteraction(tabId: Int) {
-                        Snackbar.make(view, R.string.added_plant_to_garden, Snackbar.LENGTH_LONG).show()
-
+                        Log.v(javaClass.simpleName, "Navigating to tab detail fragment (tabId: $tabId)")
                         (activity as SearchResultsActivity).getVersions = GlobalScope.async{ searchHelper.fetchTab(tabId)}  // async task that gets tab from the internet if it doesn't exist in our db yet
                         (activity as SearchResultsActivity).getVersions.start()
 

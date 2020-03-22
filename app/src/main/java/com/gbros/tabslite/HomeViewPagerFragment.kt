@@ -46,8 +46,8 @@ class HomeViewPagerFragment : Fragment() {
 
     private fun getTabTitle(position: Int): String? {
         return when (position) {
-            FAVORITE_TABS_PAGE_INDEX -> getString(R.string.my_garden_title)
-            SUGGESTED_TABS_PAGE_INDEX -> getString(R.string.plant_list_title)
+            FAVORITE_TABS_PAGE_INDEX -> getString(R.string.fav_tabs_title)
+            SUGGESTED_TABS_PAGE_INDEX -> getString(R.string.suggested_tabs_title)
             else -> null
         }
     }
