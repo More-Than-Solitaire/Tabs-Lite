@@ -1,5 +1,6 @@
 package com.gbros.tabslite.utilities
 
+import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
@@ -12,9 +13,12 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.random.Random
 
 object ApiHelper {
     var apiKey: String = ""
+    private lateinit var myDeviceId: String
 
     //we need to update the server time and api key whenever we get a 498 response code
     suspend fun updateApiKey() {
@@ -64,15 +68,20 @@ object ApiHelper {
         }
     }
 
+    // generates a new device id each run.  todo: save the value so it is constant over runs
     fun getDeviceId(): String {
-        var str: String
-        str = "f858b6156cb21e15" //todo: randomly generate this on first app startup.  Save somewhere
-        while (str.length < 16) {
-            val stringBuilder = java.lang.StringBuilder()
-            stringBuilder.append("0")
-            stringBuilder.append(str)
-            str = stringBuilder.toString()
+        if (! this::myDeviceId.isInitialized) {
+            // generate a device id
+            myDeviceId = ""
+            val charList = charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
+            for (int in Random().ints(0, 15)) {
+                if (myDeviceId.length < 16) {
+                    myDeviceId += charList[int]
+                } else {
+                    break
+                }
+            }
         }
-        return str
+        return myDeviceId
     }
 }
