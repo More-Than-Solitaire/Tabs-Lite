@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -37,10 +36,12 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_marginStart="5dp"
+                android:layout_marginEnd="12dp"
+                android:layout_toStartOf="@+id/type"
                 android:text="@{tab.songName}"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="?attr/colorAccent"
-                tools:text="My Song Name"/>
+                tools:text="My Song Name" />
 
             <TextView
                 android:id="@+id/songArtist"
@@ -63,7 +64,7 @@
                 android:layout_marginTop="5dp"
                 android:layout_marginEnd="11dp"
                 android:text="@{tab.type}"
-                tools:text="CRD" />
+                tools:text="Chords" />
 
             <TextView
                 android:id="@+id/which_version"
@@ -74,19 +75,7 @@
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="0dp"
                 android:text="@{}"
-                tools:text="ver 1" />
-
-            <!-- todo: implement user tabs -->
-            <ImageView
-                android:id="@+id/userTab"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/type"
-                android:layout_marginTop="-12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_toStartOf="@+id/type"
-                app:srcCompat="@drawable/ic_user_tab"
-                />
+                tools:text="ver. 1" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
