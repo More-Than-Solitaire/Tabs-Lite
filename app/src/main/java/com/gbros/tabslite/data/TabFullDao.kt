@@ -35,6 +35,9 @@ interface TabFullDao {
     @Query("SELECT * FROM tabs WHERE artist_name LIKE '%' + :artist + '%'")
     fun getTabsByArtist(artist: String): LiveData<List<TabFull>>
 
+    @Query("UPDATE tabs SET transposed = :transposed WHERE id = :tabId")
+    suspend fun updateTransposed(tabId: Int, transposed: Int)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(tab: TabFull)
 

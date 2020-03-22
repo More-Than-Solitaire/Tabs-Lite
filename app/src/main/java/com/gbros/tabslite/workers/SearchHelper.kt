@@ -65,7 +65,15 @@ class SearchHelper(val context: Context?) {
     }
 
 
-
+    suspend fun updateTabTransposeLevel(tabId: Int, currValue: Int) = coroutineScope {
+        if(context == null){
+            Log.e(javaClass.simpleName, "UpdateTabTransposeLevel failed because context was null.")
+            Unit
+        } else {
+            val database = AppDatabase.getInstance(context).tabFullDao()
+            database.updateTransposed(tabId, currValue)
+        }
+    }
 
 
     suspend fun fetchTab(tabId: Int, force: Boolean = false, tabAccessType: String = "public"): Boolean = coroutineScope {

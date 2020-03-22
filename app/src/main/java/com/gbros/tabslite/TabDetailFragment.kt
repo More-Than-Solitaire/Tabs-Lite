@@ -27,6 +27,8 @@ import com.gbros.tabslite.utilities.InjectorUtils
 import com.gbros.tabslite.viewmodels.TabDetailViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 
 /**
@@ -112,8 +114,8 @@ class TabDetailFragment : Fragment() {
             }
 
             // transpose
-            binding.transposeUp.setOnClickListener{view -> transpose(true, view)}
-            binding.transposeDown.setOnClickListener{view -> transpose(false, view)}
+            transposeUp.setOnClickListener{_ -> transpose(true)}
+            transposeDown.setOnClickListener{_ -> transpose(false)}
         }
 
             return binding.root
@@ -148,9 +150,9 @@ class TabDetailFragment : Fragment() {
         }
     }
 
-    private fun transpose(up: Boolean, view: View){
+    private fun transpose(howMuch: Int){
+        val numSteps = howMuch.absoluteValue
         val currentSpans = spannableText.getSpans(0,spannableText.length, ClickableSpan::class.java)
-        //spannableText.clearSpans()
 
         for (span in currentSpans) {
             val startIndex = spannableText.getSpanStart(span)
@@ -158,16 +160,43 @@ class TabDetailFragment : Fragment() {
             val currentText = span.toString()
             spannableText.removeSpan(span)
 
-            val newText = if (up) transposeUp(currentText) else transposeDown(currentText)
+            var newText = currentText
+            if (howMuch > 0) {
+                // transpose up
+                for(i in 0 until numSteps){
+                    newText = transposeUp(newText)
+                }
+            } else {
+                // transpose down
+                for(i in 0 until numSteps){
+                    newText = transposeDown(newText)
+                }
+            }
+
+
             spannableText.replace(startIndex,endIndex, newText)  // edit the text
             spannableText.setSpan(makeSpan(newText), startIndex, startIndex+newText.length,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)  // add a new span
         }
 
         binding.tabContent.setTabContent(spannableText)
-        tab.transposed += 1 //todo: implement
+        binding.transposeAmt.text = tab.transposed.toString()
+        GlobalScope.launch{(activity as ISearchHelper).searchHelper.updateTabTransposeLevel(tab.tabId, tab.transposed)}
     }
 
+    private fun transpose(up: Boolean){
+        val howMuch = if(up) 1 else -1
+        tab.transposed += howMuch
+
+        //13 half steps in an octave (both sides inclusive)
+        if(tab.transposed >= 12) {
+            tab.transposed -= 12
+        } else if (tab.transposed <= -12) {
+            tab.transposed += 12
+        }
+
+        transpose(howMuch)
+    }
     private fun transposeUp(text: String): String {
         return when {
             text.startsWith("A#", true) -> "B" + text.substring(2)
@@ -256,8 +285,10 @@ class TabDetailFragment : Fragment() {
                 binding.tab = tab  // set view data
                 setHeartInitialState()  // set initial state of "save" heart
                 (activity as AppCompatActivity).title = tab.toString()  // toolbar title
-                binding.tabContent.setTabContent(spannableText)
+
                 binding.progressBar2.isGone = true
+                binding.transposeAmt.text = tab.transposed.toString()
+                transpose(tab.transposed)  // calls binding.tabContent.setTabContent(spannableText)
             }
 
             Unit
