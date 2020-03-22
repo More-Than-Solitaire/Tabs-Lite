@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright 2018 Google LLC
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     https://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+
+    <!-- To see how these attributes are used, please visit https://material.io/develop/android/theming/color/ -->
+    <style name="Base.Theme.TabsLite" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/ug_yellow_500</item>
+        <item name="colorOnPrimary">@color/ug_black_500</item>
+        <item name="colorPrimaryDark">@color/ug_yellow_700</item>
+        <item name="colorOnSurface">@color/ug_black</item>
+        <item name="colorAccent">@color/ug_yellow_700</item>
+        <item name="colorSurface">@color/ug_gray_50</item>
+        <item name="colorControlNormal">@color/ug_black_100</item>
+        <item name="colorSecondary">@color/ug_black_500</item>
+        <item name="android:colorBackground">@color/ug_yellow_500</item>
+    </style>
+
+    <style name="Theme.Sunflower.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.TabsLite.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar"/>
+
+    <style name="TextAppearance.TabsLite.Toolbar.Text" parent="TextAppearance.MaterialComponents.Headline5" >
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+
+
+</resources>

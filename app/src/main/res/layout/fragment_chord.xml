@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ChordFragment">
+
+    <com.chrynan.chords.widget.MyChordWidget
+        android:id="@+id/chordWidget"
+        android:layout_width="@dimen/chord_bottom_sheet_diagram_width"
+        android:layout_height="@dimen/chord_bottom_sheet_diagram_height"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/margin_extra_small"
+        android:layout_marginBottom="@dimen/margin_large"
+        app:showFingerNumbers="true"
+        app:showFretNumbers="true"
+
+        app:fretColor="?attr/colorOnSurface"
+        app:noteColor="?attr/colorOnSurface"
+        app:stringColor="?attr/colorOnSurface"
+        app:fretLabelTextColor="?attr/colorOnSurface"
+        app:stringLabelTextColor="?attr/colorOnSurface"
+        app:noteLabelTextColor="?attr/colorSurface"
+        />
+</FrameLayout>
