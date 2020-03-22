@@ -14,7 +14,7 @@ import kotlinx.coroutines.async
 
 class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
 
-    override lateinit var searchHelper: SearchHelper
+    override var searchHelper: SearchHelper? = null
     lateinit var searchJob: Deferred<SearchRequestType>
     lateinit var getVersions: Deferred<Boolean>
 
@@ -30,7 +30,7 @@ class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
         handleIntent(intent)
 
         // start suggestion observer
-        searchHelper.getSuggestionCursor().observe(this, searchHelper.suggestionObserver)
+        searchHelper!!.getSuggestionCursor().observe(this, searchHelper!!.suggestionObserver)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -42,11 +42,11 @@ class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
         if (Intent.ACTION_SEARCH == intent.action) {
             query = intent.getStringExtra(SearchManager.QUERY)
 
-            if(searchHelper.api == null) {
+            if(searchHelper?.api == null) {
                 Log.e(javaClass.simpleName, "Could not start search; UgApi instance was null.")
                 return
             }
-            searchJob = GlobalScope.async { searchHelper.api!!.search(query) }
+            searchJob = GlobalScope.async { searchHelper!!.api!!.search(query) }
             searchJob.start()
         }
     }

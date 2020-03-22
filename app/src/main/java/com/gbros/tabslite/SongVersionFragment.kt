@@ -27,7 +27,7 @@ import kotlinx.coroutines.async
  */
 class SongVersionFragment : Fragment() {
 
-    lateinit var searchHelper: SearchHelper
+    private var searchHelper: SearchHelper? = null
     private var songVersions : List<TabBasic> = emptyList()
     private var listener: OnListFragmentInteractionListener? = null
 
@@ -54,7 +54,7 @@ class SongVersionFragment : Fragment() {
                 listener = object: OnListFragmentInteractionListener {
                     override fun onListFragmentInteraction(tabId: Int) {
                         Log.v(javaClass.simpleName, "Navigating to tab detail fragment (tabId: $tabId)")
-                        (activity as SearchResultsActivity).getVersions = GlobalScope.async{ searchHelper.fetchTab(tabId)}  // async task that gets tab from the internet if it doesn't exist in our db yet
+                        (activity as SearchResultsActivity).getVersions = GlobalScope.async{ searchHelper!!.fetchTab(tabId)}  // async task that gets tab from the internet if it doesn't exist in our db yet
                         (activity as SearchResultsActivity).getVersions.start()
 
                         val direction = SongVersionFragmentDirections.actionSongVersionFragmentToTabDetailFragment(tabId)
@@ -105,7 +105,7 @@ class SongVersionFragment : Fragment() {
         //set up search suggestions
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
-                searchHelper.updateSuggestions(newText) //update the suggestions
+                searchHelper?.updateSuggestions(newText) //update the suggestions
                 return false
             }
 
@@ -115,10 +115,10 @@ class SongVersionFragment : Fragment() {
             }
 
         })
-        searchView.suggestionsAdapter = searchHelper.mAdapter
+        searchView.suggestionsAdapter = searchHelper?.mAdapter
         val onSuggestionListener = object : SearchView.OnSuggestionListener {
             override fun onSuggestionClick(position: Int): Boolean {
-                val cursor: Cursor = searchHelper.mAdapter.getItem(position) as Cursor
+                val cursor: Cursor = searchHelper?.mAdapter?.getItem(position) as Cursor
                 val txt: String = cursor.getString(cursor.getColumnIndex("suggestion"))
                 searchView.setQuery(txt, true)
                 return true

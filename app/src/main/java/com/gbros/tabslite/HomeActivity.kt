@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 
 class HomeActivity : AppCompatActivity(), ISearchHelper {
-    override lateinit var searchHelper: SearchHelper
+    override var searchHelper: SearchHelper? = null
     private lateinit var searchView: SearchView
     private lateinit var searchMenuItem: MenuItem
 
@@ -61,11 +61,11 @@ class HomeActivity : AppCompatActivity(), ISearchHelper {
         })
 
         // start suggestion observer
-        searchHelper.getSuggestionCursor().observe(this, searchHelper.suggestionObserver)
+        searchHelper?.getSuggestionCursor()?.observe(this, searchHelper!!.suggestionObserver)
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
-                searchHelper.updateSuggestions(newText) //update the suggestions
+                searchHelper?.updateSuggestions(newText) //update the suggestions
                 return false
             }
 
@@ -76,10 +76,10 @@ class HomeActivity : AppCompatActivity(), ISearchHelper {
         })
 
         //set up search suggestions
-        searchView.suggestionsAdapter = searchHelper.mAdapter;
+        searchView.suggestionsAdapter = searchHelper?.mAdapter;
         val onSuggestionListener = object : SearchView.OnSuggestionListener {
             override fun onSuggestionClick(position: Int): Boolean {
-                val cursor: Cursor = searchHelper.mAdapter.getItem(position) as Cursor
+                val cursor: Cursor = searchHelper?.mAdapter?.getItem(position) as Cursor
                 val txt: String = cursor.getString(cursor.getColumnIndex("suggestion"))
                 searchView.setQuery(txt, true)
                 return true

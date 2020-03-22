@@ -281,6 +281,7 @@
                         tools:text="+11" />
 
 
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </androidx.core.widget.NestedScrollView>
@@ -292,14 +293,27 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="64dp"
                 android:layout_marginEnd="8dp"
+                android:backgroundTint="?attr/colorPrimaryVariant"
                 android:onClick="@{() -> callback.scrollButtonClicked()}"
                 app:layout_anchor="@+id/tab_detail_scrollview"
                 app:layout_anchorGravity="end|top"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_fab_autoscroll"
-                android:backgroundTint="?attr/colorPrimaryVariant"
-                />
+                app:srcCompat="@drawable/ic_fab_autoscroll" />
+
+            <SeekBar
+                android:id="@+id/autoscrollSpeed"
+                android:layout_width="200dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="96dp"
+                android:background="@drawable/seekbar_background"
+                android:elevation="12dp"
+                android:progress="50"
+                android:rotation="270"
+                app:layout_constraintEnd_toEndOf="@+id/fab"
+                app:layout_constraintStart_toStartOf="@+id/fab"
+                app:layout_constraintTop_toBottomOf="@+id/fab" />
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

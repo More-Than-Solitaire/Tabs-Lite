@@ -10,6 +10,8 @@ import android.text.style.ClickableSpan
 import android.util.Log
 import android.util.TypedValue
 import android.view.*
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.appcompat.app.AppCompatActivity
@@ -20,11 +22,11 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
-import com.google.android.material.snackbar.Snackbar
 import com.gbros.tabslite.data.TabFull
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.InjectorUtils
 import com.gbros.tabslite.viewmodels.TabDetailViewModel
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -39,6 +41,7 @@ class TabDetailFragment : Fragment() {
     private val args: TabDetailFragmentArgs by navArgs()
     private val timerHandler = Handler()
     private var isScrolling: Boolean = false
+    private var scrollDelayMs: Long = 20  // default scroll speed (smaller is faster)
 
     private lateinit var tab: TabFull
     private lateinit var viewModel: TabDetailViewModel
@@ -64,17 +67,20 @@ class TabDetailFragment : Fragment() {
                 override fun run() {
                     // todo: make this time (the 20) adjustable
                     tabDetailScrollview.smoothScrollBy(0, 1) // 5 is how many pixels you want it to scroll vertically by
-                    timerHandler.postDelayed(this, 20) // 10 is how many milliseconds you want this thread to run
+                    timerHandler.postDelayed(this, scrollDelayMs) // 10 is how many milliseconds you want this thread to run
                 }
             }
             callback = object : Callback { override fun scrollButtonClicked() {
                 if(isScrolling) {
+                    // stop scrolling
                     timerHandler.removeCallbacks(timerRunnable)
                     fab.setImageResource(R.drawable.ic_fab_autoscroll)
-
+                    autoscrollSpeed.isGone = true
                 } else {
+                    // start scrolling
                     timerHandler.postDelayed(timerRunnable, 0)
                     fab.setImageResource(R.drawable.ic_fab_pause_autoscroll)
+                    autoscrollSpeed.isGone = false
                 }
                 isScrolling = !isScrolling
             } }
@@ -116,13 +122,37 @@ class TabDetailFragment : Fragment() {
             // transpose
             transposeUp.setOnClickListener{_ -> transpose(true)}
             transposeDown.setOnClickListener{_ -> transpose(false)}
+
+            // autoscroll speed seek bar
+            binding.autoscrollSpeed.clipToOutline = true  // not really needed since the background is enough bigger
+            binding.autoscrollSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
+            binding.autoscrollSpeed.isGone = true
         }
 
             return binding.root
     }
 
+    private var seekBarChangeListener: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
+        override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+            // updated continuously as the user slides the thumb
+            //convert progress to delay between 1px updates
+            var myDelay = (100 - progress) / 100.0  // delay on a scale of 0 to 1
+            myDelay *= 34                           // delay on a scale of 0 to 34
+            myDelay += 2                            // delay on a scale of 2 to 36
+            scrollDelayMs = (myDelay).toLong()
+        }
+
+        override fun onStartTrackingTouch(seekBar: SeekBar) {
+            // called when the user first touches the SeekBar
+        }
+
+        override fun onStopTrackingTouch(seekBar: SeekBar) {
+            // called after the user finishes moving the SeekBar
+        }
+    }
+
     private fun chordClicked(chordName: String){
-        val api = (activity as ISearchHelper).searchHelper.api ?: return  // return if api null
+        val api = (activity as ISearchHelper).searchHelper?.api ?: return  // return if api null
         val input = ArrayList<String>()
         input.add(chordName)
 
@@ -181,7 +211,7 @@ class TabDetailFragment : Fragment() {
 
         binding.tabContent.setTabContent(spannableText)
         binding.transposeAmt.text = tab.transposed.toString()
-        GlobalScope.launch{(activity as ISearchHelper).searchHelper.updateTabTransposeLevel(tab.tabId, tab.transposed)}
+        GlobalScope.launch{(activity as ISearchHelper).searchHelper?.updateTabTransposeLevel(tab.tabId, tab.transposed)}
     }
 
     private fun transpose(up: Boolean){
@@ -335,7 +365,7 @@ class TabDetailFragment : Fragment() {
             R.id.action_reload -> {  // reload button clicked
                 binding.progressBar2.isGone = false
                 val searchJob = GlobalScope.async {
-                    (activity as ISearchHelper).searchHelper.fetchTab(tabId = args.tabId, force = true)
+                    (activity as ISearchHelper).searchHelper?.fetchTab(tabId = args.tabId, force = true)
                 }
                 searchJob.start()
                 searchJob.invokeOnCompletion(onDataStored())

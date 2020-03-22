@@ -31,7 +31,7 @@ import kotlinx.coroutines.async
  * [SearchResultFragment.Callback] interface.
  */
 class SearchResultFragment : Fragment() {
-    lateinit var searchHelper: SearchHelper
+    private var searchHelper: SearchHelper? = null
     lateinit var query: String
     lateinit var binding: FragmentSearchResultListBinding
     var data: SearchRequestType = SearchRequestType()
@@ -79,7 +79,7 @@ class SearchResultFragment : Fragment() {
 
     private fun searchNextPage() {
         binding.progressBar.isGone = false
-        (activity as SearchResultsActivity).searchJob = GlobalScope.async { searchHelper.api!!.search(query, ++searchPageNumber) }
+        (activity as SearchResultsActivity).searchJob = GlobalScope.async { searchHelper!!.api!!.search(query, ++searchPageNumber) }
         (activity as SearchResultsActivity).searchJob.start()
         (activity as SearchResultsActivity).searchJob.invokeOnCompletion(onSearchComplete())
     }
@@ -100,7 +100,7 @@ class SearchResultFragment : Fragment() {
         // don't allow stacking of search activities.  If we search again, get rid of this instance
         binding.search.setOnQueryTextListener(object : OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
-                searchHelper.updateSuggestions(newText) //update the suggestions
+                searchHelper!!.updateSuggestions(newText) //update the suggestions
                 return false
             }
 
@@ -112,10 +112,10 @@ class SearchResultFragment : Fragment() {
         })
 
         //set up search suggestions
-        binding.search.suggestionsAdapter = searchHelper.mAdapter;
+        binding.search.suggestionsAdapter = searchHelper!!.mAdapter;
         val onSuggestionListener = object : SearchView.OnSuggestionListener {
             override fun onSuggestionClick(position: Int): Boolean {
-                val cursor: Cursor = searchHelper.mAdapter.getItem(position) as Cursor
+                val cursor: Cursor = searchHelper!!.mAdapter.getItem(position) as Cursor
                 val txt: String = cursor.getString(cursor.getColumnIndex("suggestion"))
                 binding.search.setQuery(txt, true)
                 return true
