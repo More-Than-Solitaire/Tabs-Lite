@@ -19,7 +19,8 @@ import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 object ApiHelper {
-    var apiKey: String = ""
+    lateinit var apiKey: String
+    var updatingApiKey = false
     private lateinit var myDeviceId: String
 
     //we need to update the server time and api key whenever we get a 498 response code
@@ -79,6 +80,7 @@ object ApiHelper {
     // generates a new device id each run.  todo: save the value so it is constant over runs
     fun getDeviceId(): String {
         if (! this::myDeviceId.isInitialized) {
+
             // generate a device id
             var newId = ""
             val charList = charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')

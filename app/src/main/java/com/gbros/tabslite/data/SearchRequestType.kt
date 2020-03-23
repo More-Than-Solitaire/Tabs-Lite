@@ -1,9 +1,10 @@
 package com.gbros.tabslite.data
 
+import com.gbros.tabslite.utilities.Utils
 import kotlin.collections.ArrayList
 
 class SearchRequestType(var tabs: List<Tab>, var artists: List<String>){
-    class Tab(var id: Int, var song_id: Int, var song_name: String, var artist_name: String,
+    class Tab(var id: Int, var song_id: Int, var song_name: String, val artist_id: Int, var artist_name: String,
               var type: String = "", var part: String = "", var version: Int = 0, var votes: Int = 0,
               var rating: Double = 0.0, var date: String = "", var status: String = "", var preset_id: Int = 0,
               var tab_access_type: String = "", var tp_version: Int = 0, var tonality_name: String = "",
@@ -46,37 +47,14 @@ class SearchRequestType(var tabs: List<Tab>, var artists: List<String>){
         initSongs()
         indexNewSongs(newTabs)
 
-        for (tab: Tab in newTabs) {
-            val tb = TabBasic(tabId = tab.id, songId = tab.song_id, songName = tab.song_name, artistName = tab.artist_name,
-                    type = tab.type, part = tab.part, version = tab.version, votes = tab.votes, rating = tab.rating,
-                    date = tab.date.toInt(), status = tab.status, presetId = tab.preset_id, tabAccessType = tab.tab_access_type,
-                    tpVersion = tab.tp_version, tonalityName = tab.tonality_name,
-                    isVerified = (tab.verified != 0))
-            if(tab.recording != null){
-                tb.recordingArtists = tab.recording.getArtists()
-                tb.recordingIsAcoustic = (tab.recording.is_acoustic != 0)
-                tb.recordingPerformance = tab.recording.performance.toString()
-                tb.recordingTonalityName = tab.recording.tonality_name
-            } else {
-                tb.recordingArtists = ArrayList(emptyList())
-                tb.recordingIsAcoustic = false
-                tb.recordingPerformance = ""
-                tb.recordingTonalityName = ""
-            }
+        val tbs = Utils.tabsToTabBasics(newTabs)
 
-            if (tab.version_description != null) {
-                tb.versionDescription = tab.version_description
-            } else {
-                tb.versionDescription = ""
+        for (tb in tbs) {
+            if (songs[tb.songId]?.size != null){
+                tb.numVersions = songs[tb.songId]?.size!!
             }
-
-            if (songs[tab.song_id]?.size != null){
-                tb.numVersions = songs[tab.song_id]?.size!!
-            }
-
-            tabBasics[tab.id] = tb
+            tabBasics[tb.tabId] = tb
         }
-
     }
 
     fun getTab(tabId: Int): TabBasic? {

@@ -22,9 +22,9 @@ class HomeActivity : AppCompatActivity(), ISearchHelper {
     private lateinit var searchMenuItem: MenuItem
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        GlobalScope.launch { ApiHelper.updateApiKey() }  // set the api key now before we need it
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-        GlobalScope.launch { ApiHelper.updateApiKey() }  // set the api key now before we need it
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

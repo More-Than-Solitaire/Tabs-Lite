@@ -55,7 +55,8 @@ class TabDetailFragment : Fragment() {
         if(activity is SearchResultsActivity){
             (activity as SearchResultsActivity).getVersions.invokeOnCompletion(onDataStored())
         } else {
-            startGetData()
+            val getDataJob = GlobalScope.async { (activity as ISearchHelper).searchHelper?.fetchTab(args.tabId) }
+            getDataJob.invokeOnCompletion(onDataStored())
         }
         setHasOptionsMenu(true)
 

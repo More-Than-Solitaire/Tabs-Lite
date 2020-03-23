@@ -10,6 +10,7 @@ import com.gbros.tabslite.data.*
 import com.gbros.tabslite.utilities.ApiHelper
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import java.io.FileNotFoundException
 import java.lang.IllegalStateException
 import java.net.HttpURLConnection
@@ -21,8 +22,8 @@ class UgApi(
 ) {
     private val gson = Gson()
 
-    var lastSuggestionRequest = ""
-    var lastResult = SearchSuggestionType(emptyList())
+    private var lastSuggestionRequest = ""
+    private var lastResult = SearchSuggestionType(emptyList())
     suspend fun searchSuggest(q: String): List<String> {
         var query = q
         if(query.length > 5) { // ug api only allows a max of 5 chars for search suggestion requests.  rest of processing is done in app
@@ -170,5 +171,49 @@ class UgApi(
     suspend fun getChordVariations(chordId: String): List<ChordVariation> = coroutineScope {
         val database = AppDatabase.getInstance(context).chordVariationDao()
         database.getChordVariations(chordId)
+    }
+
+    suspend fun getTopTabs(): List<SearchRequestType.Tab> = coroutineScope {
+        while (ApiHelper.updatingApiKey){
+            delay(20)
+        }
+        val apiKey = ApiHelper.apiKey
+        val deviceId = ApiHelper.getDeviceId()
+
+        try {
+            // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
+            // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
+            var conn = URL("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0").openConnection() as HttpURLConnection
+            conn.setRequestProperty("Accept-Charset", "utf-8")
+            conn.setRequestProperty("Accept", "application/json")
+            conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.11 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
+            conn.setRequestProperty("x-ug-client-id", deviceId)             // stays constant over time; api key and client id are related to each other.
+            conn.setRequestProperty("x-ug-api-key", apiKey)                 // updates periodically.
+
+            // handle when the api key is outdated
+            if (conn.responseCode == 498) {
+                conn.disconnect()
+                ApiHelper.updateApiKey()
+                conn = URL("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0").openConnection() as HttpURLConnection
+                conn.setRequestProperty("Accept", "application/json")
+                conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.11 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
+                conn.setRequestProperty("x-ug-client-id", deviceId)                   // stays constant over time; api key and client id are related to each other.
+                conn.setRequestProperty("x-ug-api-key", apiKey)     // updates periodically.
+            }
+
+            val inputStream = conn.getInputStream()
+            val jsonReader = JsonReader(inputStream.reader())
+
+            val typeToken = object : TypeToken<List<SearchRequestType.Tab>>() {}.type
+            val result: List<SearchRequestType.Tab> = gson.fromJson(jsonReader, typeToken)
+
+            inputStream.close()
+
+            result
+        } catch (ex: Exception) {
+            Log.e(javaClass.simpleName, "Error getting top tabs.  Token $apiKey, device ID $deviceId", ex)
+            this.cancel("Error while getting top tabs.", ex)
+            emptyList<SearchRequestType.Tab>()
+        }
     }
 }

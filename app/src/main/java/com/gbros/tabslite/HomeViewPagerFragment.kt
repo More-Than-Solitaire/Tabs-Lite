@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.tabs.TabLayoutMediator
 import com.gbros.tabslite.adapters.FAVORITE_TABS_PAGE_INDEX
-import com.gbros.tabslite.adapters.SUGGESTED_TABS_PAGE_INDEX
+import com.gbros.tabslite.adapters.TOP_TABS_PAGE_INDEX
 import com.gbros.tabslite.adapters.PagerAdapter
 import com.gbros.tabslite.databinding.FragmentViewPagerBinding
 
@@ -39,7 +39,7 @@ class HomeViewPagerFragment : Fragment() {
     private fun getTabIcon(position: Int): Int {
         return when (position) {
             FAVORITE_TABS_PAGE_INDEX -> R.drawable.garden_tab_selector
-            SUGGESTED_TABS_PAGE_INDEX -> R.drawable.suggested_tabs_tab_selector
+            TOP_TABS_PAGE_INDEX -> R.drawable.suggested_tabs_tab_selector
             else -> throw IndexOutOfBoundsException()
         }
     }
@@ -47,7 +47,7 @@ class HomeViewPagerFragment : Fragment() {
     private fun getTabTitle(position: Int): String? {
         return when (position) {
             FAVORITE_TABS_PAGE_INDEX -> getString(R.string.fav_tabs_title)
-            SUGGESTED_TABS_PAGE_INDEX -> getString(R.string.suggested_tabs_title)
+            TOP_TABS_PAGE_INDEX -> getString(R.string.suggested_tabs_title)
             else -> null
         }
     }

@@ -16,10 +16,7 @@ import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.TabRequestType
 import com.gbros.tabslite.utilities.ApiHelper
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import java.io.FileNotFoundException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -88,6 +85,9 @@ class SearchHelper(val context: Context?) {
                     true
                 } else {
                     try {
+                        while(ApiHelper.updatingApiKey){
+                            delay(20)
+                        }
                         val apiKey = ApiHelper.apiKey
                         val deviceId = ApiHelper.getDeviceId()
 

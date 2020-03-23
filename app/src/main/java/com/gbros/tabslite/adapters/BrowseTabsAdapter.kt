@@ -14,8 +14,8 @@ import com.gbros.tabslite.data.IntTabBasic
 import com.gbros.tabslite.data.TabFull
 import com.gbros.tabslite.databinding.ListItemBrowseTabsBinding
 
-class FavoriteTabsAdapter :
-        ListAdapter<TabFull, FavoriteTabsAdapter.TabViewHolder>(
+class BrowseTabsAdapter :
+        ListAdapter<IntTabBasic, BrowseTabsAdapter.TabViewHolder>(
                 TabDiffCallback()
         ) {
 
@@ -47,7 +47,7 @@ class FavoriteTabsAdapter :
             view.findNavController().navigate(direction)
         }
 
-        fun bind(item: TabFull) {
+        fun bind(item: IntTabBasic) {
             binding.apply {
                 tab = item
 
@@ -58,18 +58,18 @@ class FavoriteTabsAdapter :
     }
 }
 
-private class TabDiffCallback : DiffUtil.ItemCallback<TabFull>() {
+private class TabDiffCallback : DiffUtil.ItemCallback<IntTabBasic>() {
 
     override fun areItemsTheSame(
-            oldItem: TabFull,
-            newItem: TabFull
+            oldItem: IntTabBasic,
+            newItem: IntTabBasic
     ): Boolean {
         return oldItem.tabId == newItem.tabId
     }
 
     override fun areContentsTheSame(
-            oldItem: TabFull,
-            newItem: TabFull
+            oldItem: IntTabBasic,
+            newItem: IntTabBasic
     ): Boolean {
         return oldItem.tabId == newItem.tabId
     }
