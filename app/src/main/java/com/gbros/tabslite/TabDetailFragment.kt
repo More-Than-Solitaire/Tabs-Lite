@@ -385,7 +385,7 @@ class TabDetailFragment : Fragment() {
             }
         }
 
-        val shareIntent = ShareCompat.IntentBuilder.from(activity)
+        val shareIntent = ShareCompat.IntentBuilder.from(requireActivity())
                 .setText(shareText)
                 .setType("text/plain")
                 .createChooserIntent()
