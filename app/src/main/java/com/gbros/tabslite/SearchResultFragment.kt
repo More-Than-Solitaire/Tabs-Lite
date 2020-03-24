@@ -39,18 +39,29 @@ class SearchResultFragment : Fragment() {
     var lastPageExhausted = false  // whether or not we've gone through ALL the pages of search results yet.
     var searchPageNumber = 1
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
         searchHelper = (activity as SearchResultsActivity).searchHelper
         query = (activity as SearchResultsActivity).query
+        Log.i(javaClass.simpleName, "SearchResultsFragment created for query $query")
+
+        (activity as SearchResultsActivity).searchJob.invokeOnCompletion(onSearchComplete())  // when search completes
+
+        //toolbar
+        (activity as AppCompatActivity).let {
+            it.setSupportActionBar(binding.toolbar)
+            it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            it.supportActionBar?.setDisplayShowHomeEnabled(true)
+        }
+
+        initializeSearchBar()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentSearchResultListBinding.inflate(inflater, container, false)
         val adapter = MySearchResultRecyclerViewAdapter(callback as Callback)
         binding.searchResultList.adapter = adapter
-        (activity as SearchResultsActivity).searchJob.invokeOnCompletion(onSearchComplete())  // when search completes
-
         binding.searchResultList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if(!lastPageExhausted
@@ -63,16 +74,6 @@ class SearchResultFragment : Fragment() {
                 super.onScrolled(recyclerView, dx, dy)
             }
         })
-
-
-        //toolbar
-        (activity as AppCompatActivity).let {
-            it.setSupportActionBar(binding.toolbar)
-            it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            it.supportActionBar?.setDisplayShowHomeEnabled(true)
-        }
-
-        initializeSearchBar()
 
         return binding.root
     }

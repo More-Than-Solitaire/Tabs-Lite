@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
@@ -65,12 +66,13 @@ class HomeActivity : AppCompatActivity(), ISearchHelper {
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
+                Log.v(javaClass.simpleName, "Query text changed to '$newText' in HomeActivity.")
                 searchHelper?.updateSuggestions(newText) //update the suggestions
                 return false
             }
 
             override fun onQueryTextSubmit(query: String): Boolean {
-                return false // tell the searchview that we didn't handle the search so it still calls another search
+                return false // tell the searchview that we didn't handle the search so it still calls a search
             }
 
         })

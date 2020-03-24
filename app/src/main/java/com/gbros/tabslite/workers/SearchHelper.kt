@@ -42,18 +42,17 @@ class SearchHelper(val context: Context?) {
         val suggestionsJob = GlobalScope.async { api?.searchSuggest(q) }
         suggestionsJob.start()
         suggestionsJob.invokeOnCompletion { cause ->
-            if(cause != null){
-                Unit
-            }
             val c = MatrixCursor(arrayOf(BaseColumns._ID, "suggestion"))
-
-            val suggestions = suggestionsJob.getCompleted()
-            if (suggestions != null) {
-                for (i in suggestions.indices) {
-                    c.addRow(arrayOf<Any>(i, suggestions[i]))
+            if(cause != null){
+                Log.i(javaClass.simpleName, "updateSuggestions' call to searchSuggest was cancelled.  This could be due to no results, which is normal.")
+            } else {
+                val suggestions = suggestionsJob.getCompleted()
+                if (suggestions != null) {
+                    for (i in suggestions.indices) {
+                        c.addRow(arrayOf(i, suggestions[i]))
+                    }
                 }
             }
-
             suggestionCursor.postValue(c)
         }
     }
@@ -88,8 +87,9 @@ class SearchHelper(val context: Context?) {
                         while(ApiHelper.updatingApiKey){
                             delay(20)
                         }
-                        val apiKey = ApiHelper.apiKey
+                        var apiKey = ApiHelper.apiKey
                         val deviceId = ApiHelper.getDeviceId()
+
 
                         var conn = URL("https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType").openConnection() as HttpURLConnection
                         conn.setRequestProperty("Accept-Charset", "utf-8")
@@ -102,6 +102,8 @@ class SearchHelper(val context: Context?) {
                         if(conn.responseCode == 498) {
                             conn.disconnect()
                             ApiHelper.updateApiKey()
+
+                            apiKey = ApiHelper.apiKey
                             conn = URL("https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType").openConnection() as HttpURLConnection
                             conn.setRequestProperty("Accept", "application/json")
                             conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.11 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)

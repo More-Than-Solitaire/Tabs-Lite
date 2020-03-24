@@ -85,7 +85,7 @@ class SongVersionFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
 
         searchHelper = (activity as SearchResultsActivity).searchHelper
-        activity!!.menuInflater.inflate(R.menu.menu_main, menu)
+        requireActivity().menuInflater.inflate(R.menu.menu_main, menu)
 
         implementSearch(menu)
     }
@@ -105,6 +105,7 @@ class SongVersionFragment : Fragment() {
         //set up search suggestions
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
+                Log.v(javaClass.simpleName, "Query text changed to '$newText' in SongVersionFragment.")
                 searchHelper?.updateSuggestions(newText) //update the suggestions
                 return false
             }

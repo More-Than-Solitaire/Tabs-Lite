@@ -24,41 +24,47 @@ class UgApi(
 
     private var lastSuggestionRequest = ""
     private var lastResult = SearchSuggestionType(emptyList())
-    suspend fun searchSuggest(q: String): List<String> {
+    suspend fun searchSuggest(q: String): List<String> = coroutineScope {
+
+        var result = lastResult.suggestions
         var query = q
-        if(query.length > 5) { // ug api only allows a max of 5 chars for search suggestion requests.  rest of processing is done in app
-            query = query.slice(0 until 5)
-        }
+        try {
+            if (query.length > 5) { // ug api only allows a max of 5 chars for search suggestion requests.  rest of processing is done in app
+                query = query.slice(0 until 5)
+            }
 
-        if(query == lastSuggestionRequest) {
-            //processing past 5 chars is done in app
-            return lastResult.suggestions.filter { s -> s.contains(q) }
-        }
+            if (query == lastSuggestionRequest) {
+                //processing past 5 chars is done in app
+                result = lastResult.suggestions.filter { s -> s.contains(q) }
+            } else {
 
-
-        coroutineScope {
-            try {
                 val connection = URL("https://api.ultimate-guitar.com/api/v1/tab/suggestion?q=$query").openConnection() as HttpURLConnection
-                var inputStream = connection.inputStream
+                val inputStream = connection.inputStream
                 val jsonReader = JsonReader(inputStream.reader())
                 val searchSuggestionTypeToken = object : TypeToken<SearchSuggestionType>() {}.type
                 lastResult = gson.fromJson(jsonReader, searchSuggestionTypeToken)
+                result = lastResult.suggestions
                 inputStream.close()
-            } catch (ex: FileNotFoundException) {
-                // no suggestions for this query
-                lastResult = SearchSuggestionType(emptyList())
             }
+        } catch (ex: FileNotFoundException) {
+            // no suggestions for this query
+            Log.i(javaClass.simpleName, "Search suggestions file not found for query $query.", ex)
+            this.cancel("SearchSuggest coroutine canceled due to 404", ex)
+        } catch (ex: Exception) {
+            Log.e(javaClass.simpleName, "SearchSuggest error while finding search suggestions.")
+            this.cancel("SearchSuggest coroutine canceled due to unexpected error", ex)
         }
+
 
         // suggestion caching
         lastSuggestionRequest = query
 
         // processing past 5 chars is done in app
-        return lastResult.suggestions.filter { s -> s.contains(q) }
+        result
     }
 
     suspend fun search(q: String, pageNum: Int = 1): SearchRequestType = coroutineScope {
-        val apiKey = ApiHelper.apiKey
+        var apiKey = ApiHelper.apiKey
         val deviceId = ApiHelper.getDeviceId()
 
         try {
@@ -75,6 +81,7 @@ class UgApi(
             if (conn.responseCode == 498) {
                 conn.disconnect()
                 ApiHelper.updateApiKey()
+                apiKey = ApiHelper.apiKey
                 conn = URL("https://api.ultimate-guitar.com/api/v1/tab/search?title=$q&page=$pageNum&type[]=300&official[]=0").openConnection() as HttpURLConnection
                 conn.setRequestProperty("Accept", "application/json")
                 conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.11 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
@@ -91,7 +98,7 @@ class UgApi(
                 val searchResultTypeToken = object : TypeToken<SearchRequestType>() {}.type
                 result = gson.fromJson(jsonReader, searchResultTypeToken)
             } catch (ex: JsonSyntaxException) {
-                Log.v(javaClass.simpleName, "Search exception.  Probably just a 'did you mean' search suggestion at the end.", ex)
+                Log.v(javaClass.simpleName, "Search exception.  Probably just a 'did you mean' search suggestion at the end.  Device id: $deviceId.  Api key: $apiKey.", ex)
                 try {
                     val stringTypeToken = object : TypeToken<String>() {}.type
                     val suggestedSearch : String = gson.fromJson(jsonReader, stringTypeToken)
@@ -131,7 +138,7 @@ class UgApi(
         }
 
         if (chordParam.isNotEmpty()) {
-            val apiKey = ApiHelper.apiKey
+            var apiKey = ApiHelper.apiKey
             val deviceId = ApiHelper.getDeviceId()
 
             val uTuning = URLEncoder.encode(tuning, "utf-8")
@@ -148,6 +155,7 @@ class UgApi(
             if(conn.responseCode == 498) {
                 conn.disconnect()
                 ApiHelper.updateApiKey()
+                apiKey = ApiHelper.apiKey
                 conn = URL("https://api.ultimate-guitar.com/api/v1/tab/applicature?instrument=$uInstrument&tuning=$uTuning$chordParam").openConnection() as HttpURLConnection
                 conn.setRequestProperty("Accept-Charset", "utf-8")
                 conn.setRequestProperty("Accept", "application/json")
@@ -177,7 +185,7 @@ class UgApi(
         while (ApiHelper.updatingApiKey){
             delay(20)
         }
-        val apiKey = ApiHelper.apiKey
+        var apiKey = ApiHelper.apiKey
         val deviceId = ApiHelper.getDeviceId()
 
         try {
@@ -194,6 +202,7 @@ class UgApi(
             if (conn.responseCode == 498) {
                 conn.disconnect()
                 ApiHelper.updateApiKey()
+                apiKey = ApiHelper.apiKey
                 conn = URL("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0").openConnection() as HttpURLConnection
                 conn.setRequestProperty("Accept", "application/json")
                 conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.11 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
