@@ -20,11 +20,12 @@ import kotlin.random.Random
 
 object ApiHelper {
     lateinit var apiKey: String
-    var updatingApiKey = false
+    var updatingApiKey = true  // flag for initial start.  If things happen insanely fast, UgApi.authenticatedStream might try to get the api key before we're done generating the md5
     private lateinit var myDeviceId: String
 
     //we need to update the server time and api key whenever we get a 498 response code
     suspend fun updateApiKey() {
+        updatingApiKey = true
         val updaterJob = updaterJobAsync()
         updaterJob.start()
 
@@ -35,6 +36,7 @@ object ApiHelper {
         stringBuilder.append(simpleDateFormat.format(updaterJob.await().getServerTime().time))
         stringBuilder.append("createLog()")
         apiKey = getMd5(stringBuilder.toString())
+        updatingApiKey = false
     }
 
     private fun updaterJobAsync() = GlobalScope.async(start = CoroutineStart.LAZY) {

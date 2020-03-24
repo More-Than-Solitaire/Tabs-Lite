@@ -147,7 +147,7 @@ class UgApi(
             result
         } else {
             Log.e(javaClass.simpleName, "Error fetching top tabs.  AuthenticatedStream returned null")
-            this.cancel("Error fetching top tabs.  AuthenticatedStream returned null")
+            cancel("Error fetching top tabs.  AuthenticatedStream returned null")
             emptyList()
         }
     }
@@ -156,9 +156,12 @@ class UgApi(
         while(ApiHelper.updatingApiKey){
             delay(10)
         }
+        Log.v(javaClass.simpleName, "Fetching url $url")
 
         var apiKey = ApiHelper.apiKey
         val deviceId = ApiHelper.getDeviceId()
+
+        Log.d(javaClass.simpleName, "Got device id ($deviceId) and api key ($apiKey)")
 
         try {
             var conn = URL(url).openConnection() as HttpURLConnection
@@ -170,6 +173,7 @@ class UgApi(
 
             // handle when the api key is outdated
             if (conn.responseCode == 498) {
+                Log.i(javaClass.simpleName, "498 response code for old api key $apiKey and device id $deviceId.  Refreshing api key")
                 conn.disconnect()
                 ApiHelper.updateApiKey()
                 apiKey = ApiHelper.apiKey
@@ -188,7 +192,7 @@ class UgApi(
             null
         } catch (ex: Exception) {
             Log.e(javaClass.simpleName, "Exception during fetch of url $url with parameters apiKey: $apiKey and deviceId: $deviceId.", ex)
-            cancel("Not Found", ex)
+            cancel("Exception!", ex)
             null
         }
     }
