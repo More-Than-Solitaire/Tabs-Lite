@@ -39,9 +39,10 @@ class TopTabsFragment : Fragment() {
         topTabsJob.invokeOnCompletion { cause ->
             if(cause != null){
                 //problems
-                Log.e(javaClass.simpleName, "Error finding top tabs. ", cause.cause)
+                Log.e(javaClass.simpleName, "Error finding top tabs. GetTopTabs job returned non-null.", cause.cause)
             } else {
                 val result = topTabsJob.getCompleted()
+                val resultsNull = result == null
                 val tabBasics = result?.let { Utils.tabsToTabBasics(it) }
                 if(activity != null) {
                     requireActivity().runOnUiThread {
@@ -50,7 +51,7 @@ class TopTabsFragment : Fragment() {
                             adapter.submitList(tabBasics)
                         } else {
                             binding.hasHistory = false
-                            Log.e(javaClass.simpleName, "Error finding top tabs.")
+                            Log.e(javaClass.simpleName, "Error finding top tabs.  GetTopTabs completed, but tabBasics were null.  Results were? ($resultsNull) null as well. ")
                         }
                     }
                 }

@@ -74,62 +74,31 @@ class SearchHelper(val context: Context?) {
 
     suspend fun fetchTab(tabId: Int, force: Boolean = false, tabAccessType: String = "public"): Boolean = coroutineScope {
         // get the tab and corresponding chords, and put them in the database.  Then return true
-        try {
-            if(context == null){
-                Log.e(this.javaClass.simpleName,"Error getting TabFull $tabId. Context was null.")
-                false
+        if(context != null) {
+            val database = AppDatabase.getInstance(context)
+            if (database.tabFullDao().exists(tabId) && !force) {
+                true
             } else {
-                val database = AppDatabase.getInstance(context)
-                if (database.tabFullDao().exists(tabId) && !force) {
+                val url = "https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType"
+                val inputStream = api?.authenticatedStream(url)
+                if(inputStream != null) {
+                    val jsonReader = JsonReader(inputStream.reader())
+                    val tabRequestTypeToken = object : TypeToken<TabRequestType>() {}.type
+                    val result: TabRequestType = gson.fromJson(jsonReader, tabRequestTypeToken)
+                    database.tabFullDao().insert(result.getTabFull())
+                    database.chordVariationDao().insertAll(result.getChords())  // save all the chords we come across.  Might as well since we already downloaded them.
+                    inputStream.close()
+
                     true
                 } else {
-                    try {
-                        while(ApiHelper.updatingApiKey){
-                            delay(20)
-                        }
-                        var apiKey = ApiHelper.apiKey
-                        val deviceId = ApiHelper.getDeviceId()
-
-
-                        var conn = URL("https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType").openConnection() as HttpURLConnection
-                        conn.setRequestProperty("Accept-Charset", "utf-8")
-                        conn.setRequestProperty("Accept", "application/json")
-                        conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.11 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
-                        conn.setRequestProperty("x-ug-client-id", deviceId)                   // stays constant over time; api key and client id are related to each other.
-                        conn.setRequestProperty("x-ug-api-key", apiKey)     // updates periodically.
-
-                        // handle when the api key is outdated
-                        if(conn.responseCode == 498) {
-                            conn.disconnect()
-                            ApiHelper.updateApiKey()
-
-                            apiKey = ApiHelper.apiKey
-                            conn = URL("https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType").openConnection() as HttpURLConnection
-                            conn.setRequestProperty("Accept", "application/json")
-                            conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.11 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
-                            conn.setRequestProperty("x-ug-client-id", deviceId)                   // stays constant over time; api key and client id are related to each other.
-                            conn.setRequestProperty("x-ug-api-key", apiKey)     // updates periodically.
-                            conn.setRequestProperty("Accept-Encoding", "identity")
-                        }
-
-
-                        val inputStream = conn.getInputStream()
-                        val jsonReader = JsonReader(inputStream.reader())
-                        val tabRequestTypeToken = object : TypeToken<TabRequestType>() {}.type
-                        val result: TabRequestType = gson.fromJson(jsonReader, tabRequestTypeToken)
-                        database.tabFullDao().insert(result.getTabFull())
-                        database.chordVariationDao().insertAll(result.getChords())  // save all the chords we come across.  Might as well since we already downloaded them.
-                        inputStream.close()
-
-                        true
-                    } catch (ex: FileNotFoundException) {
-                        Log.e(this.javaClass.simpleName, "Error; 404 returned on fetch tab.  Maybe tabId $tabId doesn't exist?  This shouldn't happen.", ex)
-                        false
-                    }
+                    Log.e(javaClass.simpleName, "Error fetching tab with tabId $tabId.  This shouldn't happen")
+                    cancel("Error fetching tab with tabId $tabId.  This shouldn't happen")
+                    false
                 }
             }
-        } catch (ex: Exception) {
-            Log.e(this.javaClass.simpleName, "Error getting TabFull (id: $tabId) from function SearchHelper.fetchTab", ex)
+        } else {
+            Log.e(this.javaClass.simpleName,"Error getting TabFull $tabId. Context was null.")
+            cancel("Error getting TabFull $tabId. Context was null.")
             false
         }
     }
