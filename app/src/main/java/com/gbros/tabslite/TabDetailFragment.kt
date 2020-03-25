@@ -126,9 +126,12 @@ class TabDetailFragment : Fragment() {
             transposeDown.setOnClickListener{_ -> transpose(false)}
 
             // autoscroll speed seek bar
-            binding.autoscrollSpeed.clipToOutline = true  // not really needed since the background is enough bigger
-            binding.autoscrollSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
-            binding.autoscrollSpeed.isGone = true
+            autoscrollSpeed.clipToOutline = true  // not really needed since the background is enough bigger
+            autoscrollSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
+            autoscrollSpeed.isGone = true
+
+            textSizeIncrease.setOnClickListener{ binding.tabContent.setTextSize(0, tabContent.textSize + 2F) }
+            textSizeDecrease.setOnClickListener{ tabContent.setTextSize(0, tabContent.textSize - 2F) }
         }
 
             return binding.root
@@ -144,13 +147,8 @@ class TabDetailFragment : Fragment() {
             scrollDelayMs = (myDelay).toLong()
         }
 
-        override fun onStartTrackingTouch(seekBar: SeekBar) {
-            // called when the user first touches the SeekBar
-        }
-
-        override fun onStopTrackingTouch(seekBar: SeekBar) {
-            // called after the user finishes moving the SeekBar
-        }
+        override fun onStartTrackingTouch(seekBar: SeekBar) {}  // called when the user first touches the SeekBar
+        override fun onStopTrackingTouch(seekBar: SeekBar) {}  // called after the user finishes moving the SeekBar
     }
 
     private fun chordClicked(chordName: String){
