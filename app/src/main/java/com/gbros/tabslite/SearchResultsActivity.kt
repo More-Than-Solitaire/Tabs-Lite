@@ -11,6 +11,7 @@ import com.gbros.tabslite.workers.SearchHelper
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import java.lang.Exception
 
 class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
 
@@ -19,19 +20,26 @@ class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
     lateinit var getVersions: Deferred<Boolean>
 
 
-    var query: String = ""
+    var query: String? = null
         private set(value) { field = value }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        searchHelper = SearchHelper(this)
-        super.onCreate(savedInstanceState)
-        setContentView<com.gbros.tabslite.databinding.ActivitySearchResultsBinding>(
-                this, R.layout.activity_search_results)
-        handleIntent(intent)
+        try {
+            super.onCreate(savedInstanceState)
+            setContentView<com.gbros.tabslite.databinding.ActivitySearchResultsBinding>(
+                    this, R.layout.activity_search_results)
+            searchHelper = SearchHelper(this)
+            handleIntent(intent)
 
-        // start suggestion observer
-        searchHelper!!.getSuggestionCursor().observe(this, searchHelper!!.suggestionObserver)
+            // start suggestion observer
+            searchHelper!!.getSuggestionCursor().observe(this, searchHelper!!.suggestionObserver)
+        } catch (ex: Exception) {
+            Log.e(javaClass.simpleName, "Error creating SearchResultsActivity", ex)
+            throw ex
+        }
     }
+
+
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -42,11 +50,14 @@ class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
         if (Intent.ACTION_SEARCH == intent.action) {
             query = intent.getStringExtra(SearchManager.QUERY)
 
+            if(query == null) {
+                Log.e(javaClass.simpleName, "Could not start search; query was null")
+            }
             if(searchHelper?.api == null) {
                 Log.e(javaClass.simpleName, "Could not start search; UgApi instance was null.")
                 return
             }
-            searchJob = GlobalScope.async { searchHelper!!.api!!.search(query) }
+            searchJob = GlobalScope.async { searchHelper!!.api!!.search(query!!) }
             searchJob.start()
         }
     }

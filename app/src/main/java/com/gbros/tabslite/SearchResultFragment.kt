@@ -42,40 +42,54 @@ class SearchResultFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        searchHelper = (activity as SearchResultsActivity).searchHelper
-        query = (activity as SearchResultsActivity).query
-        Log.i(javaClass.simpleName, "SearchResultsFragment created for query $query")
+        try {
+            searchHelper = (activity as SearchResultsActivity).searchHelper
+            if ((activity as SearchResultsActivity).query != null) {
+                query = (activity as SearchResultsActivity).query!!
+                Log.i(javaClass.simpleName, "SearchResultsFragment created for query $query")
+            } else {
+                Log.e(javaClass.simpleName, "Creating Search Result Fragment without a query!  This should not happen.")
+            }
 
-        (activity as SearchResultsActivity).searchJob.invokeOnCompletion(onSearchComplete())  // when search completes
+            (activity as SearchResultsActivity).searchJob.invokeOnCompletion(onSearchComplete())  // when search completes
 
-        //toolbar
-        (activity as AppCompatActivity).let {
-            it.setSupportActionBar(binding.toolbar)
-            it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            it.supportActionBar?.setDisplayShowHomeEnabled(true)
+            //toolbar
+            (activity as AppCompatActivity).let {
+                it.setSupportActionBar(binding.toolbar)
+                it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                it.supportActionBar?.setDisplayShowHomeEnabled(true)
+            }
+
+            initializeSearchBar()
+        } catch (ex: Exception) {
+            Log.e(javaClass.simpleName, "Error in SearchResultFragment onActivityCreated", ex)
+            throw ex
         }
-
-        initializeSearchBar()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentSearchResultListBinding.inflate(inflater, container, false)
-        val adapter = MySearchResultRecyclerViewAdapter(callback as Callback)
-        binding.searchResultList.adapter = adapter
-        binding.searchResultList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if(!lastPageExhausted
-                        && binding.progressBar.isGone  // use this as a flag for whether we're done with the last set
-                        && recyclerView.needsMoreItems()
-                ) {
-                    // get more search results
-                    searchNextPage()
+        try {
+            binding = FragmentSearchResultListBinding.inflate(inflater, container, false)
+            val adapter = MySearchResultRecyclerViewAdapter(callback as Callback)
+            binding.searchResultList.adapter = adapter
+            binding.searchResultList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    if (!lastPageExhausted
+                            && binding.progressBar.isGone  // use this as a flag for whether we're done with the last set
+                            && recyclerView.needsMoreItems()
+                    ) {
+                        // get more search results
+                        searchNextPage()
+                    }
+                    super.onScrolled(recyclerView, dx, dy)
                 }
-                super.onScrolled(recyclerView, dx, dy)
-            }
-        })
+            })
 
-        return binding.root
+            return binding.root
+        } catch (ex: Exception) {
+            Log.e(javaClass.simpleName, "Error in SearchResultFragment onCreateView", ex)
+            throw ex
+        }
     }
 
     private fun searchNextPage() {

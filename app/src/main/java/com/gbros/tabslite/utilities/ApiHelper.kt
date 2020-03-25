@@ -24,7 +24,7 @@ object ApiHelper {
     private lateinit var myDeviceId: String
 
     //we need to update the server time and api key whenever we get a 498 response code
-    suspend fun updateApiKey() {
+    suspend fun updateApiKey(): String {
         updatingApiKey = true
         val updaterJob = updaterJobAsync()
         updaterJob.start()
@@ -37,6 +37,7 @@ object ApiHelper {
         stringBuilder.append("createLog()")
         apiKey = getMd5(stringBuilder.toString())
         updatingApiKey = false
+        return apiKey
     }
 
     private fun updaterJobAsync() = GlobalScope.async(start = CoroutineStart.LAZY) {
@@ -44,8 +45,8 @@ object ApiHelper {
         val lastResult: ServerTimestampType
         val conn = URL("https://api.ultimate-guitar.com/api/v1/common/hello").openConnection() as HttpURLConnection
         conn.setRequestProperty("Accept", "application/json")
-        conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.11 (")  // actual value "UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)". 5.10.11 is the app version.
-        conn.setRequestProperty("x-ug-client-id", devId)                   // stays constant over time; api key and client id are related to each other.
+        conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.12 (")  // actual value "UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)". 5.10.11 is the app version.
+        conn.setRequestProperty("x-ug-client-id", devId)                // stays constant over time; api key and client id are related to each other.
 
         try {
             val inputStream = conn.getInputStream()
@@ -85,9 +86,9 @@ object ApiHelper {
 
             // generate a device id
             var newId = ""
-            val charList = charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
+            val charList = charArrayOf('1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
             while(newId.length < 16) {
-                newId += charList[Random.nextInt(0, 16)]
+                newId += charList[Random.nextInt(0, 15)]
             }
             myDeviceId = newId
         }

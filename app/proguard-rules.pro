@@ -34,3 +34,6 @@
 }
 
 -keep class androidx.navigation.fragment.NavHostFragment { *; }
+
+-keep class com.gbros.tabslite.data.** { *; }
+-keepattributes Exceptions, Signature, InnerClasses 
