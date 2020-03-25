@@ -7,7 +7,7 @@
     <string name="suggested_tabs_title" translation_description="Title for the screen where the user sees a list of automatically found suggested tabs.">Popular</string>
     <string name="available" translation_description="Text for the header of the plant list page indicating the available plants for users to choose from.">Available Plants</string>
     <string name="find_song" translation_description="Button text that prompts user to search for tabs to add to their (empty) favorites.">Find a song</string>
-    <string name="favorites_empty" translation_description="Text that is shown on the 'Favorite Tabs' screen when no tabs have been added to the user's favorites">You have no favorite tabs</string>
+    <string name="favorites_empty" translation_description="Text that is shown on the 'Favorite Tabs' and 'Popular' screens when no tabs are there">There are no tabs here</string>
     <string name="menu_item_share_tab" translation_description="The label for the Share menu item">Share</string>
     <string name="menu_item_search" translation_description="The label for the Search menu item">Search</string>
     <string name="menu_item_search_hint" translation_description="The hint for the Search menu item">Find a song</string>

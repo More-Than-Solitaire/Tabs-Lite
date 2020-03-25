@@ -71,18 +71,20 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
                 val barMarkerSet = ArrayList<ChordMarker.Bar>()
 
                 for ((string, fretNumber) in frets.withIndex()) {
-                    if (fingers[string].toFinger() != Finger.UNKNOWN) {
-                        when {
-                            fretNumber > 0 -> {
+                    when {
+                        fretNumber > 0 -> {
+                            if (fingers[string].toFinger() != Finger.UNKNOWN) {
                                 noteMarkerSet.add(ChordMarker.Note(fret = FretNumber(fretNumber), string = StringNumber(string + 1), finger = fingers[string].toFinger()))
+                            } else {
+                                Log.e(javaClass.simpleName, "Chord variation with fret number > 0, but no finger.  This shouldn't happen.")
                             }
-                            fretNumber == 0 -> {
-                                openMarkerSet.add(ChordMarker.Open(StringNumber(string + 1)))
-                            }  // open string
-                            else -> {
-                                mutedMarkerSet.add(ChordMarker.Muted(StringNumber(string + 1)))
-                            }            // muted string
                         }
+                        fretNumber == 0 -> {
+                            openMarkerSet.add(ChordMarker.Open(StringNumber(string + 1)))
+                        }  // open string
+                        else -> {
+                            mutedMarkerSet.add(ChordMarker.Muted(StringNumber(string + 1)))
+                        }            // muted string
                     }
                 }
 
