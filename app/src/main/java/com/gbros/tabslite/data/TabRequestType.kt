@@ -86,7 +86,7 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
 
                 for (bar in listCapos) {
                     val myMarker = ChordMarker.Bar(fret = FretNumber(bar.fret), startString = StringNumber(bar.startString + 1),
-                            endString = StringNumber(bar.lastString), finger = bar.finger.toFinger())
+                            endString = StringNumber(bar.lastString + 1), finger = bar.finger.toFinger())
                     barMarkerSet.add(myMarker)
                 }
 
