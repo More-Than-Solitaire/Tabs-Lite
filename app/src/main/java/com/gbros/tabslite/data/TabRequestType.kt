@@ -1,6 +1,7 @@
 package com.gbros.tabslite.data
 
 import android.util.Log
+import com.chrynan.chords.model.*
 
 class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var artist_name: String,
                      var type: String, var part: String, var version: Int, var votes: Int,
@@ -28,7 +29,6 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
                 }
             }
             class SerieInfo(name: String, type: String)
-
             override fun toString(): String {
                 return "$name; $comment"
             }
@@ -52,15 +52,53 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
         class VarInfo(var id: String, var listCapos: List<ChordVariation.CapoInfo>, var noteIndex: Int,
                       var notes: List<Int>, var frets: List<Int>, var fingers: List<Int>,
                       var fret: Int) {
+            private fun Int.toFinger(): Finger {
+                return when(this){
+                    1 -> Finger.INDEX
+                    2 -> Finger.MIDDLE
+                    3 -> Finger.RING
+                    4 -> Finger.PINKY
+                    5 -> Finger.THUMB
+                    else -> Finger.UNKNOWN
+                }
+            }
+            fun toChordVariation(chordName: String) : ChordVariation {
+                val noteMarkerSet = ArrayList<ChordMarker.Note>()
+                val openMarkerSet = ArrayList<ChordMarker.Open>()
+                val mutedMarkerSet = ArrayList<ChordMarker.Muted>()
+                val barMarkerSet = ArrayList<ChordMarker.Bar>()
+
+                for ((string, fretNumber) in frets.withIndex()) {
+                    if (fingers[string].toFinger() != Finger.UNKNOWN) {
+                        when {
+                            fretNumber > 0 -> {
+                                noteMarkerSet.add(ChordMarker.Note(fret = FretNumber(fretNumber), string = StringNumber(string + 1), finger = fingers[string].toFinger()))
+                            }
+                            fretNumber == 0 -> {
+                                openMarkerSet.add(ChordMarker.Open(StringNumber(string + 1)))
+                            }  // open string
+                            else -> {
+                                mutedMarkerSet.add(ChordMarker.Muted(StringNumber(string + 1)))
+                            }            // muted string
+                        }
+                    }
+                }
+
+                for (bar in listCapos) {
+                    val myMarker = ChordMarker.Bar(fret = FretNumber(bar.fret), startString = StringNumber(bar.startString + 1),
+                            endString = StringNumber(bar.lastString), finger = bar.finger.toFinger())
+                    barMarkerSet.add(myMarker)
+                }
+
+                return ChordVariation(varId = id, chordId = chordName, noteChordMarkers = noteMarkerSet,
+                        openChordMarkers = openMarkerSet, mutedChordMarkers = mutedMarkerSet, barChordMarkers = barMarkerSet)
+            }
         }
 
         fun getChordVariations(): List<ChordVariation> {
             val result = ArrayList<ChordVariation>()
             for(variation in variations){
-                result.add(ChordVariation(varId = variation.id, chordId = chord,
-                        listCapos = ArrayList(variation.listCapos), noteIndex = variation.noteIndex,
-                        notes = ArrayList(variation.notes), frets = ArrayList(variation.frets),
-                        fingers = ArrayList(variation.fingers), fret = variation.fret ))
+                result.add(variation.toChordVariation(chord))
             }
 
             return result
@@ -106,18 +144,14 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
         return tab
     }
 
-    fun getChords(): List<ChordVariation> {
-        val chords: ArrayList<ChordVariation> = ArrayList(applicature.size)
+    fun getChordVariations(): List<ChordVariation> {
+        val myChords = ArrayList<ChordVariation>()
         for(chord: ChordInfo in applicature) {
-            for(variation: ChordInfo.VarInfo in chord.variations) {
-                val myVar = ChordVariation(varId = variation.id, chordId = chord.chord,
-                        fingers = ArrayList(variation.fingers), fret = variation.fret,
-                        listCapos = ArrayList(variation.listCapos), frets = ArrayList(variation.frets),
-                        noteIndex = variation.noteIndex, notes = ArrayList(variation.notes))
-                chords.add(myVar)
+            for (variation: ChordInfo.VarInfo in chord.variations) {
+                myChords.add(variation.toChordVariation(chord.chord))
             }
         }
 
-        return chords
+        return myChords
     }
 }

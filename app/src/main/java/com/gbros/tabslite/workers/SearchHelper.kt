@@ -15,11 +15,7 @@ import com.google.gson.stream.JsonReader
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.TabRequestType
-import com.gbros.tabslite.utilities.ApiHelper
 import kotlinx.coroutines.*
-import java.io.FileNotFoundException
-import java.net.HttpURLConnection
-import java.net.URL
 
 class SearchHelper(val context: Context?) {
     val api: UgApi? = context?.let { UgApi(it) }
@@ -86,7 +82,7 @@ class SearchHelper(val context: Context?) {
                     val tabRequestTypeToken = object : TypeToken<TabRequestType>() {}.type
                     val result: TabRequestType = gson.fromJson(jsonReader, tabRequestTypeToken)
                     database.tabFullDao().insert(result.getTabFull())
-                    database.chordVariationDao().insertAll(result.getChords())  // save all the chords we come across.  Might as well since we already downloaded them.
+                    database.chordVariationDao().insertAll(result.getChordVariations())  // save all the chords we come across.  Might as well since we already downloaded them.
                     inputStream.close()
 
                     true

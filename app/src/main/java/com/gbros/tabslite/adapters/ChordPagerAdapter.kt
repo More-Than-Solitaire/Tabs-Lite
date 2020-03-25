@@ -1,9 +1,12 @@
 package com.gbros.tabslite.adapters
 
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DiffUtil
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.chrynan.chords.model.Chord
 import com.gbros.tabslite.ChordFragment
+import com.gbros.tabslite.data.ChordVariation
+import com.gbros.tabslite.data.IntSong
 
 class ChordPagerAdapter(fragment: Fragment, val chords: List<Chord>) : FragmentStateAdapter(fragment) {
 

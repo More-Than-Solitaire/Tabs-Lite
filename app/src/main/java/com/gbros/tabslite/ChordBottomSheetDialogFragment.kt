@@ -16,7 +16,6 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
     companion object {
 
         private const val KEY_CHORD = "parcelableChordWrapperKey"
-        private const val DEFAULT_PEEK_HEIGHT = 400
 
         fun newInstance(chordVars: List<ChordVariation>) = ChordBottomSheetDialogFragment().apply {
             arguments = Bundle().apply {
@@ -33,48 +32,20 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val chords = ArrayList<Chord>()
 
-        val chords = chordVars.map { cv -> cv.toChord() }
+        for (chord in chordVars){
+            val markerSet = HashSet<ChordMarker>()
+            markerSet.addAll(chord.noteChordMarkers)
+            markerSet.addAll(chord.openChordMarkers)
+            markerSet.addAll(chord.mutedChordMarkers)
+            markerSet.addAll(chord.barChordMarkers)
+
+            chords.add(Chord(chord.chordId, markerSet))
+        }
+
         pager.adapter = ChordPagerAdapter(this, chords)
         val chordNameTextView = view.findViewById<TextView>(R.id.chordTitleTextView)
         chordNameTextView.text = chords[0].name
-    }
-
-    private fun ChordVariation.toChord(): Chord {
-        val markerSet = HashSet<ChordMarker>()
-
-        for ((string, fretNumber) in this.frets.withIndex()) {
-            if(fingers[string].toFinger() != Finger.UNKNOWN) {
-                markerSet.add(when {
-                    fretNumber > 0 -> {
-                        ChordMarker.Note(fret = FretNumber(fretNumber), string = StringNumber(string + 1), finger = fingers[string].toFinger())
-                    }
-                    fretNumber == 0 -> {
-                        ChordMarker.Open(StringNumber(string + 1))
-                    }  // open string
-                    else -> {
-                        ChordMarker.Muted(StringNumber(string + 1))
-                    }            // muted string
-                })
-            }
-        }
-
-        for (bar in this.listCapos) {
-            val myMarker = ChordMarker.Bar(fret = FretNumber(bar.fret), startString = StringNumber(bar.startString + 1),
-                    endString = StringNumber(bar.lastString), finger = bar.finger.toFinger())
-            markerSet.add(myMarker)
-        }
-
-        return Chord(this.chordId, markerSet)
-    }
-    private fun Int.toFinger(): Finger {
-        return when(this){
-            1 -> Finger.INDEX
-            2 -> Finger.MIDDLE
-            3 -> Finger.RING
-            4 -> Finger.PINKY
-            5 -> Finger.THUMB
-            else -> Finger.UNKNOWN
-        }
     }
 }

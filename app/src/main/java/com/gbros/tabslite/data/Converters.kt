@@ -1,8 +1,18 @@
 package com.gbros.tabslite.data
 
+import android.os.Parcel
 import androidx.room.TypeConverter
+import com.chrynan.chords.model.Chord
+import com.chrynan.chords.model.ChordMarker
+import com.chrynan.chords.model.ParcelableChordWrapper
+import com.chrynan.chords.parcel.ChordMarkerParceler
 import com.google.gson.Gson
-import java.util.Calendar
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
+import kotlin.collections.List
+import kotlin.collections.Set
+import kotlin.collections.toList
 
 /**
  * Type converters to allow Room to reference complex data types.
@@ -30,6 +40,31 @@ class Converters {
 
     @TypeConverter
     fun jsontoCapo(value: String) = ArrayList<ChordVariation.CapoInfo>(gson.fromJson(value, Array<ChordVariation.CapoInfo>::class.java).toList())
+
+    // thanks https://stackoverflow.com/a/44634283/3437608
+    @TypeConverter
+    fun fromNoteMarkerSet(markers: ArrayList<ChordMarker.Note>) = gson.toJson(markers)
+
+    @TypeConverter
+    fun fromOpenMarkerSet(markers: ArrayList<ChordMarker.Open>) = gson.toJson(markers)
+
+    @TypeConverter
+    fun fromMutedMarkerSet(markers: ArrayList<ChordMarker.Muted>) = gson.toJson(markers)
+
+    @TypeConverter
+    fun fromBarMarkerSet(markers: ArrayList<ChordMarker.Bar>) = gson.toJson(markers)
+
+    @TypeConverter
+    fun toNoteMarkerList(value: String) = ArrayList<ChordMarker.Note>(gson.fromJson(value, Array<ChordMarker.Note>::class.java).toList())
+
+    @TypeConverter
+    fun toOpenMarkerList(value: String) = ArrayList<ChordMarker.Open>(gson.fromJson(value, Array<ChordMarker.Open>::class.java).toList())
+
+    @TypeConverter
+    fun toMutedMarkerList(value: String) = ArrayList<ChordMarker.Muted>(gson.fromJson(value, Array<ChordMarker.Muted>::class.java).toList())
+
+    @TypeConverter
+    fun toBarMarkerList(value: String) = ArrayList<ChordMarker.Bar>(gson.fromJson(value, Array<ChordMarker.Bar>::class.java).toList())
 
     companion object {
         private val gson = Gson()

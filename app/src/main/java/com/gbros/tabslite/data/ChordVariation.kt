@@ -2,8 +2,11 @@ package com.gbros.tabslite.data
 
 import android.os.Parcelable
 import androidx.room.*
+import com.chrynan.chords.model.ChordMarker
 import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.RawValue
 import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * [ChordVariation] represents all the chords the user has come across so far.  The chords here are
@@ -17,12 +20,10 @@ import java.util.*
 data class ChordVariation(
         @PrimaryKey @ColumnInfo(name = "id") val varId: String,
         @ColumnInfo(name = "chord_id") val chordId: String,
-        @ColumnInfo(name = "list_capos") val listCapos: ArrayList<CapoInfo>,
-        @ColumnInfo(name = "note_index") val noteIndex: Int,
-        @ColumnInfo(name = "notes") val notes: ArrayList<Int>,
-        @ColumnInfo(name = "frets") val frets: ArrayList<Int>,
-        @ColumnInfo(name = "fingers") val fingers: ArrayList<Int>,
-        @ColumnInfo(name = "fret") val fret: Int
+        @ColumnInfo(name = "note_chord_markers") val noteChordMarkers: @RawValue ArrayList<ChordMarker.Note>,
+        @ColumnInfo(name = "open_chord_markers") val openChordMarkers: @RawValue ArrayList<ChordMarker.Open>,
+        @ColumnInfo(name = "muted_chord_markers") val mutedChordMarkers: @RawValue ArrayList<ChordMarker.Muted>,
+        @ColumnInfo(name = "bar_chord_markers") val barChordMarkers: @RawValue ArrayList<ChordMarker.Bar>
 ) : Parcelable {
     @Parcelize
     class CapoInfo(var fret: Int, var startString: Int, var lastString: Int, var finger: Int) : Parcelable
