@@ -162,7 +162,7 @@ class TabDetailFragment : Fragment() {
         val updateJob = GlobalScope.async { api.updateChordVariations(input) }
         updateJob.invokeOnCompletion { cause ->
             if(cause != null){
-                Log.w(javaClass.simpleName, "Chord update didn't work.")
+                Log.w(javaClass.simpleName, "Chord update didn't work.", cause.cause)
             }
             val getChordsJob = GlobalScope.async { api.getChordVariations(chordName) }
             getChordsJob.invokeOnCompletion { cause ->

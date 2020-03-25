@@ -124,6 +124,8 @@ class UgApi(
                 }
                 inputStream.close()
             } else {
+                val chordCount = chordIds.size
+                Log.i(javaClass.simpleName, "Error fetching chords.  chordParam is empty.  That means all the chords are already in the database.  Chord count that we're looking for: $chordCount.")
                 cancel("Error fetching chord(s).")
             }
         }

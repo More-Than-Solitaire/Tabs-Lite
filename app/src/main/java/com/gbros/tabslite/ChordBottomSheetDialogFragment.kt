@@ -1,6 +1,7 @@
 package com.gbros.tabslite
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,6 +47,11 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
 
         pager.adapter = ChordPagerAdapter(this, chords)
         val chordNameTextView = view.findViewById<TextView>(R.id.chordTitleTextView)
-        chordNameTextView.text = chords[0].name
+        if(chords.size > 0) {
+            chordNameTextView.text = chords[0].name
+        } else {
+            val chordVarsSize = chordVars.size
+            Log.e(javaClass.simpleName, "Error starting chord view - chords size is 0.  chordVars size is $chordVarsSize ")
+        }
     }
 }
