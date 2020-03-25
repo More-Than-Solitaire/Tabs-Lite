@@ -79,12 +79,14 @@ class TabDetailFragment : Fragment() {
                     fab.setImageResource(R.drawable.ic_fab_autoscroll)
                     autoscrollSpeed.isGone = true
                     (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    binding.appbar.setExpanded(true, true)  // thanks https://stackoverflow.com/a/32137264/3437608
                 } else {
                     // start scrolling
                     timerHandler.postDelayed(timerRunnable, 0)
                     fab.setImageResource(R.drawable.ic_fab_pause_autoscroll)
                     autoscrollSpeed.isGone = false
                     (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    binding.appbar.setExpanded(false, true)
                 }
                 isScrolling = !isScrolling
             } }
