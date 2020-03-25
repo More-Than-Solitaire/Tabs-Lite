@@ -134,8 +134,14 @@ class TabDetailFragment : Fragment() {
             autoscrollSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
             autoscrollSpeed.isGone = true
 
-            textSizeIncrease.setOnClickListener{ binding.tabContent.setTextSize(0, tabContent.textSize + 2F) }
+            textSizeIncrease.setOnClickListener{ tabContent.setTextSize(0, tabContent.textSize + 2F) }
             textSizeDecrease.setOnClickListener{ tabContent.setTextSize(0, tabContent.textSize - 2F) }
+        }
+
+        binding.cancelTranspose.setOnClickListener{
+            val currentTransposeAmt = tab.transposed
+            tab.transposed = 0
+            transpose(-currentTransposeAmt)
         }
 
             return binding.root
