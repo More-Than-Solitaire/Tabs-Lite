@@ -11,11 +11,11 @@ import kotlinx.coroutines.launch
  * The ViewModel used in [PlantDetailFragment].
  */
 class TabDetailViewModel(
-        private val tabRepository: TabFullRepository,
+        val tabRepository: TabFullRepository,
         private val chordVariationRepository: ChordVariationRepository,
         private val tabId: Int
 ) : ViewModel() {
-    val tab = viewModelScope.async { tabRepository.getTab(tabId) }
+    var tab = viewModelScope.async { tabRepository.getTab(tabId) }
 
     //eventually todo: getUsedChords
 

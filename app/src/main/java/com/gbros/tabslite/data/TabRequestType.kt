@@ -2,6 +2,8 @@ package com.gbros.tabslite.data
 
 import android.util.Log
 import com.chrynan.chords.model.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var artist_name: String,
                      var type: String, var part: String, var version: Int, var votes: Int,
@@ -90,8 +92,9 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
                     barMarkerSet.add(myMarker)
                 }
 
-                return ChordVariation(varId = id, chordId = chordName, noteChordMarkers = noteMarkerSet,
-                        openChordMarkers = openMarkerSet, mutedChordMarkers = mutedMarkerSet, barChordMarkers = barMarkerSet)
+                return ChordVariation(varId = id.toLowerCase(Locale.ROOT), chordId = chordName,
+                        noteChordMarkers = noteMarkerSet, openChordMarkers = openMarkerSet,
+                        mutedChordMarkers = mutedMarkerSet, barChordMarkers = barMarkerSet)
             }
         }
 

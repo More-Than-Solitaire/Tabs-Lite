@@ -21,6 +21,7 @@ import androidx.core.widget.NestedScrollView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.navArgs
 import com.gbros.tabslite.data.TabFull
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
@@ -306,8 +307,30 @@ class TabDetailFragment : Fragment() {
             Log.e(javaClass.simpleName, "Error fetching tab data from database.")
             Unit
         } else {
+            var reloaded = false
+            var favorite = false
+            val scrollSpeed = scrollDelayMs
+            var transposed = 0
+            if(::tab.isInitialized) {
+                reloaded = true
+                favorite = tab.favorite  //reloading would reset favorite status, so save that
+                //todo: when scroll speed is a database field, we'll need to save it here
+                transposed = tab.transposed
+            }
 
             tab = viewModel.tab.getCompleted()  // actually get the data
+
+            if (reloaded) {
+                tab.favorite = favorite
+                viewModel.setFavorite(favorite)
+
+                scrollDelayMs = scrollSpeed
+                //todo: save scroll speed to db
+
+                tab.transposed = transposed
+            }
+
+
 
             spannableText = processTabContent(tab.content)
             tab.content = spannableText.toString()
@@ -364,6 +387,9 @@ class TabDetailFragment : Fragment() {
                 true
             }
             R.id.action_reload -> {  // reload button clicked
+                viewModel.tab = viewModel.viewModelScope.async { viewModel.tabRepository.getTab(args.tabId) }
+                val wasFavorite = tab.favorite
+
                 binding.progressBar2.isGone = false
                 val searchJob = GlobalScope.async {
                     (activity as ISearchHelper).searchHelper?.fetchTab(tabId = args.tabId, force = true)
@@ -399,7 +425,7 @@ class TabDetailFragment : Fragment() {
     }
 
     private fun processTabContent(text: CharSequence): SpannableStringBuilder{
-        var text = text.replace("\\[tab]".toRegex(), "\n").replace("\\[/tab]".toRegex(), "")
+        var text = text.replace("\\[tab]".toRegex(), "\n").replace("\\[/tab]".toRegex(), "")  // we'll probably eventually need to replace these with spans
 
         var lastIndex = 0
         val chords = ArrayList<Pair<Int, Int>>()
