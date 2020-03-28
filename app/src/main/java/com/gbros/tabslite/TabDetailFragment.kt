@@ -32,6 +32,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
+import kotlin.math.min
 
 
 /**
@@ -161,9 +162,9 @@ class TabDetailFragment : Fragment() {
         override fun onStopTrackingTouch(seekBar: SeekBar) {}  // called after the user finishes moving the SeekBar
     }
 
-    private fun chordClicked(chordName: String){
+    private fun chordClicked(chordName: CharSequence){
         val api = (activity as ISearchHelper).searchHelper?.api ?: return  // return if api null
-        val input = ArrayList<String>()
+        val input = ArrayList<CharSequence>()
         input.add(chordName)
 
         // update the database from the web, then get chords from the database and add them to the chordPageAdapter
@@ -191,37 +192,39 @@ class TabDetailFragment : Fragment() {
     }
 
     private fun transpose(howMuch: Int){
-        val numSteps = howMuch.absoluteValue
-        val currentSpans = spannableText.getSpans(0,spannableText.length, ClickableSpan::class.java)
+        if (howMuch != 0) {
+            val numSteps = howMuch.absoluteValue
+            val currentSpans = spannableText.getSpans(0, spannableText.length, ClickableSpan::class.java)
 
-        for (span in currentSpans) {
-            val startIndex = spannableText.getSpanStart(span)
-            val endIndex = spannableText.getSpanEnd(span)
-            val currentText = span.toString()
-            spannableText.removeSpan(span)
+            for (span in currentSpans) {
+                val startIndex = spannableText.getSpanStart(span)
+                val endIndex = spannableText.getSpanEnd(span)
+                val currentText = span.toString()
+                spannableText.removeSpan(span)
 
-            var newText = currentText
-            if (howMuch > 0) {
-                // transpose up
-                for(i in 0 until numSteps){
-                    newText = transposeUp(newText)
+                var newText = currentText
+                if (howMuch > 0) {
+                    // transpose up
+                    for (i in 0 until numSteps) {
+                        newText = transposeUp(newText)
+                    }
+                } else {
+                    // transpose down
+                    for (i in 0 until numSteps) {
+                        newText = transposeDown(newText)
+                    }
                 }
-            } else {
-                // transpose down
-                for(i in 0 until numSteps){
-                    newText = transposeDown(newText)
-                }
+
+
+                spannableText.replace(startIndex, endIndex, newText)  // edit the text
+                spannableText.setSpan(makeSpan(newText), startIndex, startIndex + newText.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)  // add a new span
             }
-
-
-            spannableText.replace(startIndex,endIndex, newText)  // edit the text
-            spannableText.setSpan(makeSpan(newText), startIndex, startIndex+newText.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)  // add a new span
+            binding.transposeAmt.text = tab.transposed.toString()
+            GlobalScope.launch{(activity as ISearchHelper).searchHelper?.updateTabTransposeLevel(tab.tabId, tab.transposed)}
         }
 
         binding.tabContent.setTabContent(spannableText)
-        binding.transposeAmt.text = tab.transposed.toString()
-        GlobalScope.launch{(activity as ISearchHelper).searchHelper?.updateTabTransposeLevel(tab.tabId, tab.transposed)}
     }
 
     private fun transpose(up: Boolean){
@@ -340,7 +343,8 @@ class TabDetailFragment : Fragment() {
 
 
 
-            spannableText = processTabContent(tab.content)
+            //spannableText = processTabContent(tab.content)
+            processTabContent(tab.content)
             tab.content = spannableText.toString()
 
             activity?.runOnUiThread {
@@ -432,41 +436,129 @@ class TabDetailFragment : Fragment() {
         fun scrollButtonClicked()
     }
 
-    private fun processTabContent(text: CharSequence): SpannableStringBuilder{
-        var text = text.replace("\\[tab]".toRegex(), "\n").replace("\\[/tab]".toRegex(), "")  // we'll probably eventually need to replace these with spans
 
-        var lastIndex = 0
-        val chords = ArrayList<Pair<Int, Int>>()
-        while(true) {
-            val startIndex = text.indexOf("[ch]", lastIndex)
-            if (startIndex < 0) {
-                break
+
+
+
+
+    // thanks @Hein https://stackoverflow.com/a/60886609
+    private fun processLyricLine(singleLyric: CharSequence, appendTo: SpannableStringBuilder): SpannableStringBuilder {
+        val indexOfLineBreak = singleLyric.indexOf("\n")
+        var chords: CharSequence = singleLyric.subSequence(0, indexOfLineBreak).trimEnd()
+        var lyrics: CharSequence = singleLyric.subSequence(indexOfLineBreak + 1, singleLyric.length).trimEnd()
+        var startLength = appendTo.length
+        var result = appendTo
+
+        // break lines ahead of time
+        // thanks @Andro https://stackoverflow.com/a/11498125
+        val availableWidth = binding.tabContent.width.toFloat() - binding.tabContent.textSize / resources.displayMetrics.scaledDensity
+
+        while (lyrics.isNotEmpty() || chords.isNotEmpty()) {
+            // account for whether chords or lyrics is longer and find substring length
+
+            // find good word break spot at end
+            val totalCharsToFit: Int = if (chords.length > lyrics.length) {
+                binding.tabContent.paint.breakText(chords, 0, chords.length,
+                        true, (availableWidth), null)
+            } else {
+                binding.tabContent.paint.breakText(lyrics, 0, lyrics.length,
+                        true, (availableWidth), null)
             }
-            text = text.removeRange(startIndex..startIndex + 3)
 
-            val endIndex = text.indexOf("[/ch]", startIndex)
-            if (endIndex < 0) {
-                break
-            }  // this check shouldn't be needed
-            text = text.removeRange(endIndex..endIndex + 4)
-            lastIndex = endIndex
+            var wordCharsToFit = totalCharsToFit
+            while (wordCharsToFit > 0 &&
+                    (
+                            lyrics.length > wordCharsToFit && !"‐–〜゠= \t\r\n".contains(lyrics[wordCharsToFit]) ||
+                                    chords.length > wordCharsToFit && !"‐–〜゠= \t\r\n".contains(chords[wordCharsToFit])
+                            )
+            ) {
+                wordCharsToFit -= 1
 
-            chords.add(startIndex to endIndex)
+                if (wordCharsToFit == 0) {
+                    wordCharsToFit = totalCharsToFit
+                    break
+                }
+            }
+
+            // make chord substring
+            var i = 0
+            while (i < min(wordCharsToFit, chords.length)) {
+                if (i+3 < chords.length && chords.subSequence(i .. i+3) == "[ch]"){
+                    //we found a chord; add it.
+                    chords = chords.removeRange(i .. i+3)        // remove [ch]
+                    val start = i
+
+                    while(chords.subSequence(i .. i+4) != "[/ch]"){
+                        // find end
+                        i++
+                    }
+                    // i is now 1 past the end of the chord name
+                    chords = chords.removeRange(i .. i+4)        // remove [/ch]
+
+                    result = result.append(chords.subSequence(start until i))
+
+                    //make a clickable span
+                    val chordName = chords.subSequence(start until i)
+                    val clickableSpan = makeSpan(chordName)
+                    result.setSpan(clickableSpan, startLength+start, startLength+i, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                } else {
+                    result = result.append(chords[i])
+                    i++
+                }
+            }
+            result = result.append("\r\n")
+
+            // make lyric substring
+            val thisLine = lyrics.subSequence(0, min(wordCharsToFit, lyrics.length))
+            result = result.append(thisLine).append("\r\n")
+
+            // update for next pass through
+            chords = chords.subSequence(i, chords.length)
+            lyrics = lyrics.subSequence(thisLine.length, lyrics.length)
+            startLength = result.length
         }
 
+        return result
+    }
 
-        val spannableString = SpannableStringBuilder(text)
-        for(chord in chords){
-            val chordName = text.substring(chord.first until chord.second)
-            val clickableSpan = makeSpan(chordName)
-            spannableString.setSpan(clickableSpan, chord.first, chord.second, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    private fun processTabContent(text: CharSequence): SpannableStringBuilder{
+        var text = text
+        spannableText = SpannableStringBuilder()
+        var spannableString = spannableText
+
+        //wrap tabs as a group
+        var lastIndex = 0
+        while (text.indexOf("[tab]", lastIndex) != -1){
+            val firstIndex = text.indexOf("[tab]", 0)     // remove start tag
+            text = text.replaceRange(firstIndex, firstIndex+5, "")
+            lastIndex = text.indexOf("[/tab]", firstIndex)    // remove end tag
+            text = text.replaceRange(lastIndex, lastIndex+6, "")
+
+            val next = processLyricLine(text.subSequence(firstIndex, lastIndex), spannableString)
+            spannableString = next
         }
 
         return spannableString
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private fun TextView.setTabContent(spannableString: SpannableStringBuilder) {
         this.movementMethod = LinkMovementMethod.getInstance() // without LinkMovementMethod, link can not click
-        this.setText(spannableString, TextView.BufferType.SPANNABLE)
+        this.setText(spannableText, TextView.BufferType.SPANNABLE)
     }
 
     //thanks https://stackoverflow.com/a/51561533/3437608
@@ -478,15 +570,13 @@ class TabDetailFragment : Fragment() {
         return typedValue.data
     }
 
-    private fun makeSpan(chordName: String): ClickableSpan {
+    private fun makeSpan(chordName: CharSequence): ClickableSpan {
         return object : ClickableSpan() {
             override fun onClick(view: View) {
                 Selection.setSelection((view as TextView).text as Spannable, 0)
                 view.invalidate()
-
-                chordClicked(chordName)
-                Snackbar.make(view, "Loading chord $chordName...", Snackbar.LENGTH_SHORT).show() // todo: eventually implement chord-specific functionality here
-
+                chordClicked(chordName.toString())
+                Snackbar.make(view, "Loading chord $chordName...", Snackbar.LENGTH_SHORT).show()
             }
 
             override fun updateDrawState(ds: TextPaint) {
@@ -498,7 +588,7 @@ class TabDetailFragment : Fragment() {
             }
 
             override fun toString(): String {
-                return chordName
+                return chordName.toString()
             }
         }
     }

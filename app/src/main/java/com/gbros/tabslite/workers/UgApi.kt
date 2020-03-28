@@ -99,13 +99,13 @@ class UgApi(
         }
     }
 
-    suspend fun updateChordVariations(chordIds: List<String>, force: Boolean = false, tuning: String = "E A D G B E",
+    suspend fun updateChordVariations(chordIds: List<CharSequence>, force: Boolean = false, tuning: String = "E A D G B E",
                                    instrument: String = "guitar") = coroutineScope {
         val database = AppDatabase.getInstance(context).chordVariationDao()
         var chordParam = ""
         for (chord in chordIds) {
-            if (force || !database.chordExists(chord)){ // if the chord already exists in the db at all, we can assume we have all variations of it.  Not often a new chord is created
-                val uChord = URLEncoder.encode(chord, "utf-8")
+            if (force || !database.chordExists(chord.toString())){ // if the chord already exists in the db at all, we can assume we have all variations of it.  Not often a new chord is created
+                val uChord = URLEncoder.encode(chord.toString(), "utf-8")
                 chordParam += "&chords[]=$uChord"
             }
         }
@@ -131,9 +131,9 @@ class UgApi(
         }
     }
 
-    suspend fun getChordVariations(chordId: String): List<ChordVariation> = coroutineScope {
+    suspend fun getChordVariations(chordId: CharSequence): List<ChordVariation> = coroutineScope {
         val database = AppDatabase.getInstance(context).chordVariationDao()
-        database.getChordVariations(chordId)
+        database.getChordVariations(chordId.toString())
     }
 
     suspend fun getTopTabs(): List<SearchRequestType.Tab> = coroutineScope {

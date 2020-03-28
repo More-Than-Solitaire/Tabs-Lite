@@ -66,8 +66,8 @@
             android:id="@+id/constraintLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="@dimen/margin_normal"
-            android:layout_marginRight="@dimen/margin_normal"
+            android:layout_marginStart="@dimen/margin_small"
+            android:layout_marginEnd="@dimen/margin_small"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
             <androidx.core.widget.NestedScrollView
@@ -161,6 +161,7 @@
                         android:linksClickable="true"
                         android:minHeight="@dimen/plant_description_min_height"
 
+                        android:paddingEnd="0dp"
                         android:textColor="?attr/colorOnSurface"
                         android:textColorHighlight="?attr/colorSecondary"
                         android:textColorLink="?attr/colorAccent"
