@@ -480,11 +480,12 @@ class TabDetailFragment : Fragment() {
 
         // break lines ahead of time
         // thanks @Andro https://stackoverflow.com/a/11498125
-        val availableWidth = binding.tabContent.width.toFloat() - binding.tabContent.textSize / resources.displayMetrics.scaledDensity
+        val availableWidth = binding.tabContent.width.toFloat() //- binding.tabContent.textSize / resources.displayMetrics.scaledDensity
 
         while (lyrics.isNotEmpty() || chords.isNotEmpty()) {
             // find good word break spot at end
-            val wordCharsToFit = findMultipleLineWordBreak(listOf(lyrics, chords), binding.tabContent.paint, availableWidth)
+            val plainChords = chords.replace("[/?ch]".toRegex(), "")
+            val wordCharsToFit = findMultipleLineWordBreak(listOf(plainChords, lyrics), binding.tabContent.paint, availableWidth)
 
             // make chord substring
             var i = 0
@@ -537,6 +538,8 @@ class TabDetailFragment : Fragment() {
         while (text.indexOf("[tab]", lastIndex) != -1){
             val firstIndex = text.indexOf("[tab]", 0)     // remove start tag
             text = text.replaceRange(firstIndex, firstIndex+5, "")
+            spannableString.append(text.subSequence(lastIndex, firstIndex)) // add all the non-[tab] text
+
             lastIndex = text.indexOf("[/tab]", firstIndex)    // remove end tag
             text = text.replaceRange(lastIndex, lastIndex+6, "")
 
