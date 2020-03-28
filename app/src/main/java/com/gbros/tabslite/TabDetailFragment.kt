@@ -136,8 +136,8 @@ class TabDetailFragment : Fragment() {
             autoscrollSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
             autoscrollSpeed.isGone = true
 
-            textSizeIncrease.setOnClickListener{ tabContent.setTextSize(0, tabContent.textSize + 2F) }
-            textSizeDecrease.setOnClickListener{ tabContent.setTextSize(0, tabContent.textSize - 2F) }
+            textSizeIncrease.setOnClickListener{ changeTextSize(2F) }
+            textSizeDecrease.setOnClickListener{ changeTextSize(-2F) }
         }
 
         binding.cancelTranspose.setOnClickListener{
@@ -147,6 +147,12 @@ class TabDetailFragment : Fragment() {
         }
 
             return binding.root
+    }
+
+    private fun changeTextSize(howMuch: Float){
+        binding.tabContent.setTextSize(0, binding.tabContent.textSize + howMuch)
+        processTabContent(tab.content)
+        binding.tabContent.setTabContent(spannableText)
     }
 
     private var seekBarChangeListener: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
@@ -342,11 +348,8 @@ class TabDetailFragment : Fragment() {
                 tab.transposed = transposed
             }
 
-
-
             //spannableText = processTabContent(tab.content)
             processTabContent(tab.content)
-            tab.content = spannableText.toString()
 
             activity?.runOnUiThread {
                 binding.tab = tab  // set view data
@@ -399,7 +402,7 @@ class TabDetailFragment : Fragment() {
                 }
                 true
             }
-            R.id.action_reload -> {  // reload button clicked
+            R.id.action_reload -> {  // reload button clicked (refresh page)
                 viewModel.tab = viewModel.viewModelScope.async { viewModel.tabRepository.getTab(args.tabId) }
                 val wasFavorite = tab.favorite
 
@@ -436,8 +439,6 @@ class TabDetailFragment : Fragment() {
     interface Callback {
         fun scrollButtonClicked()
     }
-
-
 
     private fun findMultipleLineWordBreak(lines: List<CharSequence>, paint: TextPaint, availableWidth: Float): Int{
         val breakingChars = "‐–〜゠= \t\r\n"  // all the chars that we'll break a line at
@@ -545,21 +546,6 @@ class TabDetailFragment : Fragment() {
 
         return spannableString
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     private fun TextView.setTabContent(spannableString: SpannableStringBuilder) {
         this.movementMethod = LinkMovementMethod.getInstance() // without LinkMovementMethod, link can not click

@@ -282,8 +282,9 @@
 
                     <Button
                         android:id="@+id/text_size_increase"
-                        android:layout_width="37dp"
+                        android:layout_width="45dp"
                         android:layout_height="51dp"
+                        android:layout_marginEnd="86dp"
                         android:fontFamily="sans-serif-light"
                         android:includeFontPadding="false"
                         android:padding="0dp"
@@ -296,12 +297,12 @@
                         android:text="A+"
                         android:textSize="24sp"
                         app:layout_constraintBottom_toTopOf="@+id/transpose_down"
-                        app:layout_constraintStart_toStartOf="@+id/transpose_down"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/tab_detail_name" />
 
                     <Button
                         android:id="@+id/text_size_decrease"
-                        android:layout_width="37dp"
+                        android:layout_width="45dp"
                         android:layout_height="51dp"
                         android:fontFamily="sans-serif-light"
                         android:includeFontPadding="false"
@@ -315,7 +316,8 @@
                         android:text="A-"
                         android:textSize="24sp"
                         app:layout_constraintBottom_toTopOf="@+id/transpose_down"
-                        app:layout_constraintEnd_toEndOf="@+id/transpose_down"
+                        app:layout_constraintEnd_toStartOf="@+id/text_size_increase"
+                        app:layout_constraintStart_toStartOf="@+id/transpose_down"
                         app:layout_constraintTop_toBottomOf="@+id/tab_detail_name" />
 
                     <Button
