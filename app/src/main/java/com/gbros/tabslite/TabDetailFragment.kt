@@ -32,6 +32,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
+import kotlin.math.max
 import kotlin.math.min
 
 
@@ -438,7 +439,34 @@ class TabDetailFragment : Fragment() {
 
 
 
+    private fun findMultipleLineWordBreak(lines: List<CharSequence>, paint: TextPaint, availableWidth: Float): Int{
+        val breakingChars = "‐–〜゠= \t\r\n"  // all the chars that we'll break a line at
+        var totalCharsToFit: Int = 0
 
+        // find max number of chars that will fit on a line
+        for (line in lines) {
+            totalCharsToFit = max(totalCharsToFit, paint.breakText(line, 0, line.length,
+                    true, availableWidth, null))
+        }
+        var wordCharsToFit = totalCharsToFit
+
+        // go back from max until we hit a word break
+        var allContainWordBreakChar: Boolean
+        do {
+            allContainWordBreakChar = true
+            for (line in lines) {
+                allContainWordBreakChar = allContainWordBreakChar
+                        && (line.length <= wordCharsToFit || breakingChars.contains(line[wordCharsToFit]))
+            }
+        } while (!allContainWordBreakChar && --wordCharsToFit > 0)
+
+        // if we had a super long word, just break at the end of the line
+        if (wordCharsToFit < 1){
+            wordCharsToFit = totalCharsToFit
+        }
+
+        return wordCharsToFit
+    }
 
 
     // thanks @Hein https://stackoverflow.com/a/60886609
@@ -454,31 +482,8 @@ class TabDetailFragment : Fragment() {
         val availableWidth = binding.tabContent.width.toFloat() - binding.tabContent.textSize / resources.displayMetrics.scaledDensity
 
         while (lyrics.isNotEmpty() || chords.isNotEmpty()) {
-            // account for whether chords or lyrics is longer and find substring length
-
             // find good word break spot at end
-            val totalCharsToFit: Int = if (chords.length > lyrics.length) {
-                binding.tabContent.paint.breakText(chords, 0, chords.length,
-                        true, (availableWidth), null)
-            } else {
-                binding.tabContent.paint.breakText(lyrics, 0, lyrics.length,
-                        true, (availableWidth), null)
-            }
-
-            var wordCharsToFit = totalCharsToFit
-            while (wordCharsToFit > 0 &&
-                    (
-                            lyrics.length > wordCharsToFit && !"‐–〜゠= \t\r\n".contains(lyrics[wordCharsToFit]) ||
-                                    chords.length > wordCharsToFit && !"‐–〜゠= \t\r\n".contains(chords[wordCharsToFit])
-                            )
-            ) {
-                wordCharsToFit -= 1
-
-                if (wordCharsToFit == 0) {
-                    wordCharsToFit = totalCharsToFit
-                    break
-                }
-            }
+            val wordCharsToFit = findMultipleLineWordBreak(listOf(lyrics, chords), binding.tabContent.paint, availableWidth)
 
             // make chord substring
             var i = 0
