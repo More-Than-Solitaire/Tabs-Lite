@@ -36,4 +36,8 @@
 -keep class androidx.navigation.fragment.NavHostFragment { *; }
 
 -keep class com.gbros.tabslite.data.** { *; }
--keepattributes Exceptions, Signature, InnerClasses 
+-keepattributes Exceptions, Signature, InnerClasses, SourceFile, LineNumberTable
+
+-keep class com.chrynan.chords.** { *; }
+-keepattributes Exceptions, Signature, InnerClasses, SourceFile, LineNumberTable
+

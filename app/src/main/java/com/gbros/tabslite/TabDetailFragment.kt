@@ -16,6 +16,7 @@ import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
+import androidx.core.text.trimmedLength
 import androidx.core.view.isGone
 import androidx.core.widget.NestedScrollView
 import androidx.databinding.DataBindingUtil
@@ -546,11 +547,21 @@ class TabDetailFragment : Fragment() {
 
             spannableString.setSpan(clickableSpan, spannableString.length-(lastIndex-firstIndex),
                     spannableString.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-
         }
-
         spannableString.append((chords.subSequence(lastIndex until chords.length)))
+    }
+
+    private fun lonelyChordProcessor(spannableString: SpannableStringBuilder){
+        while(spannableString.indexOf("[ch]") != -1) {
+            val firstIndex = spannableString.indexOf("[ch]")
+            spannableString.delete(firstIndex, firstIndex+4)
+            val lastIndex = spannableString.indexOf("[/ch]")
+            spannableString.delete(lastIndex, lastIndex+5)
+
+            val chordName = spannableString.subSequence(firstIndex until lastIndex)
+            val clickableSpan = makeSpan(chordName)
+            spannableString.setSpan(clickableSpan, firstIndex, lastIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
     }
 
     private fun processTabContent(text: CharSequence): SpannableStringBuilder{
@@ -572,8 +583,8 @@ class TabDetailFragment : Fragment() {
             val next = processLyricLine(text.subSequence(firstIndex, lastIndex), spannableString)
             spannableString = next
         }
-
-        // find any leftover [ch] sets
+        lonelyChordProcessor(text.subSequence(lastIndex, text.length), spannableString) // add all the non-[tab] text
+        lonelyChordProcessor(spannableString) // a final once-over to check for any missed chords (usually a tab author's mistake)
 
         return spannableString
     }
