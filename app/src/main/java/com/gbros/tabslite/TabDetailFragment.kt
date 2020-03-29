@@ -528,6 +528,31 @@ class TabDetailFragment : Fragment() {
         return result
     }
 
+    private fun lonelyChordProcessor(subString: CharSequence, spannableString: SpannableStringBuilder){
+        var lastIndex = 0
+        var chords = subString
+        while (chords.indexOf("[ch]", 0) != -1 ) {
+            val firstIndex = chords.indexOf("[ch]", 0)
+            chords = chords.replaceRange(firstIndex, firstIndex+4, "")
+
+            spannableString.append(chords.subSequence(lastIndex, firstIndex))
+
+            lastIndex = chords.indexOf("[/ch]", lastIndex)
+            chords = chords.replaceRange(lastIndex, lastIndex+5, "")
+            spannableString.append(chords.subSequence(firstIndex, lastIndex))
+
+            val chordName = chords.subSequence(firstIndex until lastIndex)
+            val clickableSpan = makeSpan(chordName)
+
+            spannableString.setSpan(clickableSpan, spannableString.length-(lastIndex-firstIndex),
+                    spannableString.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+
+        }
+
+        spannableString.append((chords.subSequence(lastIndex until chords.length)))
+    }
+
     private fun processTabContent(text: CharSequence): SpannableStringBuilder{
         var text = text
         spannableText = SpannableStringBuilder()
@@ -538,7 +563,8 @@ class TabDetailFragment : Fragment() {
         while (text.indexOf("[tab]", lastIndex) != -1){
             val firstIndex = text.indexOf("[tab]", 0)     // remove start tag
             text = text.replaceRange(firstIndex, firstIndex+5, "")
-            spannableString.append(text.subSequence(lastIndex, firstIndex)) // add all the non-[tab] text
+
+            lonelyChordProcessor(text.subSequence(lastIndex, firstIndex), spannableString) // add all the non-[tab] text
 
             lastIndex = text.indexOf("[/tab]", firstIndex)    // remove end tag
             text = text.replaceRange(lastIndex, lastIndex+6, "")
@@ -546,6 +572,8 @@ class TabDetailFragment : Fragment() {
             val next = processLyricLine(text.subSequence(firstIndex, lastIndex), spannableString)
             spannableString = next
         }
+
+        // find any leftover [ch] sets
 
         return spannableString
     }
