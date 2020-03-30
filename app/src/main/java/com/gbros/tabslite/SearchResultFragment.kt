@@ -35,6 +35,13 @@ class SearchResultFragment : Fragment() {
     lateinit var query: String
     lateinit var binding: FragmentSearchResultListBinding
     var data: SearchRequestType = SearchRequestType()
+    val callback = object : SearchResultFragment.Callback {
+        override fun viewSongVersions(songId: Int) {
+            val direction = SearchResultFragmentDirections.actionSearchResultFragmentToSongVersionFragment(data.getTabs(songId))
+            view?.findNavController()?.navigate(direction)
+        }
+    }
+    val adapter: MySearchResultRecyclerViewAdapter = MySearchResultRecyclerViewAdapter(callback as Callback)
 
     var lastPageExhausted = false  // whether or not we've gone through ALL the pages of search results yet.
     var searchPageNumber = 1
@@ -43,6 +50,8 @@ class SearchResultFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         try {
+            //searchPageNumber = 1  // when we get to this page from a back button, we need to reset which page of search results we're looking at
+
             searchHelper = (activity as SearchResultsActivity).searchHelper
             if ((activity as SearchResultsActivity).query != null) {
                 query = (activity as SearchResultsActivity).query!!
@@ -51,7 +60,6 @@ class SearchResultFragment : Fragment() {
                 Log.e(javaClass.simpleName, "Creating Search Result Fragment without a query!  This should not happen.")
             }
 
-            (activity as SearchResultsActivity).searchJob.invokeOnCompletion(onSearchComplete())  // when search completes
 
             //toolbar
             (activity as AppCompatActivity).let {
@@ -61,6 +69,8 @@ class SearchResultFragment : Fragment() {
             }
 
             initializeSearchBar()
+
+            (activity as SearchResultsActivity).searchJob.invokeOnCompletion(onSearchComplete())  // when search completes
         } catch (ex: Exception) {
             Log.e(javaClass.simpleName, "Error in SearchResultFragment onActivityCreated", ex)
             throw ex
@@ -70,7 +80,6 @@ class SearchResultFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         try {
             binding = FragmentSearchResultListBinding.inflate(inflater, container, false)
-            val adapter = MySearchResultRecyclerViewAdapter(callback as Callback)
             binding.searchResultList.adapter = adapter
             binding.searchResultList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -185,12 +194,6 @@ class SearchResultFragment : Fragment() {
         }
     }
 
-    val callback = object : SearchResultFragment.Callback {
-        override fun viewSongVersions(songId: Int) {
-            val direction = SearchResultFragmentDirections.actionSearchResultFragmentToSongVersionFragment(data.getTabs(songId))
-            view?.findNavController()?.navigate(direction)
-        }
-    }
 
     /**
      * This interface must be implemented by activities that contain this
