@@ -14,7 +14,7 @@ class SearchRequestType(var tabs: List<Tab>, var artists: List<String>){
 
     constructor() : this(ArrayList(), ArrayList())
 
-    private lateinit var songs: LinkedHashMap<Int, ArrayList<Int>>  // songId, List<tabId>
+    private lateinit var songs: LinkedHashMap<Int, HashSet<Int>>  // songId, List<tabId>
     private lateinit var tabBasics: HashMap<Int, TabBasic>          // tabId, TabBasic
 
     private fun initSongs() {
@@ -37,7 +37,7 @@ class SearchRequestType(var tabs: List<Tab>, var artists: List<String>){
     private fun indexNewSongs(newTabs: List<Tab>) {
         for (tab: Tab in newTabs) {
             if(!songs.containsKey(tab.song_id)){
-                songs.put(tab.song_id, ArrayList())
+                songs.put(tab.song_id, HashSet())
             }
 
             songs[tab.song_id]!!.add(tab.id)
@@ -67,7 +67,7 @@ class SearchRequestType(var tabs: List<Tab>, var artists: List<String>){
         return ArrayList(tabBasics.values)
     }
 
-    fun getTabIds(songId: Int): List<Int>? {
+    fun getTabIds(songId: Int): Set<Int>? {
         initSongs()
         return songs[songId]
     }
@@ -91,7 +91,7 @@ class SearchRequestType(var tabs: List<Tab>, var artists: List<String>){
         val result: ArrayList<TabBasic> = ArrayList()
 
         for(tabIdList in songs.values){
-            result.add(tabBasics[tabIdList[0]]!!)
+            result.add(tabBasics[tabIdList.first()]!!)  // add the first tab for each song
         }
         return result
     }
