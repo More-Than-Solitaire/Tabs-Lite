@@ -55,7 +55,6 @@ class SongVersionFragment : Fragment() {
                     override fun onListFragmentInteraction(tabId: Int) {
                         Log.v(javaClass.simpleName, "Navigating to tab detail fragment (tabId: $tabId)")
                         (activity as SearchResultsActivity).getVersions = GlobalScope.async{ searchHelper!!.fetchTab(tabId)}  // async task that gets tab from the internet if it doesn't exist in our db yet
-                        (activity as SearchResultsActivity).getVersions.start()
 
                         val direction = SongVersionFragmentDirections.actionSongVersionFragmentToTabDetailFragment(tabId)
                         view?.findNavController()?.navigate(direction)

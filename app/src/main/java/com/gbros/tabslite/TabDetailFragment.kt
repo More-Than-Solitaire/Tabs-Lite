@@ -16,7 +16,6 @@ import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
-import androidx.core.text.trimmedLength
 import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
 import androidx.core.widget.NestedScrollView
@@ -48,7 +47,7 @@ class TabDetailFragment : Fragment() {
     private var isScrolling: Boolean = false
     private var scrollDelayMs: Long = 20  // default scroll speed (smaller is faster)
 
-    private lateinit var tab: TabFull
+    //private lateinit var tab: TabFull
     private lateinit var viewModel: TabDetailViewModel
     private lateinit var binding: FragmentTabDetailBinding
     private lateinit var optionsMenu: Menu
@@ -141,8 +140,8 @@ class TabDetailFragment : Fragment() {
             }
 
             binding.cancelTranspose.setOnClickListener {
-                val currentTransposeAmt = tab.transposed
-                tab.transposed = 0
+                val currentTransposeAmt = viewModel.tab!!.transposed
+                viewModel.tab!!.transposed = 0
                 transpose(-currentTransposeAmt)
             }
             return binding.root
@@ -152,8 +151,8 @@ class TabDetailFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        if (activity is SearchResultsActivity) {
-            (activity as SearchResultsActivity).getVersions.invokeOnCompletion(onDataStored())
+        if (activity is SearchResultsActivity && (activity as SearchResultsActivity).getVersions != null) {
+            (activity as SearchResultsActivity).getVersions!!.invokeOnCompletion(onDataStored())
         } else {
             val getDataJob = GlobalScope.async { (activity as ISearchHelper).searchHelper?.fetchTab(args.tabId) }
             getDataJob.invokeOnCompletion(onDataStored())
@@ -162,7 +161,7 @@ class TabDetailFragment : Fragment() {
 
     private fun changeTextSize(howMuch: Float){
         binding.tabContent.setTextSize(0, binding.tabContent.textSize + howMuch)
-        processTabContent(tab.content)
+        processTabContent(viewModel.tab!!.content)
         binding.tabContent.setTabContent(spannableText)
     }
 
@@ -238,8 +237,8 @@ class TabDetailFragment : Fragment() {
                 spannableText.setSpan(makeSpan(newText), startIndex, startIndex + newText.length,
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)  // add a new span
             }
-            binding.transposeAmt.text = tab.transposed.toString()
-            GlobalScope.launch{(activity as ISearchHelper).searchHelper?.updateTabTransposeLevel(tab.tabId, tab.transposed)}
+            binding.transposeAmt.text = viewModel.tab!!.transposed.toString()
+            GlobalScope.launch{(activity as ISearchHelper).searchHelper?.updateTabTransposeLevel(viewModel.tab!!.tabId, viewModel.tab!!.transposed)}
         }
 
         binding.tabContent.setTabContent(spannableText)
@@ -247,13 +246,13 @@ class TabDetailFragment : Fragment() {
 
     private fun transpose(up: Boolean){
         val howMuch = if(up) 1 else -1
-        tab.transposed += howMuch
+        viewModel.tab!!.transposed += howMuch
 
         //13 half steps in an octave (both sides inclusive)
-        if(tab.transposed >= 12) {
-            tab.transposed -= 12
-        } else if (tab.transposed <= -12) {
-            tab.transposed += 12
+        if(viewModel.tab!!.transposed >= 12) {
+            viewModel.tab!!.transposed -= 12
+        } else if (viewModel.tab!!.transposed <= -12) {
+            viewModel.tab!!.transposed += 12
         }
 
         transpose(howMuch)
@@ -325,8 +324,7 @@ class TabDetailFragment : Fragment() {
             InjectorUtils.provideTabDetailViewModelFactory(requireActivity(), args.tabId)
         }
         viewModel = tabDetailViewModel
-        viewModel.tab.start()
-        viewModel.tab.invokeOnCompletion(onDataReceived())
+        viewModel.getTabJob.invokeOnCompletion(onDataReceived())
     }
 
     // app will currently crash if the database actually doesn't have the data (tab = null).  Shouldn't happen irl, but happened in development
@@ -340,37 +338,37 @@ class TabDetailFragment : Fragment() {
             var favorite = false
             val scrollSpeed = scrollDelayMs
             var transposed = 0
-            if(::tab.isInitialized) {
+            if(viewModel.tab != null) {
                 reloaded = true
-                favorite = tab.favorite  //reloading would reset favorite status, so save that
+                favorite = viewModel.tab!!.favorite  //reloading would reset favorite status, so save that
                 //todo: when scroll speed is a database field, we'll need to save it here
-                transposed = tab.transposed
+                transposed = viewModel.tab!!.transposed
             }
 
-            tab = viewModel.tab.getCompleted()  // actually get the data
+            viewModel.tab = viewModel.getTabJob.getCompleted()  // actually get the data
 
             if (reloaded) {
-                tab.favorite = favorite
+                viewModel.tab!!.favorite = favorite
                 viewModel.setFavorite(favorite)
 
                 scrollDelayMs = scrollSpeed
                 //todo: save scroll speed to db
 
-                tab.transposed = transposed
+                viewModel.tab!!.transposed = transposed
             }
 
             // thanks https://cheesecakelabs.com/blog/understanding-android-views-dimensions-set/
             binding.tabContent.doOnLayout {
-                processTabContent(tab.content)
+                processTabContent(viewModel.tab!!.content)
 
                 activity?.runOnUiThread {
-                    binding.tab = tab  // set view data
+                    binding.tab = viewModel.tab  // set view data
                     setHeartInitialState()  // set initial state of "save" heart
-                    (activity as AppCompatActivity).title = tab.toString()  // toolbar title
+                    (activity as AppCompatActivity).title = viewModel.tab.toString()  // toolbar title
 
                     binding.progressBar2.isGone = true
-                    binding.transposeAmt.text = tab.transposed.toString()
-                    transpose(tab.transposed)  // calls binding.tabContent.setTabContent(spannableText)
+                    binding.transposeAmt.text = viewModel.tab!!.transposed.toString()
+                    transpose(viewModel.tab!!.transposed)  // calls binding.tabContent.setTabContent(spannableText)
                 }
             }
 
@@ -379,7 +377,7 @@ class TabDetailFragment : Fragment() {
     }
 
     private fun setHeartInitialState(){
-        if(this::tab.isInitialized && tab.favorite && this::optionsMenu.isInitialized) {
+        if(::viewModel.isInitialized && viewModel.tab != null && viewModel.tab!!.favorite && this::optionsMenu.isInitialized) {
             val heart = optionsMenu.findItem(R.id.action_favorite)
             heart.isChecked = true
             heart.setIcon(R.drawable.ic_favorite)
@@ -401,23 +399,23 @@ class TabDetailFragment : Fragment() {
                 true
             }
             R.id.action_favorite -> {
-                if(this::tab.isInitialized) {
+                if(viewModel.tab != null) {
                     item.isChecked = !item.isChecked
                     if (item.isChecked) {
                         // now it's a favorite
                         item.setIcon(R.drawable.ic_favorite)
-                        tab.favorite = true
+                        viewModel.tab!!.favorite = true
                     } else {
                         item.setIcon(R.drawable.ic_unfavorite)
-                        tab.favorite = false
+                        viewModel.tab!!.favorite = false
                     }
                     viewModel.setFavorite(item.isChecked)
                 }
                 true
             }
             R.id.action_reload -> {  // reload button clicked (refresh page)
-                viewModel.tab = viewModel.viewModelScope.async { viewModel.tabRepository.getTab(args.tabId) }
-                val wasFavorite = tab.favorite
+                viewModel.getTabJob = viewModel.viewModelScope.async { viewModel.tabRepository.getTab(args.tabId) }
+                val wasFavorite = viewModel.tab?.favorite
 
                 binding.progressBar2.isGone = false
                 val searchJob = GlobalScope.async {
@@ -433,11 +431,11 @@ class TabDetailFragment : Fragment() {
 
     // Helper function for calling a share functionality.
     private fun createShareIntent() {
-        val shareText = tab.let { tab ->
-            if (!this::tab.isInitialized) {
+        val shareText = viewModel.tab.let { tab ->
+            if (viewModel.tab == null) {
                 ""
             } else {
-                getString(R.string.share_text_plant, tab.toString(), tab.urlWeb)
+                getString(R.string.share_text_plant, tab.toString(), viewModel.tab!!.urlWeb)
             }
         }
 

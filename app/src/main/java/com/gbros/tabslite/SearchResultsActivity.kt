@@ -17,7 +17,7 @@ class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
 
     override var searchHelper: SearchHelper? = null
     lateinit var searchJob: Deferred<SearchRequestType>
-    lateinit var getVersions: Deferred<Boolean>
+    var getVersions: Deferred<Boolean>? = null
 
 
     var query: String? = null
