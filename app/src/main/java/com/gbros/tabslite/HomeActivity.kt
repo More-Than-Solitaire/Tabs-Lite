@@ -26,11 +26,10 @@ class HomeActivity : AppCompatActivity(), ISearchHelper {
         GlobalScope.launch { ApiHelper.updateApiKey() }  // set the api key now before we need it
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+        searchHelper = SearchHelper(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        searchHelper = SearchHelper(this)
-
         super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.menu_main, menu)
 

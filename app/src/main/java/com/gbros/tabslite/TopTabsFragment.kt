@@ -15,6 +15,7 @@ import kotlinx.coroutines.async
 class TopTabsFragment : Fragment() {
 
     private lateinit var binding: FragmentBrowseTabsBinding
+    val adapter = BrowseTabsAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -22,15 +23,18 @@ class TopTabsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentBrowseTabsBinding.inflate(inflater, container, false)
-        val adapter = BrowseTabsAdapter()
         binding.favoriteTabsList.adapter = adapter
 
+        return binding.root
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
         binding.findNewSongs.setOnClickListener {
             (activity as HomeActivity).focusSearch()
         }
 
         subscribeUi(adapter, binding)
-        return binding.root
     }
 
     private fun subscribeUi(adapter: BrowseTabsAdapter, binding: FragmentBrowseTabsBinding) {
