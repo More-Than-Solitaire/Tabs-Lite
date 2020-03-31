@@ -17,6 +17,7 @@ import androidx.annotation.AttrRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
 import androidx.core.text.trimmedLength
+import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
 import androidx.core.widget.NestedScrollView
 import androidx.databinding.DataBindingUtil
@@ -55,99 +56,108 @@ class TabDetailFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_tab_detail, container, false)
-        if(activity is SearchResultsActivity){
+//        if (savedInstanceState == null) {
+            binding = DataBindingUtil.inflate(inflater, R.layout.fragment_tab_detail, container, false)
+
+            setHasOptionsMenu(true)
+
+            binding.apply {
+                lifecycleOwner = viewLifecycleOwner
+
+                // autoscroll
+                val timerRunnable: Runnable = object : Runnable {
+                    override fun run() {
+                        // todo: make this time (the 20) adjustable
+                        tabDetailScrollview.smoothScrollBy(0, 1) // 5 is how many pixels you want it to scroll vertically by
+                        timerHandler.postDelayed(this, scrollDelayMs) // 10 is how many milliseconds you want this thread to run
+                    }
+                }
+                callback = object : Callback {
+                    override fun scrollButtonClicked() {
+                        if (isScrolling) {
+                            // stop scrolling
+                            timerHandler.removeCallbacks(timerRunnable)
+                            fab.setImageResource(R.drawable.ic_fab_autoscroll)
+                            autoscrollSpeed.isGone = true
+                            (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                            binding.appbar.setExpanded(true, true)  // thanks https://stackoverflow.com/a/32137264/3437608
+                        } else {
+                            // start scrolling
+                            timerHandler.postDelayed(timerRunnable, 0)
+                            fab.setImageResource(R.drawable.ic_fab_pause_autoscroll)
+                            autoscrollSpeed.isGone = false
+                            (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                            binding.appbar.setExpanded(false, true)
+                        }
+                        isScrolling = !isScrolling
+                    }
+                }
+
+
+                // create toolbar scroll change worker
+                var isToolbarShown = false
+                val scrollChangeListener = NestedScrollView.OnScrollChangeListener { _, _, scrollY, _, _ ->
+
+                    // User scrolled past image to height of toolbar and the title text is
+                    // underneath the toolbar, so the toolbar should be shown.
+                    val shouldShowToolbar = scrollY > binding.toolbar.height
+
+                    // The new state of the toolbar differs from the previous state; update
+                    // appbar and toolbar attributes.
+                    if (isToolbarShown != shouldShowToolbar) {
+                        isToolbarShown = shouldShowToolbar
+
+                        // Use shadow animator to add elevation if toolbar is shown
+                        binding.appbar.isActivated = shouldShowToolbar
+
+                        // Show the plant name if toolbar is shown
+                        // hacking this using the Activity title.  It seems to show whenever title isn't enabled
+                        // and our normal title won't show so I'm just using reverse psychology here
+                        binding.toolbarLayout.isTitleEnabled = !shouldShowToolbar
+                    }
+                }
+                // scroll change listener begins at Y = 0 when image is fully collapsed
+                tabDetailScrollview.setOnScrollChangeListener(scrollChangeListener)
+
+                // title bar
+                (activity as AppCompatActivity).apply {
+                    setSupportActionBar(binding.toolbar)
+                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                    supportActionBar?.setDisplayShowHomeEnabled(true)
+                    supportActionBar?.setDisplayShowTitleEnabled(true)
+                }
+
+                // transpose
+                transposeUp.setOnClickListener { _ -> transpose(true) }
+                transposeDown.setOnClickListener { _ -> transpose(false) }
+
+                // autoscroll speed seek bar
+                autoscrollSpeed.clipToOutline = true  // not really needed since the background is enough bigger
+                autoscrollSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
+                autoscrollSpeed.isGone = true
+
+                textSizeIncrease.setOnClickListener { changeTextSize(2F) }
+                textSizeDecrease.setOnClickListener { changeTextSize(-2F) }
+            }
+
+            binding.cancelTranspose.setOnClickListener {
+                val currentTransposeAmt = tab.transposed
+                tab.transposed = 0
+                transpose(-currentTransposeAmt)
+            }
+            return binding.root
+//        }
+//        return null
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (activity is SearchResultsActivity) {
             (activity as SearchResultsActivity).getVersions.invokeOnCompletion(onDataStored())
         } else {
             val getDataJob = GlobalScope.async { (activity as ISearchHelper).searchHelper?.fetchTab(args.tabId) }
             getDataJob.invokeOnCompletion(onDataStored())
         }
-        setHasOptionsMenu(true)
-
-        binding.apply {
-            lifecycleOwner = viewLifecycleOwner
-
-            // autoscroll
-            val timerRunnable: Runnable = object : Runnable {
-                override fun run() {
-                    // todo: make this time (the 20) adjustable
-                    tabDetailScrollview.smoothScrollBy(0, 1) // 5 is how many pixels you want it to scroll vertically by
-                    timerHandler.postDelayed(this, scrollDelayMs) // 10 is how many milliseconds you want this thread to run
-                }
-            }
-            callback = object : Callback { override fun scrollButtonClicked() {
-                if(isScrolling) {
-                    // stop scrolling
-                    timerHandler.removeCallbacks(timerRunnable)
-                    fab.setImageResource(R.drawable.ic_fab_autoscroll)
-                    autoscrollSpeed.isGone = true
-                    (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                    binding.appbar.setExpanded(true, true)  // thanks https://stackoverflow.com/a/32137264/3437608
-                } else {
-                    // start scrolling
-                    timerHandler.postDelayed(timerRunnable, 0)
-                    fab.setImageResource(R.drawable.ic_fab_pause_autoscroll)
-                    autoscrollSpeed.isGone = false
-                    (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                    binding.appbar.setExpanded(false, true)
-                }
-                isScrolling = !isScrolling
-            } }
-
-
-            // create toolbar scroll change worker
-            var isToolbarShown = false
-            val scrollChangeListener = NestedScrollView.OnScrollChangeListener { _, _, scrollY, _, _ ->
-
-                // User scrolled past image to height of toolbar and the title text is
-                // underneath the toolbar, so the toolbar should be shown.
-                val shouldShowToolbar = scrollY > binding.toolbar.height
-
-                // The new state of the toolbar differs from the previous state; update
-                // appbar and toolbar attributes.
-                if (isToolbarShown != shouldShowToolbar) {
-                    isToolbarShown = shouldShowToolbar
-
-                    // Use shadow animator to add elevation if toolbar is shown
-                    binding.appbar.isActivated = shouldShowToolbar
-
-                    // Show the plant name if toolbar is shown
-                    // hacking this using the Activity title.  It seems to show whenever title isn't enabled
-                    // and our normal title won't show so I'm just using reverse psychology here
-                    binding.toolbarLayout.isTitleEnabled = !shouldShowToolbar
-                }
-            }
-            // scroll change listener begins at Y = 0 when image is fully collapsed
-            tabDetailScrollview.setOnScrollChangeListener(scrollChangeListener)
-
-            // title bar
-            (activity as AppCompatActivity).apply {
-                setSupportActionBar(binding.toolbar)
-                supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                supportActionBar?.setDisplayShowHomeEnabled(true)
-                supportActionBar?.setDisplayShowTitleEnabled(true)
-            }
-
-            // transpose
-            transposeUp.setOnClickListener{_ -> transpose(true)}
-            transposeDown.setOnClickListener{_ -> transpose(false)}
-
-            // autoscroll speed seek bar
-            autoscrollSpeed.clipToOutline = true  // not really needed since the background is enough bigger
-            autoscrollSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
-            autoscrollSpeed.isGone = true
-
-            textSizeIncrease.setOnClickListener{ changeTextSize(2F) }
-            textSizeDecrease.setOnClickListener{ changeTextSize(-2F) }
-        }
-
-        binding.cancelTranspose.setOnClickListener{
-            val currentTransposeAmt = tab.transposed
-            tab.transposed = 0
-            transpose(-currentTransposeAmt)
-        }
-
-            return binding.root
     }
 
     private fun changeTextSize(howMuch: Float){
@@ -349,17 +359,19 @@ class TabDetailFragment : Fragment() {
                 tab.transposed = transposed
             }
 
-            //spannableText = processTabContent(tab.content)
-            processTabContent(tab.content)
+            // thanks https://cheesecakelabs.com/blog/understanding-android-views-dimensions-set/
+            binding.tabContent.doOnLayout {
+                processTabContent(tab.content)
 
-            activity?.runOnUiThread {
-                binding.tab = tab  // set view data
-                setHeartInitialState()  // set initial state of "save" heart
-                (activity as AppCompatActivity).title = tab.toString()  // toolbar title
+                activity?.runOnUiThread {
+                    binding.tab = tab  // set view data
+                    setHeartInitialState()  // set initial state of "save" heart
+                    (activity as AppCompatActivity).title = tab.toString()  // toolbar title
 
-                binding.progressBar2.isGone = true
-                binding.transposeAmt.text = tab.transposed.toString()
-                transpose(tab.transposed)  // calls binding.tabContent.setTabContent(spannableText)
+                    binding.progressBar2.isGone = true
+                    binding.transposeAmt.text = tab.transposed.toString()
+                    transpose(tab.transposed)  // calls binding.tabContent.setTabContent(spannableText)
+                }
             }
 
             Unit
@@ -485,7 +497,7 @@ class TabDetailFragment : Fragment() {
 
         while (lyrics.isNotEmpty() || chords.isNotEmpty()) {
             // find good word break spot at end
-            val plainChords = chords.replace("[/?ch]".toRegex(), "")
+            val plainChords = chords.replace(Regex("\\[/?ch]"), "")
             val wordCharsToFit = findMultipleLineWordBreak(listOf(plainChords, lyrics), binding.tabContent.paint, availableWidth)
 
             // make chord substring
@@ -566,19 +578,18 @@ class TabDetailFragment : Fragment() {
 
     private fun processTabContent(text: CharSequence): SpannableStringBuilder{
         var text = text
-        spannableText = SpannableStringBuilder()
-        var spannableString = spannableText
+        var spannableString = SpannableStringBuilder()
 
         //wrap tabs as a group
         var lastIndex = 0
-        while (text.indexOf("[tab]", lastIndex) != -1){
+        while (text.indexOf("[tab]", lastIndex) != -1) {
             val firstIndex = text.indexOf("[tab]", 0)     // remove start tag
-            text = text.replaceRange(firstIndex, firstIndex+5, "")
+            text = text.replaceRange(firstIndex, firstIndex + 5, "")
 
             lonelyChordProcessor(text.subSequence(lastIndex, firstIndex), spannableString) // add all the non-[tab] text
 
             lastIndex = text.indexOf("[/tab]", firstIndex)    // remove end tag
-            text = text.replaceRange(lastIndex, lastIndex+6, "")
+            text = text.replaceRange(lastIndex, lastIndex + 6, "")
 
             val next = processLyricLine(text.subSequence(firstIndex, lastIndex), spannableString)
             spannableString = next
@@ -586,6 +597,7 @@ class TabDetailFragment : Fragment() {
         lonelyChordProcessor(text.subSequence(lastIndex, text.length), spannableString) // add all the non-[tab] text
         lonelyChordProcessor(spannableString) // a final once-over to check for any missed chords (usually a tab author's mistake)
 
+        spannableText = spannableString
         return spannableString
     }
 
