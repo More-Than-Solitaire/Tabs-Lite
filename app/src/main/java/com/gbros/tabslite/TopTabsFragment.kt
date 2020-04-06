@@ -12,6 +12,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
 import com.gbros.tabslite.adapters.BrowseTabsAdapter
 import com.gbros.tabslite.databinding.FragmentBrowseTabsBinding
 import com.gbros.tabslite.utilities.Utils
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -55,6 +56,7 @@ class TopTabsFragment : Fragment() {
                 requireActivity().runOnUiThread {
                     binding.hasHistory = false
                     Handler().postDelayed({ binding.swipeRefresh.isRefreshing = false }, 700)
+                    view?.let { Snackbar.make(it, "You're not connected to the internet", Snackbar.LENGTH_SHORT) }
                 }
             } else {
                 val result = topTabsJob.getCompleted()

@@ -14,10 +14,7 @@ import kotlinx.coroutines.delay
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.lang.IllegalStateException
-import java.net.ConnectException
-import java.net.HttpURLConnection
-import java.net.URL
-import java.net.URLEncoder
+import java.net.*
 
 class UgApi(
         val context: Context
@@ -236,6 +233,10 @@ class UgApi(
             null
         } catch (ex: ConnectException){
             Log.i(javaClass.simpleName, "Could not fetch $url. Response code 0 (no internet access).  Java.net.ConnectException.")
+            cancel("Not Connected to the Internet.")
+            null
+        }  catch (ex: SocketTimeoutException){
+            Log.i(javaClass.simpleName, "Could not fetch $url. Response code 0 (no internet access).  Java.net.SocketTimeoutException.")
             cancel("Not Connected to the Internet.")
             null
         } catch (ex: Exception) {

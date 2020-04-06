@@ -313,10 +313,18 @@ class TabDetailFragment : Fragment() {
         if(cause != null) {
             //oh no; something happened and it failed.  whoops.
             Log.e(javaClass.simpleName, "Error fetching and storing tab data from online source on the async thread.")
+            requireActivity().runOnUiThread {
+                binding.progressBar2.isGone = true
+                view?.let { Snackbar.make(it, "This tab is not available offline.", Snackbar.LENGTH_SHORT) }
+                Snackbar.make(binding.tabDetailScrollview, "tabContent", Snackbar.LENGTH_SHORT)
+                activity?.onBackPressed()
+                //Handler().postDelayed({ activity?.onBackPressed() }, Snackbar.LENGTH_SHORT.toLong())  // simulate a back button press
+            }
+            Unit
+        } else {
+            startGetData()
             Unit
         }
-        startGetData()
-        Unit
     }
 
     //starts here coming from the favorite tabs page; assumes data is already in db
