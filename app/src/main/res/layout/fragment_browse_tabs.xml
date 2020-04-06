@@ -9,15 +9,17 @@
                 type="boolean" />
     </data>
 
-    <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/margin_normal"
+        >
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/favorite_tabs_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/margin_normal"
             android:clipToPadding="false"
             app:isGone="@{!hasHistory}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -49,6 +51,6 @@
 
         </LinearLayout>
 
-    </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </layout>

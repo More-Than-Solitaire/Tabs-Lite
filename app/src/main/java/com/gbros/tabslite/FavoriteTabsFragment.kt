@@ -33,6 +33,8 @@ class FavoriteTabsFragment : Fragment() {
             (activity as HomeActivity).focusSearch()
         }
 
+        binding.swipeRefresh.isEnabled = false
+
         subscribeUi(adapter, binding)
         return binding.root
     }

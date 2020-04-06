@@ -20,6 +20,7 @@ import kotlin.random.Random
 
 object ApiHelper {
     lateinit var apiKey: String
+    var apiInit = false  // flag for whether the api key has been set yet.  Useful for no internet access
     var updatingApiKey = true  // flag for initial start.  If things happen insanely fast, UgApi.authenticatedStream might try to get the api key before we're done generating the md5
     private lateinit var myDeviceId: String
 
@@ -39,6 +40,7 @@ object ApiHelper {
             stringBuilder.append(simpleDateFormat.format(update.getServerTime().time))
             stringBuilder.append("createLog()")
             apiKey = getMd5(stringBuilder.toString())
+            apiInit = true
             updatingApiKey = false
             apiKey
         } else {

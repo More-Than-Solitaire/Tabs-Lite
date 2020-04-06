@@ -139,8 +139,8 @@ class UgApi(
 
     //todo: store top tabs in database for offline access?
     private lateinit var topTabs: List<SearchRequestType.Tab>
-    suspend fun getTopTabs(): List<SearchRequestType.Tab> = coroutineScope {
-        if(this@UgApi::topTabs.isInitialized){
+    suspend fun getTopTabs(force: Boolean = false): List<SearchRequestType.Tab> = coroutineScope {
+        if(this@UgApi::topTabs.isInitialized && !force){
             // return cached value if exists
             return@coroutineScope topTabs
         }
@@ -167,9 +167,21 @@ class UgApi(
         while (ApiHelper.updatingApiKey) {
             delay(20)
         }
+        var apiKey: String
+        if(!ApiHelper.apiInit){
+            apiKey = ApiHelper.updateApiKey() ?: ""  // try to initialize ourselves
+
+            // if that didn't work, we don't have internet.
+            if(!ApiHelper.apiInit) {
+                Log.w(javaClass.simpleName, "Not fetching url $url.  API Key initialization failed.  Likely no internet access.")
+                cancel("API Key initialization failed.  Likely no internet access.")
+                return@coroutineScope null
+            }
+        }
+
         Log.v(javaClass.simpleName, "Fetching url $url")
 
-        var apiKey = ApiHelper.apiKey
+        apiKey = ApiHelper.apiKey
         val deviceId = ApiHelper.getDeviceId()
 
         Log.d(javaClass.simpleName, "Got device id ($deviceId) and api key ($apiKey)")
@@ -182,6 +194,8 @@ class UgApi(
             conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.12 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
             conn.setRequestProperty("x-ug-client-id", deviceId)             // stays constant over time; api key and client id are related to each other.
             conn.setRequestProperty("x-ug-api-key", apiKey)                 // updates periodically.
+            conn.connectTimeout = (4000)  // timeout of 5 seconds
+            conn.readTimeout = 5000
             responseCode = conn.responseCode
 
             // handle when the api key is outdated
@@ -202,6 +216,8 @@ class UgApi(
                     conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.12 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
                     conn.setRequestProperty("x-ug-client-id", deviceId)                   // stays constant over time; api key and client id are related to each other.
                     conn.setRequestProperty("x-ug-api-key", apiKey)     // updates periodically.
+                    conn.connectTimeout = (4000)  // timeout of 5 seconds
+                    conn.readTimeout = 5000
 
                     responseCode = 0 - conn.responseCode
                 } else {
