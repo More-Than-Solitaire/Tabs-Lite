@@ -16,5 +16,6 @@
     <string name="tab_author">Tab Author: </string>
     <string name="difficulty">Difficulty: </string>
     <string name="tuning">Tuning: </string>
+    <string name="no_search_results">Search completed with no results found. If this is unexpected, check your search query and your internet connection.</string>
 
 </resources>

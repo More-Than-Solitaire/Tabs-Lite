@@ -24,7 +24,7 @@ object ApiHelper {
     private lateinit var myDeviceId: String
 
     //we need to update the server time and api key whenever we get a 498 response code
-    suspend fun updateApiKey(): String {
+    suspend fun updateApiKey(): String? {
         updatingApiKey = true
         val updaterJob = updaterJobAsync()
         updaterJob.start()
@@ -33,11 +33,18 @@ object ApiHelper {
         simpleDateFormat.timeZone = TimeZone.getTimeZone("UTC")
         val stringBuilder = StringBuilder(getDeviceId())
 
-        stringBuilder.append(simpleDateFormat.format(updaterJob.await().getServerTime().time))
-        stringBuilder.append("createLog()")
-        apiKey = getMd5(stringBuilder.toString())
-        updatingApiKey = false
-        return apiKey
+
+        val update = updaterJob.await()
+        return if (update != null) {
+            stringBuilder.append(simpleDateFormat.format(update.getServerTime().time))
+            stringBuilder.append("createLog()")
+            apiKey = getMd5(stringBuilder.toString())
+            updatingApiKey = false
+            apiKey
+        } else {
+            updatingApiKey = false
+            null
+        }
     }
 
     private fun updaterJobAsync() = GlobalScope.async(start = CoroutineStart.LAZY) {
@@ -56,8 +63,8 @@ object ApiHelper {
             inputStream.close()
             lastResult
         } catch (ex: Exception){
-            Log.e(javaClass.simpleName, "Error getting hello handshake.", ex)
-            throw ex
+            Log.e(javaClass.simpleName, "Error getting hello handshake.  We may not be connected to the internet.", ex)
+            null
         }
 
     }

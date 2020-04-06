@@ -185,6 +185,7 @@ class TabDetailFragment : Fragment() {
         input.add(chordName)
 
         // update the database from the web, then get chords from the database and add them to the chordPageAdapter
+        //todo: only update if chord isn't already stored.  On offline update with none stored, show snackbar
         val updateJob = GlobalScope.async { api.updateChordVariations(input) }
         updateJob.invokeOnCompletion { cause ->
             if(cause != null){
