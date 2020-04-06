@@ -56,7 +56,7 @@ class TopTabsFragment : Fragment() {
                 requireActivity().runOnUiThread {
                     binding.hasHistory = false
                     Handler().postDelayed({ binding.swipeRefresh.isRefreshing = false }, 700)
-                    view?.let { Snackbar.make(it, "You're not connected to the internet", Snackbar.LENGTH_SHORT) }
+                    view?.let { Snackbar.make(it, "You're not connected to the internet", Snackbar.LENGTH_SHORT).show() }
                 }
             } else {
                 val result = topTabsJob.getCompleted()

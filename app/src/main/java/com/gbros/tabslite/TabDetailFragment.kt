@@ -55,7 +55,6 @@ class TabDetailFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-//        if (savedInstanceState == null) {
             binding = DataBindingUtil.inflate(inflater, R.layout.fragment_tab_detail, container, false)
 
             setHasOptionsMenu(true)
@@ -145,8 +144,6 @@ class TabDetailFragment : Fragment() {
                 transpose(-currentTransposeAmt)
             }
             return binding.root
-//        }
-//        return null
     }
 
     override fun onStart() {
@@ -179,33 +176,44 @@ class TabDetailFragment : Fragment() {
         override fun onStopTrackingTouch(seekBar: SeekBar) {}  // called after the user finishes moving the SeekBar
     }
 
-    private fun chordClicked(chordName: CharSequence){
+
+    private fun chordClicked(chordName: CharSequence, noUpdate: Boolean = false){
         val api = (activity as ISearchHelper).searchHelper?.api ?: return  // return if api null
         val input = ArrayList<CharSequence>()
         input.add(chordName)
 
-        // update the database from the web, then get chords from the database and add them to the chordPageAdapter
-        //todo: only update if chord isn't already stored.  On offline update with none stored, show snackbar
-        val updateJob = GlobalScope.async { api.updateChordVariations(input) }
-        updateJob.invokeOnCompletion { cause ->
-            if(cause != null){
-                Log.w(javaClass.simpleName, "Chord update didn't work.", cause.cause)
-            }
-            val getChordsJob = GlobalScope.async { api.getChordVariations(chordName) }
-            getChordsJob.invokeOnCompletion { cause ->
-                if (cause != null) {
-                    Log.w(javaClass.simpleName, "Getting chords from db didn't work.", cause.cause)
-                    Unit
+        val getChordsJob = GlobalScope.async { api.getChordVariations(chordName) }
+        getChordsJob.invokeOnCompletion { cause ->
+            if (cause != null) {
+                Log.w(javaClass.simpleName, "Getting chords from db didn't work.", cause.cause)
+                Unit
+            } else {
+                val chordVars = getChordsJob.getCompleted()
+                if (chordVars.isEmpty()) {
+                    if(!noUpdate) {
+                        // get from the internet
+                        val updateJob = GlobalScope.async { api.updateChordVariations(input) }
+                        view?.let { Snackbar.make(it, "Loading chord $chordName...", Snackbar.LENGTH_SHORT).show() }
+                        updateJob.invokeOnCompletion { cause ->
+                            if (cause != null) {
+                                Log.w(javaClass.simpleName, "Chord update didn't work.", cause.cause)
+                            }
+                            // try again
+                            chordClicked(chordName, true)
+                        }
+                    } else {
+                        // we already tried and failed from the internet.  Just show an explanation
+                        (activity as AppCompatActivity).runOnUiThread {
+                            view?.let { Snackbar.make(it, "Chord could not be loaded.  Check your internet connection.", Snackbar.LENGTH_SHORT).show() }
+                        }
+                    }
                 } else {
-                    val chordVars = getChordsJob.getCompleted()
                     (activity as AppCompatActivity).runOnUiThread {
                         ChordBottomSheetDialogFragment.newInstance(chordVars).show(
                                 (activity as AppCompatActivity).supportFragmentManager, null)
                     }
-                    Unit
                 }
             }
-            Unit
         }
     }
 
@@ -312,13 +320,10 @@ class TabDetailFragment : Fragment() {
     private fun onDataStored() = { cause: Throwable? ->
         if(cause != null) {
             //oh no; something happened and it failed.  whoops.
-            Log.e(javaClass.simpleName, "Error fetching and storing tab data from online source on the async thread.")
+            Log.w(javaClass.simpleName, "Error fetching and storing tab data from online source on the async thread.  Internet connection likely not available.")
             requireActivity().runOnUiThread {
                 binding.progressBar2.isGone = true
-                view?.let { Snackbar.make(it, "This tab is not available offline.", Snackbar.LENGTH_SHORT) }
-                Snackbar.make(binding.tabDetailScrollview, "tabContent", Snackbar.LENGTH_SHORT)
-                activity?.onBackPressed()
-                //Handler().postDelayed({ activity?.onBackPressed() }, Snackbar.LENGTH_SHORT.toLong())  // simulate a back button press
+                view?.let { Snackbar.make(it, "This tab is not available offline.", Snackbar.LENGTH_INDEFINITE).show() }
             }
             Unit
         } else {
@@ -374,6 +379,7 @@ class TabDetailFragment : Fragment() {
                     binding.tab = viewModel.tab  // set view data
                     setHeartInitialState()  // set initial state of "save" heart
                     (activity as AppCompatActivity).title = viewModel.tab.toString()  // toolbar title
+
 
                     binding.progressBar2.isGone = true
                     binding.transposeAmt.text = viewModel.tab!!.transposed.toString()
@@ -628,7 +634,6 @@ class TabDetailFragment : Fragment() {
                 Selection.setSelection((view as TextView).text as Spannable, 0)
                 view.invalidate()
                 chordClicked(chordName.toString())
-                Snackbar.make(view, "Loading chord $chordName...", Snackbar.LENGTH_SHORT).show()
             }
 
             override fun updateDrawState(ds: TextPaint) {
