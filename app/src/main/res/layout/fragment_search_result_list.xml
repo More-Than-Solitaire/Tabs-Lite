@@ -71,7 +71,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                isGone="false"
+                isGone="true"
                 />
 
             <androidx.recyclerview.widget.RecyclerView

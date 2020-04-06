@@ -94,6 +94,8 @@ class SearchResultFragment : Fragment() {
                 }
             })
 
+            binding.textView.isGone = true
+
             return binding.root
         } catch (ex: Exception) {
             Log.e(javaClass.simpleName, "Error in SearchResultFragment onCreateView", ex)
@@ -170,6 +172,7 @@ class SearchResultFragment : Fragment() {
                 Log.i(javaClass.simpleName, "Reached end of search results.")
                 (activity as? AppCompatActivity)?.runOnUiThread {
                     binding.progressBar.isGone = true
+                    binding.textView.isGone = adapter.currentList.isNotEmpty()
                 }
             }
 
@@ -180,7 +183,10 @@ class SearchResultFragment : Fragment() {
             }
             val songs = data.getSongs()
             (activity as? SearchResultsActivity)?.runOnUiThread(Runnable {
-                (binding.searchResultList.adapter as MySearchResultRecyclerViewAdapter).submitList(songs)
+                if (!songs.isEmpty()) {
+                    (binding.searchResultList.adapter as MySearchResultRecyclerViewAdapter).submitList(songs)
+                    binding.textView.isGone = true
+                }
 
                 // before we finish, just make sure our current page is full.
                 if (binding.searchResultList.needsMoreItems()) {
