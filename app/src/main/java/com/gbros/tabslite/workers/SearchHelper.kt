@@ -75,6 +75,7 @@ class SearchHelper(val context: Context?) {
             if (database.tabFullDao().exists(tabId) && !force) {
                 true
             } else {
+                Log.v(javaClass.simpleName, "Loading tab $tabId.")
                 val url = "https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType"
                 val inputStream = api?.authenticatedStream(url)
                 if(inputStream != null) {
