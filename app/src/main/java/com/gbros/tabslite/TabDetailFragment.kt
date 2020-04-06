@@ -408,6 +408,10 @@ class TabDetailFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // share menu item and favorite menu item
+        if(! ::viewModel.isInitialized) {
+            return false
+        }
+
         return when (item.itemId) {
             R.id.action_share -> {
                 createShareIntent()
