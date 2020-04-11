@@ -22,9 +22,13 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.TabsLite.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar"/>
+    <style name="Theme.TabsLite.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
 
-    <style name="TextAppearance.TabsLite.Toolbar.Text" parent="TextAppearance.MaterialComponents.Headline5" >
+    <style name="TextAppearance.TabsLite.Toolbar.Text" parent="TextAppearance.MaterialComponents.Headline5">
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
+
+    <style name="Theme.WindowTranslucent.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.WindowTranslucent.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

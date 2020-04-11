@@ -12,11 +12,24 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WindowTranslucent">
-
         <activity
-            android:name="com.gbros.tabslite.HomeActivity"
+            android:name=".TabDetailActivity"
+            android:label="@string/title_activity_tab_detail"
             android:theme="@style/Theme.WindowTranslucent.NoActionBar">
-            <meta-data android:name="android.app.default_searchable" android:value=".SearchResultsActivity" />
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="http" android:host="tabs.tabslite.com"/>
+                <data android:scheme="https" android:host="tabs.tabslite.com"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".HomeActivity"
+            android:theme="@style/Theme.WindowTranslucent.NoActionBar">
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SearchResultsActivity" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,18 +37,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.gbros.tabslite.SearchResultsActivity">
-            <meta-data android:name="android.app.default_searchable" android:value=".SearchResultsActivity" />
-
+        <activity android:name=".SearchResultsActivity">
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SearchResultsActivity" />
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable"
                 android:value=".SearchResultsActivity" />
+
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>
