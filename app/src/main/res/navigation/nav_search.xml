@@ -16,24 +16,11 @@
     </fragment>
 
     <fragment
-        android:id="@+id/tabDetailFragment"
-        android:name="com.gbros.tabslite.TabDetailFragment"
-        android:label="TabDetailFragment"
-        tools:layout="@layout/fragment_tab_detail" >
-        <argument
-            android:name="tabId"
-            app:argType="integer"
-            />
-    </fragment>
-
-    <fragment
         android:id="@+id/songVersionFragment"
         android:name="com.gbros.tabslite.SongVersionFragment"
         android:label="list_item_song_version"
         tools:layout="@layout/list_item_song_version" >
-        <action
-            android:id="@+id/action_songVersionFragment_to_tabDetailFragment"
-            app:destination="@id/tabDetailFragment" />
+
         <argument
             android:name="songVersions"
             app:argType="com.gbros.tabslite.data.TabBasic[]" />

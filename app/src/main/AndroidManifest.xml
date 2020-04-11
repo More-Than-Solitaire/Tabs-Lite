@@ -16,6 +16,7 @@
             android:name=".TabDetailActivity"
             android:label="@string/title_activity_tab_detail"
             android:theme="@style/Theme.WindowTranslucent.NoActionBar">
+
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -47,6 +48,7 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable"
                 android:value=".SearchResultsActivity" />
+
 
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />

@@ -3,6 +3,7 @@ package com.gbros.tabslite
 import android.app.SearchManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.net.toUri
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.gbros.tabslite.adapters.MyTabBasicRecyclerViewAdapter
@@ -19,6 +21,7 @@ import com.gbros.tabslite.data.TabBasic
 import com.gbros.tabslite.workers.SearchHelper
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import java.util.*
 
 /**
  * A fragment representing a list of Items.
@@ -56,8 +59,30 @@ class SongVersionFragment : Fragment() {
                         Log.v(javaClass.simpleName, "Navigating to tab detail fragment (tabId: $tabId)")
                         (activity as SearchResultsActivity).getVersions = GlobalScope.async{ searchHelper!!.fetchTab(tabId)}  // async task that gets tab from the internet if it doesn't exist in our db yet
 
+
+                        // get the tab's URL
+/*
+                        val artist = tab?.let { it.artistName.trim().toLowerCase(Locale.US).replace(' ', '-').replace("[^\\w\\d-]".toRegex(), "") }
+                        val name = tab?.let { it.songName.trim().toLowerCase(Locale.US).replace(' ', '-').replace("[^\\w\\d-]".toRegex(), "") }
+                        var url = "tabslite.com/tab/"
+                        if(artist != null && name != null && artist.isNotBlank() && name.isNotBlank()) {
+                            url += "$artist/$name-"
+                        }
+                        url += tabId.toString()
+*/
+
+                        val tab = songVersions.find { tab -> tab.tabId == tabId }
+                        val i = Intent(Intent.ACTION_VIEW)
+                        if (tab != null) {
+                            i.data = tab.getUrl().toUri()
+                            startActivity(i)
+                        } else {
+                            Log.e(javaClass.simpleName, "Could not start TabDetailActivity because tab was null in SongVersionFragment.")
+                        }
+/*
                         val direction = SongVersionFragmentDirections.actionSongVersionFragmentToTabDetailFragment(tabId)
                         view?.findNavController()?.navigate(direction)
+*/
                     }
                 }
 

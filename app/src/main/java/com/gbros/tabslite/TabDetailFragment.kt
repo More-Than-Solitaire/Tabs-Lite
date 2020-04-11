@@ -41,7 +41,6 @@ import kotlin.math.min
  * A fragment representing a single Tab detail screen
  */
 class TabDetailFragment : Fragment() {
-    private val args: TabDetailFragmentArgs by navArgs()
     private val timerHandler = Handler()
     private var isScrolling: Boolean = false
     private var scrollDelayMs: Long = 20  // default scroll speed (smaller is faster)
@@ -147,13 +146,9 @@ class TabDetailFragment : Fragment() {
 
     private fun getTabId(): Int {
         Log.d(javaClass.simpleName, "Getting tab ID")
-        return if (activity is TabDetailActivity){
-            val id = (activity as TabDetailActivity).tabId
-            Log.d(javaClass.simpleName, "Tab ID: $id")
-            id
-        } else {
-            args.tabId
-        }
+        val id = (activity as TabDetailActivity).tabId
+        Log.d(javaClass.simpleName, "Tab ID: $id")
+        return id
     }
     override fun onStart() {
         super.onStart()

@@ -1,5 +1,8 @@
 package com.gbros.tabslite.data
 
+import java.util.*
+import kotlin.collections.ArrayList
+
 interface IntTabBasic : IntSong {
     val tabId: Int
     val type: String
@@ -20,4 +23,17 @@ interface IntTabBasic : IntSong {
     val recordingTonalityName: String
     val recordingPerformance: String
     val recordingArtists: ArrayList<String>
+
+    fun getUrl(): String{
+        // only allowed chars are alphanumeric and dash.
+        val artist = artistName.trim().toLowerCase(Locale.US).replace(' ', '-').replace("[^\\w\\d-]".toRegex(), "")
+        val name = songName.trim().toLowerCase(Locale.US).replace(' ', '-').replace("[^\\w\\d-]".toRegex(), "")
+        var url = "https://tabs.tabslite.com/tab/"
+        if(artist.isNotBlank() && name.isNotBlank()) {
+            url += "$artist/$name-"
+        }
+        url += tabId.toString()
+
+        return url
+    }
 }

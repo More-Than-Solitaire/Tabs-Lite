@@ -8,21 +8,5 @@
         android:id="@+id/view_pager_fragment"
         android:name="com.gbros.tabslite.HomeViewPagerFragment"
         tools:layout="@layout/fragment_view_pager">
-
-
-        <action
-            android:id="@+id/action_view_pager_fragment_to_tab_detail_fragment"
-            app:destination="@id/tab_detail_fragment" />
-
     </fragment>
-
-    <fragment
-        android:id="@+id/tab_detail_fragment"
-        android:name="com.gbros.tabslite.TabDetailFragment"
-        tools:layout="@layout/fragment_tab_detail">
-        <argument
-            android:name="tabId"
-            app:argType="integer" />
-    </fragment>
-
 </navigation>
