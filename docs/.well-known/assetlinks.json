@@ -11,4 +11,13 @@
     "sha256_cert_fingerprints":
     ["6B:93:68:65:59:FA:EC:21:A0:50:CF:BA:8D:59:C3:E9:EA:C9:6D:4D:6D:5E:D3:6C:0C:DB:42:E0:95:98:6C:8F"]
   }
+},
+{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.gbros.tabslite",
+    "sha256_cert_fingerprints":
+    ["12:A6:6F:5C:72:95:FA:22:8D:89:1B:3C:2C:B8:13:DE:98:EA:21:7F:69:77:64:BE:D8:0F:2B:9B:0B:DE:10:82"]
+  }
 }]
