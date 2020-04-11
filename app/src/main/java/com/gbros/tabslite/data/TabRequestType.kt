@@ -77,7 +77,8 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
                             if (finger.toFinger() != Finger.UNKNOWN) {
                                 noteMarkerSet.add(ChordMarker.Note(fret = FretNumber(fretNumber), string = StringNumber(string + 1), finger = finger.toFinger()))
                             } else {
-                                Log.e(javaClass.simpleName, "Chord variation with fret number > 0 (fret= $fretNumber), but no finger (finger= $finger).  This shouldn't happen. String= $string, chordName= $chordName")
+                                //Log.e(javaClass.simpleName, "Chord variation with fret number > 0 (fret= $fretNumber), but no finger (finger= $finger).  This shouldn't happen. String= $string, chordName= $chordName")
+                                // this is all the barred notes.  We can ignore it since we take care of bars below.
                             }
                         }
                         fretNumber == 0 -> {
