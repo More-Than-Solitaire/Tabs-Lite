@@ -16,12 +16,14 @@
             android:name=".TabDetailActivity"
             android:label="@string/title_activity_tab_detail"
             android:theme="@style/Theme.WindowTranslucent.NoActionBar">
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="http" android:host="tabs.tabslite.com"/>
-                <data android:scheme="https" android:host="tabs.tabslite.com"/>
+                <data android:scheme="http"/>
+                <data android:scheme="https"/>
+                <data android:host="*.tabslite.com"/>
+                <data android:pathPrefix="/tab/"/>
             </intent-filter>
         </activity>
         <activity
