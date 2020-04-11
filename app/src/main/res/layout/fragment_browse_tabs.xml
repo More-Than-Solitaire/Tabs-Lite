@@ -16,40 +16,45 @@
         android:paddingTop="@dimen/margin_normal"
         >
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/favorite_tabs_list"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            app:isGone="@{!hasHistory}"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:spanCount="1"
-            tools:listitem="@layout/list_item_browse_tabs" />
+            android:layout_height="match_parent">
 
-        <LinearLayout
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/favorite_tabs_list"
+                isGone="false"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:spanCount="1"
+                tools:listitem="@layout/list_item_browse_tabs" />
+
+            <LinearLayout
+                isGone="@{hasHistory}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:orientation="vertical"
-                app:isGone="@{hasHistory}">
+                android:orientation="vertical">
 
-            <TextView
+                <TextView
                     android:id="@+id/empty_garden"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/favorites_empty"
                     android:textAppearance="?attr/textAppearanceHeadline5" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/find_new_songs"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="?attr/colorPrimary"
-                android:text="@string/find_song"
-                app:backgroundTint="?attr/colorOnPrimary"
-                app:shapeAppearance="@style/ShapeAppearance.Sunflower.Button.Add"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/find_new_songs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/find_song"
+                    android:textColor="?attr/colorPrimary"
+                    app:backgroundTint="?attr/colorOnPrimary"
+                    app:shapeAppearance="@style/ShapeAppearance.Sunflower.Button.Add" />
 
-        </LinearLayout>
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
