@@ -161,9 +161,11 @@ class TabDetailFragment : Fragment() {
     }
 
     private fun changeTextSize(howMuch: Float){
-        binding.tabContent.setTextSize(0, binding.tabContent.textSize + howMuch)
-        processTabContent(viewModel.tab!!.content)
-        binding.tabContent.setTabContent(spannableText)
+        if(::viewModel.isInitialized) {
+            binding.tabContent.setTextSize(0, binding.tabContent.textSize + howMuch)
+            processTabContent(viewModel.tab!!.content)
+            binding.tabContent.setTabContent(spannableText)
+        }
     }
 
     private var seekBarChangeListener: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
@@ -258,6 +260,10 @@ class TabDetailFragment : Fragment() {
     }
 
     private fun transpose(up: Boolean){
+        if(! ::viewModel.isInitialized) {
+            return
+        }
+
         val howMuch = if(up) 1 else -1
         viewModel.tab!!.transposed += howMuch
 
@@ -345,7 +351,7 @@ class TabDetailFragment : Fragment() {
         viewModel.getTabJob.invokeOnCompletion(onDataReceived())
     }
 
-    // app will currently crash if the database actually doesn't have the data (tab = null).  Shouldn't happen irl, but happened in development
+    // app might currently crash if the database actually doesn't have the data (tab = null).  Shouldn't happen irl, but happened in early development
     private fun onDataReceived() =  { cause: Throwable? ->
         if(cause != null) {
             //oh no; something happened and it failed.  whoops.
