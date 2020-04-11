@@ -458,7 +458,7 @@ class TabDetailFragment : Fragment() {
             if (viewModel.tab == null) {
                 ""
             } else {
-                getString(R.string.share_text_plant, tab.toString(), viewModel.tab!!.urlWeb)
+                getString(R.string.share_text_plant, tab.toString(), viewModel.tab!!.getUrl())
             }
         }
 

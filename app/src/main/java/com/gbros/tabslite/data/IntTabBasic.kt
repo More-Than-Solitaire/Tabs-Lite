@@ -30,7 +30,7 @@ interface IntTabBasic : IntSong {
         val name = songName.trim().toLowerCase(Locale.US).replace(' ', '-').replace("[^\\w\\d-]".toRegex(), "")
         var url = "https://tabs.tabslite.com/tab/"
         if(artist.isNotBlank() && name.isNotBlank()) {
-            url += "$artist/$name-"
+            url += "$artist/$name-$type-"
         }
         url += tabId.toString()
 
