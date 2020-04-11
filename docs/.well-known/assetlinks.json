@@ -2,4 +2,13 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target" : { "namespace": "android_app", "package_name": "com.gbros.tabslite",
                "sha256_cert_fingerprints": ["CC:43:DF:EA:70:C2:87:9B:51:69:F1:18:C6:98:C1:2B:4F:03:6A:ED:7F:57:E1:23:0D:E9:EA:F8:2F:AA:C8:3B"] }
+},
+{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.gbros.tabslite",
+    "sha256_cert_fingerprints":
+    ["6B:93:68:65:59:FA:EC:21:A0:50:CF:BA:8D:59:C3:E9:EA:C9:6D:4D:6D:5E:D3:6C:0C:DB:42:E0:95:98:6C:8F"]
+  }
 }]
