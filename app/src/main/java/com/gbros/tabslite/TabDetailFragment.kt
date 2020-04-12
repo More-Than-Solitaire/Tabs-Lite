@@ -453,13 +453,11 @@ class TabDetailFragment : Fragment() {
     private fun favoriteWhileInstant(){
         val builder = AlertDialog.Builder(context)
         builder.setTitle("Download full version for all features")
-        builder.setMessage("You chose to add this tab to your favorites, but you're using the " +
-                "Instant version of the app.  This tab has been saved for offline in your " +
-                "favorites, but the only way to access it is via link.  If you'd like to be able " +
-                "to view your favorite tabs in a list, please upgrade to the full version of the " +
-                "app.")
+        builder.setMessage("This tab has been saved for offline in your favorites, but the only " +
+                "way to access it is via link since you're using the Instant version.  To view " +
+                "your favorite tabs in a list, please upgrade to the full version of the app.")
 
-        builder.setPositiveButton("Download") { dialog: DialogInterface, _: Int ->
+        builder.setPositiveButton("Upgrade") { dialog: DialogInterface, _: Int ->
             showInstallPrompt()
             dialog.dismiss()
         }
@@ -509,15 +507,15 @@ class TabDetailFragment : Fragment() {
                         // now it's a favorite
                         item.setIcon(R.drawable.ic_favorite)
                         viewModel.tab!!.favorite = true
+
+                        if(isInstantApp(context)) {
+                            favoriteWhileInstant()
+                        }
                     } else {
                         item.setIcon(R.drawable.ic_unfavorite)
                         viewModel.tab!!.favorite = false
                     }
                     viewModel.setFavorite(item.isChecked)
-
-                    if(isInstantApp(context)) {
-                        favoriteWhileInstant()
-                    }
                 }
                 true
             }
