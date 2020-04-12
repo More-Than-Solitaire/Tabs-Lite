@@ -1,8 +1,12 @@
 package com.gbros.tabslite
 
 import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatDelegate
+import com.gbros.tabslite.utilities.DARK_MODE_PREF_NAME
+import com.gbros.tabslite.utilities.PREFS_NAME
 
 // thanks https://github.com/codepath/android_guides/wiki/Understanding-the-Android-Application-Class
 class DefaultApplication : Application() {
@@ -10,13 +14,11 @@ class DefaultApplication : Application() {
     // Overriding this method is totally optional!
     override fun onCreate() {
         super.onCreate()
-        // Required initialization logic here!
 
-        // thanks https://proandroiddev.com/android-dark-theme-implementation-recap-4fcffb0c4bff
-        // set light or dark mode based on preferences
-//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        // set dark mode based on preferences
+        val settings: SharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val darkModePref = settings.getInt(DARK_MODE_PREF_NAME, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        AppCompatDelegate.setDefaultNightMode(darkModePref) // thanks https://proandroiddev.com/android-dark-theme-implementation-recap-4fcffb0c4bff
     }
 
     // Called by the system when the device configuration changes while your component is running.
