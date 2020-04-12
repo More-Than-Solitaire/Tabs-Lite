@@ -64,34 +64,6 @@ class TabDetailFragment : Fragment() {
         binding.apply {
             lifecycleOwner = viewLifecycleOwner
 
-            // autoscroll
-            val timerRunnable: Runnable = object : Runnable {
-                override fun run() {
-                    tabDetailScrollview.smoothScrollBy(0, 1) // 5 is how many pixels you want it to scroll vertically by
-                    timerHandler.postDelayed(this, scrollDelayMs) // 10 is how many milliseconds you want this thread to run
-                }
-            }
-            callback = object : Callback {
-                override fun scrollButtonClicked() {
-                    if (isScrolling) {
-                        // stop scrolling
-                        timerHandler.removeCallbacks(timerRunnable)
-                        fab.setImageResource(R.drawable.ic_fab_autoscroll)
-                        autoscrollSpeed.isGone = true
-                        (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                        binding.appbar.setExpanded(true, true)  // thanks https://stackoverflow.com/a/32137264/3437608
-                    } else {
-                        // start scrolling
-                        timerHandler.postDelayed(timerRunnable, 0)
-                        fab.setImageResource(R.drawable.ic_fab_pause_autoscroll)
-                        autoscrollSpeed.isGone = false
-                        (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                        binding.appbar.setExpanded(false, true)
-                    }
-                    isScrolling = !isScrolling
-                }
-            }
-
 
             // create toolbar scroll change worker
             var isToolbarShown = false
@@ -160,6 +132,39 @@ class TabDetailFragment : Fragment() {
         } else {
             val getDataJob = GlobalScope.async { (activity as ISearchHelper).searchHelper?.fetchTab(getTabId()) }
             getDataJob.invokeOnCompletion(onDataStored())
+        }
+
+
+        // autoscroll
+        binding.apply {
+            // autoscroll
+            val timerRunnable: Runnable = object : Runnable {
+                override fun run() {
+                    tabDetailScrollview.smoothScrollBy(0, 1) // 5 is how many pixels you want it to scroll vertically by
+                    timerHandler.postDelayed(this, scrollDelayMs) // 10 is how many milliseconds you want this thread to run
+                }
+            }
+
+            callback = object : Callback {
+                override fun scrollButtonClicked() {
+                    if (isScrolling) {
+                        // stop scrolling
+                        timerHandler.removeCallbacks(timerRunnable)
+                        fab.setImageResource(R.drawable.ic_fab_autoscroll)
+                        autoscrollSpeed.isGone = true
+                        (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        binding.appbar.setExpanded(true, true)  // thanks https://stackoverflow.com/a/32137264/3437608
+                    } else {
+                        // start scrolling
+                        timerHandler.postDelayed(timerRunnable, 0)
+                        fab.setImageResource(R.drawable.ic_fab_pause_autoscroll)
+                        autoscrollSpeed.isGone = false
+                        (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        binding.appbar.setExpanded(false, true)
+                    }
+                    isScrolling = !isScrolling
+                }
+            }
         }
     }
 
