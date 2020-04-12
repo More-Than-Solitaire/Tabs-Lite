@@ -16,6 +16,8 @@ import java.io.InputStream
 import java.lang.IllegalStateException
 import java.net.*
 
+private const val LOG_NAME = "tabslite.UgApi"
+
 class UgApi(
         val context: Context
 ) {
@@ -47,10 +49,10 @@ class UgApi(
             }
         } catch (ex: FileNotFoundException) {
             // no suggestions for this query
-            Log.i(javaClass.simpleName, "Search suggestions file not found for query $query.", ex)
+            Log.i(LOG_NAME, "Search suggestions file not found for query $query.", ex)
             this.cancel("SearchSuggest coroutine canceled due to 404", ex)
         } catch (ex: Exception) {
-            Log.e(javaClass.simpleName, "SearchSuggest error while finding search suggestions.")
+            Log.e(LOG_NAME, "SearchSuggest error while finding search suggestions.")
             this.cancel("SearchSuggest coroutine canceled due to unexpected error", ex)
         }
 
@@ -73,7 +75,7 @@ class UgApi(
                 val searchResultTypeToken = object : TypeToken<SearchRequestType>() {}.type
                 result = gson.fromJson(jsonReader, searchResultTypeToken)
             } catch (ex: JsonSyntaxException) {
-                Log.v(javaClass.simpleName, "Search exception.  Probably just a 'did you mean' search suggestion at the end.")
+                Log.v(LOG_NAME, "Search exception.  Probably just a 'did you mean' search suggestion at the end.")
                 try {
                     val stringTypeToken = object : TypeToken<String>() {}.type
                     val suggestedSearch: String = gson.fromJson(jsonReader, stringTypeToken)
@@ -81,17 +83,17 @@ class UgApi(
                     this.cancel("search:$suggestedSearch")
                 } catch (ex: IllegalStateException) {
                     inputStream.close()
-                    Log.e(javaClass.simpleName, "Search illegal state exception!  Check SearchRequestType for consistency with data.  Url: $url", ex)
+                    Log.e(LOG_NAME, "Search illegal state exception!  Check SearchRequestType for consistency with data.  Url: $url", ex)
                     this.cancel("Illegal State.", ex)
                     throw ex
                 }
             }
             inputStream.close()
 
-            Log.v(javaClass.simpleName, "Search for $q page $pageNum success.")
+            Log.v(LOG_NAME, "Search for $q page $pageNum success.")
             result
         } else {
-            Log.i(javaClass.simpleName, "Error getting search results.  Probably just the end of results for query $q")
+            Log.i(LOG_NAME, "Error getting search results.  Probably just the end of results for query $q")
             cancel("Error getting search results.  Probably just the end of results for query $q")
             SearchRequestType()
         }
@@ -123,7 +125,7 @@ class UgApi(
                 inputStream.close()
             } else {
                 val chordCount = chordIds.size
-                Log.i(javaClass.simpleName, "Error fetching chords.  chordParam is empty.  That means all the chords are already in the database.  Chord count that we're looking for: $chordCount.")
+                Log.i(LOG_NAME, "Error fetching chords.  chordParam is empty.  That means all the chords are already in the database.  Chord count that we're looking for: $chordCount.")
                 cancel("Error fetching chord(s).")
             }
         }
@@ -154,36 +156,34 @@ class UgApi(
             topTabs
         } else {
             // todo: return historical tabs rather than nothing
-            Log.w(javaClass.simpleName, "Error fetching top tabs.  AuthenticatedStream returned null.  Could be due to no internet access.")
+            Log.w(LOG_NAME, "Error fetching top tabs.  AuthenticatedStream returned null.  Could be due to no internet access.")
             cancel("Error fetching top tabs.  AuthenticatedStream returned null.  Could be due to no internet access.")
             emptyList()
         }
     }
 
     suspend fun authenticatedStream(url: String): InputStream? = coroutineScope {
+        Log.v(LOG_NAME, "Getting authenticated stream for url: $url.")
         while (ApiHelper.updatingApiKey) {
             delay(20)
         }
+        Log.v(LOG_NAME, "API helper finished updating.")
         var apiKey: String
         if(!ApiHelper.apiInit){
             apiKey = ApiHelper.updateApiKey() ?: ""  // try to initialize ourselves
 
             // if that didn't work, we don't have internet.
             if(!ApiHelper.apiInit) {
-                Log.w(javaClass.simpleName, "Not fetching url $url.  API Key initialization failed.  Likely no internet access.")
+                Log.w(LOG_NAME, "Not fetching url $url.  API Key initialization failed.  Likely no internet access.")
                 cancel("API Key initialization failed.  Likely no internet access.")
                 return@coroutineScope null
             }
         }
-
-        Log.v(javaClass.simpleName, "Fetching url $url")
-
         apiKey = ApiHelper.apiKey
         val deviceId = ApiHelper.getDeviceId()
+        Log.v(LOG_NAME, "Got api key $apiKey and device id $deviceId.")
 
-        Log.d(javaClass.simpleName, "Got device id ($deviceId) and api key ($apiKey)")
         var responseCode = 0
-
         try {
             var conn = URL(url).openConnection() as HttpURLConnection
             conn.setRequestProperty("Accept-Charset", "utf-8")
@@ -194,19 +194,20 @@ class UgApi(
             conn.connectTimeout = (5000)  // timeout of 5 seconds
             conn.readTimeout = 6000
             responseCode = conn.responseCode
+            Log.v(LOG_NAME, "Retrieved URL with response code $responseCode.")
 
             // handle when the api key is outdated
             if (responseCode == 498) {
-                Log.i(javaClass.simpleName, "498 response code for old api key $apiKey and device id $deviceId.  Refreshing api key")
+                Log.i(LOG_NAME, "498 response code for old api key $apiKey and device id $deviceId.  Refreshing api key")
                 conn.disconnect()
 
                 apiKey = ApiHelper.updateApiKey() ?: ""
                 while (ApiHelper.updatingApiKey) {
                     delay(20)
                 }
+                Log.v(LOG_NAME, "Got new api key ($apiKey)")
 
                 if (apiKey != "") {
-                    Log.d(javaClass.simpleName, "new api key: $apiKey")
                     apiKey = ApiHelper.apiKey
                     conn = URL(url).openConnection() as HttpURLConnection
                     conn.setRequestProperty("Accept", "application/json")
@@ -217,30 +218,32 @@ class UgApi(
                     conn.readTimeout = 6000
 
                     responseCode = 0 - conn.responseCode
+                    Log.v(LOG_NAME, "Retrieved URL with new API key, getting response code $responseCode (negative to signify that it's the second time through).")
                 } else {
                     // we don't have an internet connection.  Strange, because we shouldn't have gotten a 498 error code if we had no internet.
-                    Log.e(javaClass.simpleName, "498 response code, but api key update returned null!  Either precisely perfect timing or something's wrong.")
-                    throw Exception("498 response code, but api key update returned null!  Either precisely perfect timing or something's wrong.")
+                    val msg = "498 response code, but api key update returned null! Generally this means we don't have an internet connection.  Strange, because we shouldn't have gotten a 498 error code if we had no internet.  Either precisely perfect timing or something's wrong."
+                    Log.e(LOG_NAME, msg)
+                    throw Exception(msg)
                 }
             }
 
             val inputStream = conn.getInputStream()
-            Log.v(javaClass.simpleName, "Success fetching url $url")
+            Log.v(LOG_NAME, "Success fetching url $url")
             inputStream
         } catch (ex: FileNotFoundException) {
-            Log.i(javaClass.simpleName, "404 NOT FOUND during fetch of url $url with parameters apiKey: $apiKey and deviceId: $deviceId.  Response code $responseCode (negative number means it was set after refreshing api key)")
+            Log.i(LOG_NAME, "404 NOT FOUND during fetch of url $url with parameters apiKey: $apiKey and deviceId: $deviceId.  Response code $responseCode (negative number means it was set after refreshing api key)")
             cancel("Not Found", ex)
             null
         } catch (ex: ConnectException){
-            Log.i(javaClass.simpleName, "Could not fetch $url. Response code 0 (no internet access).  Java.net.ConnectException.")
+            Log.i(LOG_NAME, "Could not fetch $url. Response code 0 (no internet access).  Java.net.ConnectException.")
             cancel("Not Connected to the Internet.")
             null
         }  catch (ex: SocketTimeoutException){
-            Log.i(javaClass.simpleName, "Could not fetch $url. Response code 0 (no internet access).  Java.net.SocketTimeoutException.")
+            Log.i(LOG_NAME, "Could not fetch $url. Response code 0 (no internet access).  Java.net.SocketTimeoutException.")
             cancel("Not Connected to the Internet.")
             null
         } catch (ex: Exception) {
-            Log.e(javaClass.simpleName, "Exception during fetch of url $url with parameters apiKey: $apiKey and deviceId: $deviceId.  Response code $responseCode (negative number means it was set after refreshing api key)", ex)
+            Log.e(LOG_NAME, "Exception during fetch of url $url with parameters apiKey: $apiKey and deviceId: $deviceId.  Response code $responseCode (negative number means it was set after refreshing api key)", ex)
             cancel("Exception!", ex)
             null
         }
