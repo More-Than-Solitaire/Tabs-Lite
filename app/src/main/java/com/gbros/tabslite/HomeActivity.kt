@@ -1,10 +1,7 @@
 package com.gbros.tabslite
 
-import android.app.Activity
-import android.app.AlertDialog
 import android.app.SearchManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
@@ -12,37 +9,21 @@ import android.os.Handler
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
-import com.gbros.tabslite.utilities.ApiHelper
 import com.gbros.tabslite.workers.SearchHelper
 import com.google.android.gms.instantapps.InstantApps
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 
 
 class HomeActivity : AppCompatActivity(), ISearchHelper {
     override var searchHelper: SearchHelper? = null
     private lateinit var searchView: SearchView
     private lateinit var searchMenuItem: MenuItem
-    lateinit var updateJob: Deferred<String?>
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        updateJob = GlobalScope.async { ApiHelper.updateApiKey() }  // set the api key now before we need it
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-
-        updateJob.invokeOnCompletion {
-            val parentLayout: View = findViewById(android.R.id.content)
-            if(updateJob.getCompleted() == null){
-                Snackbar.make(parentLayout, "", Snackbar.LENGTH_SHORT)
-            }
-        }
 
         searchHelper = SearchHelper(this)
     }

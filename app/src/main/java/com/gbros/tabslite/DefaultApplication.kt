@@ -8,8 +8,11 @@ import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatDelegate
+import com.gbros.tabslite.utilities.ApiHelper
 import com.gbros.tabslite.utilities.DARK_MODE_PREF_NAME
 import com.gbros.tabslite.utilities.PREFS_NAME
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 // thanks https://github.com/codepath/android_guides/wiki/Understanding-the-Android-Application-Class
 class DefaultApplication : Application() {
@@ -20,6 +23,9 @@ class DefaultApplication : Application() {
 
         // set dark mode based on preferences
         AppCompatDelegate.setDefaultNightMode(getNightMode()) // thanks https://proandroiddev.com/android-dark-theme-implementation-recap-4fcffb0c4bff
+
+        // initialize the API key.  Must be at the Application level, because the app has multiple entry points.
+        GlobalScope.launch { ApiHelper.updateApiKey() }  // set the api key now before we need it
     }
 
     // Called by the system when the device configuration changes while your component is running.
