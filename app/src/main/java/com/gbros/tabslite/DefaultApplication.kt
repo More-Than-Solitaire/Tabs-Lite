@@ -75,7 +75,11 @@ class DefaultApplication : Application() {
     }
 
     fun runningOnFirebaseTest(): Boolean {
-        val testLabSetting: String = Settings.System.getString(contentResolver, "firebase.test.lab")
-        return "true" == testLabSetting
+        try {
+            val testLabSetting: String = Settings.System.getString(contentResolver, "firebase.test.lab")
+            return "true" == testLabSetting
+        } catch (_: Throwable) {
+            return false
+        }
     }
 }
