@@ -191,8 +191,8 @@ class UgApi(
             conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.12 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
             conn.setRequestProperty("x-ug-client-id", deviceId)             // stays constant over time; api key and client id are related to each other.
             conn.setRequestProperty("x-ug-api-key", apiKey)                 // updates periodically.
-            conn.connectTimeout = (4000)  // timeout of 5 seconds
-            conn.readTimeout = 5000
+            conn.connectTimeout = (5000)  // timeout of 5 seconds
+            conn.readTimeout = 6000
             responseCode = conn.responseCode
 
             // handle when the api key is outdated
@@ -213,8 +213,8 @@ class UgApi(
                     conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.12 (")  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
                     conn.setRequestProperty("x-ug-client-id", deviceId)                   // stays constant over time; api key and client id are related to each other.
                     conn.setRequestProperty("x-ug-api-key", apiKey)     // updates periodically.
-                    conn.connectTimeout = (4000)  // timeout of 5 seconds
-                    conn.readTimeout = 5000
+                    conn.connectTimeout = (5000)  // timeout of 5 seconds
+                    conn.readTimeout = 6000
 
                     responseCode = 0 - conn.responseCode
                 } else {
