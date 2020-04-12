@@ -34,6 +34,8 @@ class TopTabsFragment : Fragment() {
         binding.swipeRefresh.isRefreshing = true
         binding.swipeRefresh.setOnRefreshListener(refreshListener)
 
+        binding.hasHistory = true // hide the No Tabs Here message until we've finished loading
+
         return binding.root
     }
 
@@ -54,7 +56,7 @@ class TopTabsFragment : Fragment() {
                 //problems
                 Log.w(javaClass.simpleName, "Error finding top tabs. GetTopTabs job returned non-null. " + cause.message, cause.cause)
                 requireActivity().runOnUiThread {
-                    binding.hasHistory = false
+                    binding.hasHistory = adapter.itemCount > 0  // unless we already have items here, show the No Tabs Here message
                     Handler().postDelayed({ binding.swipeRefresh.isRefreshing = false }, 700)
                     view?.let { Snackbar.make(it, "You're not connected to the internet", Snackbar.LENGTH_SHORT).show() }
                 }
