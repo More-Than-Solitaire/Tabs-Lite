@@ -16,9 +16,7 @@ class DefaultApplication : Application() {
         super.onCreate()
 
         // set dark mode based on preferences
-        val settings: SharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val darkModePref = settings.getInt(DARK_MODE_PREF_NAME, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        AppCompatDelegate.setDefaultNightMode(darkModePref) // thanks https://proandroiddev.com/android-dark-theme-implementation-recap-4fcffb0c4bff
+        AppCompatDelegate.setDefaultNightMode(getNightMode()) // thanks https://proandroiddev.com/android-dark-theme-implementation-recap-4fcffb0c4bff
     }
 
     // Called by the system when the device configuration changes while your component is running.
@@ -33,5 +31,16 @@ class DefaultApplication : Application() {
     override fun onLowMemory() {
         super.onLowMemory()
         // todo: we can delete tabs from the database that aren't favorites
+    }
+
+    fun getNightMode(): Int {
+        val settings: SharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return settings.getInt(DARK_MODE_PREF_NAME, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    }
+
+    fun setNightMode(pref: Int = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM){
+        AppCompatDelegate.setDefaultNightMode(pref)
+        val settings: SharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        settings.edit().putInt(DARK_MODE_PREF_NAME, pref).apply()
     }
 }
