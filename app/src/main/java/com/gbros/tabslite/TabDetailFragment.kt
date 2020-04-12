@@ -1,5 +1,6 @@
 package com.gbros.tabslite
 
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -44,6 +45,7 @@ class TabDetailFragment : Fragment() {
     private val timerHandler = Handler()
     private var isScrolling: Boolean = false
     private var scrollDelayMs: Long = 20  // default scroll speed (smaller is faster)
+    private var currentChordDialog: ChordBottomSheetDialogFragment? = null
 
     //private lateinit var tab: TabFull
     private lateinit var viewModel: TabDetailViewModel
@@ -182,6 +184,10 @@ class TabDetailFragment : Fragment() {
         override fun onStopTrackingTouch(seekBar: SeekBar) {}  // called after the user finishes moving the SeekBar
     }
 
+    override fun onPause() {
+        currentChordDialog?.dismiss()  // this doesn't parcelize well, so get rid of it before we pause
+        super.onPause()
+    }
 
     private fun chordClicked(chordName: CharSequence, noUpdate: Boolean = false){
         val api = (activity as ISearchHelper).searchHelper?.api ?: return  // return if api null
@@ -215,8 +221,10 @@ class TabDetailFragment : Fragment() {
                     }
                 } else {
                     (activity as AppCompatActivity).runOnUiThread {
-                        ChordBottomSheetDialogFragment.newInstance(chordVars).show(
-                                (activity as AppCompatActivity).supportFragmentManager, null)
+                        // we made it!  show the chord diagrams
+                        currentChordDialog?.dismiss()
+                        currentChordDialog = ChordBottomSheetDialogFragment.newInstance(chordVars)
+                        currentChordDialog?.show((activity as AppCompatActivity).supportFragmentManager, null)
                     }
                 }
             }
