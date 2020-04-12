@@ -44,6 +44,7 @@ class BrowseTabsAdapter :
             //val tab = songVersions.find { tab -> tab.tabId == tabId }
             val i = Intent(Intent.ACTION_VIEW)
             i.data = tab.getUrl().toUri()
+            i.setClass(view.context, Class.forName("com.gbros.tabslite.TabDetailActivity"))
             view.context.startActivity(i)
         }
 

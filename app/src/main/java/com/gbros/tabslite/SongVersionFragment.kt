@@ -75,6 +75,7 @@ class SongVersionFragment : Fragment() {
                         val i = Intent(Intent.ACTION_VIEW)
                         if (tab != null) {
                             i.data = tab.getUrl().toUri()
+                            i.setClass(context, Class.forName("com.gbros.tabslite.TabDetailActivity"))
                             startActivity(i)
                         } else {
                             Log.e(javaClass.simpleName, "Could not start TabDetailActivity because tab was null in SongVersionFragment.")
