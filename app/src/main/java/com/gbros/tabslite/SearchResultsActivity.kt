@@ -19,9 +19,8 @@ class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
     lateinit var searchJob: Deferred<SearchRequestType>
     var getVersions: Deferred<Boolean>? = null
 
-
     var query: String? = null
-        private set(value) { field = value }
+        private set
 
     override fun onCreate(savedInstanceState: Bundle?) {
         try {
@@ -38,8 +37,6 @@ class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
             throw ex
         }
     }
-
-
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -62,8 +59,5 @@ class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
         }
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
-    }
+    override fun onSupportNavigateUp(): Boolean { onBackPressed(); return true }
 }

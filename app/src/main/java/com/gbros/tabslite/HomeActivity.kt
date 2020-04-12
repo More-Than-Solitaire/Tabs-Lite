@@ -1,7 +1,9 @@
 package com.gbros.tabslite
 
+import android.app.AlertDialog
 import android.app.SearchManager
 import android.content.Context
+import android.content.DialogInterface
 import android.database.Cursor
 import android.os.Bundle
 import android.os.Handler
@@ -11,6 +13,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import com.gbros.tabslite.utilities.ApiHelper
 import com.gbros.tabslite.workers.SearchHelper
@@ -18,7 +21,6 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 
 
 class HomeActivity : AppCompatActivity(), ISearchHelper {
@@ -48,6 +50,15 @@ class HomeActivity : AppCompatActivity(), ISearchHelper {
 
         implementSearch(menu)
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return if(item.itemId == R.id.dark_mode_toggle) {
+            (application as DefaultApplication).darkModeDialog(this)  // show dialog asking user which mode they want
+            true
+        } else {
+            false // let someone else take care of this click
+        }
     }
 
     private fun implementSearch(menu: Menu) {

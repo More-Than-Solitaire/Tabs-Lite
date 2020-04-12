@@ -454,6 +454,11 @@ class TabDetailFragment : Fragment() {
                 searchJob.invokeOnCompletion(onDataStored())
                 true
             }
+            R.id.dark_mode_toggle -> {
+                // show dialog asking user which mode they want
+                context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }
+                true
+            }
             else -> false
         }
     }

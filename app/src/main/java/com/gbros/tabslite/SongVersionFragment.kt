@@ -113,6 +113,14 @@ class SongVersionFragment : Fragment() {
 
         implementSearch(menu)
     }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return if(item.itemId == R.id.dark_mode_toggle) {
+            context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }  // show dialog asking user which mode they want
+            true
+        } else {
+            false // let someone else take care of this click
+        }
+    }
 
     private fun implementSearch(menu: Menu) {
 
