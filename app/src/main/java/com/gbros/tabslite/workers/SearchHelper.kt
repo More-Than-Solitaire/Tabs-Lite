@@ -16,6 +16,7 @@ import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.TabRequestType
 import kotlinx.coroutines.*
+private const val LOG_NAME = "tabslite.SearchHelper"
 
 class SearchHelper(val context: Context?) {
     val api: UgApi? = context?.let { UgApi(it) }
@@ -40,7 +41,7 @@ class SearchHelper(val context: Context?) {
         suggestionsJob.invokeOnCompletion { cause ->
             val c = MatrixCursor(arrayOf(BaseColumns._ID, "suggestion"))
             if(cause != null){
-                Log.i(javaClass.simpleName, "updateSuggestions' call to searchSuggest was cancelled.  This could be due to no results, which is normal.")
+                Log.i(LOG_NAME, "updateSuggestions' call to searchSuggest was cancelled.  This could be due to no results, which is normal.")
             } else {
                 val suggestions = suggestionsJob.getCompleted()
                 if (suggestions != null) {
@@ -59,7 +60,7 @@ class SearchHelper(val context: Context?) {
 
     suspend fun updateTabTransposeLevel(tabId: Int, currValue: Int) = coroutineScope {
         if(context == null){
-            Log.e(javaClass.simpleName, "UpdateTabTransposeLevel failed because context was null.")
+            Log.e(LOG_NAME, "UpdateTabTransposeLevel failed because context was null.")
             Unit
         } else {
             val database = AppDatabase.getInstance(context).tabFullDao()
@@ -75,26 +76,31 @@ class SearchHelper(val context: Context?) {
             if (database.tabFullDao().exists(tabId) && !force) {
                 true
             } else {
-                Log.v(javaClass.simpleName, "Loading tab $tabId.")
+                Log.v(LOG_NAME, "Loading tab $tabId.")
                 val url = "https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType"
                 val inputStream = api?.authenticatedStream(url)
                 if(inputStream != null) {
+                    Log.v(LOG_NAME, "Obtained input stream for tab $tabId.")
                     val jsonReader = JsonReader(inputStream.reader())
                     val tabRequestTypeToken = object : TypeToken<TabRequestType>() {}.type
                     val result: TabRequestType = gson.fromJson(jsonReader, tabRequestTypeToken)
+                    Log.v(LOG_NAME, "Parsed response for tab $tabId.")
+
                     database.tabFullDao().insert(result.getTabFull())
                     database.chordVariationDao().insertAll(result.getChordVariations())  // save all the chords we come across.  Might as well since we already downloaded them.
+                    Log.v(LOG_NAME, "Inserted tab and chords into database for tab $tabId.")
+
                     inputStream.close()
 
                     true
                 } else {
-                    Log.e(javaClass.simpleName, "Error fetching tab with tabId $tabId.  This shouldn't happen")
+                    Log.e(LOG_NAME, "Error fetching tab with tabId $tabId.  This shouldn't happen")
                     cancel("Error fetching tab with tabId $tabId.  This shouldn't happen")
                     false
                 }
             }
         } else {
-            Log.e(this.javaClass.simpleName,"Error getting TabFull $tabId. Context was null.")
+            Log.e(LOG_NAME,"Error getting TabFull $tabId. Context was null.")
             cancel("Error getting TabFull $tabId. Context was null.")
             false
         }

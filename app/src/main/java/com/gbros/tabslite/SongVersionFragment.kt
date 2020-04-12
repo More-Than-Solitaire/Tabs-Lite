@@ -1,5 +1,6 @@
 package com.gbros.tabslite
 
+import android.app.Activity
 import android.app.SearchManager
 import android.content.ComponentName
 import android.content.Context
@@ -19,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.gbros.tabslite.adapters.MyTabBasicRecyclerViewAdapter
 import com.gbros.tabslite.data.TabBasic
 import com.gbros.tabslite.workers.SearchHelper
+import com.google.android.gms.instantapps.InstantApps
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import java.util.*
@@ -112,11 +114,22 @@ class SongVersionFragment : Fragment() {
         searchHelper = (activity as SearchResultsActivity).searchHelper
         requireActivity().menuInflater.inflate(R.menu.menu_main, menu)
 
+        if(com.google.android.gms.common.wrappers.InstantApps.isInstantApp(context)){
+            menu.findItem(R.id.get_app).isVisible = true
+        }
+
         implementSearch(menu)
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return if(item.itemId == R.id.dark_mode_toggle) {
             context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }  // show dialog asking user which mode they want
+            true
+        } else if(item.itemId == R.id.get_app) {
+            val postInstall = Intent(Intent.ACTION_MAIN)
+                    .addCategory(Intent.CATEGORY_DEFAULT)
+                    .setPackage("com.gbros.tabslite")
+            InstantApps.showInstallPrompt((activity as Activity), postInstall, 0, null)
+
             true
         } else {
             false // let someone else take care of this click

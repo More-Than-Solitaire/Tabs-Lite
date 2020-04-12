@@ -1,6 +1,6 @@
 package com.gbros.tabslite
 
-import android.app.Dialog
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -24,11 +24,10 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.fragment.navArgs
-import com.gbros.tabslite.data.TabFull
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.InjectorUtils
 import com.gbros.tabslite.viewmodels.TabDetailViewModel
+import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -38,6 +37,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 
+private const val LOG_NAME = "tabslite.TabDetailFragment"
 
 /**
  * A fragment representing a single Tab detail screen
@@ -56,7 +56,7 @@ class TabDetailFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        Log.d(javaClass.simpleName, "Starting TabDetailFragment")
+        Log.d(LOG_NAME, "Starting TabDetailFragment")
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_tab_detail, container, false)
 
         setHasOptionsMenu(true)
@@ -111,18 +111,18 @@ class TabDetailFragment : Fragment() {
             textSizeDecrease.setOnClickListener { changeTextSize(-2F) }
         }
 
-        binding.cancelTranspose.setOnClickListener {
+        binding.cancelTranspose.setOnClickListener { if(::viewModel.isInitialized) {
             val currentTransposeAmt = viewModel.tab!!.transposed
             viewModel.tab!!.transposed = 0
             transpose(-currentTransposeAmt)
-        }
+        }}
         return binding.root
     }
 
     private fun getTabId(): Int {
-        Log.d(javaClass.simpleName, "Getting tab ID")
+        Log.d(LOG_NAME, "Getting tab ID")
         val id = (activity as TabDetailActivity).tabId
-        Log.d(javaClass.simpleName, "Tab ID: $id")
+        Log.d(LOG_NAME, "Tab ID: $id")
         return id
     }
     override fun onStart() {
@@ -203,7 +203,7 @@ class TabDetailFragment : Fragment() {
         val getChordsJob = GlobalScope.async { api.getChordVariations(chordName) }
         getChordsJob.invokeOnCompletion { cause ->
             if (cause != null) {
-                Log.w(javaClass.simpleName, "Getting chords from db didn't work.", cause.cause)
+                Log.w(LOG_NAME, "Getting chords from db didn't work.", cause.cause)
                 Unit
             } else {
                 val chordVars = getChordsJob.getCompleted()
@@ -214,7 +214,7 @@ class TabDetailFragment : Fragment() {
                         view?.let { Snackbar.make(it, "Loading chord $chordName...", Snackbar.LENGTH_SHORT).show() }
                         updateJob.invokeOnCompletion { cause ->
                             if (cause != null) {
-                                Log.w(javaClass.simpleName, "Chord update didn't work.", cause.cause)
+                                Log.w(LOG_NAME, "Chord update didn't work.", cause.cause)
                             }
                             // try again
                             chordClicked(chordName, true)
@@ -310,7 +310,7 @@ class TabDetailFragment : Fragment() {
             text.startsWith("Gb", true) -> "G" + text.substring(2)
             text.startsWith("G", true) -> "G#" + text.substring(1)
             else -> {
-                Log.e(javaClass.simpleName, "Weird Chord not transposed: $text")
+                Log.e(LOG_NAME, "Weird Chord not transposed: $text")
                 text
             }
         }
@@ -335,7 +335,7 @@ class TabDetailFragment : Fragment() {
             text.startsWith("Gb", true) -> "F" + text.substring(2)
             text.startsWith("G", true) -> "F#" + text.substring(1)
             else -> {
-                Log.e(javaClass.simpleName, "Weird Chord not transposed: $text")
+                Log.e(LOG_NAME, "Weird Chord not transposed: $text")
                 text
             }
         }
@@ -344,7 +344,7 @@ class TabDetailFragment : Fragment() {
     private fun onDataStored() = { cause: Throwable? ->
         if(cause != null) {
             //oh no; something happened and it failed.  whoops.
-            Log.w(javaClass.simpleName, "Error fetching and storing tab data from online source on the async thread.  Internet connection likely not available.")
+            Log.w(LOG_NAME, "Error fetching and storing tab data from online source on the async thread.  Internet connection likely not available.")
             requireActivity().runOnUiThread {
                 binding.progressBar2.isGone = true
                 view?.let { Snackbar.make(it, "This tab is not available offline.", Snackbar.LENGTH_INDEFINITE).show() }
@@ -359,6 +359,7 @@ class TabDetailFragment : Fragment() {
     //starts here coming from the favorite tabs page; assumes data is already in db
     private fun startGetData() {
         try {
+            Log.v(LOG_NAME, "Getting Data")
             val tabDetailViewModel: TabDetailViewModel by viewModels {
                 val mActivity = activity
                 InjectorUtils.provideTabDetailViewModelFactory(requireActivity(), getTabId())
@@ -366,7 +367,7 @@ class TabDetailFragment : Fragment() {
             viewModel = tabDetailViewModel
             viewModel.getTabJob.invokeOnCompletion(onDataReceived())
         } catch (ex: IllegalStateException){
-            Log.w(javaClass.simpleName, "TabDetailFragment could not get data.  Likely the window was closed before the process could start, in which case this message can be ignored.", ex)
+            Log.w(LOG_NAME, "TabDetailFragment could not get data.  Likely the window was closed before the process could start, in which case this message can be ignored.", ex)
         }
     }
 
@@ -374,9 +375,10 @@ class TabDetailFragment : Fragment() {
     private fun onDataReceived() =  { cause: Throwable? ->
         if(cause != null) {
             //oh no; something happened and it failed.  whoops.
-            Log.e(javaClass.simpleName, "Error fetching tab data from database.")
+            Log.e(LOG_NAME, "Error fetching tab data from database.")
             Unit
         } else {
+            Log.v(LOG_NAME, "Data Received for tab fetch")
             var reloaded = false
             var favorite = false
             val scrollSpeed = scrollDelayMs
@@ -389,6 +391,7 @@ class TabDetailFragment : Fragment() {
             }
 
             viewModel.tab = viewModel.getTabJob.getCompleted()  // actually get the data
+            Log.v(LOG_NAME, "Set tab to viewmodel.")
 
             if (reloaded) {
                 viewModel.tab!!.favorite = favorite
@@ -403,6 +406,7 @@ class TabDetailFragment : Fragment() {
             // thanks https://cheesecakelabs.com/blog/understanding-android-views-dimensions-set/
             binding.tabContent.doOnLayout {
                 processTabContent(viewModel.tab!!.content)
+                Log.v(LOG_NAME, "Processed tab content for tab (${viewModel.tab?.tabId}) '${viewModel.tab?.songName}'")
 
                 activity?.runOnUiThread {
                     binding.tab = viewModel.tab  // set view data
@@ -413,6 +417,7 @@ class TabDetailFragment : Fragment() {
                     binding.progressBar2.isGone = true
                     binding.transposeAmt.text = viewModel.tab!!.transposed.toString()
                     transpose(viewModel.tab!!.transposed)  // calls binding.tabContent.setTabContent(spannableText)
+                    Log.v(LOG_NAME, "Updated Tab UI for tab (${viewModel.tab?.tabId}) '${viewModel.tab?.songName}'")
                 }
             }
 
@@ -432,6 +437,11 @@ class TabDetailFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.menu_tab_detail, menu)
         optionsMenu = menu
+
+        if(com.google.android.gms.common.wrappers.InstantApps.isInstantApp(context)){
+            menu.findItem(R.id.get_app).isVisible = true
+        }
+
         setHeartInitialState()
     }
 
@@ -478,6 +488,14 @@ class TabDetailFragment : Fragment() {
             R.id.dark_mode_toggle -> {
                 // show dialog asking user which mode they want
                 context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }
+                true
+            }
+            R.id.get_app -> {
+                val postInstall = Intent(Intent.ACTION_MAIN)
+                        .addCategory(Intent.CATEGORY_DEFAULT)
+                        .setPackage("com.gbros.tabslite")
+                InstantApps.showInstallPrompt((activity as Activity), postInstall, 0, null)
+
                 true
             }
             else -> false

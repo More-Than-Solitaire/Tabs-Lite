@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/get_app"
+        android:title="@string/get_app"
+        android:icon="@drawable/ic_get_app"
+        app:showAsAction="always"
+        android:visible="false"/>
+
     <item
         android:id="@+id/action_favorite"
         android:icon="@drawable/ic_unfavorite"
-        android:title="Save"
+        android:title="@string/save_tab_favorite"
         android:checkable="true"
         android:checked="false"
         app:showAsAction="ifRoom" />
@@ -18,13 +24,13 @@
     <item
         android:id="@+id/action_reload"
         android:icon="@drawable/ic_refresh"
-        android:title="Reload Tab"
+        android:title="@string/reload_tab"
         app:showAsAction="never" />
 
     <item android:id="@+id/dark_mode_toggle"
         android:title="@string/toggle_dark_mode"
         android:icon="@drawable/ic_dark_mode_toggle"
-        app:showAsAction="never"
+        app:showAsAction="ifRoom"
         />
 
 </menu>
