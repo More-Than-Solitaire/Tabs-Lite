@@ -60,7 +60,7 @@ class DefaultApplication : Application() {
             AppCompatDelegate.MODE_NIGHT_YES -> 1
             else -> 2
         }
-        val options = arrayOf("Force Light Mode", "Force Dark Mode", "Use System Mode")
+        val options = arrayOf("Force Light Mode", "Force Dark Mode", "Use System Mode") //todo: make these into @string resources
 
         // get new setting
         val builder = AlertDialog.Builder(context)

@@ -1,8 +1,10 @@
 package com.gbros.tabslite
 
 import android.app.Activity
-import android.content.Context
-import android.content.Intent
+import android.app.AlertDialog
+import android.content.*
+import android.content.ClipboardManager
+import android.content.Context.CLIPBOARD_SERVICE
 import android.os.Bundle
 import android.os.Handler
 import android.text.*
@@ -17,6 +19,8 @@ import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
 import androidx.core.widget.NestedScrollView
@@ -27,12 +31,12 @@ import androidx.lifecycle.viewModelScope
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.InjectorUtils
 import com.gbros.tabslite.viewmodels.TabDetailViewModel
+import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
 import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.lang.IllegalStateException
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -438,11 +442,56 @@ class TabDetailFragment : Fragment() {
         inflater.inflate(R.menu.menu_tab_detail, menu)
         optionsMenu = menu
 
-        if(com.google.android.gms.common.wrappers.InstantApps.isInstantApp(context)){
+        if(isInstantApp(context)){
             menu.findItem(R.id.get_app).isVisible = true
         }
 
         setHeartInitialState()
+    }
+
+    // assumes viewModel is initialized and tab exists
+    private fun favoriteWhileInstant(){
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("Download full version for all features")
+        builder.setMessage("You chose to add this tab to your favorites, but you're using the " +
+                "Instant version of the app.  This tab has been saved for offline in your " +
+                "favorites, but the only way to access it is via link.  If you'd like to be able " +
+                "to view your favorite tabs in a list, please upgrade to the full version of the " +
+                "app.")
+
+        builder.setPositiveButton("Download") { dialog: DialogInterface, _: Int ->
+            showInstallPrompt()
+            dialog.dismiss()
+        }
+
+        builder.setNeutralButton("Copy Link") { dialog: DialogInterface, _: Int ->
+            val link = viewModel.tab!!.getUrl()
+            val title = viewModel.tab.toString()
+            val clipBoard = context?.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            val clipData = ClipData.newPlainText(title, link)
+            clipBoard.setPrimaryClip(clipData)
+
+            view?.let { Snackbar.make(it, "Link copied to clipboard.", Snackbar.LENGTH_SHORT) }  // todo: @string-ify
+            dialog.dismiss()
+        }
+
+        builder.create()
+        builder.show()
+    }
+
+    private fun showInstallPrompt() {
+        val postInstall: Intent
+        if(::viewModel.isInitialized && viewModel.tab != null){
+            postInstall = Intent(Intent.ACTION_VIEW)
+            postInstall.data = viewModel.tab!!.getUrl().toUri()
+            postInstall.setPackage("com.gbros.tabslite")
+            postInstall.setClassName("com.gbros.tabslite", "com.gbros.tabslite.TabDetailActivity")
+        } else {
+            postInstall = Intent(Intent.ACTION_MAIN)
+                    .addCategory(Intent.CATEGORY_DEFAULT)
+                    .setPackage("com.gbros.tabslite")
+        }
+        InstantApps.showInstallPrompt((activity as Activity), postInstall, 0, null)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -465,6 +514,10 @@ class TabDetailFragment : Fragment() {
                         viewModel.tab!!.favorite = false
                     }
                     viewModel.setFavorite(item.isChecked)
+
+                    if(isInstantApp(context)) {
+                        favoriteWhileInstant()
+                    }
                 }
                 true
             }
@@ -489,11 +542,7 @@ class TabDetailFragment : Fragment() {
                 true
             }
             R.id.get_app -> {
-                val postInstall = Intent(Intent.ACTION_MAIN)  //todo: maybe redirect to this tab rather than main?
-                        .addCategory(Intent.CATEGORY_DEFAULT)
-                        .setPackage("com.gbros.tabslite")
-                InstantApps.showInstallPrompt((activity as Activity), postInstall, 0, null)
-
+                showInstallPrompt()
                 true
             }
             else -> false
