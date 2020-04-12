@@ -14,8 +14,8 @@ android {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        versionCode 63
-        versionName "0.6.3"
+        versionCode 100
+        versionName "1.0.0"
         vectorDrawables.useSupportLibrary true
     }
     buildTypes {
@@ -34,6 +34,13 @@ android {
     }
 // To inline the bytecode built with JVM target 1.8 into
 // bytecode that is being built with JVM target 1.6. (e.g. navArgs)
+
+    
+
+
+    dynamicFeatures = []
+
+
 }
 
 repositories {
@@ -78,10 +85,11 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$rootProject.kotlinVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$rootProject.coroutinesVersion"
+    implementation "com.google.android.gms:play-services-instantapps:$rootProject.instantAppsVersion"
 
-    implementation "com.chrynan.chords:chords-core-jvm:2.1.0"
-    implementation "com.chrynan.chords:chords-core-jvm:2.1.0"
-    implementation "com.chrynan.chords:chords-android:2.1.0"
+    implementation "com.chrynan.chords:chords-core-jvm:$rootProject.chordsVersion"
+    implementation "com.chrynan.chords:chords-core-jvm:$rootProject.chordsVersion"
+    implementation "com.chrynan.chords:chords-android:$rootProject.chordsVersion"
 
     // Testing dependencies
     androidTestImplementation "androidx.arch.core:core-testing:$rootProject.coreTestingVersion"
