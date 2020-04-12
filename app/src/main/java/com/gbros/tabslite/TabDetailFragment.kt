@@ -446,20 +446,15 @@ class TabDetailFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // share menu item and favorite menu item
-        if(! ::viewModel.isInitialized) {
-            return false
-        }
-
         return when (item.itemId) {
             R.id.action_share -> {
-                if(! (activity?.application as DefaultApplication).runningOnFirebaseTest()){
+                if(::viewModel.isInitialized && !(activity?.application as DefaultApplication).runningOnFirebaseTest()){
                     createShareIntent()     // disable share menu for test lab
                 }
                 true
             }
             R.id.action_favorite -> {
-                if(viewModel.tab != null) {
+                if(::viewModel.isInitialized && viewModel.tab != null) {
                     item.isChecked = !item.isChecked
                     if (item.isChecked) {
                         // now it's a favorite
@@ -474,8 +469,10 @@ class TabDetailFragment : Fragment() {
                 true
             }
             R.id.action_reload -> {  // reload button clicked (refresh page)
-                viewModel.getTabJob = viewModel.viewModelScope.async { viewModel.tabRepository.getTab(getTabId()) }
-                val wasFavorite = viewModel.tab?.favorite
+                if(::viewModel.isInitialized) {
+                    viewModel.getTabJob = viewModel.viewModelScope.async { viewModel.tabRepository.getTab(getTabId()) }
+                    val wasFavorite = viewModel.tab?.favorite
+                }
 
                 binding.progressBar2.isGone = false
                 val searchJob = GlobalScope.async {
@@ -483,6 +480,7 @@ class TabDetailFragment : Fragment() {
                 }
                 searchJob.start()
                 searchJob.invokeOnCompletion(onDataStored())
+
                 true
             }
             R.id.dark_mode_toggle -> {
@@ -491,7 +489,7 @@ class TabDetailFragment : Fragment() {
                 true
             }
             R.id.get_app -> {
-                val postInstall = Intent(Intent.ACTION_MAIN)
+                val postInstall = Intent(Intent.ACTION_MAIN)  //todo: maybe redirect to this tab rather than main?
                         .addCategory(Intent.CATEGORY_DEFAULT)
                         .setPackage("com.gbros.tabslite")
                 InstantApps.showInstallPrompt((activity as Activity), postInstall, 0, null)
