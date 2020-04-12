@@ -438,7 +438,9 @@ class TabDetailFragment : Fragment() {
 
         return when (item.itemId) {
             R.id.action_share -> {
-                createShareIntent()
+                if(! (activity?.application as DefaultApplication).runningOnFirebaseTest()){
+                    createShareIntent()     // disable share menu for test lab
+                }
                 true
             }
             R.id.action_favorite -> {

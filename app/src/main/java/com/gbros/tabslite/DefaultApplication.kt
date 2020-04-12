@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatDelegate
 import com.gbros.tabslite.utilities.DARK_MODE_PREF_NAME
 import com.gbros.tabslite.utilities.PREFS_NAME
@@ -71,5 +72,10 @@ class DefaultApplication : Application() {
         // start
         builder.create()
         builder.show();
+    }
+
+    fun runningOnFirebaseTest(): Boolean {
+        val testLabSetting: String = Settings.System.getString(contentResolver, "firebase.test.lab")
+        return "true" == testLabSetting
     }
 }
