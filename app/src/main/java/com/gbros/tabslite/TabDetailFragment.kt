@@ -33,6 +33,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.lang.IllegalStateException
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -352,11 +353,16 @@ class TabDetailFragment : Fragment() {
 
     //starts here coming from the favorite tabs page; assumes data is already in db
     private fun startGetData() {
-        val tabDetailViewModel: TabDetailViewModel by viewModels {
-            InjectorUtils.provideTabDetailViewModelFactory(requireActivity(), getTabId())
+        try {
+            val tabDetailViewModel: TabDetailViewModel by viewModels {
+                val mActivity = activity
+                InjectorUtils.provideTabDetailViewModelFactory(requireActivity(), getTabId())
+            }
+            viewModel = tabDetailViewModel
+            viewModel.getTabJob.invokeOnCompletion(onDataReceived())
+        } catch (ex: IllegalStateException){
+            Log.w(javaClass.simpleName, "TabDetailFragment could not get data.  Likely the window was closed before the process could start, in which case this message can be ignored.", ex)
         }
-        viewModel = tabDetailViewModel
-        viewModel.getTabJob.invokeOnCompletion(onDataReceived())
     }
 
     // app might currently crash if the database actually doesn't have the data (tab = null).  Shouldn't happen irl, but happened in early development
