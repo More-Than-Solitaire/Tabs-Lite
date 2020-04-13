@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.*
 import android.content.ClipboardManager
 import android.content.Context.CLIPBOARD_SERVICE
+import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.text.*
@@ -28,6 +29,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
+import com.gbros.tabslite.TabDetailFragment.Font.monoBold
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.InjectorUtils
 import com.gbros.tabslite.viewmodels.TabDetailViewModel
@@ -37,6 +39,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.lang.reflect.Type
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -56,6 +59,7 @@ class TabDetailFragment : Fragment() {
     private lateinit var viewModel: TabDetailViewModel
     private lateinit var binding: FragmentTabDetailBinding
     private lateinit var optionsMenu: Menu
+
     private var spannableText: SpannableStringBuilder = SpannableStringBuilder()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -113,6 +117,7 @@ class TabDetailFragment : Fragment() {
 
             textSizeIncrease.setOnClickListener { changeTextSize(2F) }
             textSizeDecrease.setOnClickListener { changeTextSize(-2F) }
+
         }
 
         binding.cancelTranspose.setOnClickListener { if(::viewModel.isInitialized) {
@@ -120,6 +125,15 @@ class TabDetailFragment : Fragment() {
             viewModel.tab!!.transposed = 0
             transpose(-currentTransposeAmt)
         }}
+
+        if(monoBold == null) {
+            monoBold = Typeface.createFromAsset(context?.assets, "font/RobotoMono-Bold.ttf")
+        }
+        if(monoRegular == null) {
+            monoRegular = Typeface.createFromAsset(context?.assets, "font/RobotoMono-Light.ttf")
+        }
+        binding.tabContent.typeface = monoRegular
+
         return binding.root
     }
 
@@ -741,15 +755,22 @@ class TabDetailFragment : Fragment() {
 
             override fun updateDrawState(ds: TextPaint) {
                 super.updateDrawState(ds)
-                if(context != null) {
-                    ds.color = context!!.getColorFromAttr(R.attr.colorOnSecondary)
-                    ds.bgColor = context!!.getColorFromAttr(R.attr.colorPrimarySurface)
+                context?.apply {
+                    ds.color = getColorFromAttr(R.attr.colorOnSecondary)
+                    //ds.bgColor = getColorFromAttr(R.attr.colorPrimarySurface)
                 }
+                ds.typeface = monoBold
+                ds.isUnderlineText = false  // no underlines
             }
 
             override fun toString(): String {
                 return chordName.toString()
             }
         }
+    }
+
+    companion object Font {
+        var monoRegular: Typeface? = null
+        var monoBold: Typeface? = null
     }
 }
