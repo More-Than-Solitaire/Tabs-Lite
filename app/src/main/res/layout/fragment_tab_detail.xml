@@ -152,7 +152,7 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/author_dsc" />
 
-                    <TextView
+                    <com.gbros.tabslite.TabTextView
                         android:id="@+id/tab_content"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -279,46 +279,6 @@
                         app:layout_constraintBottom_toBottomOf="@+id/transpose_dsc"
                         app:layout_constraintStart_toEndOf="@+id/transpose_dsc"
                         tools:text="+11" />
-
-                    <Button
-                        android:id="@+id/text_size_increase"
-                        android:layout_width="45dp"
-                        android:layout_height="51dp"
-                        android:layout_marginEnd="86dp"
-                        android:fontFamily="sans-serif-light"
-                        android:includeFontPadding="false"
-                        android:padding="0dp"
-                        android:paddingStart="0dp"
-                        android:paddingLeft="0dp"
-                        android:paddingTop="0dp"
-                        android:paddingEnd="0dp"
-                        android:paddingRight="0dp"
-                        android:paddingBottom="0dp"
-                        android:text="A+"
-                        android:textSize="24sp"
-                        app:layout_constraintBottom_toTopOf="@+id/transpose_down"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tab_detail_name" />
-
-                    <Button
-                        android:id="@+id/text_size_decrease"
-                        android:layout_width="45dp"
-                        android:layout_height="51dp"
-                        android:fontFamily="sans-serif-light"
-                        android:includeFontPadding="false"
-                        android:padding="0dp"
-                        android:paddingStart="0dp"
-                        android:paddingLeft="0dp"
-                        android:paddingTop="0dp"
-                        android:paddingEnd="0dp"
-                        android:paddingRight="0dp"
-                        android:paddingBottom="0dp"
-                        android:text="A-"
-                        android:textSize="24sp"
-                        app:layout_constraintBottom_toTopOf="@+id/transpose_down"
-                        app:layout_constraintEnd_toStartOf="@+id/text_size_increase"
-                        app:layout_constraintStart_toStartOf="@+id/transpose_down"
-                        app:layout_constraintTop_toBottomOf="@+id/tab_detail_name" />
 
                     <Button
                         android:id="@+id/cancel_transpose"

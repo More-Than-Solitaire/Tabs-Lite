@@ -14,8 +14,8 @@ android {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        versionCode 120
-        versionName "1.2.0"
+        versionCode 1210
+        versionName "1.2.1"
         vectorDrawables.useSupportLibrary true
     }
     buildTypes {

@@ -9,7 +9,6 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.text.*
-import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.util.Log
 import android.util.TypedValue
@@ -38,7 +37,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
-import kotlin.math.max
 import kotlin.math.min
 
 private const val LOG_NAME = "tabslite.TabDetailFragment"
@@ -111,26 +109,19 @@ class TabDetailFragment : Fragment() {
             autoscrollSpeed.clipToOutline = true  // not really needed since the background is enough bigger
             autoscrollSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
             autoscrollSpeed.isGone = true
-
-            textSizeIncrease.setOnClickListener { changeTextSize(2F) }
-            textSizeDecrease.setOnClickListener { changeTextSize(-2F) }
-
         }
 
         binding.cancelTranspose.setOnClickListener { if(::viewModel.isInitialized) {
             val currentTransposeAmt = viewModel.tab!!.transposed
             viewModel.tab!!.transposed = 0
-            transpose(-currentTransposeAmt)
+            binding.tabContent.transpose(-currentTransposeAmt)
         }}
 
-        if(monoBold == null) {
-            monoBold = Typeface.createFromAsset(context?.assets, "font/RobotoMono-Bold.ttf")
-        }
-        if(monoRegular == null) {
-            monoRegular = Typeface.createFromAsset(context?.assets, "font/RobotoMono-Light.ttf")
-        }
-        binding.tabContent.typeface = monoRegular
-
+        binding.tabContent.setCallback(object : TabTextView.Callback {
+            override fun chordClicked(chordName: CharSequence) {
+                this@TabDetailFragment.chordClicked(chordName)
+            }
+        })
         return binding.root
     }
 
@@ -183,14 +174,6 @@ class TabDetailFragment : Fragment() {
         }
     }
 
-    private fun changeTextSize(howMuch: Float){
-        if(::viewModel.isInitialized) {
-            binding.tabContent.setTextSize(0, binding.tabContent.textSize + howMuch)
-            processTabContent(viewModel.tab!!.content)
-            binding.tabContent.setTabContent(spannableText)
-        }
-    }
-
     private var seekBarChangeListener: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
             // updated continuously as the user slides the thumb
@@ -210,84 +193,6 @@ class TabDetailFragment : Fragment() {
         super.onPause()
     }
 
-    private fun chordClicked(chordName: CharSequence, noUpdate: Boolean = false){
-        val api = (activity as ISearchHelper).searchHelper?.api ?: return  // return if api null
-        val input = ArrayList<CharSequence>()
-        input.add(chordName)
-
-        val getChordsJob = GlobalScope.async { api.getChordVariations(chordName) }
-        getChordsJob.invokeOnCompletion { cause ->
-            if (cause != null) {
-                Log.w(LOG_NAME, "Getting chords from db didn't work.", cause.cause)
-                Unit
-            } else {
-                val chordVars = getChordsJob.getCompleted()
-                if (chordVars.isEmpty()) {
-                    if(!noUpdate) {
-                        // get from the internet
-                        val updateJob = GlobalScope.async { api.updateChordVariations(input) }
-                        view?.let { Snackbar.make(it, "Loading chord $chordName...", Snackbar.LENGTH_SHORT).show() }
-                        updateJob.invokeOnCompletion { cause ->
-                            if (cause != null) {
-                                Log.w(LOG_NAME, "Chord update didn't work.", cause.cause)
-                            }
-                            // try again
-                            chordClicked(chordName, true)
-                        }
-                    } else {
-                        // we already tried and failed from the internet.  Just show an explanation
-                        (activity as AppCompatActivity).runOnUiThread {
-                            view?.let { Snackbar.make(it, "Chord could not be loaded.  Check your internet connection.", Snackbar.LENGTH_SHORT).show() }
-                        }
-                    }
-                } else {
-                    (activity as AppCompatActivity).runOnUiThread {
-                        // we made it!  show the chord diagrams
-                        currentChordDialog?.dismiss()
-                        currentChordDialog = ChordBottomSheetDialogFragment.newInstance(chordVars)
-                        currentChordDialog?.show((activity as AppCompatActivity).supportFragmentManager, null)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun transpose(howMuch: Int){
-        if (howMuch != 0) {
-            val numSteps = howMuch.absoluteValue
-            val currentSpans = spannableText.getSpans(0, spannableText.length, ClickableSpan::class.java)
-
-            for (span in currentSpans) {
-                val startIndex = spannableText.getSpanStart(span)
-                val endIndex = spannableText.getSpanEnd(span)
-                val currentText = span.toString()
-                spannableText.removeSpan(span)
-
-                var newText = currentText
-                if (howMuch > 0) {
-                    // transpose up
-                    for (i in 0 until numSteps) {
-                        newText = transposeUp(newText)
-                    }
-                } else {
-                    // transpose down
-                    for (i in 0 until numSteps) {
-                        newText = transposeDown(newText)
-                    }
-                }
-
-
-                spannableText.replace(startIndex, endIndex, newText)  // edit the text
-                spannableText.setSpan(makeSpan(newText), startIndex, startIndex + newText.length,
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)  // add a new span
-            }
-            binding.transposeAmt.text = viewModel.tab!!.transposed.toString()
-            GlobalScope.launch{(activity as ISearchHelper).searchHelper?.updateTabTransposeLevel(viewModel.tab!!.tabId, viewModel.tab!!.transposed)}
-        }
-
-        binding.tabContent.setTabContent(spannableText)
-    }
-
     private fun transpose(up: Boolean){
         if(! ::viewModel.isInitialized) {
             return
@@ -303,57 +208,9 @@ class TabDetailFragment : Fragment() {
             viewModel.tab!!.transposed += 12
         }
 
-        transpose(howMuch)
-    }
-    private fun transposeUp(text: String): String {
-        return when {
-            text.startsWith("A#", true) -> "B" + text.substring(2)
-            text.startsWith("Ab", true) -> "A" + text.substring(2)
-            text.startsWith("A", true) -> "A#" + text.substring(1)
-            text.startsWith("Bb", true) -> "B" + text.substring(2)
-            text.startsWith("B", true) -> "C" + text.substring(1)
-            text.startsWith("C#", true) -> "D" + text.substring(2)
-            text.startsWith("C", true) -> "C#" + text.substring(1)
-            text.startsWith("D#", true) -> "E" + text.substring(2)
-            text.startsWith("Db", true) -> "D" + text.substring(2)
-            text.startsWith("D", true) -> "D#" + text.substring(1)
-            text.startsWith("Eb", true) -> "E" + text.substring(2)
-            text.startsWith("E", true) -> "F" + text.substring(1)
-            text.startsWith("F#", true) -> "G" + text.substring(2)
-            text.startsWith("F", true) -> "F#" + text.substring(1)
-            text.startsWith("G#", true) -> "A" + text.substring(2)
-            text.startsWith("Gb", true) -> "G" + text.substring(2)
-            text.startsWith("G", true) -> "G#" + text.substring(1)
-            else -> {
-                Log.e(LOG_NAME, "Weird Chord not transposed: $text")
-                text
-            }
-        }
-    }
-    private fun transposeDown(text: String): String {
-        return when {
-            text.startsWith("A#", true) -> "A" + text.substring(2)
-            text.startsWith("Ab", true) -> "G" + text.substring(2)
-            text.startsWith("A", true) -> "G#" + text.substring(1)
-            text.startsWith("Bb", true) -> "A" + text.substring(2)
-            text.startsWith("B", true) -> "A#" + text.substring(1)
-            text.startsWith("C#", true) -> "C" + text.substring(2)
-            text.startsWith("C", true) -> "B" + text.substring(1)
-            text.startsWith("D#", true) -> "D" + text.substring(2)
-            text.startsWith("Db", true) -> "C" + text.substring(2)
-            text.startsWith("D", true) -> "C#" + text.substring(1)
-            text.startsWith("Eb", true) -> "D" + text.substring(2)
-            text.startsWith("E", true) -> "D#" + text.substring(1)
-            text.startsWith("F#", true) -> "F" + text.substring(2)
-            text.startsWith("F", true) -> "E" + text.substring(1)
-            text.startsWith("G#", true) -> "G" + text.substring(2)
-            text.startsWith("Gb", true) -> "F" + text.substring(2)
-            text.startsWith("G", true) -> "F#" + text.substring(1)
-            else -> {
-                Log.e(LOG_NAME, "Weird Chord not transposed: $text")
-                text
-            }
-        }
+        binding.tabContent.transpose(howMuch)
+        binding.transposeAmt.text = viewModel.tab!!.transposed.toString()
+        GlobalScope.launch{(activity as ISearchHelper).searchHelper?.updateTabTransposeLevel(viewModel.tab!!.tabId, viewModel.tab!!.transposed)}
     }
 
     private fun onDataStored() = { cause: Throwable? ->
@@ -420,10 +277,10 @@ class TabDetailFragment : Fragment() {
 
             // thanks https://cheesecakelabs.com/blog/understanding-android-views-dimensions-set/
             binding.tabContent.doOnLayout {
-                processTabContent(viewModel.tab!!.content)
-                Log.v(LOG_NAME, "Processed tab content for tab (${viewModel.tab?.tabId}) '${viewModel.tab?.songName}'")
-
                 activity?.runOnUiThread {
+                    binding.tabContent.setTabContent(viewModel.tab!!.content)
+                    Log.v(LOG_NAME, "Processed tab content for tab (${viewModel.tab?.tabId}) '${viewModel.tab?.songName}'")
+
                     binding.tab = viewModel.tab  // set view data
                     setHeartInitialState()  // set initial state of "save" heart
                     (activity as AppCompatActivity).title = viewModel.tab.toString()  // toolbar title
@@ -438,7 +295,7 @@ class TabDetailFragment : Fragment() {
                         }
 
                         binding.transposeAmt.text = transposed.toString()
-                        transpose(transposed)  // calls binding.tabContent.setTabContent(spannableText)
+                        binding.tabContent.transpose(transposed)
                         Log.v(LOG_NAME, "Updated Tab UI for tab ($tabId) '$songName'")
                     }
                 }
@@ -588,194 +445,46 @@ class TabDetailFragment : Fragment() {
         fun scrollButtonClicked()
     }
 
-    private fun findMultipleLineWordBreak(lines: List<CharSequence>, paint: TextPaint, availableWidth: Float): Int{
-        val breakingChars = "‐–〜゠= \t\r\n"  // all the chars that we'll break a line at
-        var totalCharsToFit: Int = 0
+    private fun chordClicked(chordName: CharSequence, noUpdate: Boolean = false){
+        val api = (activity as ISearchHelper).searchHelper?.api ?: return  // return if api null
+        val input = ArrayList<CharSequence>()
+        input.add(chordName)
 
-        // find max number of chars that will fit on a line
-        for (line in lines) {
-            totalCharsToFit = max(totalCharsToFit, paint.breakText(line, 0, line.length,
-                    true, availableWidth, null))
-        }
-        var wordCharsToFit = totalCharsToFit
-
-        // go back from max until we hit a word break
-        var allContainWordBreakChar: Boolean
-        do {
-            allContainWordBreakChar = true
-            for (line in lines) {
-                allContainWordBreakChar = allContainWordBreakChar
-                        && (line.length <= wordCharsToFit || breakingChars.contains(line[wordCharsToFit]))
-            }
-        } while (!allContainWordBreakChar && --wordCharsToFit > 0)
-
-        // if we had a super long word, just break at the end of the line
-        if (wordCharsToFit < 1){
-            wordCharsToFit = totalCharsToFit
-        }
-
-        return wordCharsToFit
-    }
-
-
-    // thanks @Hein https://stackoverflow.com/a/60886609
-    private fun processLyricLine(singleLyric: CharSequence, appendTo: SpannableStringBuilder): SpannableStringBuilder {
-        val indexOfLineBreak = singleLyric.indexOf("\n")
-        var chords: CharSequence = singleLyric.subSequence(0, indexOfLineBreak).trimEnd()
-        var lyrics: CharSequence = singleLyric.subSequence(indexOfLineBreak + 1, singleLyric.length).trimEnd()
-        var startLength = appendTo.length
-        var result = appendTo
-
-        // break lines ahead of time
-        // thanks @Andro https://stackoverflow.com/a/11498125
-        val availableWidth = binding.tabContent.width.toFloat() - binding.tabContent.textSize / resources.displayMetrics.scaledDensity
-
-        while (lyrics.isNotEmpty() || chords.isNotEmpty()) {
-            // find good word break spot at end
-            val plainChords = chords.replace(Regex("\\[/?ch]"), "").trimEnd()
-            val wordCharsToFit = findMultipleLineWordBreak(listOf(plainChords, lyrics), binding.tabContent.paint, availableWidth)
-
-            // make chord substring
-            var i = 0
-            while (i < min(wordCharsToFit, chords.length)) {
-                if (i+3 < chords.length && chords.subSequence(i .. i+3) == "[ch]"){
-                    //we found a chord; add it.
-                    chords = chords.removeRange(i .. i+3)        // remove [ch]
-                    val start = i
-
-                    while(chords.subSequence(i .. i+4) != "[/ch]"){
-                        // find end
-                        i++
+        val getChordsJob = GlobalScope.async { api.getChordVariations(chordName) }
+        getChordsJob.invokeOnCompletion { cause ->
+            if (cause != null) {
+                Log.w(LOG_NAME, "Getting chords from db didn't work.", cause.cause)
+                Unit
+            } else {
+                val chordVars = getChordsJob.getCompleted()
+                if (chordVars.isEmpty()) {
+                    if(!noUpdate) {
+                        // get from the internet
+                        val updateJob = GlobalScope.async { api.updateChordVariations(input) }
+                        view?.let { Snackbar.make(it, "Loading chord $chordName...", Snackbar.LENGTH_SHORT).show() }
+                        updateJob.invokeOnCompletion { cause ->
+                            if (cause != null) {
+                                Log.w(LOG_NAME, "Chord update didn't work.", cause.cause)
+                            }
+                            // try again
+                            chordClicked(chordName, true)
+                        }
+                    } else {
+                        // we already tried and failed from the internet.  Just show an explanation
+                        (activity as AppCompatActivity).runOnUiThread {
+                            view?.let { Snackbar.make(it, "Chord could not be loaded.  Check your internet connection.", Snackbar.LENGTH_SHORT).show() }
+                        }
                     }
-                    // i is now 1 past the end of the chord name
-                    chords = chords.removeRange(i .. i+4)        // remove [/ch]
-
-                    result = result.append(chords.subSequence(start until i))
-
-                    //make a clickable span
-                    val chordName = chords.subSequence(start until i)
-                    val clickableSpan = makeSpan(chordName)
-                    result.setSpan(clickableSpan, startLength+start, startLength+i, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 } else {
-                    result = result.append(chords[i])
-                    i++
+                    (activity as AppCompatActivity).runOnUiThread {
+                        // we made it!  show the chord diagrams
+                        currentChordDialog?.dismiss()
+                        currentChordDialog = ChordBottomSheetDialogFragment.newInstance(chordVars)
+                        currentChordDialog?.show((activity as AppCompatActivity).supportFragmentManager, null)
+                    }
                 }
             }
-            result = result.append("\r\n")
-
-            // make lyric substring
-            val thisLine = lyrics.subSequence(0, min(wordCharsToFit, lyrics.length))
-            result = result.append(thisLine).append("\r\n")
-
-            // update for next pass through
-            chords = chords.subSequence(i, chords.length)
-            lyrics = lyrics.subSequence(thisLine.length, lyrics.length)
-            startLength = result.length
-        }
-
-        return result
-    }
-
-    private fun lonelyChordProcessor(subString: CharSequence, spannableString: SpannableStringBuilder){
-        var lastIndex = 0
-        var chords = subString
-        while (chords.indexOf("[ch]", 0) != -1 ) {
-            val firstIndex = chords.indexOf("[ch]", 0)
-            chords = chords.replaceRange(firstIndex, firstIndex+4, "")
-
-            spannableString.append(chords.subSequence(lastIndex, firstIndex))
-
-            lastIndex = chords.indexOf("[/ch]", lastIndex)
-            chords = chords.replaceRange(lastIndex, lastIndex+5, "")
-            spannableString.append(chords.subSequence(firstIndex, lastIndex))
-
-            val chordName = chords.subSequence(firstIndex until lastIndex)
-            val clickableSpan = makeSpan(chordName)
-
-            spannableString.setSpan(clickableSpan, spannableString.length-(lastIndex-firstIndex),
-                    spannableString.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        spannableString.append((chords.subSequence(lastIndex until chords.length)))
-    }
-
-    private fun lonelyChordProcessor(spannableString: SpannableStringBuilder){
-        while(spannableString.indexOf("[ch]") != -1) {
-            val firstIndex = spannableString.indexOf("[ch]")
-            spannableString.delete(firstIndex, firstIndex+4)
-            val lastIndex = spannableString.indexOf("[/ch]")
-            spannableString.delete(lastIndex, lastIndex+5)
-
-            val chordName = spannableString.subSequence(firstIndex until lastIndex)
-            val clickableSpan = makeSpan(chordName)
-            spannableString.setSpan(clickableSpan, firstIndex, lastIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
     }
 
-    private fun processTabContent(text: CharSequence): SpannableStringBuilder{
-        var text = text
-        var spannableString = SpannableStringBuilder()
-
-        //wrap tabs as a group
-        var lastIndex = 0
-        while (text.indexOf("[tab]", lastIndex) != -1) {
-            val firstIndex = text.indexOf("[tab]", 0)     // remove start tag
-            text = text.replaceRange(firstIndex, firstIndex + 5, "")
-
-            lonelyChordProcessor(text.subSequence(lastIndex, firstIndex), spannableString) // add all the non-[tab] text
-
-            lastIndex = text.indexOf("[/tab]", firstIndex)    // remove end tag
-            text = text.replaceRange(lastIndex, lastIndex + 6, "")
-
-            val next = processLyricLine(text.subSequence(firstIndex, lastIndex), spannableString)
-            spannableString = next
-        }
-        lonelyChordProcessor(text.subSequence(lastIndex, text.length), spannableString) // add all the non-[tab] text
-        lonelyChordProcessor(spannableString) // a final once-over to check for any missed chords (usually a tab author's mistake)
-
-        spannableText = spannableString
-        return spannableString
-    }
-
-    private fun TextView.setTabContent(spannableString: SpannableStringBuilder) {
-        this.movementMethod = LinkMovementMethod.getInstance() // without LinkMovementMethod, link can not click
-        this.setText(spannableText, TextView.BufferType.SPANNABLE)
-    }
-
-    //thanks https://stackoverflow.com/a/51561533/3437608
-    fun Context.getColorFromAttr( @AttrRes attrColor: Int,
-            typedValue: TypedValue = TypedValue(),
-            resolveRefs: Boolean = true
-    ): Int {
-        theme.resolveAttribute(attrColor, typedValue, resolveRefs)
-        return typedValue.data
-    }
-
-    private fun makeSpan(chordName: CharSequence): ClickableSpan {
-        return object : ClickableSpan() {
-            override fun onClick(view: View) {
-                Selection.setSelection((view as TextView).text as Spannable, 0)
-                view.invalidate()
-                chordClicked(chordName.toString())
-            }
-
-            override fun updateDrawState(ds: TextPaint) {
-                super.updateDrawState(ds)
-                context?.apply {
-                    ds.color = getColorFromAttr(R.attr.colorOnSecondary)
-                    ds.bgColor = getColorFromAttr(R.attr.colorPrimarySurface)
-                }
-                ds.typeface = monoBold
-                ds.isUnderlineText = false  // no underlines
-            }
-
-            override fun toString(): String {
-                return chordName.toString()
-            }
-        }
-    }
-
-    companion object Font {
-        var monoRegular: Typeface? = null
-        var monoBold: Typeface? = null
-    }
 }
