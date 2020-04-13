@@ -11,7 +11,7 @@
         <item name="colorSecondaryVariant">@color/darkSecondaryLightColor</item>
         <item name="colorAccent">@color/darkSecondaryDarkColor</item>
         <item name="colorOnSecondary">@color/darkSecondaryColor</item>
-        <item name="colorPrimarySurface">@color/darkSurfaceAccent</item>
+        <item name="colorPrimarySurface">@color/darkSurfaceColor</item>
 
         <item name="colorOnBackground">@color/darkEmptyStar</item>
 

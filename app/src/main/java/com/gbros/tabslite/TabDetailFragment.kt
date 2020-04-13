@@ -20,7 +20,6 @@ import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
@@ -29,7 +28,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
-import com.gbros.tabslite.TabDetailFragment.Font.monoBold
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.InjectorUtils
 import com.gbros.tabslite.viewmodels.TabDetailViewModel
@@ -39,7 +37,6 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.lang.reflect.Type
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -400,12 +397,12 @@ class TabDetailFragment : Fragment() {
             var reloaded = false
             var favorite = false
             val scrollSpeed = scrollDelayMs
-            var transposed = 0
+            var tspAmt = 0
             if(viewModel.tab != null) {
                 reloaded = true
                 favorite = viewModel.tab!!.favorite  //reloading would reset favorite status, so save that
                 //todo: when scroll speed is a database field, we'll need to save it here
-                transposed = viewModel.tab!!.transposed
+                tspAmt = viewModel.tab!!.transposed
             }
 
             viewModel.tab = viewModel.getTabJob.getCompleted()  // actually get the data
@@ -418,7 +415,7 @@ class TabDetailFragment : Fragment() {
                 scrollDelayMs = scrollSpeed
                 //todo: save scroll speed to db
 
-                viewModel.tab!!.transposed = transposed
+                viewModel.tab!!.transposed = tspAmt
             }
 
             // thanks https://cheesecakelabs.com/blog/understanding-android-views-dimensions-set/
@@ -433,9 +430,17 @@ class TabDetailFragment : Fragment() {
 
 
                     binding.progressBar2.isGone = true
-                    binding.transposeAmt.text = viewModel.tab!!.transposed.toString()
-                    transpose(viewModel.tab!!.transposed)  // calls binding.tabContent.setTabContent(spannableText)
-                    Log.v(LOG_NAME, "Updated Tab UI for tab (${viewModel.tab?.tabId}) '${viewModel.tab?.songName}'")
+
+                    viewModel.tab?.apply {
+                        if ((activity as TabDetailActivity).tsp != 0) {
+                            // launched via a link with a set transpose option;  override current settings
+                            transposed = (activity as TabDetailActivity).tsp
+                        }
+
+                        binding.transposeAmt.text = transposed.toString()
+                        transpose(transposed)  // calls binding.tabContent.setTabContent(spannableText)
+                        Log.v(LOG_NAME, "Updated Tab UI for tab ($tabId) '$songName'")
+                    }
                 }
             }
 
@@ -757,7 +762,7 @@ class TabDetailFragment : Fragment() {
                 super.updateDrawState(ds)
                 context?.apply {
                     ds.color = getColorFromAttr(R.attr.colorOnSecondary)
-                    //ds.bgColor = getColorFromAttr(R.attr.colorPrimarySurface)
+                    ds.bgColor = getColorFromAttr(R.attr.colorPrimarySurface)
                 }
                 ds.typeface = monoBold
                 ds.isUnderlineText = false  // no underlines
