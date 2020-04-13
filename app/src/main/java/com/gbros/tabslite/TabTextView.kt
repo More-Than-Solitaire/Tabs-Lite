@@ -20,8 +20,7 @@ import kotlin.math.min
 private const val LOG_NAME = "tabslite.TabTextView"
 
 class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcompat.widget.AppCompatTextView(context, attributeSet) {
-    private val tabLines = ArrayList<Pair<SpannableStringBuilder, SpannableStringBuilder>>()
-    private var spannableText = SpannableStringBuilder()  // global so we can transpose without redoing the whole thing
+    private val tabLines = ArrayList<Pair<SpannableStringBuilder, SpannableStringBuilder?>>()
     private val mScaleDetector = object : ScaleGestureDetector(context, ScaleListener()) {
         override fun onTouchEvent(event: MotionEvent?): Boolean {
 
@@ -57,6 +56,7 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
     }
 
     fun setTabContent(content: CharSequence) {
+        Log.v(LOG_NAME, "Setting tab content")
         var t = content
 
         var lastIndex = 0
@@ -72,39 +72,20 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         wrapTextIntoView()
     }
 
-    private fun makeSpan(chordName: CharSequence): ClickableSpan {
-        return object : ClickableSpan() {
-            override fun onClick(view: View) {
-                Selection.setSelection((view as TextView).text as Spannable, 0)
-                view.invalidate()
-                callback.chordClicked(chordName.toString())
-            }
-
-            override fun updateDrawState(ds: TextPaint) {
-                super.updateDrawState(ds)
-                context?.apply {
-                    ds.color = getColorFromAttr(R.attr.colorOnSecondary)
-                    ds.bgColor = getColorFromAttr(R.attr.colorPrimarySurface)
-                }
-                ds.typeface = monoBold
-                ds.isUnderlineText = false  // no underlines
-            }
-
-            override fun toString(): String {
-                return chordName.toString()
-            }
-        }
-    }
-
     // takes a [tab] and breaks it into two lines (chord and lyric).  Adds chord processing and
     // puts it in `tabLines`.
     private fun linify(singleLyric: CharSequence){
+        Log.v(LOG_NAME, "Breaking single line into chords/lyrics")
         val indexOfLineBreak = singleLyric.indexOf("\n")
         val chords: CharSequence = singleLyric.subSequence(0, indexOfLineBreak).trimEnd()
         val lyrics: CharSequence = singleLyric.subSequence(indexOfLineBreak + 1, singleLyric.length).trimEnd()
         tabLines.add(Pair(processChords(chords), processChords(lyrics)))
     }
     // takes a string and replaces all [ch]'s with clickable spans
+    // takes non-[tab] content, finds the [ch]'s, processes those, and adds the whole thing to tabLines
+    private fun insertContentToTabLines(content: CharSequence){
+        tabLines.add(Pair(processChords(content), null))
+    }
     private fun processChords(content: CharSequence): SpannableStringBuilder {
         val result = SpannableStringBuilder()
         var text = content.trimEnd()
@@ -129,36 +110,60 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
 
         return result
     }
-    // takes non-[tab] content, finds the [ch]'s, processes those, and adds the whole thing to tabLines
-    private fun insertContentToTabLines(content: CharSequence){
-        tabLines.add(Pair(processChords(content), SpannableStringBuilder()))
+    private fun makeSpan(chordName: CharSequence): ClickableSpan {
+        return object : ClickableSpan() {
+            override fun onClick(view: View) {
+                Selection.setSelection((view as TextView).text as Spannable, 0)
+                view.invalidate()
+                callback.chordClicked(chordName.toString())
+            }
+
+            override fun updateDrawState(ds: TextPaint) {
+                super.updateDrawState(ds)
+                context?.apply {
+                    ds.color = getColorFromAttr(R.attr.colorOnSecondary)
+                    ds.bgColor = getColorFromAttr(R.attr.colorPrimarySurface)
+                }
+                ds.typeface = monoBold
+                ds.isUnderlineText = false  // no underlines
+            }
+
+            override fun toString(): String {
+                return chordName.toString()
+            }
+        }
     }
     // word wraps the tabLines object into the textview
     private fun wrapTextIntoView() {
-        spannableText = SpannableStringBuilder()
+        Log.v(LOG_NAME, "Wrapping finished text into TextView")
+        val spannableText = SpannableStringBuilder()
         for (linePair in tabLines) {
             val chord = linePair.first
             val lyric = linePair.second
 
             var lyricStart = 0
             var chordStart = 0
-            while(chordStart < chord.length || lyricStart < lyric.length) {
-                val wrapIndex = findMultipleLineWordBreakIndex(listOf(linePair.first.subSequence(chordStart, chord.length),
-                        linePair.second.subSequence(lyricStart, lyric.length)))
+            while(chordStart < chord.length || (lyric != null && lyricStart < lyric.length)) {
+                if(linePair.second != null) {
+                    val wrapIndex = findMultipleLineWordBreakIndex(listOf(chord.subSequence(chordStart, chord.length),
+                            lyric!!.subSequence(lyricStart, lyric.length)))
 
-                // make chord substring
-                val chordLine = chord.subSequence(chordStart, min(chordStart + wrapIndex, chord.length))
-                spannableText.append(chordLine).append("\r\n")
+                    // make chord substring
+                    val chordLine = chord.subSequence(chordStart, min(chordStart + wrapIndex, chord.length))
+                    spannableText.append(chordLine.trimEnd()).append("\r\n")
 
-                // make lyric substring
-                val lyricLine = lyric.subSequence(lyricStart, min(lyricStart + wrapIndex, lyric.length))
-                if(lyricLine.isNotEmpty()) {
-                    spannableText.append(lyricLine).append("\r\n")
+                    // make lyric substring
+                    val lyricLine = lyric.subSequence(lyricStart, min(lyricStart + wrapIndex, lyric.length))
+                    spannableText.append(lyricLine.trimEnd()).append("\r\n")
+
+                    // update for next pass through
+                    chordStart += chordLine.length
+                    lyricStart += lyricLine.length
+                } else {
+                    // if lyric is null, don't do custom wrapping
+                    spannableText.append(linePair.first.trimEnd()).append("\r\n")
+                    break
                 }
-
-                // update for next pass through
-                chordStart += chordLine.length
-                lyricStart += lyricLine.length
             }
         }
 
@@ -196,41 +201,45 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         return wordCharsToFit
     }
 
-
-    //todo: transpose tabLines instead of spannable text
     fun transpose(howMuch: Int){
         if (howMuch != 0) {
             val numSteps = howMuch.absoluteValue
-            val currentSpans = spannableText.getSpans(0, spannableText.length, ClickableSpan::class.java)
+            val up = howMuch > 0
 
-            for (span in currentSpans) {
-                val startIndex = spannableText.getSpanStart(span)
-                val endIndex = spannableText.getSpanEnd(span)
-                val currentText = span.toString()
-                spannableText.removeSpan(span)
-
-                var newText = currentText
-                if (howMuch > 0) {
-                    // transpose up
-                    for (i in 0 until numSteps) {
-                        newText = transposeUp(newText)
-                    }
-                } else {
-                    // transpose down
-                    for (i in 0 until numSteps) {
-                        newText = transposeDown(newText)
-                    }
-                }
-
-
-                spannableText.replace(startIndex, endIndex, newText)  // edit the text
-                spannableText.setSpan(makeSpan(newText), startIndex, startIndex + newText.length,
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)  // add a new span
+            for (tab in tabLines) {
+                transposeLine(up, numSteps, tab.first)
+                tab.second?.let { transposeLine(up, numSteps, it) }
             }
         }
+        wrapTextIntoView()
+    }
+    // transpose one SpannableStringBuilder
+    private fun transposeLine(up: Boolean, numSteps: Int, line: SpannableStringBuilder) {
+        val currentSpans = line.getSpans(0, line.length, ClickableSpan::class.java)
 
-        movementMethod = LinkMovementMethod.getInstance() // without LinkMovementMethod, link can not click
-        setText(spannableText, BufferType.SPANNABLE)
+        for (span in currentSpans) {
+            val startIndex = line.getSpanStart(span)
+            val endIndex = line.getSpanEnd(span)
+            val currentText = span.toString()
+            line.removeSpan(span)
+
+            var newText = currentText
+            if (up) {
+                // transpose up
+                for (i in 0 until numSteps) {
+                    newText = transposeUp(newText)
+                }
+            } else {
+                // transpose down
+                for (i in 0 until numSteps) {
+                    newText = transposeDown(newText)
+                }
+            }
+
+            line.replace(startIndex, endIndex, newText)  // edit the text
+            line.setSpan(makeSpan(newText), startIndex, startIndex + newText.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)  // add a new span
+        }
     }
     private fun transposeUp(text: String): String {
         return when {

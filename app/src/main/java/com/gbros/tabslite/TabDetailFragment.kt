@@ -113,8 +113,7 @@ class TabDetailFragment : Fragment() {
 
         binding.cancelTranspose.setOnClickListener { if(::viewModel.isInitialized) {
             val currentTransposeAmt = viewModel.tab!!.transposed
-            viewModel.tab!!.transposed = 0
-            binding.tabContent.transpose(-currentTransposeAmt)
+            transpose(-currentTransposeAmt)
         }}
 
         binding.tabContent.setCallback(object : TabTextView.Callback {
@@ -199,18 +198,24 @@ class TabDetailFragment : Fragment() {
         }
 
         val howMuch = if(up) 1 else -1
-        viewModel.tab!!.transposed += howMuch
+        transpose(howMuch)
+    }
+    private fun transpose(howMuch: Int){
+        viewModel.tab?.apply {
+            transposed += howMuch
 
-        //13 half steps in an octave (both sides inclusive)
-        if(viewModel.tab!!.transposed >= 12) {
-            viewModel.tab!!.transposed -= 12
-        } else if (viewModel.tab!!.transposed <= -12) {
-            viewModel.tab!!.transposed += 12
+            //13 half steps in an octave (both sides inclusive)
+            if (transposed >= 12) {
+                transposed -= 12
+            } else if (transposed <= -12) {
+                transposed += 12
+            }
+
+            Log.v(LOG_NAME, "Updating transpose level to $transposed by transposing $howMuch")
+            binding.tabContent.transpose(howMuch)
+            binding.transposeAmt.text = transposed.toString()
+            GlobalScope.launch { (activity as ISearchHelper).searchHelper?.updateTabTransposeLevel(tabId, transposed) }
         }
-
-        binding.tabContent.transpose(howMuch)
-        binding.transposeAmt.text = viewModel.tab!!.transposed.toString()
-        GlobalScope.launch{(activity as ISearchHelper).searchHelper?.updateTabTransposeLevel(viewModel.tab!!.tabId, viewModel.tab!!.transposed)}
     }
 
     private fun onDataStored() = { cause: Throwable? ->
@@ -295,7 +300,7 @@ class TabDetailFragment : Fragment() {
                         }
 
                         binding.transposeAmt.text = transposed.toString()
-                        binding.tabContent.transpose(transposed)
+                        transpose(transposed)
                         Log.v(LOG_NAME, "Updated Tab UI for tab ($tabId) '$songName'")
                     }
                 }
