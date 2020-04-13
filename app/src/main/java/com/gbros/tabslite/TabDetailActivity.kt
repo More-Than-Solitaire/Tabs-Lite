@@ -44,6 +44,10 @@ class TabDetailActivity : AppCompatActivity(), ISearchHelper {
 
             data = data.removeRange(data.indexOf('#') until data.length)  // remove anything after a # in the url
         }
+        if (data.contains('?')) {
+            data = data.removeRange(data.indexOf('?') until data.length)
+        }
+
         data = data.trimEnd().trimEnd('/', '-')                         // get rid of anything at the end
         data = data.replace("[^\\d]".toRegex(), "-")                // any non digits become -
         data = data.substring(data.indexOfLast { c -> c == '-' } + 1) // get the numbers after the last dash
