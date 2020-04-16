@@ -39,11 +39,12 @@ class SongVersionFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         searchHelper = (activity as SearchResultsActivity).searchHelper
-        arguments?.let {
+        arguments?.let { it ->
             // possible tab.type's: "Tab" (not 100% sure on this one), "Chords", "Official"
             // filter out "official" tabs -- the ones without nice chords and a "content" field.
             // also filter out tabs vs chords.  // todo: maybe implement tabs
             songVersions = (it.getParcelableArray(ARG_SONG_VERSIONS) as Array<TabBasic>).filter { tab -> tab.type == "Chords" }
+            songVersions = songVersions.sortedWith(compareByDescending {it.votes})  // thanks https://www.programiz.com/kotlin-programming/examples/sort-custom-objects-property
         }
 
         setHasOptionsMenu(true)
