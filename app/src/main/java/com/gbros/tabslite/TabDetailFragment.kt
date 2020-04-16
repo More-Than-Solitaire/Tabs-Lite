@@ -33,6 +33,7 @@ import com.gbros.tabslite.viewmodels.TabDetailViewModel
 import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
 import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.fragment_tab_detail.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -154,6 +155,9 @@ class TabDetailFragment : Fragment() {
                 override fun scrollButtonClicked() {
                     if (isScrolling) {
                         // stop scrolling
+                        autoscrollSpeed.alpha = 1.0F
+                        fab.alpha = 1.0F
+
                         timerHandler.removeCallbacks(timerRunnable)
                         fab.setImageResource(R.drawable.ic_fab_autoscroll)
                         autoscrollSpeed.isGone = true
@@ -164,8 +168,13 @@ class TabDetailFragment : Fragment() {
                         timerHandler.postDelayed(timerRunnable, 0)
                         fab.setImageResource(R.drawable.ic_fab_pause_autoscroll)
                         autoscrollSpeed.isGone = false
+                        autoscrollSpeed.alpha = 1.0F
                         (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                         binding.appbar.setExpanded(false, true)
+                        Handler().postDelayed({
+                            autoscrollSpeed.alpha = 0.4F
+                            fab.alpha = 0.4F
+                        }, 100)
                     }
                     isScrolling = !isScrolling
                 }
@@ -183,8 +192,18 @@ class TabDetailFragment : Fragment() {
             scrollDelayMs = (myDelay).toLong()
         }
 
-        override fun onStartTrackingTouch(seekBar: SeekBar) {}  // called when the user first touches the SeekBar
-        override fun onStopTrackingTouch(seekBar: SeekBar) {}  // called after the user finishes moving the SeekBar
+        override fun onStartTrackingTouch(seekBar: SeekBar) {
+            // called when the user first touches the SeekBar
+            // thanks stackoverflow.com/a/7689776
+            binding.autoscrollSpeed.alpha = 1.0F  // set opacity to 100% while touching the bar
+            binding.fab.alpha = 1.0F
+        }
+        override fun onStopTrackingTouch(seekBar: SeekBar) {
+            // called when the user first touches the SeekBar
+            // thanks stackoverflow.com/a/7689776
+            binding.autoscrollSpeed.alpha = 0.4F  // set opacity to 40% while not touching the bar
+            binding.fab.alpha = 0.4F
+        }
     }
 
     override fun onPause() {
