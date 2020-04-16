@@ -47,7 +47,7 @@ private const val LOG_NAME = "tabslite.TabDetailFragment"
 class TabDetailFragment : Fragment() {
     private val timerHandler = Handler()
     private var isScrolling: Boolean = false
-    private var scrollDelayMs: Long = 20  // default scroll speed (smaller is faster)
+    private var scrollDelayMs: Long = 34  // default scroll speed (smaller is faster)
     private var currentChordDialog: ChordBottomSheetDialogFragment? = null
 
     //private lateinit var tab: TabFull
@@ -178,8 +178,8 @@ class TabDetailFragment : Fragment() {
             // updated continuously as the user slides the thumb
             //convert progress to delay between 1px updates
             var myDelay = (100 - progress) / 100.0  // delay on a scale of 0 to 1
-            myDelay *= 34                           // delay on a scale of 0 to 34
-            myDelay += 2                            // delay on a scale of 2 to 36
+            myDelay *= 63                           // delay on a scale of 0 to 63  -- this sets the slowest autoscroll speed
+            myDelay += 2                            // delay on a scale of 2 to 65  -- this sets the fastest autoscroll speed
             scrollDelayMs = (myDelay).toLong()
         }
 
