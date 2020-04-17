@@ -30,5 +30,13 @@
     <string name="get_app">Download app permanently</string>
     <string name="save_tab_favorite">Save</string>
     <string name="reload_tab">Reload Tab</string>
+    <string name="sort_by">Sort By</string>
+
+    <string-array name="tab_sort_options">
+        <item>Date Added</item>
+        <item>Name</item>
+        <item>Artist Name</item>
+        <item>Popularity</item>
+    </string-array>
 
 </resources>

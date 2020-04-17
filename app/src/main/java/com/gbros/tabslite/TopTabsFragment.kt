@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
@@ -16,6 +17,8 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+
+private const val LOG_NAME = "tabslite.TopTabsFragment"
 
 class TopTabsFragment : Fragment() {
 
@@ -68,7 +71,47 @@ class TopTabsFragment : Fragment() {
                     requireActivity().runOnUiThread {
                         if (tabBasics != null) {
                             binding.hasHistory = true
-                            adapter.submitList(tabBasics)
+
+                            binding.sortBy.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                                /**
+                                 * Callback method to be invoked when the selection disappears from this
+                                 * view. The selection can disappear for instance when touch is activated
+                                 * or when the adapter becomes empty.
+                                 *
+                                 * @param parent The AdapterView that now contains no selected item.
+                                 */
+                                override fun onNothingSelected(parent: AdapterView<*>?) { }
+
+                                /**
+                                 *
+                                 * Callback method to be invoked when an item in this view has been
+                                 * selected. This callback is invoked only when the newly selected
+                                 * position is different from the previously selected position or if
+                                 * there was no selected item.
+                                 *
+                                 * Implementers can call getItemAtPosition(position) if they need to access the
+                                 * data associated with the selected item.
+                                 *
+                                 * @param parent The AdapterView where the selection happened
+                                 * @param view The view within the AdapterView that was clicked
+                                 * @param position The position of the view in the adapter
+                                 * @param id The row id of the item that is selected
+                                 */
+                                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                                    Log.v(LOG_NAME, "SortBy selection changed to $position")
+                                    val sortedResult = when(position){
+                                        0 -> tabBasics.sortedBy { t -> t.date }
+                                        1 -> tabBasics.sortedBy { t -> t.songName }
+                                        2 -> tabBasics.sortedBy { t -> t.artistName }
+                                        3 -> tabBasics // it's already sorted by popularity
+                                        else -> tabBasics
+                                    }
+
+                                    adapter.submitList(sortedResult)
+                                }
+                            }
+
+                            binding.sortBy.setSelection(3) // sort by popularity
                         } else {
                             binding.hasHistory = false
                             Log.e(javaClass.simpleName, "Error finding top tabs.  GetTopTabs completed, but tabBasics were null.  Results were? ($resultsNull) null as well. ")
@@ -78,6 +121,8 @@ class TopTabsFragment : Fragment() {
                 }
             }
         }
+
+
     }
 
 
