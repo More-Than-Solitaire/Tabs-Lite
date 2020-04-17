@@ -18,7 +18,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 
-private const val LOG_NAME = "tabslite.TopTabsFragment"
+private const val LOG_NAME = "tabslite.TopTabsFragmen"
 
 class TopTabsFragment : Fragment() {
 
@@ -53,6 +53,7 @@ class TopTabsFragment : Fragment() {
 
     private fun subscribeUi(adapter: BrowseTabsAdapter, binding: FragmentBrowseTabsBinding, force: Boolean = false) {
         val topTabsJob = GlobalScope.async { (activity as HomeActivity).searchHelper?.api?.getTopTabs(force) }
+        binding.sortBy.setSelection(3) // sort by popularity
 
         topTabsJob.invokeOnCompletion { cause ->
             if(cause != null){
@@ -110,8 +111,7 @@ class TopTabsFragment : Fragment() {
                                     adapter.submitList(sortedResult)
                                 }
                             }
-
-                            binding.sortBy.setSelection(3) // sort by popularity
+                            adapter.submitList(tabBasics)
                         } else {
                             binding.hasHistory = false
                             Log.e(javaClass.simpleName, "Error finding top tabs.  GetTopTabs completed, but tabBasics were null.  Results were? ($resultsNull) null as well. ")

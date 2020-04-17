@@ -20,7 +20,7 @@ import com.gbros.tabslite.utilities.InjectorUtils
 import com.gbros.tabslite.utilities.PREFS_NAME
 import com.gbros.tabslite.viewmodels.FavoriteTabsListViewModel
 
-private const val LOG_NAME = "tabslite.FavoriteTabsFragment"
+private const val LOG_NAME = "tabslite.FavoriteTabsFr"
 
 class FavoriteTabsFragment : Fragment() {
 
@@ -55,7 +55,6 @@ class FavoriteTabsFragment : Fragment() {
     private fun subscribeUi(binding: FragmentBrowseTabsBinding) {
         val adapter = binding.favoriteTabsList.adapter as BrowseTabsAdapter
         fun updateSorting(position: Int, list: List<IntTabBasic>) {
-            Log.v(LOG_NAME, "Updating sorting to SortBy selection position $position")
 
             val sortedResult = when(position){
                 0 -> list.sortedByDescending { t -> t.favoriteTime }  //todo: replace with date of adding to favorites
@@ -74,7 +73,6 @@ class FavoriteTabsFragment : Fragment() {
 
             activity?.application?.apply{
                 val storedPref = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getInt(FAVORITE_TABS_SORTING_PREF_NAME, 0)
-                Log.v(LOG_NAME, "Setting SortBy selection to stored value ($storedPref).")
                 binding.sortBy.setSelection(storedPref)
                 updateSorting(storedPref, result)
 
@@ -108,6 +106,7 @@ class FavoriteTabsFragment : Fragment() {
                         // save our spot for next run
                         activity?.application?.apply{
                             getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putInt(FAVORITE_TABS_SORTING_PREF_NAME, position).apply()
+                            Log.v(LOG_NAME, "Storing FavoriteTabs SortBy preference ($position)")
                         } ?: Log.w(LOG_NAME, "Could not store FavoriteTabs SortBy preference ($position).")
                     }
                 }

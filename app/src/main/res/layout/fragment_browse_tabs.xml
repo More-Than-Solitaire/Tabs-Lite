@@ -13,6 +13,7 @@
         android:layout_height="match_parent">
 
         <TextView
+            isGone="@{!hasHistory}"
             android:id="@+id/lblSortBy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -23,6 +24,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <Spinner
+            isGone="@{!hasHistory}"
             android:id="@+id/sortBy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -35,7 +37,36 @@
             app:layout_constraintStart_toEndOf="@+id/lblSortBy"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <LinearLayout
+            isGone="@{hasHistory}"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/empty_garden"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/favorites_empty"
+                android:textAppearance="?attr/textAppearanceHeadline5" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/find_new_songs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/find_song"
+                android:textColor="?attr/colorPrimary"
+                app:backgroundTint="?attr/colorOnPrimary"
+                app:shapeAppearance="@style/ShapeAppearance.Sunflower.Button.Add" />
+
+        </LinearLayout>
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            isGone="@{!hasHistory}"
             android:id="@+id/swipe_refresh"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -43,7 +74,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/sortBy">
-
 
             <androidx.recyclerview.widget.RecyclerView
                 android:paddingTop="@dimen/margin_normal"
@@ -55,31 +85,6 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:spanCount="1"
                 tools:listitem="@layout/list_item_browse_tabs" />
-
-            <LinearLayout
-                isGone="@{hasHistory}"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/empty_garden"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/favorites_empty"
-                    android:textAppearance="?attr/textAppearanceHeadline5" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/find_new_songs"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/find_song"
-                    android:textColor="?attr/colorPrimary"
-                    app:backgroundTint="?attr/colorOnPrimary"
-                    app:shapeAppearance="@style/ShapeAppearance.Sunflower.Button.Add" />
-
-            </LinearLayout>
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
