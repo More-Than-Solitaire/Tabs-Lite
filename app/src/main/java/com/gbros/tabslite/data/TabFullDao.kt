@@ -5,6 +5,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import java.time.LocalDateTime
+import java.time.LocalDateTime.now
+import java.util.*
 
 /**
  * The Data Access Object for the Tab Full class.
@@ -20,8 +23,8 @@ interface TabFullDao {
     @Query("SELECT * FROM tabs WHERE favorite = 1")
     fun getFavoriteTabs(): LiveData<List<TabFull>>
 
-    @Query("UPDATE tabs SET favorite = 1 WHERE id = :tabId")
-    suspend fun favoriteTab(tabId: Int)
+    @Query("UPDATE tabs SET favorite = 1, favorite_time = :dateTime WHERE id = :tabId")
+    suspend fun favoriteTab(tabId: Int, dateTime: Long = Calendar.getInstance().timeInMillis)
 
     @Query("UPDATE tabs SET favorite = 0 WHERE id = :tabId")
     suspend fun unfavoriteTab(tabId: Int)

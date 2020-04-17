@@ -1,6 +1,8 @@
 package com.gbros.tabslite.data
 
+import androidx.annotation.Nullable
 import androidx.room.*
+import java.util.*
 import kotlin.collections.ArrayList
 
 // todo: implement bpm or switch entirely over to TabRequestType
@@ -47,7 +49,10 @@ data class TabFull(
         @ColumnInfo(name = "content") var content: String = "",
         @ColumnInfo(name = "favorite") var favorite: Boolean = false,
 
-        @ColumnInfo(name = "transposed") var transposed: Int = 0
+        @ColumnInfo(name = "transposed") var transposed: Int = 0,
+
+        @ColumnInfo(name = "favorite_time") @Nullable override var favoriteTime: Long? = null
+
 ) : IntTabBasic {
     override fun toString() = "$songName by $artistName"
 

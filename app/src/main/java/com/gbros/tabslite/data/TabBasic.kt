@@ -1,9 +1,11 @@
 package com.gbros.tabslite.data
 
 import android.os.Parcelable
+import androidx.annotation.Nullable
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import kotlinx.android.parcel.Parcelize
+import java.util.*
 import kotlin.collections.ArrayList
 
 @Parcelize
@@ -31,7 +33,9 @@ data class TabBasic(
         @ColumnInfo(name = "recording_performance") override var recordingPerformance: String = "",
         @ColumnInfo(name = "recording_artists") override var recordingArtists: ArrayList<String> = ArrayList(),
 
-        @ColumnInfo(name = "num_versions") override var numVersions: Int = 1
+        @ColumnInfo(name = "num_versions") override var numVersions: Int = 1,
+
+        @ColumnInfo(name = "favorite_time") @Nullable override var favoriteTime: Long? = null
 ) : IntTabBasic, Parcelable {
     override fun toString() = "$songName by $artistName"
 }

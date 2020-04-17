@@ -12,7 +12,7 @@ import com.gbros.tabslite.utilities.DATABASE_NAME
 /**
  * The Room database for this app
  */
-@Database(entities = [TabFull::class, ChordVariation::class], version = 5, exportSchema = false)
+@Database(entities = [TabFull::class, ChordVariation::class], version = 6, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chordVariationDao(): ChordVariationDao
@@ -56,12 +56,18 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE tabs ADD COLUMN favorite_time INTEGER DEFAULT NULL")
+            }
+        }
+
 
         // Create and pre-populate the database. See this article for more details:
         // https://medium.com/google-developers/7-pro-tips-for-room-fbadea4bfbd1#4785
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build()
         }
     }

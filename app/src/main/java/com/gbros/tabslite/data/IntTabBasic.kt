@@ -24,6 +24,8 @@ interface IntTabBasic : IntSong {
     val recordingPerformance: String
     val recordingArtists: ArrayList<String>
 
+    val favoriteTime: Long?
+
     fun getUrl(): String{
         // only allowed chars are alphanumeric and dash.
         val artist = artistName.trim().toLowerCase(Locale.US).replace(' ', '-').replace("[^\\w\\d-]".toRegex(), "")
