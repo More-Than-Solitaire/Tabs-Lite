@@ -1,4 +1,4 @@
-An open source guitar tablature application built for Android.  Over a million songs available using an existing popular tabs database. Built for speed and simplicity, 100% free with no ads!
+An [open source](https://github.com/cullub/Tabs-Lite) guitar tablature application built for Android.  Over a million songs available using an existing popular tabs database. Built for speed and simplicity, 100% free with no ads!
 
 ## Download
 
