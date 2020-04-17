@@ -6,7 +6,7 @@ An open source guitar tablature application built for Android.  Over a million s
 
 Our main download site it directly from Google Play here:
 
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" style="width: 100">](https://play.google.com/store/apps/details?id=com.gbros.tabslite)
+[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" style="width: 50px">](https://play.google.com/store/apps/details?id=com.gbros.tabslite)
 
 ## Public Beta 
 
