@@ -1,6 +1,7 @@
 package com.gbros.tabslite
 
 import android.content.Context
+import android.content.ContextWrapper
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -41,14 +42,18 @@ class FavoriteTabsFragment : Fragment() {
         binding.findNewSongs.setOnClickListener {
             (activity as HomeActivity).focusSearch()
         }
-
         binding.swipeRefresh.isEnabled = false
 
-        subscribeUi(adapter, binding)
         return binding.root
     }
 
-    private fun subscribeUi(adapter: BrowseTabsAdapter, binding: FragmentBrowseTabsBinding) {
+    override fun onStart() {
+        super.onStart()
+        subscribeUi(binding)
+    }
+
+    private fun subscribeUi(binding: FragmentBrowseTabsBinding) {
+        val adapter = binding.favoriteTabsList.adapter as BrowseTabsAdapter
         fun updateSorting(position: Int, list: List<IntTabBasic>) {
             Log.v(LOG_NAME, "Updating sorting to SortBy selection position $position")
 
@@ -63,47 +68,49 @@ class FavoriteTabsFragment : Fragment() {
             adapter.submitList(sortedResult)
         }
 
-        binding.sortBy.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            /**
-             * Callback method to be invoked when the selection disappears from this
-             * view. The selection can disappear for instance when touch is activated
-             * or when the adapter becomes empty.
-             *
-             * @param parent The AdapterView that now contains no selected item.
-             */
-            override fun onNothingSelected(parent: AdapterView<*>?) { }
-
-            /**
-             *
-             * Callback method to be invoked when an item in this view has been
-             * selected. This callback is invoked only when the newly selected
-             * position is different from the previously selected position or if
-             * there was no selected item.
-             *
-             * Implementers can call getItemAtPosition(position) if they need to access the
-             * data associated with the selected item.
-             *
-             * @param parent The AdapterView where the selection happened
-             * @param view The view within the AdapterView that was clicked
-             * @param position The position of the view in the adapter
-             * @param id The row id of the item that is selected
-             */
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                updateSorting(position, adapter.currentList)
-                // save our spot for next run
-                context?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)?.edit()?.putInt(FAVORITE_TABS_SORTING_PREF_NAME, position)?.apply()
-                        ?: Log.w(LOG_NAME, "Could not store FavoriteTabs SortBy preference ($position).")
-            }
-        }
 
         viewModel.favoriteTabs.observe(viewLifecycleOwner) { result ->
             binding.hasHistory = !result.isNullOrEmpty()
 
-            context?.apply{
+            activity?.application?.apply{
                 val storedPref = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getInt(FAVORITE_TABS_SORTING_PREF_NAME, 0)
                 Log.v(LOG_NAME, "Setting SortBy selection to stored value ($storedPref).")
                 binding.sortBy.setSelection(storedPref)
                 updateSorting(storedPref, result)
+
+                binding.sortBy.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    /**
+                     * Callback method to be invoked when the selection disappears from this
+                     * view. The selection can disappear for instance when touch is activated
+                     * or when the adapter becomes empty.
+                     *
+                     * @param parent The AdapterView that now contains no selected item.
+                     */
+                    override fun onNothingSelected(parent: AdapterView<*>?) { }
+
+                    /**
+                     *
+                     * Callback method to be invoked when an item in this view has been
+                     * selected. This callback is invoked only when the newly selected
+                     * position is different from the previously selected position or if
+                     * there was no selected item.
+                     *
+                     * Implementers can call getItemAtPosition(position) if they need to access the
+                     * data associated with the selected item.
+                     *
+                     * @param parent The AdapterView where the selection happened
+                     * @param view The view within the AdapterView that was clicked
+                     * @param position The position of the view in the adapter
+                     * @param id The row id of the item that is selected
+                     */
+                    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                        updateSorting(position, adapter.currentList)
+                        // save our spot for next run
+                        activity?.application?.apply{
+                            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putInt(FAVORITE_TABS_SORTING_PREF_NAME, position).apply()
+                        } ?: Log.w(LOG_NAME, "Could not store FavoriteTabs SortBy preference ($position).")
+                    }
+                }
             } ?: run {
                 // default action if context is somehow null
                 adapter.submitList(result.sortedByDescending { t -> t.favoriteTime })  // needed because 0 is the default selection, so the sort might not be called the first time
