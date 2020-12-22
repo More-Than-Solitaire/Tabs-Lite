@@ -14,6 +14,6 @@ Jam at any time of day or night with system dark mode support.
 
 Save songs for offline access by adding them to your Favorites.  The Favorites page is shown immediately on startup, allowing for easy, efficient finding of your favorite tabs.  
 
-Quickly find the content you're looking for with a beautiful Material Design built for speed and simplicity. Search hundereds of thousands of available songs by title or author name, 100% free with no ads!
+Quickly find the content you're looking for with a beautiful Material Design built for speed and simplicity. Search hundreds of thousands of available songs by title or author name, 100% free with no ads!
 
 Key changes are as simple as a touch of a button with built in transposition. Or find the fingering for any chord by simply tapping the chord name!
