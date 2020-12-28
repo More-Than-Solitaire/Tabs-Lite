@@ -38,8 +38,8 @@ class PlaylistsFragment : Fragment() {
         val adapter = PlaylistAdapter()
         binding.favoriteTabsList.adapter = adapter
 
-        binding.findNewSongs.setOnClickListener {
-            (activity as HomeActivity).focusSearch()
+        binding.createPlaylist.setOnClickListener {
+            (activity as HomeActivity).focusSearch()  // TODO: create a new playlist on this click
         }
         binding.swipeRefresh.isEnabled = false
 

@@ -54,14 +54,14 @@
                 android:id="@+id/noPlaylistsText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/favorites_empty"
+                android:text="@string/playlists_empty"
                 android:textAppearance="?attr/textAppearanceHeadline5" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/find_new_songs"
+                android:id="@+id/create_playlist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/find_song"
+                android:text="@string/create_playlist"
                 android:textColor="?attr/colorPrimary"
                 app:backgroundTint="?attr/colorOnPrimary"
                 app:shapeAppearance="@style/ShapeAppearance.Sunflower.Button.Add" />
