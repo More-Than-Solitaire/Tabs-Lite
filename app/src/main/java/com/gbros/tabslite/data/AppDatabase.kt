@@ -63,7 +63,7 @@ abstract class AppDatabase : RoomDatabase() {
             // add the playlist functionality / data
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("CREATE TABLE IF NOT EXISTS playlist (id INTEGER NOT NULL, user_created BOOLEAN NOT NULL, title TEXT NOT NULL, date_created LONG NOT NULL, date_modified LONG NOT NULL, description TEXT NOT NULL, PRIMARY KEY(id))")
-                database.execSQL("CREATE TABLE IF NOT EXISTS playlist_entry (id INTEGER NOT NULL, playlist_id INTEGER NOT NULL, tab_id INTEGER NOT NULL, ordering INTEGER NOT NULL, date_added LONG NOT NULL, PRIMARY KEY(id))")
+                database.execSQL("CREATE TABLE IF NOT EXISTS playlist_entry (id INTEGER NOT NULL, playlist_id INTEGER NOT NULL, tab_id INTEGER NOT NULL, ordering INTEGER NOT NULL, date_added LONG NOT NULL, transpose INT NOT NULL, PRIMARY KEY(id))")
             }
         }
 
