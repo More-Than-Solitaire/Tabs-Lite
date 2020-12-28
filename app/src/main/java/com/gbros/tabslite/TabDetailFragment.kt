@@ -33,14 +33,13 @@ import com.gbros.tabslite.viewmodels.TabDetailViewModel
 import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
 import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.fragment_tab_detail.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.min
 
-private const val LOG_NAME = "tabslite.TabDetailFragment"
+private const val LOG_NAME = "tabslite.TabDetailFragm"
 
 /**
  * A fragment representing a single Tab detail screen

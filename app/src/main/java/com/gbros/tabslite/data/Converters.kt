@@ -1,18 +1,10 @@
 package com.gbros.tabslite.data
 
-import android.os.Parcel
 import androidx.room.TypeConverter
-import com.chrynan.chords.model.Chord
 import com.chrynan.chords.model.ChordMarker
-import com.chrynan.chords.model.ParcelableChordWrapper
-import com.chrynan.chords.parcel.ChordMarkerParceler
 import com.google.gson.Gson
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
-import kotlin.collections.List
-import kotlin.collections.Set
-import kotlin.collections.toList
 
 /**
  * Type converters to allow Room to reference complex data types.
@@ -65,6 +57,16 @@ class Converters {
 
     @TypeConverter
     fun toBarMarkerList(value: String) = ArrayList<ChordMarker.Bar>(gson.fromJson(value, Array<ChordMarker.Bar>::class.java).toList())
+
+    @TypeConverter
+    fun fromTimestamp(value: Long?): Date? {
+        return value?.let { Date(it) }
+    }
+
+    @TypeConverter
+    fun dateToTimestamp(date: Date?): Long? {
+        return date?.time
+    }
 
     companion object {
         private val gson = Gson()

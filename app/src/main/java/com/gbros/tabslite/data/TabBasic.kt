@@ -4,8 +4,7 @@ import android.os.Parcelable
 import androidx.annotation.Nullable
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
-import kotlinx.android.parcel.Parcelize
-import java.util.*
+import kotlinx.parcelize.Parcelize
 import kotlin.collections.ArrayList
 
 @Parcelize

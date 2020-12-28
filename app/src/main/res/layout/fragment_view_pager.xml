@@ -47,9 +47,9 @@
                     android:layout_width="?attr/actionBarSize"
                     android:layout_height="?attr/actionBarSize"
                     android:layout_weight="1"
-                    android:tint="?attr/colorOnPrimary"
                     android:contentDescription="TODO"
-                    app:srcCompat="@drawable/ic_launcher_foreground" />
+                    app:srcCompat="@drawable/ic_launcher_foreground"
+                    app:tint="?attr/colorOnPrimary" />
 
             </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.CollapsingToolbarLayout>

@@ -3,7 +3,7 @@ package com.gbros.tabslite.data
 import android.os.Parcelable
 import androidx.room.*
 import com.chrynan.chords.model.ChordMarker
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import kotlinx.android.parcel.RawValue
 import java.util.*
 import kotlin.collections.ArrayList

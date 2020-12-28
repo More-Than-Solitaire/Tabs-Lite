@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+<FrameLayout
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ChordFragment">
 
-    <com.chrynan.chords.widget.MyChordWidget
+    <com.chrynan.chords.widget.ChordWidget
         android:id="@+id/chordWidget"
         android:layout_width="@dimen/chord_bottom_sheet_diagram_width"
         android:layout_height="@dimen/chord_bottom_sheet_diagram_height"
@@ -24,3 +27,4 @@
         app:noteLabelTextColor="?attr/colorSurface"
         />
 </FrameLayout>
+</layout>

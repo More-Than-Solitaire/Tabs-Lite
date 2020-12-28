@@ -3,8 +3,9 @@
     <string name="app_name" translatable="false">Tabs Lite</string>
 
     <!-- Translatable resources -->
-    <string name="fav_tabs_title" translation_description="Title for the 'Favorite Tabs' screen where the user can see the list of tabs that they've favorited.">Favorite tabs</string>
+    <string name="fav_tabs_title" translation_description="Title for the 'Favorite Tabs' screen where the user can see the list of tabs that they've favorited.">Favorites</string>
     <string name="suggested_tabs_title" translation_description="Title for the screen where the user sees a list of automatically found suggested tabs.">Popular</string>
+    <string name="playlists_section_title" translation_description="Title for the screen where the user sees a list of playlists that they've created.">Playlists</string>
     <string name="available" translation_description="Text for the header of the plant list page indicating the available plants for users to choose from.">Available Plants</string>
     <string name="find_song" translation_description="Button text that prompts user to search for tabs to add to their (empty) favorites.">Find a song</string>
     <string name="favorites_empty" translation_description="Text that is shown on the 'Favorite Tabs' and 'Popular' screens when no tabs are there">There are no tabs here</string>
@@ -31,12 +32,18 @@
     <string name="save_tab_favorite">Save</string>
     <string name="reload_tab">Reload Tab</string>
     <string name="sort_by">Sort By</string>
+    <string name="middleDot">·</string>
 
     <string-array name="tab_sort_options">
         <item>Date Added</item>
         <item>Name</item>
         <item>Artist Name</item>
         <item>Popularity</item>
+    </string-array>
+    <string-array name="playlist_sort_options">
+        <item>Recently Modified</item>
+        <item>Title</item>
+        <item>Date Created</item>
     </string-array>
 
 </resources>

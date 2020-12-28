@@ -18,6 +18,19 @@ object InjectorUtils {
                 AppDatabase.getInstance(context.applicationContext).tabFullDao())
     }
 
+    private fun getPlaylistRepository(context: Context): PlaylistRepository {
+        return PlaylistRepository.getInstance(
+                AppDatabase.getInstance(context.applicationContext).playlistDao()
+        )
+    }
+
+    private fun getPlaylistEntryRepository(context: Context): PlaylistEntryRepository {
+        return PlaylistEntryRepository.getInstance(
+                AppDatabase.getInstance(context.applicationContext).playlistEntryDao()
+        )
+    }
+
+
     fun provideTabDetailViewModelFactory(
             context: Context,
             tabId: Int
@@ -28,5 +41,9 @@ object InjectorUtils {
 
     fun provideFavoriteTabViewModelFactory(context: Context): FavoriteTabsViewModelFactory {
         return FavoriteTabsViewModelFactory(getTabFullRepository(context))
+    }
+
+    fun providePlaylistsViewModelFactory(context: Context): PlaylistsViewModelFactory {
+        return PlaylistsViewModelFactory(getPlaylistRepository(context), getPlaylistEntryRepository(context))
     }
 }

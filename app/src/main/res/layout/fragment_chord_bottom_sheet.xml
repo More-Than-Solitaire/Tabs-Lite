@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
 <LinearLayout android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
@@ -8,8 +11,6 @@
     app:behavior_hideable="true"
     app:behavior_peekHeight="80dp"
     app:layout_behavior="@string/bottom_sheet_behavior"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <TextView
@@ -39,3 +40,4 @@
 -->
 
 </LinearLayout>
+</layout>

@@ -9,7 +9,6 @@ import android.widget.TextView
 import com.gbros.tabslite.R
 import com.gbros.tabslite.SongVersionFragment
 import com.gbros.tabslite.data.TabBasic
-import kotlinx.android.synthetic.main.fragment_song_version.view.*
 
 /**
  * [RecyclerView.Adapter] that can display a [TabBasic] (usually a search result) and makes a call to the
@@ -96,15 +95,15 @@ class MyTabBasicRecyclerViewAdapter(
 
     override fun getItemCount(): Int = mValues.size
 
-    inner class SongVersionViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
+    inner class SongVersionViewHolder(private val mView: View) : RecyclerView.ViewHolder(mView) {
 
-        val mVersionName: TextView = mView.versionName
-        val mNumRatings: TextView = mView.numRatings
-        val mStar5: ImageView = mView.star5
-        val mStar4: ImageView = mView.star4
-        val mStar3: ImageView = mView.star3
-        val mStar2: ImageView = mView.star2
-        val mStar1: ImageView = mView.star1
+        val mVersionName: TextView = mView.findViewById(R.id.versionName)
+        val mNumRatings: TextView = mView.findViewById(R.id.numRatings)
+        val mStar5: ImageView = mView.findViewById(R.id.star5)
+        val mStar4: ImageView = mView.findViewById(R.id.star4)
+        val mStar3: ImageView = mView.findViewById(R.id.star3)
+        val mStar2: ImageView = mView.findViewById(R.id.star2)
+        val mStar1: ImageView = mView.findViewById(R.id.star1)
 
         override fun toString(): String {
             return super.toString() + " " + mVersionName.text

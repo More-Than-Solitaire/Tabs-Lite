@@ -10,7 +10,8 @@ import com.chrynan.chords.model.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.gbros.tabslite.adapters.ChordPagerAdapter
 import com.gbros.tabslite.data.ChordVariation
-import kotlinx.android.synthetic.main.fragment_chord_bottom_sheet.*
+import com.gbros.tabslite.databinding.FragmentChordBinding
+import com.gbros.tabslite.databinding.FragmentChordBottomSheetBinding
 
 
 class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
@@ -28,11 +29,8 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
     private val chordVars by lazy { arguments?.getParcelableArray(KEY_CHORD) as Array<ChordVariation> }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_chord_bottom_sheet, container)
-    }
+        val binding = FragmentChordBottomSheetBinding.inflate(inflater, container, false)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         val chords = ArrayList<Chord>()
 
         for (chord in chordVars){
@@ -45,13 +43,24 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
             chords.add(Chord(chord.chordId, markerSet))
         }
 
-        pager.adapter = ChordPagerAdapter(this, chords)
-        val chordNameTextView = view.findViewById<TextView>(R.id.chordTitleTextView)
+        binding.pager.adapter = ChordPagerAdapter(this, chords)
+
+        val chordNameTextView = view?.findViewById<TextView>(R.id.chordTitleTextView)
         if(chords.size > 0) {
-            chordNameTextView.text = chords[0].name
+            if (chordNameTextView != null) {
+                chordNameTextView.text = chords[0].name
+            }
         } else {
             val chordVarsSize = chordVars.size
             Log.e(javaClass.simpleName, "Error starting chord view - chords size is 0.  chordVars size is $chordVarsSize ")
         }
+
+
+
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
     }
 }
