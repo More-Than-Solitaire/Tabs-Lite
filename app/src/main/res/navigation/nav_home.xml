@@ -8,5 +8,26 @@
         android:id="@+id/view_pager_fragment"
         android:name="com.gbros.tabslite.HomeViewPagerFragment"
         tools:layout="@layout/fragment_view_pager">
+        <action
+            android:id="@+id/action_view_pager_fragment_to_playlistFragment"
+            app:destination="@id/playlistFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/playlistFragment"
+        android:name="com.gbros.tabslite.ui.main.ViewPlaylistFragment"
+        android:label="list_item_song_version"
+        tools:layout="@layout/fragment_playlist" >
+
+        <argument
+            android:name="playlist"
+            app:argType="com.gbros.tabslite.data.Playlist" />
+        <action
+            android:id="@+id/action_playlistFragment_to_tabDetailFragment2"
+            app:destination="@id/tabDetailFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/tabDetailFragment2"
+        android:name="com.gbros.tabslite.TabDetailFragment"
+        android:label="TabDetailFragment"
+        tools:layout="@layout/fragment_tab_detail"/>
 </navigation>

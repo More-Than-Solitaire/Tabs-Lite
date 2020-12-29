@@ -29,12 +29,16 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <string name="toggle_dark_mode">Toggle Dark Mode</string>
+    <string name="toggle_dark_mode">Dark Mode...</string>
+    <string name="delete_playlist">Delete Playlist</string>
     <string name="get_app">Download app permanently</string>
     <string name="save_tab_favorite">Save</string>
     <string name="reload_tab">Reload Tab</string>
+    <string name="add_to_playlist">Add To Playlist</string>
     <string name="sort_by">Sort By</string>
     <string name="middleDot">·</string>
+    <string name="auto_scroll_speed_control">Auto scroll speed control</string>
+    <string name="auto_scroll_toggle_button">Auto scroll toggle button</string>
 
     <string-array name="tab_sort_options">
         <item>Date Added</item>

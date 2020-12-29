@@ -15,15 +15,12 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.net.toUri
-import androidx.navigation.findNavController
-import com.google.android.material.snackbar.Snackbar
 import com.gbros.tabslite.adapters.MyTabBasicRecyclerViewAdapter
 import com.gbros.tabslite.data.TabBasic
 import com.gbros.tabslite.workers.SearchHelper
 import com.google.android.gms.instantapps.InstantApps
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import java.util.*
 
 /**
  * A fragment representing a list of Items.
@@ -52,7 +49,7 @@ class SongVersionFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.list_item_song_version, container, false)
+        val view = inflater.inflate(R.layout.fragment_song_version, container, false)
         val rView = view.findViewById<RecyclerView>(R.id.song_version_list)
         // Set the adapter
         if (rView is RecyclerView) {

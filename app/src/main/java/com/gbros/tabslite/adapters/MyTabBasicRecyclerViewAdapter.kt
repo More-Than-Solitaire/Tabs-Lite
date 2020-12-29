@@ -32,7 +32,7 @@ class MyTabBasicRecyclerViewAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongVersionViewHolder {
         val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.fragment_song_version, parent, false)
+                .inflate(R.layout.list_item_song_version, parent, false)
 
         view.setOnClickListener(mOnClickListener)
         return SongVersionViewHolder(view)

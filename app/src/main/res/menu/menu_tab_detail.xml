@@ -27,6 +27,12 @@
         android:title="@string/reload_tab"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_add_to_playlist"
+        android:icon="@drawable/ic_playlist_add"
+        android:title="@string/add_to_playlist"
+        app:showAsAction="never" />
+
     <item android:id="@+id/dark_mode_toggle"
         android:title="@string/toggle_dark_mode"
         android:icon="@drawable/ic_dark_mode_toggle"

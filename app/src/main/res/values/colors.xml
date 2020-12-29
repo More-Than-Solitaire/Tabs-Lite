@@ -11,6 +11,7 @@
     <color name="surfaceColor">#f9f9f9</color>
     <color name="surfaceAccent">#e4e4e4</color>
     <color name="emptyStar">#3e3e3e</color>
+    <color name="control">#ccc</color>
 
     <color name="darkPrimaryColor">#424242</color>
     <color name="darkPrimaryLightColor">#6d6d6d</color>

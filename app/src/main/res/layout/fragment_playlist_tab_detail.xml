@@ -1,0 +1,441 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="com.gbros.tabslite.data.TabFull"/>
+        <import type="com.gbros.tabslite.data.TabBasic"/>
+        <variable
+            name="tab"
+            type="com.gbros.tabslite.data.TabFull" />
+        <variable
+            name="callback"
+            type="com.gbros.tabslite.TabDetailFragment.Callback" />
+        <variable
+            name="nextTabButtonText"
+            type="String" />
+        <variable
+            name="playlistName"
+            type="String" />
+        <variable
+            name="isPlaylist"
+            type="Boolean" />
+    </data>
+
+    <!-- todo: redo all the strings (search for plant) -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/coordinator_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:background="?attr/colorSurface"
+        tools:context="com.gbros.tabslite.HomeActivity"
+        tools:ignore="MergeRootFrame"
+        >
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fitsSystemWindows="true"
+            android:stateListAnimator="@animator/show_toolbar"
+            android:background="?attr/colorSurface"
+            android:animateLayoutChanges="true">
+            <com.google.android.material.appbar.CollapsingToolbarLayout
+                android:id="@+id/toolbar_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fitsSystemWindows="true"
+                app:contentScrim="?attr/colorSurface"
+                app:statusBarScrim="?attr/colorSurface"
+                app:collapsedTitleGravity="left"
+                app:collapsedTitleTextAppearance="@style/TextAppearance.TabsLite.Toolbar.Text"
+                app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed|snap"
+                app:title="@{tab.toString()}"
+                app:titleEnabled="true"
+                app:toolbarId="@id/toolbar">
+
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:background="@android:color/transparent"
+                    app:titleTextColor="?attr/colorOnSurface"
+                    app:layout_collapseMode="pin"
+                    app:contentInsetStartWithNavigation="0dp"
+                    app:menu="@menu/menu_tab_detail"
+                    />
+
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/margin_small"
+            android:layout_marginEnd="@dimen/margin_small"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/tab_detail_scrollview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="@dimen/fab_bottom_padding"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="0dp">
+
+
+                    <TextView
+                        android:id="@+id/tab_detail_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:gravity="center_horizontal"
+                        android:text="@{tab.toString()}"
+                        android:textAppearance="?attr/textAppearanceHeadline5"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="Even If by Mercy Me and this could be much longer" />
+
+                    <TextView
+                        android:id="@+id/difficulty_dsc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/difficulty"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+                    <TextView
+                        android:id="@+id/tuning_dsc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/tuning"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/difficulty" />
+
+                    <TextView
+                        android:id="@+id/author_dsc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/tab_author"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/key_dsc" />
+
+                    <TextView
+                        android:id="@+id/author"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@{tab.contributorUserName}"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        app:layout_constraintBottom_toBottomOf="@+id/author_dsc"
+                        app:layout_constraintStart_toEndOf="@+id/author_dsc"
+                        tools:text="author name"/>
+
+                    <TextView
+                        android:id="@+id/transpose_dsc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="16dp"
+                        android:text="Transpose"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/author_dsc" />
+
+                    <com.gbros.tabslite.TabTextView
+                        android:id="@+id/tab_content"
+                        android:layout_width="0dp"
+                        android:layout_height="555dp"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="serif-monospace"
+                        android:linksClickable="true"
+                        android:minHeight="@dimen/plant_description_min_height"
+
+                        android:paddingEnd="0dp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textColorHighlight="?attr/colorSecondary"
+                        android:textColorLink="?attr/colorAccent"
+                        android:textSize="18sp"
+                        app:layout_constraintBottom_toTopOf="@+id/btn_next"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/transpose_down"
+                        tools:text="Details about the tab" />
+
+                    <TextView
+                        android:id="@+id/difficulty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{tab.difficulty}"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        app:layout_constraintBottom_toBottomOf="@+id/difficulty_dsc"
+                        app:layout_constraintStart_toEndOf="@+id/difficulty_dsc"
+                        tools:text="novice" />
+
+                    <TextView
+                        android:id="@+id/tuning"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{tab.tuning}"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        app:layout_constraintBottom_toBottomOf="@+id/tuning_dsc"
+                        app:layout_constraintStart_toEndOf="@+id/tuning_dsc"
+                        tools:text="E A D G B E" />
+
+                    <TextView
+                        android:id="@+id/capo_dsc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Capo: "
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/tuning_dsc" />
+
+                    <TextView
+                        android:id="@+id/capo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{tab.getCapoText()}"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        app:layout_constraintBottom_toBottomOf="@+id/capo_dsc"
+                        app:layout_constraintStart_toEndOf="@+id/capo_dsc"
+                        tools:text="1"/>
+
+                    <TextView
+                        android:id="@+id/key_dsc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Key: "
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/capo_dsc" />
+
+                    <TextView
+                        android:id="@+id/key"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{tab.tonalityName}"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        app:layout_constraintBottom_toBottomOf="@+id/key_dsc"
+                        app:layout_constraintStart_toEndOf="@+id/key_dsc"
+                        tools:text="C#"/>
+
+                    <ProgressBar
+                        android:id="@+id/progressBar2"
+                        style="?android:attr/progressBarStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="150dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.498"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/tab_content" />
+
+                    <Button
+                        android:id="@+id/transpose_up"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:backgroundTint="?attr/colorPrimaryVariant"
+                        android:text="+"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                        app:layout_constraintBottom_toBottomOf="@+id/transpose_dsc"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/transpose_dsc"
+                        app:layout_constraintVertical_bias="0.692" />
+
+                    <Button
+                        android:id="@+id/transpose_down"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:backgroundTint="?attr/colorPrimaryVariant"
+                        android:text="-"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                        app:layout_constraintBottom_toBottomOf="@+id/transpose_up"
+                        app:layout_constraintEnd_toStartOf="@+id/transpose_up"
+                        app:layout_constraintTop_toTopOf="@+id/transpose_up"
+                        app:layout_constraintVertical_bias="0.0" />
+
+                    <TextView
+                        android:id="@+id/transpose_amt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="0"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        app:layout_constraintBottom_toBottomOf="@+id/transpose_dsc"
+                        app:layout_constraintStart_toEndOf="@+id/transpose_dsc"
+                        tools:text="+11" />
+
+                    <Button
+                        android:id="@+id/cancel_transpose"
+                        android:layout_width="27dp"
+                        android:layout_height="36dp"
+                        android:textColor="?attr/colorAccent"
+                        android:layout_marginStart="2dp"
+                        style="?borderlessButtonStyle"
+                        android:fontFamily="sans-serif-light"
+                        android:text="X"
+                        android:padding="0dp"
+                        android:paddingStart="0dp"
+                        android:paddingLeft="0dp"
+                        android:paddingTop="0dp"
+                        android:paddingEnd="0dp"
+                        android:paddingRight="0dp"
+                        android:paddingBottom="0dp"
+                        android:textSize="20sp"
+                        app:layout_constraintBottom_toBottomOf="@+id/transpose_amt"
+                        app:layout_constraintStart_toEndOf="@+id/transpose_amt"
+                        app:layout_constraintTop_toTopOf="@+id/transpose_amt" />
+
+                    <Button
+                        isGone="@{!isPlaylist}"
+                        android:id="@+id/btn_next"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:paddingBottom="16dp"
+                        android:drawableEnd="@drawable/ic_skip_forward"
+                        android:text="@{nextTabButtonText}"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/btn_prev"
+                        app:layout_constraintTop_toBottomOf="@+id/tab_content"
+                        tools:text="When we Wish Upon A Star or longer name maybe" />
+
+                    <Button
+                        isGone="@{!isPlaylist}"
+                        android:id="@+id/btn_prev"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="Prev"
+                        app:icon="@drawable/ic_skip_back"
+                        app:layout_constraintBottom_toBottomOf="@+id/btn_next"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/btn_next"
+                        tools:text="Prev"
+                        />
+
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        isGone="@{!isPlaylist}"
+                        android:id="@+id/linearLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="@color/control"
+                        android:theme="@style/Theme.TabsLite.LightButton"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/tab_detail_name">
+
+                        <TextView
+                            android:id="@+id/playlist_name"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@{playlistName}"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                            android:textColor="@color/emptyStar"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            app:layout_constraintBottom_toBottomOf="@+id/btn_top_skip_prev"
+                            app:layout_constraintEnd_toStartOf="@+id/btn_top_skip_prev"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="@+id/btn_top_skip_prev"
+                            tools:text="My Playlist 101" />
+
+                        <Button
+                            android:id="@+id/btn_top_skip_prev"
+                            android:layout_width="47dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="0dp"
+                            android:text=""
+                            android:background="?attr/selectableItemBackground"
+
+                            app:cornerRadius="0dp"
+                            app:icon="@drawable/ic_skip_back"
+                            app:layout_constraintEnd_toStartOf="@id/btn_top_skip_next"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <Button
+                            android:id="@+id/btn_top_skip_next"
+                            android:layout_width="47dp"
+                            android:layout_height="48dp"
+                            android:text=""
+                            android:theme="@style/Theme.TabsLite.LightButton"
+                            android:background="?attr/selectableItemBackground"
+                            app:cornerRadius="0dp"
+                            app:icon="@drawable/ic_skip_forward"
+                            app:iconPadding="0dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.core.widget.NestedScrollView>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            style="@style/Widget.MaterialComponents.FloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="80dp"
+            android:backgroundTint="?attr/colorPrimaryVariant"
+            android:contentDescription="@string/auto_scroll_toggle_button"
+            android:onClick="@{() -> callback.scrollButtonClicked()}"
+            app:layout_anchorGravity="end|bottom"
+            app:layout_anchor="@id/tab_detail_scrollview"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:srcCompat="@drawable/ic_fab_autoscroll" />
+
+        <SeekBar
+            android:id="@+id/autoscrollSpeed"
+            android:layout_width="200dp"
+            android:layout_height="30dp"
+            android:layout_marginBottom="232dp"
+            android:layout_marginRight="-56dp"
+            android:background="@drawable/seekbar_background"
+            android:contentDescription="@string/auto_scroll_speed_control"
+            android:elevation="12dp"
+            android:progress="50"
+            android:rotation="270"
+            app:layout_anchor="@id/tab_detail_scrollview"
+            app:layout_anchorGravity="end|bottom"
+            app:layout_constraintEnd_toEndOf="@+id/fab"
+            app:layout_constraintStart_toStartOf="@+id/fab"
+            app:layout_constraintBottom_toTopOf="@+id/fab" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

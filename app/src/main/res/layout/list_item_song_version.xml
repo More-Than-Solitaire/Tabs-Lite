@@ -1,50 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/coordinator_layout"
+
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
+        android:layout_height="wrap_content"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="@dimen/margin_extra_small"
+        android:layout_marginLeft="@dimen/margin_extra_small"
+        android:layout_marginRight="@dimen/margin_extra_small"
+        >
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/song_version_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-
-            app:layout_anchorGravity="center"
-            app:layoutManager="LinearLayoutManager"
-            tools:listitem="@layout/fragment_song_version"/>
-
-        <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/app_bar_layout"
+        <RelativeLayout
+            android:id="@+id/layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
-            android:theme="@style/Theme.TabsLite.AppBarOverlay"
-            >
+            android:paddingLeft="10dp"
+            android:paddingRight="4dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp">
 
-            <com.google.android.material.appbar.CollapsingToolbarLayout
-                android:id="@+id/fragment_main_toolbar"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/versionName"
+                style="@android:style/Widget.DeviceDefault.TextView"
                 android:layout_height="wrap_content"
-                app:layout_scrollFlags=""
-                app:toolbarId="@id/toolbar"
-                app:titleEnabled="false"
-                >
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="15dp"
+                android:layout_toStartOf="@+id/star1"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                tools:text="Version 1"/>
 
-                <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    style="@style/Widget.MaterialComponents.Toolbar.Primary"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    app:layout_collapseMode="parallax"
-                    app:menu="@menu/menu_main" />
-            </com.google.android.material.appbar.CollapsingToolbarLayout>
-        </com.google.android.material.appbar.AppBarLayout>
+            <!--
+            todo: implement an author name under the version name
+            -->
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+<!-- as of now, no official tabs will be used
+            <ImageView
+                android:id="@+id/official"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="10dp"
+                android:layout_toStartOf="@+id/star1"
+                app:srcCompat="@drawable/ic_official_star" />
+-->
+
+            <TextView
+                android:id="@+id/numRatings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/versionName"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="2dp"
+                tools:text="20" />
+
+            <ImageView
+                android:id="@+id/star5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="45dp"
+                app:srcCompat="@drawable/ic_rating_star_empty" />
+
+            <ImageView
+                android:id="@+id/star4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_toStartOf="@+id/star5"
+                app:srcCompat="@drawable/ic_rating_star_half" />
+
+            <ImageView
+                android:id="@+id/star3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_toStartOf="@+id/star4"
+                app:srcCompat="@drawable/ic_rating_star_full" />
+
+            <ImageView
+                android:id="@+id/star2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_toStartOf="@+id/star3"
+                app:srcCompat="@drawable/ic_rating_star_full" />
+
+            <ImageView
+                android:id="@+id/star1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_toStartOf="@+id/star2"
+                app:srcCompat="@drawable/ic_rating_star_full" />
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
 </layout>

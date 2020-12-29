@@ -17,6 +17,12 @@
 
     </style>
 
+    <style name="Theme.TabsLite.LightButton" parent="Base.Theme.TabsLite">
+        <item name="colorSurface">@color/control</item>
+        <item name="colorPrimary">@color/control</item>
+        <item name="colorOnPrimary">@color/emptyStar</item>
+    </style>
+
     <style name="Theme.WindowTranslucent.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>

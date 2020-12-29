@@ -18,8 +18,8 @@
     <fragment
         android:id="@+id/songVersionFragment"
         android:name="com.gbros.tabslite.SongVersionFragment"
-        android:label="list_item_song_version"
-        tools:layout="@layout/list_item_song_version" >
+        android:label="fragment_song_version"
+        tools:layout="@layout/fragment_song_version" >
 
         <argument
             android:name="songVersions"
