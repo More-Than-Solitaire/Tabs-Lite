@@ -68,6 +68,7 @@ class TabDetailFragment : Fragment() {
             lifecycleOwner = viewLifecycleOwner
 
             // default playlist options off
+            //TODO: handle this by checking whether we're in a playlist
             isPlaylist = false
             playlistNameStr = ""
             nextTabButtonText = ""
