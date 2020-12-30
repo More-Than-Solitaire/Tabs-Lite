@@ -67,6 +67,11 @@ class TabDetailFragment : Fragment() {
         binding.apply {
             lifecycleOwner = viewLifecycleOwner
 
+            // default playlist options off
+            isPlaylist = false
+            playlistNameStr = ""
+            nextTabButtonText = ""
+
 
             // create toolbar scroll change worker
             var isToolbarShown = false

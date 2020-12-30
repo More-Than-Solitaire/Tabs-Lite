@@ -11,6 +11,15 @@
         <variable
             name="callback"
             type="com.gbros.tabslite.TabDetailFragment.Callback" />
+        <variable
+            name="nextTabButtonText"
+            type="String" />
+        <variable
+            name="playlistNameStr"
+            type="String" />
+        <variable
+            name="isPlaylist"
+            type="Boolean" />
     </data>
 
     <!-- todo: redo all the strings (search for plant) -->
@@ -41,7 +50,7 @@
                 app:statusBarScrim="?attr/colorSurface"
                 app:collapsedTitleGravity="left"
                 app:collapsedTitleTextAppearance="@style/TextAppearance.TabsLite.Toolbar.Text"
-                app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
+                app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed|snap"
                 app:title="@{tab.toString()}"
                 app:titleEnabled="true"
                 app:toolbarId="@id/toolbar">
@@ -90,6 +99,7 @@
                         android:id="@+id/tab_detail_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
                         android:gravity="center_horizontal"
                         android:text="@{tab.toString()}"
                         android:textAppearance="?attr/textAppearanceHeadline5"
@@ -103,11 +113,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:layout_marginTop="8dp"
                         android:text="@string/difficulty"
                         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/tab_detail_name" />
+                        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
                     <TextView
                         android:id="@+id/tuning_dsc"
@@ -155,7 +164,7 @@
                     <com.gbros.tabslite.TabTextView
                         android:id="@+id/tab_content"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="555dp"
                         android:layout_marginTop="4dp"
                         android:fontFamily="serif-monospace"
                         android:linksClickable="true"
@@ -302,41 +311,138 @@
                         app:layout_constraintTop_toTopOf="@+id/transpose_amt" />
 
 
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintTop_toBottomOf="@id/tab_content"
+                        isGone="@{!isPlaylist}">
+                        
+                        <Button
+                            isGone="@{!isPlaylist}"
+                            android:id="@+id/btn_next"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:paddingBottom="16dp"
+                            android:drawableEnd="@drawable/ic_skip_forward"
+                            android:text="@{nextTabButtonText}"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/btn_prev"
+                            tools:text="When we Wish Upon A Star or longer name maybe" />
+
+                        <Button
+                            isGone="@{!isPlaylist}"
+                            android:id="@+id/btn_prev"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_marginEnd="10dp"
+                            android:text="Prev"
+                            app:icon="@drawable/ic_skip_back"
+                            app:layout_constraintBottom_toBottomOf="@+id/btn_next"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="@+id/btn_next"
+                            tools:text="Prev"
+                            />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        isGone="@{!isPlaylist}"
+                        android:id="@+id/linearLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="@color/control"
+                        android:theme="@style/Theme.TabsLite.LightButton"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/tab_detail_name">
+
+                        <TextView
+                            android:id="@+id/playlist_name"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@{playlistNameStr}"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                            android:textColor="@color/emptyStar"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            app:layout_constraintBottom_toBottomOf="@+id/btn_top_skip_prev"
+                            app:layout_constraintEnd_toStartOf="@+id/btn_top_skip_prev"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="@+id/btn_top_skip_prev"
+                            tools:text="My Playlist 101" />
+
+                        <Button
+                            android:id="@+id/btn_top_skip_prev"
+                            android:layout_width="47dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="0dp"
+                            android:text=""
+                            android:background="?attr/selectableItemBackground"
+
+                            app:cornerRadius="0dp"
+                            app:icon="@drawable/ic_skip_back"
+                            app:layout_constraintEnd_toStartOf="@id/btn_top_skip_next"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <Button
+                            android:id="@+id/btn_top_skip_next"
+                            android:layout_width="47dp"
+                            android:layout_height="48dp"
+                            android:text=""
+                            android:theme="@style/Theme.TabsLite.LightButton"
+                            android:background="?attr/selectableItemBackground"
+                            app:cornerRadius="0dp"
+                            app:icon="@drawable/ic_skip_forward"
+                            app:iconPadding="0dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </androidx.core.widget.NestedScrollView>
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab"
-                style="@style/Widget.MaterialComponents.FloatingActionButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="64dp"
-                android:layout_marginEnd="8dp"
-                android:backgroundTint="?attr/colorPrimaryVariant"
-                android:contentDescription="Auto scroll toggle button"
-                android:onClick="@{() -> callback.scrollButtonClicked()}"
-                app:layout_anchor="@+id/tab_detail_scrollview"
-                app:layout_anchorGravity="end|top"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_fab_autoscroll" />
-
-            <SeekBar
-                android:id="@+id/autoscrollSpeed"
-                android:layout_width="200dp"
-                android:layout_height="30dp"
-                android:layout_marginTop="96dp"
-                android:background="@drawable/seekbar_background"
-                android:contentDescription="Auto scroll speed control"
-                android:elevation="12dp"
-                android:progress="50"
-                android:rotation="270"
-                app:layout_constraintEnd_toEndOf="@+id/fab"
-                app:layout_constraintStart_toStartOf="@+id/fab"
-                app:layout_constraintTop_toBottomOf="@+id/fab" />
-
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            style="@style/Widget.MaterialComponents.FloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="80dp"
+            android:backgroundTint="?attr/colorPrimaryVariant"
+            android:contentDescription="@string/auto_scroll_toggle_button"
+            android:onClick="@{() -> callback.scrollButtonClicked()}"
+            app:layout_anchorGravity="end|bottom"
+            app:layout_anchor="@id/tab_detail_scrollview"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:srcCompat="@drawable/ic_fab_autoscroll" />
+
+        <SeekBar
+            android:id="@+id/autoscrollSpeed"
+            android:layout_width="200dp"
+            android:layout_height="30dp"
+            android:layout_marginBottom="232dp"
+            android:layout_marginRight="-56dp"
+            android:background="@drawable/seekbar_background"
+            android:contentDescription="@string/auto_scroll_speed_control"
+            android:elevation="12dp"
+            android:progress="50"
+            android:rotation="270"
+            app:layout_anchor="@id/tab_detail_scrollview"
+            app:layout_anchorGravity="end|bottom"
+            app:layout_constraintEnd_toEndOf="@+id/fab"
+            app:layout_constraintStart_toStartOf="@+id/fab"
+            app:layout_constraintBottom_toTopOf="@+id/fab" />
+
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
