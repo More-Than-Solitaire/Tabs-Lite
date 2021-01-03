@@ -8,8 +8,10 @@
     <string name="playlists_section_title" translation_description="Title for the screen where the user sees a list of playlists that they've created.">Playlists</string>
     <string name="available" translation_description="Text for the header of the plant list page indicating the available plants for users to choose from.">Available Plants</string>
     <string name="find_song" translation_description="Button text that prompts user to search for tabs to add to their (empty) favorites.">Find a song</string>
+    <string name="find_songs" translation_description="Button text that prompts user to search for tabs to add to their (empty) playlist.">Find some songs</string>
     <string name="create_playlist" translation_description="Button text that prompts user to new playlist.">Create New Playlist</string>
     <string name="favorites_empty" translation_description="Text that is shown on the 'Favorite Tabs' and 'Popular' screens when no tabs are there">There are no tabs here</string>
+    <string name="playlist_empty" translation_description="If there's a playlist with no tabs">This playlist doesn\'t have any tabs yet</string>
     <string name="playlists_empty" translation_description="Text that is shown on the 'Playlists' screen when no playlists are there">You don\'t have any playlists yet</string>
     <string name="menu_item_share_tab" translation_description="The label for the Share menu item">Share</string>
     <string name="menu_item_search" translation_description="The label for the Search menu item">Search</string>

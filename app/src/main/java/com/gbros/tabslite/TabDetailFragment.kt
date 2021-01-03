@@ -27,9 +27,13 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
+import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.InjectorUtils
+import com.gbros.tabslite.utilities.TabHelper
 import com.gbros.tabslite.viewmodels.TabDetailViewModel
+import com.gbros.tabslite.workers.UgApi
 import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
 import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
@@ -56,6 +60,19 @@ class TabDetailFragment : Fragment() {
     private lateinit var optionsMenu: Menu
 
     private var spannableText: SpannableStringBuilder = SpannableStringBuilder()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let { argBundle ->
+            var isPlaylist = argBundle.getBoolean("isPlaylist", false)
+            var playlistName = argBundle.getString("playlistName", "")
+            var tabId = argBundle.getInt("tabId")  // should we replace this with a TabBasic since that's normally what the sender already has?
+            var playlistEntry = argBundle.getParcelable<PlaylistEntry>("playlistEntry") //todo: test what happens when this is null
+
+            Log.v(LOG_NAME, "Showing tab $tabId.  isPlaylist: $isPlaylist, playlistName: $playlistName")
+
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -141,7 +158,7 @@ class TabDetailFragment : Fragment() {
         if (activity is SearchResultsActivity && (activity as SearchResultsActivity).getVersions != null) {
             (activity as SearchResultsActivity).getVersions!!.invokeOnCompletion(onDataStored())
         } else {
-            val getDataJob = GlobalScope.async { (activity as ISearchHelper).searchHelper?.fetchTab(getTabId()) }
+            val getDataJob = GlobalScope.async { TabHelper.fetchTab(getTabId(), AppDatabase.getInstance(requireContext())) }
             getDataJob.invokeOnCompletion(onDataStored())
         }
 
@@ -238,7 +255,7 @@ class TabDetailFragment : Fragment() {
             Log.v(LOG_NAME, "Updating transpose level to $transposed by transposing $howMuch")
             binding.tabContent.transpose(howMuch)
             binding.transposeAmt.text = transposed.toString()
-            GlobalScope.launch { (activity as ISearchHelper).searchHelper?.updateTabTransposeLevel(tabId, transposed) }
+            GlobalScope.launch { TabHelper.updateTabTransposeLevel(tabId, transposed, AppDatabase.getInstance(requireContext())) }
         }
     }
 
@@ -262,7 +279,6 @@ class TabDetailFragment : Fragment() {
         try {
             Log.v(LOG_NAME, "Getting Data")
             val tabDetailViewModel: TabDetailViewModel by viewModels {
-                val mActivity = activity
                 InjectorUtils.provideTabDetailViewModelFactory(requireActivity(), getTabId())
             }
             viewModel = tabDetailViewModel
@@ -432,7 +448,7 @@ class TabDetailFragment : Fragment() {
 
                 binding.progressBar2.isGone = false
                 val searchJob = GlobalScope.async {
-                    (activity as ISearchHelper).searchHelper?.fetchTab(tabId = getTabId(), force = true)
+                    TabHelper.fetchTab(tabId = getTabId(), force = true, database = AppDatabase.getInstance(requireContext()))
                 }
                 searchJob.start()
                 searchJob.invokeOnCompletion(onDataStored())
@@ -446,6 +462,19 @@ class TabDetailFragment : Fragment() {
             }
             R.id.get_app -> {
                 showInstallPrompt()
+                true
+            }
+            R.id.action_add_to_playlist -> {
+                // show add to playlist dialog
+                Log.v(LOG_NAME, "Adding tab to playlist")
+                val getDataJob = GlobalScope.async { AppDatabase.getInstance(requireContext()).playlistDao().getCurrentPlaylists() }
+                getDataJob.invokeOnCompletion {
+                    val playlists = getDataJob.getCompleted()
+                    val transposition = if (viewModel.tab == null) 0 else viewModel.tab!!.transposed
+                    AddToPlaylistDialogFragment(getTabId(),playlists, transposition).show(childFragmentManager, "AddToPlaylistDialogTag")
+                    Log.v(LOG_NAME, "Add to playlist task handed off to dialog.")
+                }
+
                 true
             }
             else -> false
@@ -475,11 +504,10 @@ class TabDetailFragment : Fragment() {
     }
 
     private fun chordClicked(chordName: CharSequence, noUpdate: Boolean = false){
-        val api = (activity as ISearchHelper).searchHelper?.api ?: return  // return if api null
         val input = ArrayList<CharSequence>()
         input.add(chordName)
 
-        val getChordsJob = GlobalScope.async { api.getChordVariations(chordName) }
+        val getChordsJob = GlobalScope.async { UgApi.getChordVariations(chordName, AppDatabase.getInstance(requireContext())) }
         getChordsJob.invokeOnCompletion { cause ->
             if (cause != null) {
                 Log.w(LOG_NAME, "Getting chords from db didn't work.", cause.cause)
@@ -489,7 +517,7 @@ class TabDetailFragment : Fragment() {
                 if (chordVars.isEmpty()) {
                     if(!noUpdate) {
                         // get from the internet
-                        val updateJob = GlobalScope.async { api.updateChordVariations(input) }
+                        val updateJob = GlobalScope.async { UgApi.updateChordVariations(input, AppDatabase.getInstance(requireContext())) }
                         view?.let { Snackbar.make(it, "Loading chord $chordName...", Snackbar.LENGTH_SHORT).show() }
                         updateJob.invokeOnCompletion { cause ->
                             if (cause != null) {

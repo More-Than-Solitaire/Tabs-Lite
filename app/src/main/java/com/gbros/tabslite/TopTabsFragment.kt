@@ -13,6 +13,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
 import com.gbros.tabslite.adapters.BrowseTabsAdapter
 import com.gbros.tabslite.databinding.FragmentBrowseTabsBinding
 import com.gbros.tabslite.utilities.Utils
+import com.gbros.tabslite.workers.UgApi
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -52,7 +53,7 @@ class TopTabsFragment : Fragment() {
     }
 
     private fun subscribeUi(adapter: BrowseTabsAdapter, binding: FragmentBrowseTabsBinding, force: Boolean = false) {
-        val topTabsJob = GlobalScope.async { (activity as HomeActivity).searchHelper?.api?.getTopTabs(force) }
+        val topTabsJob = GlobalScope.async { UgApi.getTopTabs(force) }
         binding.sortBy.setSelection(3) // sort by popularity
 
         topTabsJob.invokeOnCompletion { cause ->
@@ -65,57 +66,50 @@ class TopTabsFragment : Fragment() {
                     view?.let { Snackbar.make(it, "You're not connected to the internet", Snackbar.LENGTH_SHORT).show() }
                 }
             } else {
-                val result = topTabsJob.getCompleted()
-                val resultsNull = result == null
-                val tabBasics = result?.let { Utils.tabsToTabBasics(it) }
+                val tabBasics = Utils.tabsToTabBasics(topTabsJob.getCompleted())
                 if(activity != null) {
                     requireActivity().runOnUiThread {
-                        if (tabBasics != null) {
-                            binding.hasHistory = true
+                        binding.hasHistory = true
 
-                            binding.sortBy.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                                /**
-                                 * Callback method to be invoked when the selection disappears from this
-                                 * view. The selection can disappear for instance when touch is activated
-                                 * or when the adapter becomes empty.
-                                 *
-                                 * @param parent The AdapterView that now contains no selected item.
-                                 */
-                                override fun onNothingSelected(parent: AdapterView<*>?) { }
+                        binding.sortBy.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                            /**
+                             * Callback method to be invoked when the selection disappears from this
+                             * view. The selection can disappear for instance when touch is activated
+                             * or when the adapter becomes empty.
+                             *
+                             * @param parent The AdapterView that now contains no selected item.
+                             */
+                            override fun onNothingSelected(parent: AdapterView<*>?) { }
 
-                                /**
-                                 *
-                                 * Callback method to be invoked when an item in this view has been
-                                 * selected. This callback is invoked only when the newly selected
-                                 * position is different from the previously selected position or if
-                                 * there was no selected item.
-                                 *
-                                 * Implementers can call getItemAtPosition(position) if they need to access the
-                                 * data associated with the selected item.
-                                 *
-                                 * @param parent The AdapterView where the selection happened
-                                 * @param view The view within the AdapterView that was clicked
-                                 * @param position The position of the view in the adapter
-                                 * @param id The row id of the item that is selected
-                                 */
-                                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                                    Log.v(LOG_NAME, "SortBy selection changed to $position")
-                                    val sortedResult = when(position){
-                                        0 -> tabBasics.sortedBy { t -> t.date }
-                                        1 -> tabBasics.sortedBy { t -> t.songName }
-                                        2 -> tabBasics.sortedBy { t -> t.artistName }
-                                        3 -> tabBasics // it's already sorted by popularity
-                                        else -> tabBasics
-                                    }
-
-                                    adapter.submitList(sortedResult)
+                            /**
+                             *
+                             * Callback method to be invoked when an item in this view has been
+                             * selected. This callback is invoked only when the newly selected
+                             * position is different from the previously selected position or if
+                             * there was no selected item.
+                             *
+                             * Implementers can call getItemAtPosition(position) if they need to access the
+                             * data associated with the selected item.
+                             *
+                             * @param parent The AdapterView where the selection happened
+                             * @param view The view within the AdapterView that was clicked
+                             * @param position The position of the view in the adapter
+                             * @param id The row id of the item that is selected
+                             */
+                            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                                Log.v(LOG_NAME, "SortBy selection changed to $position")
+                                val sortedResult = when(position){
+                                    0 -> tabBasics.sortedBy { t -> t.date }
+                                    1 -> tabBasics.sortedBy { t -> t.songName }
+                                    2 -> tabBasics.sortedBy { t -> t.artistName }
+                                    3 -> tabBasics // it's already sorted by popularity
+                                    else -> tabBasics
                                 }
+
+                                adapter.submitList(sortedResult)
                             }
-                            adapter.submitList(tabBasics)
-                        } else {
-                            binding.hasHistory = false
-                            Log.e(javaClass.simpleName, "Error finding top tabs.  GetTopTabs completed, but tabBasics were null.  Results were? ($resultsNull) null as well. ")
                         }
+                        adapter.submitList(tabBasics)
                         binding.swipeRefresh.isRefreshing = false  // visually indicate that we're done refreshing
                     }
                 }

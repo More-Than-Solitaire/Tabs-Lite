@@ -7,7 +7,7 @@ apply plugin: 'androidx.navigation.safeargs.kotlin'
 android {
     signingConfigs {
         conf1 {
-            storeFile file('D:\\Code\\Android Development\\gbrosLLC-keystore.jks')
+            storeFile file('D:\\Code\\Android Development\\gbrosLLC-keystore.jks' )
         }
     }
     compileSdkVersion 30

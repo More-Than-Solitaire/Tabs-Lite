@@ -1,6 +1,5 @@
 package com.gbros.tabslite.workers
 
-import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -18,9 +17,7 @@ import java.net.*
 
 private const val LOG_NAME = "tabslite.UgApi"
 
-class UgApi(
-        val context: Context
-) {
+object UgApi {
     private val gson = Gson()
 
     private var lastSuggestionRequest = ""
@@ -99,12 +96,11 @@ class UgApi(
         }
     }
 
-    suspend fun updateChordVariations(chordIds: List<CharSequence>, force: Boolean = false, tuning: String = "E A D G B E",
+    suspend fun updateChordVariations(chordIds: List<CharSequence>, database: AppDatabase, force: Boolean = false, tuning: String = "E A D G B E",
                                    instrument: String = "guitar") = coroutineScope {
-        val database = AppDatabase.getInstance(context).chordVariationDao()
         var chordParam = ""
         for (chord in chordIds) {
-            if (force || !database.chordExists(chord.toString())){ // if the chord already exists in the db at all, we can assume we have all variations of it.  Not often a new chord is created
+            if (force || !database.chordVariationDao().chordExists(chord.toString())){ // if the chord already exists in the db at all, we can assume we have all variations of it.  Not often a new chord is created
                 val uChord = URLEncoder.encode(chord.toString(), "utf-8")
                 chordParam += "&chords[]=$uChord"
             }
@@ -120,7 +116,7 @@ class UgApi(
                 val chordRequestTypeToken = object : TypeToken<List<TabRequestType.ChordInfo>>() {}.type
                 val results: List<TabRequestType.ChordInfo> = gson.fromJson(jsonReader, chordRequestTypeToken)
                 for (result in results) {
-                    database.insertAll(result.getChordVariations())
+                    database.chordVariationDao().insertAll(result.getChordVariations())
                 }
                 inputStream.close()
             } else {
@@ -131,9 +127,8 @@ class UgApi(
         }
     }
 
-    suspend fun getChordVariations(chordId: CharSequence): List<ChordVariation> = coroutineScope {
-        val database = AppDatabase.getInstance(context).chordVariationDao()
-        database.getChordVariations(chordId.toString())
+    suspend fun getChordVariations(chordId: CharSequence, database: AppDatabase): List<ChordVariation> = coroutineScope {
+        database.chordVariationDao().getChordVariations(chordId.toString())
     }
 
     //todo: store top tabs in database for offline access?

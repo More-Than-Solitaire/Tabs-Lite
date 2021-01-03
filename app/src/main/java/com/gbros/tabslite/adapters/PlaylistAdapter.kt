@@ -6,14 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.gbros.tabslite.HomeViewPagerFragmentDirections
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.IntTabBasic
 import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.databinding.ListItemBrowseTabsBinding
 import com.gbros.tabslite.databinding.ListItemPlaylistBinding
+import com.gbros.tabslite.ui.main.ViewPlaylistFragmentDirections
 
 class PlaylistAdapter :
         ListAdapter<Playlist, PlaylistAdapter.PlaylistViewHolder>(
@@ -24,7 +27,7 @@ class PlaylistAdapter :
         return PlaylistViewHolder(
                 DataBindingUtil.inflate(
                         LayoutInflater.from(parent.context),
-                        R.layout.list_item_browse_tabs, parent, false
+                        R.layout.list_item_playlist, parent, false
                 )
         )
     }
@@ -42,13 +45,12 @@ class PlaylistAdapter :
             }
         }
 
+        /**
+         * On Playlist click, use navigation to go to the playlist fragment to display a playlist
+         */
         private fun playlistClicked(playlist: Playlist, view: View) {
-            //TODO: open a view of the playlist when clicked
-            //val tab = songVersions.find { tab -> tab.tabId == tabId }
-            //val i = Intent(Intent.ACTION_VIEW)
-            //i.data = playlist.playlistId
-            //i.setClass(view.context, Class.forName("com.gbros.tabslite.TabDetailActivity"))
-            //view.context.startActivity(i)
+            val direction = HomeViewPagerFragmentDirections.actionViewPagerFragmentToPlaylistFragment(playlist)
+            view.findNavController().navigate(direction)
         }
 
         fun bind(playlist: Playlist) {

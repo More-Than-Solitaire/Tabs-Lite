@@ -21,6 +21,7 @@
         <argument
             android:name="playlist"
             app:argType="com.gbros.tabslite.data.Playlist" />
+
         <action
             android:id="@+id/action_playlistFragment_to_tabDetailFragment2"
             app:destination="@id/tabDetailFragment2" />
@@ -29,5 +30,21 @@
         android:id="@+id/tabDetailFragment2"
         android:name="com.gbros.tabslite.TabDetailFragment"
         android:label="TabDetailFragment"
-        tools:layout="@layout/fragment_tab_detail"/>
+        tools:layout="@layout/fragment_tab_detail">
+        <argument
+            android:name="idPlaylist"
+            app:argType="integer" />
+        <argument
+            android:name="playlistName"
+            app:argType="string" />
+        <argument
+            android:name="tabId"
+            app:argType="integer" />
+        <argument
+            android:name="playlistEntry"
+            app:argType="com.gbros.tabslite.data.PlaylistEntry" />
+        <action
+            android:id="@+id/action_tabDetailFragment2_self"
+            app:destination="@id/tabDetailFragment2" />
+    </fragment>
 </navigation>

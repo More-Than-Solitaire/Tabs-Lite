@@ -15,15 +15,18 @@ import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.adapters.MySearchResultRecyclerViewAdapter
 import com.gbros.tabslite.data.SearchRequestType
 import com.gbros.tabslite.databinding.FragmentSearchResultListBinding
 import com.gbros.tabslite.workers.SearchHelper
+import com.gbros.tabslite.workers.UgApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
+private const val LOG_NAME = "tabslite.SearchRsltsFra"
 
 /**
  * A fragment representing a list of Items.
@@ -55,9 +58,9 @@ class SearchResultFragment : Fragment() {
             searchHelper = (activity as SearchResultsActivity).searchHelper
             if ((activity as SearchResultsActivity).query != null) {
                 query = (activity as SearchResultsActivity).query!!
-                Log.i(javaClass.simpleName, "SearchResultsFragment created for query $query")
+                Log.i(LOG_NAME, "SearchResultsFragment created for query $query")
             } else {
-                Log.e(javaClass.simpleName, "Creating Search Result Fragment without a query!  This should not happen.")
+                Log.e(LOG_NAME, "Creating Search Result Fragment without a query!  This should not happen.")
             }
 
 
@@ -98,14 +101,14 @@ class SearchResultFragment : Fragment() {
 
             return binding.root
         } catch (ex: Exception) {
-            Log.e(javaClass.simpleName, "Error in SearchResultFragment onCreateView", ex)
+            Log.e(LOG_NAME, "Error in SearchResultFragment onCreateView", ex)
             throw ex
         }
     }
 
     private fun searchNextPage() {
         binding.progressBar.isGone = false
-        (activity as SearchResultsActivity).searchJob = GlobalScope.async { searchHelper!!.api!!.search(query, ++searchPageNumber) }
+        (activity as SearchResultsActivity).searchJob = GlobalScope.async { UgApi.search(query, ++searchPageNumber) }
         (activity as SearchResultsActivity).searchJob.start()
         (activity as SearchResultsActivity).searchJob.invokeOnCompletion(onSearchComplete())
     }
@@ -163,13 +166,13 @@ class SearchResultFragment : Fragment() {
                 searchPageNumber = 0
                 query = cause.message!!.substring(7)
                 (activity as? AppCompatActivity)?.runOnUiThread {
-                    Log.i(javaClass.simpleName, "Continuing search with query '$query'")
+                    Log.i(LOG_NAME, "Continuing search with query '$query'")
                     searchNextPage()
                 }
             } else {
                 // search did not complete
                 lastPageExhausted = true
-                Log.i(javaClass.simpleName, "Reached end of search results.")
+                Log.i(LOG_NAME, "Reached end of search results.")
                 (activity as? AppCompatActivity)?.runOnUiThread {
                     binding.progressBar.isGone = true
                     binding.textView.isGone = adapter.currentList.isNotEmpty()
@@ -183,7 +186,7 @@ class SearchResultFragment : Fragment() {
             }
             val songs = data.getSongs()
             (activity as? SearchResultsActivity)?.runOnUiThread(Runnable {
-                if (!songs.isEmpty()) {
+                if (songs.isNotEmpty()) {
                     (binding.searchResultList.adapter as MySearchResultRecyclerViewAdapter).submitList(songs)
                     binding.textView.isGone = true
                 }

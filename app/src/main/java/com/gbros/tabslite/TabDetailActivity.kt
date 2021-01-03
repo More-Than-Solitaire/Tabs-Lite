@@ -52,18 +52,18 @@ class TabDetailActivity : AppCompatActivity(), ISearchHelper {
     }
 
     private fun getTabId(link: String): Int {
-        Log.v(LOG_NAME, "Getting tabid from link.")
+        Log.v(LOG_NAME, "Getting tabid from link $link")
         var tabid: String = link
 
         if (tabid.contains('?'))
             tabid = tabid.removeRange(tabid.indexOf('?') until tabid.length)
-        if (link.contains('#'))
-            tabid = link.removeRange(link.indexOf('#') until link.length)  // remove anything after a # in the url
+        if (tabid.contains('#'))
+            tabid = tabid.removeRange(tabid.indexOf('#') until link.length)  // remove anything after a # in the url
 
 
         tabid = tabid.trimEnd().trimEnd('/', '-')                         // get rid of anything at the end
         tabid = tabid.replace("[^\\d]".toRegex(), "-")                // any non digits become -
-        tabid = tabid.substring(link.indexOfLast { c -> c == '-' } + 1) // get the numbers after the last dash
+        tabid = tabid.substring(tabid.indexOfLast { c -> c == '-' } + 1) // get the numbers after the last dash
 
         Log.v(LOG_NAME, "Found tabid of ${tabid.toInt()}")
         return tabid.toInt()

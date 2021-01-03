@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil.setContentView
 import com.gbros.tabslite.data.SearchRequestType
 import com.gbros.tabslite.workers.SearchHelper
+import com.gbros.tabslite.workers.UgApi
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -50,11 +51,7 @@ class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
             if(query == null) {
                 Log.e(javaClass.simpleName, "Could not start search; query was null")
             }
-            if(searchHelper?.api == null) {
-                Log.e(javaClass.simpleName, "Could not start search; UgApi instance was null.")
-                return
-            }
-            searchJob = GlobalScope.async { searchHelper!!.api!!.search(query!!) }
+            searchJob = GlobalScope.async { UgApi.search(query!!) }
             searchJob.start()
         }
     }

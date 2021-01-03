@@ -10,6 +10,12 @@
         <variable
             name="tab"
             type="com.gbros.tabslite.data.IntTabBasic"/>
+        <variable
+            name="entry"
+            type="com.gbros.tabslite.data.PlaylistEntry" />
+        <variable
+            name="version"
+            type="String" />
     </data>
 
     <androidx.cardview.widget.CardView
@@ -86,7 +92,7 @@
                 android:layout_alignEnd="@+id/type"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="0dp"
-                android:text="@{}"
+                android:text="@{version}"
                 tools:text="ver. 1" />
 
 

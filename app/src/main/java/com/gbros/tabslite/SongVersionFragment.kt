@@ -16,11 +16,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.net.toUri
 import com.gbros.tabslite.adapters.MyTabBasicRecyclerViewAdapter
+import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.TabBasic
+import com.gbros.tabslite.utilities.TabHelper
 import com.gbros.tabslite.workers.SearchHelper
 import com.google.android.gms.instantapps.InstantApps
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+
+private const val LOG_NAME = "tabslite.SongVersionFra"
 
 /**
  * A fragment representing a list of Items.
@@ -56,8 +60,8 @@ class SongVersionFragment : Fragment() {
             with(rView) {
                 listener = object: OnListFragmentInteractionListener {
                     override fun onListFragmentInteraction(tabId: Int) {
-                        Log.v(javaClass.simpleName, "Navigating to tab detail fragment (tabId: $tabId)")
-                        (activity as SearchResultsActivity).getVersions = GlobalScope.async{ searchHelper!!.fetchTab(tabId)}  // async task that gets tab from the internet if it doesn't exist in our db yet
+                        Log.v(LOG_NAME, "Navigating to tab detail fragment (tabId: $tabId)")
+                        (activity as SearchResultsActivity).getVersions = GlobalScope.async{ TabHelper.fetchTab(tabId, AppDatabase.getInstance(requireContext()))}  // async task that gets tab from the internet if it doesn't exist in our db yet
 
 
                         // get the tab's URL
@@ -78,7 +82,7 @@ class SongVersionFragment : Fragment() {
                             i.setClass(context, Class.forName("com.gbros.tabslite.TabDetailActivity"))
                             startActivity(i)
                         } else {
-                            Log.e(javaClass.simpleName, "Could not start TabDetailActivity because tab was null in SongVersionFragment.")
+                            Log.e(LOG_NAME, "Could not start TabDetailActivity because tab was null in SongVersionFragment.")
                         }
 /*
                         val direction = SongVersionFragmentDirections.actionSongVersionFragmentToTabDetailFragment(tabId)
