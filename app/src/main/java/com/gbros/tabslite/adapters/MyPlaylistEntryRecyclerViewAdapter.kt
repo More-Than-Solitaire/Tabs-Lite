@@ -45,13 +45,10 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private v
             binding.setClickListener {
                 binding.tab?.let { tab ->
                     binding.entry?.let { playlistEntry ->
-                        //callback.viewSongVersions(song.songId)
-                        //todo: set click listener
-                        // navigate to tab detail fragment
+                        // navigate to the tab detail page on item click
                         Log.d(LOG_NAME, "Navigating from Playlist to Tab ${tab.tabId}")
                         val direction = ViewPlaylistFragmentDirections.actionPlaylistFragmentToTabDetailFragment2(true, playlistName, tab.tabId, playlistEntry)
                         binding.root.findNavController().navigate(direction)
-                        // view.findNavController().navigate(direction)
                     }
                 }
             }

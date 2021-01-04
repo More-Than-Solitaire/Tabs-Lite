@@ -291,6 +291,8 @@ class TabDetailFragment : Fragment() {
                             tspAmt = binding.tab!!.transposed
                         }
 
+                        // todo: when isPlaylist set tspAmt from playlistEntry
+
                         val fetchedTab = getTabFromDbJob.getCompleted()  // actually get the data
                         Log.v(LOG_NAME, "Set binding.tab to tab fetched from database.")
 
