@@ -32,8 +32,8 @@
         android:label="TabDetailFragment"
         tools:layout="@layout/fragment_tab_detail">
         <argument
-            android:name="idPlaylist"
-            app:argType="integer" />
+            android:name="isPlaylist"
+            app:argType="boolean" />
         <argument
             android:name="playlistName"
             app:argType="string" />

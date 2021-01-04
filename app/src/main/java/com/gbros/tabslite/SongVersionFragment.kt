@@ -61,7 +61,7 @@ class SongVersionFragment : Fragment() {
                 listener = object: OnListFragmentInteractionListener {
                     override fun onListFragmentInteraction(tabId: Int) {
                         Log.v(LOG_NAME, "Navigating to tab detail fragment (tabId: $tabId)")
-                        (activity as SearchResultsActivity).getVersions = GlobalScope.async{ TabHelper.fetchTab(tabId, AppDatabase.getInstance(requireContext()))}  // async task that gets tab from the internet if it doesn't exist in our db yet
+                        (activity as SearchResultsActivity).getVersions = GlobalScope.async{ TabHelper.fetchTabFromInternet(tabId, AppDatabase.getInstance(requireContext()))}  // async task that gets tab from the internet if it doesn't exist in our db yet
 
 
                         // get the tab's URL

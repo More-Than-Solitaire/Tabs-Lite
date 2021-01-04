@@ -6,15 +6,15 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.ListAdapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 
 
 import com.gbros.tabslite.SearchResultFragment.Callback
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.IntSong
 import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.databinding.ListItemPlaylistTabBinding
-import com.gbros.tabslite.databinding.ListItemSearchResultBinding
+import com.gbros.tabslite.ui.main.ViewPlaylistFragmentDirections
 import com.gbros.tabslite.utilities.TabHelper
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -25,10 +25,10 @@ private const val LOG_NAME = "tabslite.MyPlaylistEntr"
  * [RecyclerView.Adapter] that can display a [PlaylistEntry] and makes a call to the
  * specified [Callback].
  */
-class MyPlaylistEntryRecyclerViewAdapter(private val context: Context) : ListAdapter<PlaylistEntry, RecyclerView.ViewHolder>(PlaylistEntryCallback()) {
+class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private val playlistName: String) : ListAdapter<PlaylistEntry, RecyclerView.ViewHolder>(PlaylistEntryCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = ListItemPlaylistTabBinding.inflate(LayoutInflater.from(parent.context), parent,false)
-        return ViewHolder(view, context)
+        return ViewHolder(view, context, playlistName)
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -38,14 +38,21 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context) : ListAda
 
     class ViewHolder(
             private val binding: ListItemPlaylistTabBinding,
-            private val context: Context
+            private val context: Context,
+            private val playlistName: String
     ) : RecyclerView.ViewHolder(binding.root) {
-        fun setClickListener(callback: Callback){
+        fun setClickListener(){
             binding.setClickListener {
                 binding.tab?.let { tab ->
-                    //callback.viewSongVersions(song.songId)
-                    //todo: set click listener
-                    // navigate to tab detail fragment
+                    binding.entry?.let { playlistEntry ->
+                        //callback.viewSongVersions(song.songId)
+                        //todo: set click listener
+                        // navigate to tab detail fragment
+                        Log.d(LOG_NAME, "Navigating from Playlist to Tab ${tab.tabId}")
+                        val direction = ViewPlaylistFragmentDirections.actionPlaylistFragmentToTabDetailFragment2(true, playlistName, tab.tabId, playlistEntry)
+                        binding.root.findNavController().navigate(direction)
+                        // view.findNavController().navigate(direction)
+                    }
                 }
             }
         }
@@ -55,7 +62,7 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context) : ListAda
                 entry = item
 
                 // get tab from internet
-                val getDataJob = GlobalScope.async { TabHelper.fetchTab(item.tabId, AppDatabase.getInstance(context)) }
+                val getDataJob = GlobalScope.async { TabHelper.fetchTabFromInternet(item.tabId, AppDatabase.getInstance(context)) }
                 getDataJob.invokeOnCompletion {
                     if (getDataJob.getCompleted()) {
                         // get tab from db
@@ -65,13 +72,13 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context) : ListAda
 
                             // bind tab
                             binding.tab = tab
-                            binding.version = "ver. ${tab.version}"
+                            binding.version = "ver. ${tab?.version}"
                         }
                     } else {
                         Log.e(LOG_NAME, "Could not fetch tab for playlist listing.  Check internet connection?")
                     }
                 }
-
+                setClickListener()
                 executePendingBindings()
             }
         }

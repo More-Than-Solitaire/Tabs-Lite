@@ -20,6 +20,9 @@
         <variable
             name="isPlaylist"
             type="Boolean" />
+        <variable
+            name="transposeText"
+            type="String" />
     </data>
 
     <!-- todo: redo all the strings (search for plant) -->
@@ -165,12 +168,13 @@
                         android:id="@+id/tab_content"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="0dp"
+                        android:paddingTop="8dp"
                         android:fontFamily="serif-monospace"
                         android:linksClickable="true"
                         android:minHeight="@dimen/plant_description_min_height"
-
                         android:paddingEnd="0dp"
+                        android:paddingStart="0dp"
                         android:textColor="?attr/colorOnSurface"
                         android:textColorHighlight="?attr/colorSecondary"
                         android:textColorLink="?attr/colorAccent"
@@ -283,11 +287,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
-                        android:text="0"
+                        android:text="@{transposeText}"
                         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                         app:layout_constraintBottom_toBottomOf="@+id/transpose_dsc"
                         app:layout_constraintStart_toEndOf="@+id/transpose_dsc"
-                        tools:text="+11" />
+                        tools:text="11" />
 
                     <Button
                         android:id="@+id/cancel_transpose"
@@ -309,44 +313,6 @@
                         app:layout_constraintBottom_toBottomOf="@+id/transpose_amt"
                         app:layout_constraintStart_toEndOf="@+id/transpose_amt"
                         app:layout_constraintTop_toTopOf="@+id/transpose_amt" />
-
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:layout_constraintTop_toBottomOf="@id/tab_content"
-                        isGone="@{!isPlaylist}">
-
-                        <Button
-                            isGone="@{!isPlaylist}"
-                            android:id="@+id/btn_next"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:paddingBottom="16dp"
-                            android:drawableEnd="@drawable/ic_skip_forward"
-                            android:text="@{nextTabButtonText}"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toEndOf="@id/btn_prev"
-                            app:layout_constraintTop_toTopOf="parent"
-                            tools:text="When we Wish Upon A Star or longer name maybe" />
-
-                        <Button
-                            isGone="@{!isPlaylist}"
-                            android:id="@+id/btn_prev"
-                            android:layout_width="wrap_content"
-                            android:layout_height="0dp"
-                            android:layout_marginEnd="10dp"
-                            android:text="Prev"
-                            app:icon="@drawable/ic_skip_back"
-                            app:layout_constraintBottom_toBottomOf="@+id/btn_next"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="@+id/btn_next"
-                            tools:text="Prev"
-                            />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         isGone="@{!isPlaylist}"
@@ -401,6 +367,43 @@
                             app:iconPadding="0dp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="-16dp"
+                        app:layout_constraintTop_toBottomOf="@id/tab_content"
+                        isGone="@{!isPlaylist}">
+
+                        <Button
+                            isGone="@{!isPlaylist}"
+                            android:id="@+id/btn_next"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:paddingBottom="8dp"
+                            android:drawableEnd="@drawable/ic_skip_forward"
+                            android:text="@{nextTabButtonText}"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/btn_prev"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            tools:text="When we Wish Upon A Star or longer name maybe" />
+
+                        <Button
+                            isGone="@{!isPlaylist}"
+                            android:id="@+id/btn_prev"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_marginEnd="10dp"
+                            android:text="Prev"
+                            app:icon="@drawable/ic_skip_back"
+                            app:layout_constraintBottom_toBottomOf="@+id/btn_next"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="@+id/btn_next"
+                            tools:text="Prev"
+                            />
+
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

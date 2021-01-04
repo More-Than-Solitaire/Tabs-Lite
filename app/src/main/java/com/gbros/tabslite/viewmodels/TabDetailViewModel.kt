@@ -21,13 +21,4 @@ class TabDetailViewModel(
     //eventually todo: getUsedChords
 
 
-    fun setFavorite(isFavorite: Boolean) {
-        viewModelScope.launch {
-            if(isFavorite) {
-                tabRepository.favoriteTab(tabId)
-            } else {
-                tabRepository.unfavoriteTab(tabId)
-            }
-        }
-    }
 }

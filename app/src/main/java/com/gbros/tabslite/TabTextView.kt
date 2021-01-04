@@ -17,6 +17,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 
+
 private const val LOG_NAME = "tabslite.TabTextView"
 
 class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcompat.widget.AppCompatTextView(context, attributeSet) {
@@ -93,17 +94,17 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
 
         while (text.indexOf("[ch]", 0) != -1 ) {
             val firstIndex = text.indexOf("[ch]", 0)
-            text = text.replaceRange(firstIndex, firstIndex+4, "")
+            text = text.replaceRange(firstIndex, firstIndex + 4, "")
             result.append(text.subSequence(lastIndex, firstIndex))
 
             lastIndex = text.indexOf("[/ch]", lastIndex)
-            text = text.replaceRange(lastIndex, lastIndex+5, "")
+            text = text.replaceRange(lastIndex, lastIndex + 5, "")
             result.append(text.subSequence(firstIndex, lastIndex))
 
             val chordName = text.subSequence(firstIndex until lastIndex)
             val clickableSpan = makeSpan(chordName)
 
-            result.setSpan(clickableSpan, result.length-(lastIndex-firstIndex),
+            result.setSpan(clickableSpan, result.length - (lastIndex - firstIndex),
                     result.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         result.append((text.subSequence(lastIndex until text.length)))
@@ -169,6 +170,12 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
 
         movementMethod = LinkMovementMethod.getInstance() // without LinkMovementMethod, link can not click
         setText(spannableText, BufferType.SPANNABLE)
+        if(!isInLayout) {
+            requestLayout()
+        } else {
+            Log.v(LOG_NAME, "Could not call requestLayout() (isInLayout = true). Posting runnable instead")
+            post(Runnable { requestLayout() })
+        }
     }
     private fun findMultipleLineWordBreakIndex(lines: List<CharSequence>): Int {
         // thanks @Andro https://stackoverflow.com/a/11498125
@@ -200,6 +207,7 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
 
         return wordCharsToFit
     }
+
 
     fun transpose(howMuch: Int){
         if (howMuch != 0) {

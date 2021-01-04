@@ -31,7 +31,6 @@ class ViewPlaylistFragment : Fragment() {
                               savedInstanceState: Bundle?): View {
         val binding = FragmentPlaylistBinding.inflate(inflater, container, false)
         binding.swipeRefresh.isEnabled = false
-        binding.favoriteTabsList.adapter = MyPlaylistEntryRecyclerViewAdapter(requireContext())
 
         arguments?.let { args ->
             val playlist = args.getParcelable<Playlist>("playlist")
@@ -43,6 +42,7 @@ class ViewPlaylistFragment : Fragment() {
                     val entries = getDataJob.getCompleted()
                     if (entries.isNotEmpty()) {
                         binding.notEmpty = true
+                        binding.favoriteTabsList.adapter = MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlist.title)
                         (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(entries)
                     }
                 }
