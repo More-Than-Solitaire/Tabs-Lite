@@ -1,10 +1,8 @@
 package com.gbros.tabslite
 
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.gbros.tabslite.adapters.MyPlaylistEntryRecyclerViewAdapter
 import com.gbros.tabslite.data.AppDatabase
@@ -39,18 +37,25 @@ class ViewPlaylistFragment : Fragment() {
                     }
                 }
             }
-        }
 
-        // set up toolbar/back button
-        // set up toolbar and back button
-        (activity as AppCompatActivity).let {
-            it.setSupportActionBar(binding.toolbar)
-            it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            it.supportActionBar?.setDisplayShowHomeEnabled(true)
-//            it.supportActionBar?.setDisplayShowTitleEnabled(true)
-//            it.supportActionBar?.title = songVersions[0].toString()
+            // set up toolbar/back button
+            // set up toolbar and back button
+            setHasOptionsMenu(true)
+            (activity as AppCompatActivity).let {
+                it.setSupportActionBar(binding.toolbar)
+                it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                it.supportActionBar?.setDisplayShowHomeEnabled(true)
+                it.supportActionBar?.setDisplayShowTitleEnabled(true)
+                it.supportActionBar?.title = playlist?.title
+            }
         }
 
         return binding.root
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        //menu.clear()
+        inflater.inflate(R.menu.menu_playlist, menu)
     }
 }

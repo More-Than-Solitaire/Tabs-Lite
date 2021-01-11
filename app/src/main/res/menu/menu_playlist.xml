@@ -10,9 +10,5 @@
         android:title="@string/delete_playlist"
         android:icon="@drawable/ic_delete"
         app:showAsAction="collapseActionView|never" />
-    <item android:id="@+id/dark_mode_toggle"
-        android:title="@string/toggle_dark_mode"
-        android:icon="@drawable/ic_dark_mode_toggle"
-        app:showAsAction="collapseActionView|never" />
 
 </menu>

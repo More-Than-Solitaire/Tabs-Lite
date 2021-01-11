@@ -20,7 +20,7 @@
         android:focusable="true"
         android:foreground="?android:attr/selectableItemBackground"
         android:onClick="@{clickListener}"
-        android:layout_marginBottom="0dp"
+        android:layout_marginBottom="0.5dp"
         android:layout_marginRight="0dp"
         android:layout_marginLeft="0dp"
         >

@@ -21,7 +21,6 @@
             android:layout_height="wrap_content"
             android:fitsSystemWindows="true"
             app:layout_constraintTop_toTopOf="parent"
-            android:theme="@style/Theme.TabsLite.AppBarOverlay"
             >
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
@@ -30,8 +29,7 @@
                 android:layout_height="wrap_content"
                 app:layout_scrollFlags=""
                 app:toolbarId="@id/toolbar"
-                app:titleEnabled="false"
-                >
+                app:titleEnabled="false" >
 
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
@@ -41,8 +39,9 @@
                     android:paddingBottom="16dp"
                     app:layout_collapseMode="parallax"
                     app:title="@{playlist.title}"
+                    app:menu="@menu/menu_main"
                     tools:title="My Cool Playlist"
-                    app:menu="@menu/menu_playlist" />
+                    />
             </com.google.android.material.appbar.CollapsingToolbarLayout>
 
             <TextView
