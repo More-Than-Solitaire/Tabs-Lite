@@ -49,7 +49,7 @@
     </fragment>
     <fragment
         android:id="@+id/playlistFragment"
-        android:name="com.gbros.tabslite.ui.main.ViewPlaylistFragment"
+        android:name="com.gbros.tabslite.ViewPlaylistFragment"
         android:label="list_item_song_version"
         tools:layout="@layout/fragment_playlist" >
 

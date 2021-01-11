@@ -1,5 +1,4 @@
 package com.gbros.tabslite.adapters
-
 import android.content.Context
 import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
@@ -8,13 +7,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
-
-
 import com.gbros.tabslite.SearchResultFragment.Callback
+import com.gbros.tabslite.ViewPlaylistFragmentDirections
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.databinding.ListItemPlaylistTabBinding
-import com.gbros.tabslite.ui.main.ViewPlaylistFragmentDirections
 import com.gbros.tabslite.utilities.TabHelper
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async

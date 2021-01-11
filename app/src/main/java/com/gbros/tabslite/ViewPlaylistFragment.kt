@@ -1,21 +1,15 @@
-package com.gbros.tabslite.ui.main
+package com.gbros.tabslite
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.gbros.tabslite.AddToPlaylistDialogFragment
-import com.gbros.tabslite.R
-import com.gbros.tabslite.SongVersionFragment
+import androidx.appcompat.app.AppCompatActivity
 import com.gbros.tabslite.adapters.MyPlaylistEntryRecyclerViewAdapter
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Playlist
-import com.gbros.tabslite.data.TabBasic
 import com.gbros.tabslite.databinding.FragmentPlaylistBinding
-import com.gbros.tabslite.databinding.FragmentPlaylistsBinding
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
@@ -24,8 +18,6 @@ class ViewPlaylistFragment : Fragment() {
     companion object {
         fun newInstance() = ViewPlaylistFragment()
     }
-
-    private lateinit var viewModel: MainViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -49,13 +41,16 @@ class ViewPlaylistFragment : Fragment() {
             }
         }
 
+        // set up toolbar/back button
+        // set up toolbar and back button
+        (activity as AppCompatActivity).let {
+            it.setSupportActionBar(binding.toolbar)
+            it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            it.supportActionBar?.setDisplayShowHomeEnabled(true)
+//            it.supportActionBar?.setDisplayShowTitleEnabled(true)
+//            it.supportActionBar?.title = songVersions[0].toString()
+        }
+
         return binding.root
     }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        // TODO: Use the ViewModel
-    }
-
 }

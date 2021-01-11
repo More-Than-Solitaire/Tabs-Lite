@@ -1,10 +1,8 @@
 package com.gbros.tabslite.adapters
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toUri
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
@@ -12,11 +10,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.HomeViewPagerFragmentDirections
 import com.gbros.tabslite.R
-import com.gbros.tabslite.data.IntTabBasic
 import com.gbros.tabslite.data.Playlist
-import com.gbros.tabslite.databinding.ListItemBrowseTabsBinding
 import com.gbros.tabslite.databinding.ListItemPlaylistBinding
-import com.gbros.tabslite.ui.main.ViewPlaylistFragmentDirections
+
 
 class PlaylistAdapter :
         ListAdapter<Playlist, PlaylistAdapter.PlaylistViewHolder>(

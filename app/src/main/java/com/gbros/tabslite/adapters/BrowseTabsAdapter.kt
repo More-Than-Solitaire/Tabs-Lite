@@ -15,7 +15,6 @@ import com.gbros.tabslite.HomeViewPagerFragmentDirections
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.IntTabBasic
 import com.gbros.tabslite.databinding.ListItemBrowseTabsBinding
-import com.gbros.tabslite.ui.main.ViewPlaylistFragmentDirections
 
 private const val LOG_NAME = "tabslite.BrowseTabsAdap"
 

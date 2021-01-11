@@ -21,6 +21,9 @@ import com.gbros.tabslite.viewmodels.PlaylistsViewModel
 
 private const val LOG_NAME = "tabslite.PlaylistsFragm"
 
+/**
+ * The home screen playlists view, showing a list of all playlists that the user has saved
+ */
 class PlaylistsFragment : Fragment() {
 
     private lateinit var binding: FragmentPlaylistsBinding
