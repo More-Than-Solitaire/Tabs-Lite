@@ -8,15 +8,13 @@ import com.gbros.tabslite.workers.SearchHelper
 
 private const val LOG_NAME = "tabslite.TabDetailActiv"
 
-class TabDetailActivity : AppCompatActivity(), ISearchHelper {
+class TabDetailActivity : AppCompatActivity() {
 
     var tabId: Int = -1
     var tsp: Int = 0  // transpose level
-    override var searchHelper: SearchHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        searchHelper = SearchHelper(this)
 
         Log.d(LOG_NAME, "Tab Detail Activity Created")
         onNewIntent(intent)

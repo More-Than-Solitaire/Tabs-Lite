@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.view.isGone
+import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
@@ -23,6 +24,7 @@ import com.gbros.tabslite.data.SearchRequestType
 import com.gbros.tabslite.databinding.FragmentSearchResultListBinding
 import com.gbros.tabslite.workers.SearchHelper
 import com.gbros.tabslite.workers.UgApi
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
@@ -34,9 +36,6 @@ private const val LOG_NAME = "tabslite.SearchRsltsFra"
  * [SearchResultFragment.Callback] interface.
  */
 class SearchResultFragment : Fragment() {
-    private var searchHelper: SearchHelper? = null
-    lateinit var query: String
-    lateinit var binding: FragmentSearchResultListBinding
     var data: SearchRequestType = SearchRequestType()
     val callback = object : SearchResultFragment.Callback {
         override fun viewSongVersions(songId: Int) {
@@ -44,8 +43,7 @@ class SearchResultFragment : Fragment() {
             view?.findNavController()?.navigate(direction)
         }
     }
-    val adapter: MySearchResultRecyclerViewAdapter = MySearchResultRecyclerViewAdapter(callback as Callback)
-
+    val adapter: MySearchResultRecyclerViewAdapter = MySearchResultRecyclerViewAdapter(callback)
     var lastPageExhausted = false  // whether or not we've gone through ALL the pages of search results yet.
     var searchPageNumber = 1
 
@@ -53,27 +51,10 @@ class SearchResultFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         try {
-            //searchPageNumber = 1  // when we get to this page from a back button, we need to reset which page of search results we're looking at
-
-            searchHelper = (activity as SearchResultsActivity).searchHelper
-            if ((activity as SearchResultsActivity).query != null) {
-                query = (activity as SearchResultsActivity).query!!
-                Log.i(LOG_NAME, "SearchResultsFragment created for query $query")
-            } else {
-                Log.e(LOG_NAME, "Creating Search Result Fragment without a query!  This should not happen.")
+            if (activity is SearchResultsActivity) {
+                Log.e(LOG_NAME, "SearchResultsFragment created via activity.  Should use fragment Navigation instead!")
             }
 
-
-            //toolbar
-            (activity as AppCompatActivity).let {
-                it.setSupportActionBar(binding.toolbar)
-                it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                it.supportActionBar?.setDisplayShowHomeEnabled(true)
-            }
-
-            initializeSearchBar()
-
-            (activity as SearchResultsActivity).searchJob.invokeOnCompletion(onSearchComplete())  // when search completes
         } catch (ex: Exception) {
             Log.e(javaClass.simpleName, "Error in SearchResultFragment onActivityCreated", ex)
             throw ex
@@ -82,8 +63,32 @@ class SearchResultFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         try {
-            binding = FragmentSearchResultListBinding.inflate(inflater, container, false)
+            var query = ""
+            arguments?.let {
+                query = it.getString("query", "")
+            }
+
+            val binding = FragmentSearchResultListBinding.inflate(inflater, container, false)
+
+            // start the search
+            restartSearch(query, binding)
+
+            // toolbar
+            (activity as AppCompatActivity).let {
+                it.setSupportActionBar(binding.toolbar)
+                it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                it.supportActionBar?.setDisplayShowHomeEnabled(true)
+            }
+
+            SearchHelper.initializeSearchBar(query, binding.search, requireContext(), viewLifecycleOwner, { q ->
+                Log.i(LOG_NAME, "Starting search for '$q'")
+                restartSearch(q, binding)
+            })
+
+
             binding.searchResultList.adapter = adapter
+
+            // auto-continue search if we scroll to bottom
             binding.searchResultList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     if (!lastPageExhausted
@@ -91,7 +96,7 @@ class SearchResultFragment : Fragment() {
                             && recyclerView.needsMoreItems()
                     ) {
                         // get more search results
-                        searchNextPage()
+                        searchNextPage(query, binding)
                     }
                     super.onScrolled(recyclerView, dx, dy)
                 }
@@ -106,11 +111,21 @@ class SearchResultFragment : Fragment() {
         }
     }
 
-    private fun searchNextPage() {
+    private fun restartSearch(query: String, binding: FragmentSearchResultListBinding) {
+        // reset settings
+        lastPageExhausted = false
+        searchPageNumber = 1
+        data = SearchRequestType()
+        // (binding.searchResultList.adapter as? MySearchResultRecyclerViewAdapter)?.submitList(emptyList())
+
+        val searchJob = GlobalScope.async { UgApi.search(query) }
+        searchJob.invokeOnCompletion(onSearchComplete(query, binding, searchJob))
+    }
+
+    private fun searchNextPage(query: String, binding: FragmentSearchResultListBinding) {
         binding.progressBar.isGone = false
-        (activity as SearchResultsActivity).searchJob = GlobalScope.async { UgApi.search(query, ++searchPageNumber) }
-        (activity as SearchResultsActivity).searchJob.start()
-        (activity as SearchResultsActivity).searchJob.invokeOnCompletion(onSearchComplete())
+        val searchJob = GlobalScope.async { UgApi.search(query, ++searchPageNumber) }
+        searchJob.invokeOnCompletion(onSearchComplete(query, binding, searchJob))
     }
 
     private fun RecyclerView.needsMoreItems(): Boolean {
@@ -118,56 +133,15 @@ class SearchResultFragment : Fragment() {
         return layoutManager.findLastVisibleItemPosition() + 3 > layoutManager.itemCount
     }
 
-    private fun initializeSearchBar(){
-        //setup search bar
-        val searchManager = (activity as AppCompatActivity).getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        binding.search.setSearchableInfo(searchManager.getSearchableInfo(ComponentName((activity as AppCompatActivity), (activity as AppCompatActivity).javaClass)))
-        binding.search.isIconified = false
-        binding.search.setQuery(query, false)
-        binding.search.clearFocus()
-
-        // don't allow stacking of search activities.  If we search again, get rid of this instance
-        binding.search.setOnQueryTextListener(object : OnQueryTextListener {
-            override fun onQueryTextChange(newText: String): Boolean {
-                searchHelper!!.updateSuggestions(newText) //update the suggestions
-                return false
-            }
-
-            override fun onQueryTextSubmit(query: String): Boolean {
-                (activity as AppCompatActivity).finish()    // finish this activity
-                return false // tell the searchview that we didn't handle the search so it still calls another search
-            }
-
-        })
-
-        //set up search suggestions
-        binding.search.suggestionsAdapter = searchHelper!!.mAdapter;
-        val onSuggestionListener = object : SearchView.OnSuggestionListener {
-            override fun onSuggestionClick(position: Int): Boolean {
-                val cursor: Cursor = searchHelper!!.mAdapter.getItem(position) as Cursor
-                val txt: String = cursor.getString(cursor.getColumnIndex("suggestion"))
-                binding.search.setQuery(txt, true)
-                return true
-            }
-
-            // todo: what does this mean?
-            override fun onSuggestionSelect(position: Int): Boolean {
-                // Your code here
-                return true
-            }
-        }
-        binding.search.setOnSuggestionListener(onSuggestionListener)
-    }
-
-    private fun onSearchComplete() = { cause: Throwable? ->
+    private fun onSearchComplete(query: String, binding: FragmentSearchResultListBinding, searchJob: Deferred<SearchRequestType>) = { cause: Throwable? ->
         if(cause != null) {
             if(cause.message != null && cause.message!!.startsWith("search:")){
                 lastPageExhausted = false
                 searchPageNumber = 0
-                query = cause.message!!.substring(7)
+                val newQuery = cause.message!!.substring(7)  // no (more?) results for previous query; here's the new suggestion
                 (activity as? AppCompatActivity)?.runOnUiThread {
-                    Log.i(LOG_NAME, "Continuing search with query '$query'")
-                    searchNextPage()
+                    Log.i(LOG_NAME, "Continuing search with query '$newQuery'")
+                    searchNextPage(newQuery, binding)
                 }
             } else {
                 // search did not complete
@@ -181,11 +155,12 @@ class SearchResultFragment : Fragment() {
 
             Unit
         } else {
-            if(activity is SearchResultsActivity) {
-                data.add((activity as SearchResultsActivity).searchJob.getCompleted())
-            }
+//            if(activity is SearchResultsActivity) {
+//                data.add((activity as SearchResultsActivity).searchJob.getCompleted())
+//            }
+            data.add(searchJob.getCompleted())
             val songs = data.getSongs()
-            (activity as? SearchResultsActivity)?.runOnUiThread(Runnable {
+            activity?.runOnUiThread(Runnable {
                 if (songs.isNotEmpty()) {
                     (binding.searchResultList.adapter as MySearchResultRecyclerViewAdapter).submitList(songs)
                     binding.textView.isGone = true
@@ -193,7 +168,7 @@ class SearchResultFragment : Fragment() {
 
                 // before we finish, just make sure our current page is full.
                 if (binding.searchResultList.needsMoreItems()) {
-                    searchNextPage()
+                    searchNextPage(query, binding)
                 } else {
                     binding.progressBar.isGone = true
                 }

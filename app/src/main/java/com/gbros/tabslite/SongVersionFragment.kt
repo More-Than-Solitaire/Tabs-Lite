@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.net.toUri
+import androidx.navigation.findNavController
 import com.gbros.tabslite.adapters.MyTabBasicRecyclerViewAdapter
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.TabBasic
@@ -33,13 +34,11 @@ private const val LOG_NAME = "tabslite.SongVersionFra"
  */
 class SongVersionFragment : Fragment() {
 
-    private var searchHelper: SearchHelper? = null
     private var songVersions : List<TabBasic> = emptyList()
     private var listener: OnListFragmentInteractionListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        searchHelper = (activity as SearchResultsActivity).searchHelper
         arguments?.let { it ->
             // possible tab.type's: "Tab" (not 100% sure on this one), "Chords", "Official"
             // filter out "official" tabs -- the ones without nice chords and a "content" field.
@@ -61,33 +60,9 @@ class SongVersionFragment : Fragment() {
                 listener = object: OnListFragmentInteractionListener {
                     override fun onListFragmentInteraction(tabId: Int) {
                         Log.v(LOG_NAME, "Navigating to tab detail fragment (tabId: $tabId)")
-                        (activity as SearchResultsActivity).getVersions = GlobalScope.async{ TabHelper.fetchTabFromInternet(tabId, AppDatabase.getInstance(requireContext()))}  // async task that gets tab from the internet if it doesn't exist in our db yet
 
-
-                        // get the tab's URL
-/*
-                        val artist = tab?.let { it.artistName.trim().toLowerCase(Locale.US).replace(' ', '-').replace("[^\\w\\d-]".toRegex(), "") }
-                        val name = tab?.let { it.songName.trim().toLowerCase(Locale.US).replace(' ', '-').replace("[^\\w\\d-]".toRegex(), "") }
-                        var url = "tabslite.com/tab/"
-                        if(artist != null && name != null && artist.isNotBlank() && name.isNotBlank()) {
-                            url += "$artist/$name-"
-                        }
-                        url += tabId.toString()
-*/
-
-                        val tab = songVersions.find { tab -> tab.tabId == tabId }
-                        val i = Intent(Intent.ACTION_VIEW)
-                        if (tab != null) {
-                            i.data = tab.getUrl().toUri()
-                            i.setClass(context, Class.forName("com.gbros.tabslite.TabDetailActivity"))
-                            startActivity(i)
-                        } else {
-                            Log.e(LOG_NAME, "Could not start TabDetailActivity because tab was null in SongVersionFragment.")
-                        }
-/*
-                        val direction = SongVersionFragmentDirections.actionSongVersionFragmentToTabDetailFragment(tabId)
-                        view?.findNavController()?.navigate(direction)
-*/
+                        val direction = SongVersionFragmentDirections.actionSongVersionFragmentToTabDetailFragment2(false, "", tabId, null)
+                        view.findNavController().navigate(direction)
                     }
                 }
 
@@ -109,92 +84,40 @@ class SongVersionFragment : Fragment() {
         return view
     }
 
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
 
-        searchHelper = (activity as SearchResultsActivity).searchHelper
         requireActivity().menuInflater.inflate(R.menu.menu_main, menu)
 
         if(com.google.android.gms.common.wrappers.InstantApps.isInstantApp(context)){
             menu.findItem(R.id.get_app).isVisible = true
         }
 
-        implementSearch(menu)
+        val searchView = menu.findItem(R.id.search).actionView as SearchView
+        SearchHelper.initializeSearchBar("", searchView, requireContext(), viewLifecycleOwner, {q ->
+            Log.i(LOG_NAME, "Starting search from SongVersionFragment for query '$q'")
+            val direction = SongVersionFragmentDirections.actionSongVersionFragmentToSearchResultFragment(q)
+            view?.findNavController()?.navigate(direction)
+        })
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if(item.itemId == R.id.dark_mode_toggle) {
-            context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }  // show dialog asking user which mode they want
-            true
-        } else if(item.itemId == R.id.get_app) {
-            val postInstall = Intent(Intent.ACTION_MAIN)
-                    .addCategory(Intent.CATEGORY_DEFAULT)
-                    .setPackage("com.gbros.tabslite")
-            InstantApps.showInstallPrompt((activity as Activity), postInstall, 0, null)
-
-            true
-        } else {
-            false // let someone else take care of this click
-        }
-    }
-
-    private fun implementSearch(menu: Menu) {
-
-        if(view == null){
-            Log.e(javaClass.simpleName, "Search could not be implemented due to a null view.")
-            return
-        }
-
-        //setup search
-        val searchManager = (activity as AppCompatActivity).getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        val searchView = menu.findItem(R.id.search).actionView as SearchView
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(ComponentName((activity as AppCompatActivity), (activity as AppCompatActivity).javaClass)))
-
-        //set up search suggestions
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextChange(newText: String): Boolean {
-                Log.v(javaClass.simpleName, "Query text changed to '$newText' in SongVersionFragment.")
-                searchHelper?.updateSuggestions(newText) //update the suggestions
-                return false
+        return when (item.itemId) {
+            R.id.dark_mode_toggle -> {
+                context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }  // show dialog asking user which mode they want
+                true
             }
+            R.id.get_app -> {
+                val postInstall = Intent(Intent.ACTION_MAIN)
+                        .addCategory(Intent.CATEGORY_DEFAULT)
+                        .setPackage("com.gbros.tabslite")
+                InstantApps.showInstallPrompt((activity as Activity), postInstall, 0, null)
 
-            override fun onQueryTextSubmit(query: String): Boolean {
-                (activity as AppCompatActivity).finish()    // finish this activity
-                return false // tell the searchview that we didn't handle the search so it still calls another search
+                true
             }
-
-        })
-        searchView.suggestionsAdapter = searchHelper?.mAdapter
-        val onSuggestionListener = object : SearchView.OnSuggestionListener {
-            override fun onSuggestionClick(position: Int): Boolean {
-                val cursor: Cursor = searchHelper?.mAdapter?.getItem(position) as Cursor
-                val txt: String = cursor.getString(cursor.getColumnIndex("suggestion"))
-                searchView.setQuery(txt, true)
-                return true
-            }
-
-            // todo: what does this mean?
-            override fun onSuggestionSelect(position: Int): Boolean {
-                // Your code here
-                return true
+            else -> {
+                false // let someone else take care of this click
             }
         }
-        searchView.setOnSuggestionListener(onSuggestionListener)
-
-/*
-        val titleView = view!!.findViewById(R.id.title) as TextView
-        // set up search expand hides title
-        searchView.setOnSearchClickListener { _ ->
-            titleView.isGone = true
-        }
-
-        searchView.setOnCloseListener { ->
-            titleView.isGone = false
-
-            false
-        }
-*/
-
     }
 
     override fun onDetach() {

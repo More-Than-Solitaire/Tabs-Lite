@@ -42,13 +42,29 @@
             android:theme="@style/Theme.WindowTranslucent.NoActionBar">
             <meta-data
                 android:name="android.app.default_searchable"
-                android:value=".SearchResultsActivity" />
+                android:value=".HomeActivity" />
 
-            <intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable"
+                android:value=".HomeActivity" />
+
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="android.intent.action.SEARCH" />
                 <category android:name="android.intent.category.LAUNCHER" />
+
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:host="*.tabslite.com" />
+                <data android:pathPrefix="/tab/" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
             </intent-filter>
+
         </activity>
         <activity android:name=".SearchResultsActivity">
             <meta-data

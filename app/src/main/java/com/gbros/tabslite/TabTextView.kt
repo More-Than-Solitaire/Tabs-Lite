@@ -77,7 +77,9 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
     // puts it in `tabLines`.
     private fun linify(singleLyric: CharSequence){
         Log.v(LOG_NAME, "Breaking single line into chords/lyrics")
-        val indexOfLineBreak = singleLyric.indexOf("\n")
+        var indexOfLineBreak = singleLyric.indexOf("\n")
+        if (indexOfLineBreak == -1)  // in case of lines ending without a newline after.
+            indexOfLineBreak = singleLyric.length
         val chords: CharSequence = singleLyric.subSequence(0, indexOfLineBreak).trimEnd()
         val lyrics: CharSequence = singleLyric.subSequence(indexOfLineBreak + 1, singleLyric.length).trimEnd()
         tabLines.add(Pair(processChords(chords), processChords(lyrics)))

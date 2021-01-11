@@ -28,11 +28,11 @@ class SearchResultsActivity : AppCompatActivity(), ISearchHelper{
             super.onCreate(savedInstanceState)
             setContentView<com.gbros.tabslite.databinding.ActivitySearchResultsBinding>(
                     this, R.layout.activity_search_results)
-            searchHelper = SearchHelper(this)
+//            searchHelper = SearchHelper(this)
             handleIntent(intent)
 
             // start suggestion observer
-            searchHelper!!.getSuggestionCursor().observe(this, searchHelper!!.suggestionObserver)
+//            searchHelper!!.getSuggestionCursor().observe(this, searchHelper!!.suggestionObserver)
         } catch (ex: Exception) {
             Log.e(javaClass.simpleName, "Error creating SearchResultsActivity", ex)
             throw ex

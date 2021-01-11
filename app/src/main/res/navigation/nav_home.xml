@@ -14,6 +14,38 @@
         <action
             android:id="@+id/action_view_pager_fragment_to_tabDetailFragment2"
             app:destination="@id/tabDetailFragment2" />
+        <action
+            android:id="@+id/action_view_pager_fragment_to_searchResultFragment"
+            app:destination="@id/searchResultFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchResultFragment"
+        android:name="com.gbros.tabslite.SearchResultFragment"
+        tools:layout="@layout/fragment_search_result_list" >
+
+        <argument
+            android:name="query"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_searchResultFragment_to_songVersionFragment"
+            app:destination="@id/songVersionFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/songVersionFragment"
+        android:name="com.gbros.tabslite.SongVersionFragment"
+        android:label="fragment_song_version"
+        tools:layout="@layout/fragment_song_version" >
+
+        <argument
+            android:name="songVersions"
+            app:argType="com.gbros.tabslite.data.TabBasic[]" />
+        <action
+            android:id="@+id/action_songVersionFragment_to_tabDetailFragment2"
+            app:destination="@id/tabDetailFragment2" />
+        <action
+            android:id="@+id/action_songVersionFragment_to_searchResultFragment"
+            app:destination="@id/searchResultFragment" />
     </fragment>
     <fragment
         android:id="@+id/playlistFragment"
@@ -28,6 +60,7 @@
         <action
             android:id="@+id/action_playlistFragment_to_tabDetailFragment2"
             app:destination="@id/tabDetailFragment2" />
+
     </fragment>
     <fragment
         android:id="@+id/tabDetailFragment2"
@@ -54,5 +87,8 @@
         <action
             android:id="@+id/action_tabDetailFragment2_self"
             app:destination="@id/tabDetailFragment2" />
+        <action
+            android:id="@+id/action_tabDetailFragment2_to_searchResultFragment"
+            app:destination="@id/searchResultFragment" />
     </fragment>
 </navigation>

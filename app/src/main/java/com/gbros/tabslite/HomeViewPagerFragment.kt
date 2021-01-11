@@ -1,17 +1,23 @@
 package com.gbros.tabslite
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.menu.ActionMenuItemView
+import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import com.google.android.material.tabs.TabLayoutMediator
 import com.gbros.tabslite.adapters.FAVORITE_TABS_PAGE_INDEX
 import com.gbros.tabslite.adapters.TOP_TABS_PAGE_INDEX
 import com.gbros.tabslite.adapters.PLAYLISTS_PAGE_INDEX
 import com.gbros.tabslite.adapters.PagerAdapter
 import com.gbros.tabslite.databinding.FragmentViewPagerBinding
+import com.gbros.tabslite.workers.SearchHelper
+
+private const val LOG_NAME = "tabslite.HomeViewPagerF"
 
 class HomeViewPagerFragment : Fragment() {
 
@@ -37,6 +43,18 @@ class HomeViewPagerFragment : Fragment() {
         return binding.root
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        Log.d(LOG_NAME, "************************************************ options menu created")
+        val searchMenuItem = menu.findItem(R.id.search)
+        val searchView = searchMenuItem.actionView
+        SearchHelper.initializeSearchBar("", searchView as SearchView, requireContext(), viewLifecycleOwner, {q ->
+            Log.i(LOG_NAME, "Starting search from Home for '$q'")
+            val direction = HomeViewPagerFragmentDirections.actionViewPagerFragmentToSearchResultFragment(q)
+            view?.findNavController()?.navigate(direction)
+        })
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
     private fun getTabIcon(position: Int): Int {
         return when (position) {
             FAVORITE_TABS_PAGE_INDEX -> R.drawable.garden_tab_selector
@@ -54,6 +72,4 @@ class HomeViewPagerFragment : Fragment() {
             else -> null
         }
     }
-
-
 }

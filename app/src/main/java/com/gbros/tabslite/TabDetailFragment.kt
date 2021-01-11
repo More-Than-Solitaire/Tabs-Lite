@@ -25,6 +25,7 @@ import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.data.TabFull
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.TabHelper
+import com.gbros.tabslite.workers.SearchHelper
 import com.gbros.tabslite.workers.UgApi
 import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
 import com.google.android.gms.instantapps.InstantApps
@@ -49,7 +50,6 @@ class TabDetailFragment : Fragment() {
     private var isPlaylist: Boolean = false
     private var playlistEntry: PlaylistEntry? = null
 
-//    private lateinit var viewModel: TabDetailViewModel
     private lateinit var binding: FragmentTabDetailBinding
     private lateinit var optionsMenu: Menu
 
@@ -270,7 +270,7 @@ class TabDetailFragment : Fragment() {
                     Log.v(LOG_NAME, "Fetching tab $tabId from the database.")
                     val db = AppDatabase.getInstance(ctxt).tabFullDao()
                     Log.d(LOG_NAME, "database acquired")
-                    db.getTab(771119)
+                    db.getTab(getTabId())
                 }
 
                 getTabFromDbJob.invokeOnCompletion { cause: Throwable? ->
