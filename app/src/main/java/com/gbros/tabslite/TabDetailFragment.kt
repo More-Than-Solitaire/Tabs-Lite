@@ -30,10 +30,8 @@ import com.gbros.tabslite.workers.UgApi
 import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
 import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import java.lang.Runnable
 
 private const val LOG_NAME = "tabslite.TabDetailFragm"
 
@@ -56,25 +54,11 @@ class TabDetailFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         Log.d(LOG_NAME, "Starting TabDetailFragment")
+
+        /* ************************************     BASIC SETUP     ************************************ */
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_tab_detail, container, false)
         binding.lifecycleOwner = viewLifecycleOwner
         setHasOptionsMenu(true)
-
-        arguments?.let { argBundle ->
-            isPlaylist = argBundle.getBoolean("isPlaylist", false)
-            tabId = argBundle.getInt("tabId")  // should we replace this with a TabBasic since that's normally what the sender already has?
-            playlistEntry = argBundle.getParcelable<PlaylistEntry>("playlistEntry") //todo: test what happens when this is null
-
-
-            val playlistName = argBundle.getString("playlistName", "")
-            binding.isPlaylist = isPlaylist
-            binding.playlistNameStr = playlistName
-            binding.nextTabButtonText = "Next" // todo: get the next tab's title from db
-
-            //todo: set next and previous buttons to navigate to the next tab.
-            // also check whether the back button goes to the previous tab or back to the playlist
-            // (should go back to playlist
-        }
 
         // title bar
         (activity as AppCompatActivity).apply {
@@ -84,26 +68,96 @@ class TabDetailFragment : Fragment() {
             supportActionBar?.setDisplayShowTitleEnabled(true)
         }
 
-        setScrollListener(binding) // scroll
-
         // autoscroll speed seek bar
+        setScrollListener(binding) // scroll
         binding.autoscrollSpeed.clipToOutline = true  // not really needed since the background is enough bigger
         binding.autoscrollSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
         binding.autoscrollSpeed.isGone = true  // start hidden
+        setupAutoscroll(binding)  // does this break when we leave it scrolling before pausing?
 
         // transpose
         binding.transposeUp.setOnClickListener { transpose(true) }
         binding.transposeDown.setOnClickListener { transpose(false) }
         binding.cancelTranspose.setOnClickListener { transpose(-binding.tab!!.transposed) }  // fixme: this could cause a null pointer exception if tab didn't load
 
+        // chord views
         binding.tabContent.setCallback(object : TabTextView.Callback {
             override fun chordClicked(chordName: CharSequence) {
                 this@TabDetailFragment.chordClicked(chordName)
             }
         })
+
+
+
+        /* ************************************     Load Tab/UI     ************************************ */
+        arguments?.let { argBundle ->
+            isPlaylist = argBundle.getBoolean("isPlaylist", false)
+            tabId = argBundle.getInt("tabId")  // should we replace this with a TabBasic since that's normally what the sender already has?
+            playlistEntry = argBundle.getParcelable<PlaylistEntry>("playlistEntry") //todo: test what happens when this is null
+
+            // load current tab
+            loadTab(tabId!!)
+
+            // get next and previous tabs if they exist  //todo: move to new function
+            if (isPlaylist) {
+                if ( playlistEntry == null ) {
+                    isPlaylist = false
+                } else {
+                    // get next tab from db for title
+                    // set next and previous buttons
+                    val nextId = playlistEntry!!.next_entry_id
+                    if (nextId != null) {
+                        val getNextJob = GlobalScope.async { AppDatabase.getInstance(requireContext()).playlistEntryDao().getEntryById(nextId) }
+                        val getPrevJob = GlobalScope.async { AppDatabase.getInstance(requireContext()).playlistEntryDao().getEntryById(nextId) }
+
+                        getNextJob.invokeOnCompletion {
+                            val nextEntry = getNextJob.getCompleted()
+                            if (nextEntry != null) {
+                                // we now have the info for when the user clicks the Next buttons.
+
+                                //todo: update NEXT button text
+                                // if no next tab, disable next buttons (maybe default disabled?)
+                                // also set onClick to change this page to view the next tab
+                            }
+                        }
+                        getPrevJob.invokeOnCompletion {
+                            val prevEntry = getPrevJob.getCompleted()
+                            if (prevEntry != null) {
+                                // we now have the info for when the user clicks the PREV buttons.
+
+                                //todo: update PREV button text
+                                // if no previous tab, disable previous tab buttons (maybe default disabled?)
+                                // also set onClick to change this page to view the previous tab
+                            }
+                        }
+                    }
+                }
+            }
+
+            // playlist related buttons
+            val playlistName = argBundle.getString("playlistName", "")
+            binding.isPlaylist = isPlaylist
+            binding.playlistNameStr = playlistName
+            binding.nextTabButtonText = "Next"
+        }
+
         return binding.root
     }
 
+    override fun onPause() {
+        // consider pausing the autoscroll
+        currentChordDialog?.dismiss()  // this doesn't parcelize well, so get rid of it before we pause
+        super.onPause()
+    }
+
+    private fun loadTab(tabid: Int) {
+        Log.i(LOG_NAME, "Loading tab $tabid")
+        val getDataJob = GlobalScope.async { TabHelper.fetchTabFromInternet(getTabId(), AppDatabase.getInstance(requireContext())) }
+        getDataJob.invokeOnCompletion(onDataStored())
+
+    }
+
+    // scroll functions
     private fun setScrollListener(binding: FragmentTabDetailBinding) {
         // create toolbar scroll change worker
         var isToolbarShown = false
@@ -203,28 +257,10 @@ class TabDetailFragment : Fragment() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (activity is SearchResultsActivity && (activity as SearchResultsActivity).getVersions != null) {
-            (activity as SearchResultsActivity).getVersions!!.invokeOnCompletion(onDataStored())
-        } else {
-            Log.v(LOG_NAME, "Fetching tab from internet")
-            val getDataJob = GlobalScope.async { TabHelper.fetchTabFromInternet(getTabId(), AppDatabase.getInstance(requireContext())) }
-            getDataJob.invokeOnCompletion(onDataStored())
-        }
-
-        setupAutoscroll(binding)
-    }
-    override fun onPause() {
-        currentChordDialog?.dismiss()  // this doesn't parcelize well, so get rid of it before we pause
-        super.onPause()
-    }
-
     private fun transpose(up: Boolean){
         val howMuch = if(up) 1 else -1
         transpose(howMuch)
     }
-
     /**
      * update local variables, database, and the tab content view with a new transposition level
      */
@@ -321,6 +357,7 @@ class TabDetailFragment : Fragment() {
                                 }
 
                                 binding.tab = fetchedTab
+                                // fixme: on pause/restart this works too much; on first start this doesn't work at all.  Maybe related to #57
                                 transpose(tspAmt)  // works since we never set fetchedTab.transpose.  This will set that for us
 
                                 Log.v(LOG_NAME, "Updated Tab UI for tab ($tabId) '${fetchedTab.songName}'")
