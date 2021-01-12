@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.data.TabRequestType
 import com.gbros.tabslite.workers.UgApi
 import com.google.gson.Gson

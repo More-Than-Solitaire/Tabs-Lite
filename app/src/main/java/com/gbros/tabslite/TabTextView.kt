@@ -60,6 +60,8 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         Log.v(LOG_NAME, "Setting tab content")
         var t = content
 
+        tabLines.clear()  // remove any previous content
+
         var lastIndex = 0
         while (t.indexOf("[tab]", lastIndex) != -1) {
             val firstIndex = t.indexOf("[tab]", 0)     // remove start tag

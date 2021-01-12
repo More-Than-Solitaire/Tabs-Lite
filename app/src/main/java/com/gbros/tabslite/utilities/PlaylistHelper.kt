@@ -1,11 +1,15 @@
 package com.gbros.tabslite.utilities
 
 import android.content.Context
+import android.util.Log
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.data.PlaylistEntry
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+
+private const val LOG_NAME = "tabslite.PlaylistHelper"
+
 
 object PlaylistHelper {
     /**
@@ -17,16 +21,17 @@ object PlaylistHelper {
         // find existing last entry in this playlist
         val getDataJob = GlobalScope.async { AppDatabase.getInstance(context).playlistEntryDao().getLastEntryInPlaylist(playlistId) }
         getDataJob.invokeOnCompletion {
-            val prevEntry = getDataJob.getCompleted()
+            val previouslyLastEntry = getDataJob.getCompleted()  // used to be the last entry in the playlist, until we came along
 
+            Log.v(LOG_NAME, "Adding new playlist entry (tabid $tabId) to playlist $playlistId.  previous entry id: ${previouslyLastEntry?.entryId}")
             // insert new entry into the database
-            val entry = PlaylistEntry(playlistId, tabId, null, prevEntry?.entryId, System.currentTimeMillis(), transpose)
+            val entry = PlaylistEntry(playlistId, tabId, null, previouslyLastEntry?.entryId, System.currentTimeMillis(), transpose)
             val insertJob = GlobalScope.async { AppDatabase.getInstance(context).playlistEntryDao().insert(entry) }
             insertJob.invokeOnCompletion {
+                val newEntryId = insertJob.getCompleted().toInt()  // the entry we just added
 
-                // update existing entry's next_entry_id
-                val newEntryId = insertJob.getCompleted()
-                prevEntry?.entryId?.let { it1 -> AppDatabase.getInstance(context).playlistEntryDao().setNextEntryId(newEntryId.toInt(), it1) }
+                // update the previously last entry's next_entry_id
+                previouslyLastEntry?.entryId?.let { prev -> AppDatabase.getInstance(context).playlistEntryDao().setNextEntryId(prev, newEntryId) }
             }
 
             // update playlist modifiedTime

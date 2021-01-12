@@ -21,8 +21,15 @@
             name="isPlaylist"
             type="Boolean" />
         <variable
+            name="enableNext"
+            type="Boolean" />
+        <variable
+            name="enablePrev"
+            type="Boolean" />
+        <variable
             name="transposeText"
-            type="String" />
+            type="String"
+            />
     </data>
 
     <!-- todo: redo all the strings (search for plant) -->
@@ -347,9 +354,9 @@
                             android:layout_width="47dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="0dp"
-                            android:text=""
                             android:background="?attr/selectableItemBackground"
-
+                            android:enabled="@{enablePrev}"
+                            android:text=""
                             app:cornerRadius="0dp"
                             app:icon="@drawable/ic_skip_back"
                             app:layout_constraintEnd_toStartOf="@id/btn_top_skip_next"
@@ -359,9 +366,10 @@
                             android:id="@+id/btn_top_skip_next"
                             android:layout_width="47dp"
                             android:layout_height="48dp"
+                            android:background="?attr/selectableItemBackground"
+                            android:enabled="@{enableNext}"
                             android:text=""
                             android:theme="@style/Theme.TabsLite.LightButton"
-                            android:background="?attr/selectableItemBackground"
                             app:cornerRadius="0dp"
                             app:icon="@drawable/ic_skip_forward"
                             app:iconPadding="0dp"
@@ -377,32 +385,32 @@
                         isGone="@{!isPlaylist}">
 
                         <Button
-                            isGone="@{!isPlaylist}"
                             android:id="@+id/btn_next"
+                            isGone="@{!isPlaylist}"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="16dp"
-                            android:paddingBottom="8dp"
                             android:drawableEnd="@drawable/ic_skip_forward"
+                            android:enabled="@{enableNext}"
+                            android:paddingBottom="8dp"
                             android:text="@{nextTabButtonText}"
+                            app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toEndOf="@id/btn_prev"
-                            app:layout_constraintBottom_toBottomOf="parent"
                             tools:text="When we Wish Upon A Star or longer name maybe" />
 
                         <Button
-                            isGone="@{!isPlaylist}"
                             android:id="@+id/btn_prev"
+                            isGone="@{!isPlaylist}"
                             android:layout_width="wrap_content"
                             android:layout_height="0dp"
-                            android:layout_marginEnd="10dp"
+                            android:enabled="@{enablePrev}"
                             android:text="Prev"
                             app:icon="@drawable/ic_skip_back"
                             app:layout_constraintBottom_toBottomOf="@+id/btn_next"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="@+id/btn_next"
-                            tools:text="Prev"
-                            />
+                            tools:text="Prev" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
