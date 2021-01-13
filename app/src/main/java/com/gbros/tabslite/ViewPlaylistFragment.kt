@@ -9,10 +9,12 @@ import androidx.fragment.app.Fragment
 import com.gbros.tabslite.adapters.MyPlaylistEntryRecyclerViewAdapter
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Playlist
+import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.databinding.FragmentPlaylistBinding
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.util.*
 
 
 private const val LOG_NAME = "tabslite.ViewPlaylistFr"
@@ -38,7 +40,7 @@ class ViewPlaylistFragment : Fragment() {
                 binding.favoriteTabsList.adapter = MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlist.title)
                 AppDatabase.getInstance(requireContext()).playlistEntryDao().getLivePlaylistItems(playlistId).observe(viewLifecycleOwner, { entries ->
                     binding.notEmpty = entries.isNotEmpty()
-                    (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(entries)
+                    (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(sort(entries))
                 })
             }
 
@@ -55,6 +57,45 @@ class ViewPlaylistFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    private fun sort(playlist: List<PlaylistEntry>): List<PlaylistEntry> {
+
+        val sortedList = LinkedList(listOf(playlist.first()))
+
+        // find any elements that got moved to the front of the list
+        while (sortedList.first().prevEntryId != null) {
+            val prevId = sortedList.first().prevEntryId
+            for (entry in playlist) {
+                if (entry.entryId == prevId) {
+                    sortedList.push(entry)
+                    continue
+                }
+            }
+            // if we fell out of that for loop naturally, we have a list without a beginning
+            Log.e(LOG_NAME, "Playlist does not have beginning!  Playlist ID ${playlist.first().playlistId}")
+            break
+        }
+
+        // find any elements going through the list
+        while (sortedList.last.prevEntryId != null) {
+            val prevId = sortedList.last.prevEntryId
+            for (entry in playlist) {
+                if (entry.entryId == prevId) {
+                    sortedList.add(entry)
+                    continue
+                }
+            }
+            // if we fell out of that for loop naturally, we have a list without a beginning
+            Log.e(LOG_NAME, "Playlist does not have end!  Playlist ID ${playlist.first().playlistId}")
+            break
+        }
+
+        if (sortedList.size != playlist.size) {
+            Log.e (LOG_NAME, "Playlist does not connect.  Sorted playlist size: ${sortedList.size}.  Original list size: ${playlist.size}")
+        }
+
+        return playlist
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
