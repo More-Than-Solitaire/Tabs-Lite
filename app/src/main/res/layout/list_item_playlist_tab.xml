@@ -77,8 +77,8 @@
                 android:id="@+id/type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_toStartOf="@+id/textViewOptions"
                 android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
                 android:layout_marginTop="5dp"
                 android:layout_marginEnd="11dp"
                 android:text="@{tab.type}"
@@ -95,7 +95,18 @@
                 android:text="@{version}"
                 tools:text="ver. 1" />
 
-
+            <TextView
+                android:id="@+id/textViewOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:paddingStart="6dp"
+                android:paddingEnd="8dp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:text="&#8942;"
+                android:textAppearance="?android:textAppearanceLarge" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 </layout>

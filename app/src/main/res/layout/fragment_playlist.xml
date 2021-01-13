@@ -70,10 +70,12 @@
 
             <TextView
                 android:id="@+id/empty_garden"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textAlignment="center"
                 android:text="@string/playlist_empty"
-                android:textAppearance="?attr/textAppearanceHeadline5" />
+                android:textAppearance="?attr/textAppearanceHeadline5"
+                tools:text="This playlist doesn't have any tabs yet" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/find_new_songs"

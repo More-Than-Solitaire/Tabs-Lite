@@ -1,21 +1,29 @@
 package com.gbros.tabslite
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
-import androidx.fragment.app.Fragment
+import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.gbros.tabslite.adapters.MyPlaylistEntryRecyclerViewAdapter
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.databinding.FragmentPlaylistBinding
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+
+
+private const val LOG_NAME = "tabslite.ViewPlaylistFr"
 
 class ViewPlaylistFragment : Fragment() {
 
     companion object {
         fun newInstance() = ViewPlaylistFragment()
     }
+
+    var playlistId = 0
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -26,16 +34,12 @@ class ViewPlaylistFragment : Fragment() {
             val playlist = args.getParcelable<Playlist>("playlist")
             playlist?.let {
                 binding.playlist = playlist
-
-                val getDataJob = GlobalScope.async { AppDatabase.getInstance(requireContext()).playlistEntryDao().getPlaylistItems(playlist.playlistId) }
-                getDataJob.invokeOnCompletion {
-                    val entries = getDataJob.getCompleted()
-                    if (entries.isNotEmpty()) {
-                        binding.notEmpty = true
-                        binding.favoriteTabsList.adapter = MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlist.title)
-                        (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(entries)
-                    }
-                }
+                playlistId = playlist.playlistId
+                binding.favoriteTabsList.adapter = MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlist.title)
+                AppDatabase.getInstance(requireContext()).playlistEntryDao().getLivePlaylistItems(playlistId).observe(viewLifecycleOwner, { entries ->
+                    binding.notEmpty = entries.isNotEmpty()
+                    (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(entries)
+                })
             }
 
             // set up toolbar/back button
@@ -54,8 +58,21 @@ class ViewPlaylistFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
         //menu.clear()
         inflater.inflate(R.menu.menu_playlist, menu)
+        return super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return if (item.itemId == R.id.delete_playlist) {
+            GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistDao().deletePlaylist(playlistId) }  // delete playlist itself
+            GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistEntryDao().deletePlaylist(playlistId) }  // delete entries in playlist
+
+            Log.i(LOG_NAME, "Playlist $playlistId deleted.")
+            activity?.onBackPressed()
+            true
+        } else {
+            super.onOptionsItemSelected(item)
+        }
     }
 }

@@ -5,8 +5,10 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.ListAdapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
+import com.gbros.tabslite.R
 import com.gbros.tabslite.SearchResultFragment.Callback
 import com.gbros.tabslite.ViewPlaylistFragmentDirections
 import com.gbros.tabslite.data.AppDatabase
@@ -15,6 +17,7 @@ import com.gbros.tabslite.databinding.ListItemPlaylistTabBinding
 import com.gbros.tabslite.utilities.TabHelper
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 private const val LOG_NAME = "tabslite.MyPlaylistEntr"
 
@@ -49,6 +52,31 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private v
                     }
                 }
             }
+
+            binding.textViewOptions.setOnClickListener {
+                val popup = PopupMenu(context, it)
+                popup.inflate(R.menu.popup_playlist_item)
+                popup.setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.remove_from_playlist -> {  // delete this entry from the linked list
+                            GlobalScope.launch {
+                                val db = AppDatabase.getInstance(context).playlistEntryDao()
+                                val prevId = binding.entry!!.prevEntryId
+                                val nextId = binding.entry!!.nextEntryId
+                                val entryId = binding.entry!!.entryId
+
+                                db.setNextEntryId(prevId, nextId)     // update prev item to point to next
+                                db.setPrevEntryId(nextId, prevId)     // update next to point to prev
+                                db.deleteEntry(entryId)               // delete this
+                            }
+
+                            return@setOnMenuItemClickListener true
+                        }
+                        else -> return@setOnMenuItemClickListener false
+                    }
+                }
+                popup.show()
+            }
         }
 
         fun bind(item: PlaylistEntry) {
@@ -66,7 +94,7 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private v
 
                             // bind tab
                             binding.tab = tab
-                            binding.version = "ver. ${tab?.version}"
+                            binding.version = "ver. ${tab.version}"
                         }
                     } else {
                         Log.e(LOG_NAME, "Could not fetch tab for playlist listing.  Check internet connection?")

@@ -1,5 +1,6 @@
 package com.gbros.tabslite.data
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 
 /**
@@ -8,7 +9,7 @@ import androidx.room.*
 @Dao
 interface PlaylistEntryDao {
     @Query("SELECT * FROM playlist_entry WHERE playlist_id = :playlistId")
-    suspend fun getPlaylistItems(playlistId: Int): List<PlaylistEntry>
+    fun getLivePlaylistItems(playlistId: Int): LiveData<List<PlaylistEntry>>
 
     @Query("SELECT playlist_id FROM playlist_entry WHERE tab_id = :tabId")
     suspend fun getPlaylistsForTab(tabId: Int): List<Int>
@@ -20,7 +21,10 @@ interface PlaylistEntryDao {
     suspend fun getEntryById(entryId: Int): PlaylistEntry?
 
     @Query("UPDATE playlist_entry SET next_entry_id = :nextEntryId WHERE id = :thisEntryId")
-    fun setNextEntryId(thisEntryId: Int, nextEntryId: Int)
+    fun setNextEntryId(thisEntryId: Int?, nextEntryId: Int?)
+
+    @Query("UPDATE playlist_entry SET prev_entry_id = :prevEntryId WHERE id = :thisEntryId")
+    fun setPrevEntryId(thisEntryId: Int?, prevEntryId: Int?)
 
     @Update
     fun update(entry: PlaylistEntry)
@@ -28,6 +32,9 @@ interface PlaylistEntryDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: PlaylistEntry): Long
 
-    @Delete
-    suspend fun deleteEntry(entry: PlaylistEntry)
+    @Query("DELETE FROM playlist_entry WHERE id = :id")
+    fun deleteEntry(id: Int)
+
+    @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId")
+    fun deletePlaylist(playlistId: Int)
 }

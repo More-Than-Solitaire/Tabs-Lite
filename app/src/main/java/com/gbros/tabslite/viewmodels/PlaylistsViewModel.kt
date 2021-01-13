@@ -10,7 +10,4 @@ class PlaylistsViewModel constructor(
 ) : ViewModel() {
     val playlists: LiveData<List<Playlist>> =
             playlistRepository.getPlaylists()
-
-    private val per = playlistEntryRepository
-    suspend fun getPlaylistEntries(pid: Int) = per.getPlaylistItems(pid)
 }

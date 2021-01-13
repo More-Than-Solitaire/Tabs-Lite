@@ -132,7 +132,7 @@ class TabDetailFragment : Fragment() {
         // get next and previous tabs if they exist  //todo: move to new function
         if (isPlaylist && playlistEntry != null ) {
             // update NEXT buttons
-            val nextId = playlistEntry.next_entry_id
+            val nextId = playlistEntry.nextEntryId
             if (nextId != null) {
                 val getNextJob = GlobalScope.async { AppDatabase.getInstance(requireContext()).playlistEntryDao().getEntryById(nextId) }
                 getNextJob.invokeOnCompletion {
@@ -154,7 +154,7 @@ class TabDetailFragment : Fragment() {
 
             // update PREV buttons
             Log.d(LOG_NAME, "setting playlist buttons")
-            val prevId = playlistEntry.prev_entry_id
+            val prevId = playlistEntry.prevEntryId
             if (prevId != null) {
                 val getPrevJob = GlobalScope.async { AppDatabase.getInstance(requireContext()).playlistEntryDao().getEntryById(prevId) }
                 getPrevJob.invokeOnCompletion {
