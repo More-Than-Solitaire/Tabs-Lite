@@ -1,9 +1,11 @@
 package com.gbros.tabslite.adapters
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.ListAdapter
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.navigation.findNavController
@@ -25,10 +27,10 @@ private const val LOG_NAME = "tabslite.MyPlaylistEntr"
  * [RecyclerView.Adapter] that can display a [PlaylistEntry] and makes a call to the
  * specified [Callback].
  */
-class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private val playlistName: String) : ListAdapter<PlaylistEntry, RecyclerView.ViewHolder>(PlaylistEntryCallback()) {
+class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private val playlistName: String, private val dragCallback: (RecyclerView.ViewHolder) -> Unit) : ListAdapter<PlaylistEntry, RecyclerView.ViewHolder>(PlaylistEntryCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = ListItemPlaylistTabBinding.inflate(LayoutInflater.from(parent.context), parent,false)
-        return ViewHolder(view, context, playlistName)
+        return ViewHolder(view, context, playlistName, dragCallback)
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -39,8 +41,10 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private v
     class ViewHolder(
             private val binding: ListItemPlaylistTabBinding,
             private val context: Context,
-            private val playlistName: String
+            private val playlistName: String,
+            private val dragCallback: (RecyclerView.ViewHolder) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
+        @SuppressLint("ClickableViewAccessibility")
         fun setClickListener(){
             binding.setClickListener {
                 binding.tab?.let { tab ->
@@ -76,6 +80,19 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private v
                     }
                 }
                 popup.show()
+            }
+
+
+            binding.dragHandle.setOnTouchListener { v, event ->
+                if (event.action == MotionEvent.ACTION_DOWN) {
+                    dragCallback(this)
+                    Log.d(LOG_NAME, "ACTION DOWN")
+                    return@setOnTouchListener true
+                } else {
+                    Log.d(LOG_NAME, "Action ${event.action}")
+                    return@setOnTouchListener true
+
+                }
             }
         }
 

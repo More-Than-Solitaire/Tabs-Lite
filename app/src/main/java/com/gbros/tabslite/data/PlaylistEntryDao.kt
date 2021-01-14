@@ -26,6 +26,22 @@ interface PlaylistEntryDao {
     @Query("UPDATE playlist_entry SET prev_entry_id = :prevEntryId WHERE id = :thisEntryId")
     fun setPrevEntryId(thisEntryId: Int?, prevEntryId: Int?)
 
+    @Query("""
+            UPDATE playlist_entry SET next_entry_id = (CASE id
+                    when :srcPrv then :srcNxt
+                    when :src then :destNxt
+                    when :destPrv then :src
+                    else next_entry_id
+                    END),
+                prev_entry_id = (CASE id
+                    when :srcNxt then :srcPrv
+                    when :src then :destPrv
+                    when :destNxt then :src
+                    else prev_entry_id
+                    END)
+            """)
+    fun moveEntry(srcPrv: Int?, srcNxt: Int?, src: Int, destPrv: Int?, destNxt: Int?)
+
     @Update
     fun update(entry: PlaylistEntry)
 

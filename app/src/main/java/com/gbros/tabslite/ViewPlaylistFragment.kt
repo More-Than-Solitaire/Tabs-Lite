@@ -1,11 +1,16 @@
 package com.gbros.tabslite
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.ItemTouchHelper.DOWN
+import androidx.recyclerview.widget.ItemTouchHelper.UP
+import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.adapters.MyPlaylistEntryRecyclerViewAdapter
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Playlist
@@ -25,6 +30,7 @@ class ViewPlaylistFragment : Fragment() {
         fun newInstance() = ViewPlaylistFragment()
     }
 
+    var runonceflag = true
     var playlistId = 0
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -32,19 +38,15 @@ class ViewPlaylistFragment : Fragment() {
         val binding = FragmentPlaylistBinding.inflate(inflater, container, false)
         binding.swipeRefresh.isEnabled = false
 
+        // arguments
         arguments?.let { args ->
             val playlist = args.getParcelable<Playlist>("playlist")
             playlist?.let {
-                binding.playlist = playlist
-                playlistId = playlist.playlistId
-                binding.favoriteTabsList.adapter = MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlist.title)
-                AppDatabase.getInstance(requireContext()).playlistEntryDao().getLivePlaylistItems(playlistId).observe(viewLifecycleOwner, { entries ->
-                    binding.notEmpty = entries.isNotEmpty()
-                    (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(sort(entries))
-                })
+                binding.playlist = it
+                this.playlistId = it.playlistId
+                setupRecyclerViewAdapter(binding, it.title)
             }
 
-            // set up toolbar/back button
             // set up toolbar and back button
             setHasOptionsMenu(true)
             (activity as AppCompatActivity).let {
@@ -56,46 +58,154 @@ class ViewPlaylistFragment : Fragment() {
             }
         }
 
+
         return binding.root
     }
 
-    private fun sort(playlist: List<PlaylistEntry>): List<PlaylistEntry> {
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupRecyclerViewAdapter(binding: FragmentPlaylistBinding, playlistTitle: String) {
+        AppDatabase.getInstance(requireContext()).playlistEntryDao().getLivePlaylistItems(playlistId).observe(viewLifecycleOwner, { entries ->
+            binding.notEmpty = entries.isNotEmpty()
 
+            val orderedEntries = sort(entries)
+
+
+            // update the database only when touch is lifted
+            var currentFromPos: Int? = null
+            var currentToPos: Int = 0
+            val finishMoveCallback = {
+                Log.d(LOG_NAME, "Finish move callback")
+                val myFrom = currentFromPos
+                if (myFrom != null) {
+                    Log.d(LOG_NAME, "Moving from $myFrom to $currentToPos")
+                    Log.d(LOG_NAME, "Original item at dest: ${orderedEntries[currentToPos].entryId}")
+
+                    val src = orderedEntries[myFrom]
+                    val dest = orderedEntries[currentToPos]
+
+                    var destPrev: Int? = null
+                    var destNext: Int? = null
+
+                    if (currentToPos < myFrom) {
+                        destPrev = dest.prevEntryId
+                        destNext = dest.entryId
+                    } else {
+                        destPrev = dest.entryId
+                        destNext = dest.nextEntryId
+                    }
+
+                    if (runonceflag) {
+//                                runonceflag = false
+                        GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistEntryDao().moveEntry(src.prevEntryId, src.nextEntryId, src.entryId, destPrev, destNext) }
+                    }
+                }
+
+                // reset vars so touchHelper knows to update the currentFromPosition when it gets called next
+                currentFromPos = null
+                currentToPos = 0
+            }
+
+            // drag to reorder
+            val touchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(UP + DOWN, 0) {
+
+                override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                    // track the latest coordinates
+                    if (currentFromPos == null) {
+                        currentFromPos = viewHolder.absoluteAdapterPosition
+                    }
+                    currentToPos = target.absoluteAdapterPosition
+
+
+                    // no need to update the list manually each time we move
+//                            val elmt = orderedEntries.removeAt(fromPos)
+//                            orderedEntries.add(toPos, elmt)
+
+                    binding.favoriteTabsList.adapter?.notifyItemMoved(viewHolder.absoluteAdapterPosition, target.absoluteAdapterPosition)
+                    return true
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                }
+
+                override fun isLongPressDragEnabled(): Boolean {
+                    return false  // true means a long press will enable reorder anywhere in the list item
+                }
+            })
+
+            val dragCallback = { viewHolder: RecyclerView.ViewHolder -> touchHelper.startDrag(viewHolder) }
+            touchHelper.attachToRecyclerView(binding.favoriteTabsList)
+
+
+
+
+            binding.favoriteTabsList.adapter = MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlistTitle, dragCallback)
+            (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(orderedEntries)
+
+            binding.favoriteTabsList.setOnTouchListener { v, event ->
+                if (event.action == MotionEvent.ACTION_UP) {
+                    finishMoveCallback()
+                }
+
+                return@setOnTouchListener false  // so the touch gets passed down to the drag handler in MyPlaylistEntryRecyclerViewAdapter.kt
+            }
+        })
+
+    }
+
+    private fun sort(playlist: List<PlaylistEntry>): LinkedList<PlaylistEntry> {
         val sortedList = LinkedList(listOf(playlist.first()))
 
         // find any elements that got moved to the front of the list
         while (sortedList.first().prevEntryId != null) {
+            Log.d(LOG_NAME, "Current first entry: ${playlist.first().entryId}")
             val prevId = sortedList.first().prevEntryId
+
+            var foundMatch = false
             for (entry in playlist) {
                 if (entry.entryId == prevId) {
                     sortedList.push(entry)
-                    continue
+                    foundMatch = true
+                    break
                 }
             }
-            // if we fell out of that for loop naturally, we have a list without a beginning
-            Log.e(LOG_NAME, "Playlist does not have beginning!  Playlist ID ${playlist.first().playlistId}")
-            break
+
+            if (!foundMatch) {
+                // if we fell out of that for loop naturally, we have a list without a beginning
+                Log.e(LOG_NAME, "Playlist does not have beginning!  Playlist ID ${playlist.first().playlistId}")
+                break
+            }
         }
 
+        Log.d(LOG_NAME, "Sorted list size: ${sortedList.size}")
+
         // find any elements going through the list
-        while (sortedList.last.prevEntryId != null) {
-            val prevId = sortedList.last.prevEntryId
+        while (sortedList.last.nextEntryId != null) {
+            Log.d(LOG_NAME, "Current last entry: ${sortedList.last.entryId}. List size: ${sortedList.size}")
+            val nextId = sortedList.last.nextEntryId
+
+            var foundMatch = false
             for (entry in playlist) {
-                if (entry.entryId == prevId) {
+                Log.d(LOG_NAME, "entry ${entry.entryId}.  Prev. ${entry.prevEntryId}, next ${entry.nextEntryId}.  Looking for ${entry.entryId} == $nextId")
+                if (entry.entryId == nextId) {
                     sortedList.add(entry)
-                    continue
+                    Log.d(LOG_NAME, "Entry ${entry.entryId} added to list.  New size: ${sortedList.size}.  New last element: ${sortedList.last}")
+                    foundMatch = true
+                    break
                 }
             }
-            // if we fell out of that for loop naturally, we have a list without a beginning
-            Log.e(LOG_NAME, "Playlist does not have end!  Playlist ID ${playlist.first().playlistId}")
-            break
+
+            if (!foundMatch) {
+                // if we fell out of that for loop naturally, we have a list without an end
+                Log.e(LOG_NAME, "Playlist does not have end!  Playlist ID ${playlist.first().playlistId}")
+                break
+            }
         }
 
         if (sortedList.size != playlist.size) {
             Log.e (LOG_NAME, "Playlist does not connect.  Sorted playlist size: ${sortedList.size}.  Original list size: ${playlist.size}")
         }
 
-        return playlist
+        return sortedList
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
