@@ -20,6 +20,9 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlist WHERE id = :playlistId")
     suspend fun getPlaylist(playlistId: Int): Playlist
 
+    @Query("SELECT * FROM playlist WHERE id = :playlistId")
+    fun getPlaylistLive(playlistId: Int): LiveData<Playlist>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun savePlaylist(playlist: Playlist): Long
 

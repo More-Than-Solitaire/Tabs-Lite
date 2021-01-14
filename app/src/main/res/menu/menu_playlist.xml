@@ -6,6 +6,10 @@
         android:icon="@drawable/ic_get_app"
         app:showAsAction="ifRoom"
         android:visible="false"/>
+    <item android:id="@+id/edit_playlist"
+        android:title="@string/edit_playlist"
+        android:icon="@drawable/ic_edit"
+        app:showAsAction="collapseActionView|never" />
     <item android:id="@+id/delete_playlist"
         android:title="@string/delete_playlist"
         android:icon="@drawable/ic_delete"

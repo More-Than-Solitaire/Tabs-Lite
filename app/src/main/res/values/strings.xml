@@ -32,6 +32,7 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="toggle_dark_mode">Dark Mode...</string>
+    <string name="edit_playlist">Edit Playlist</string>
     <string name="delete_playlist">Delete Playlist</string>
     <string name="get_app">Download app permanently</string>
     <string name="save_tab_favorite">Save</string>

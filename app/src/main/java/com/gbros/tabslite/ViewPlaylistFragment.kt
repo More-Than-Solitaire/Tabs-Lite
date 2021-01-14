@@ -32,6 +32,7 @@ class ViewPlaylistFragment : Fragment() {
 
     var runonceflag = true
     var playlistId = 0
+    var playlist: Playlist? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -41,11 +42,12 @@ class ViewPlaylistFragment : Fragment() {
         // arguments
         arguments?.let { args ->
             val playlist = args.getParcelable<Playlist>("playlist")
-            playlist?.let {
-                binding.playlist = it
-                this.playlistId = it.playlistId
-                setupRecyclerViewAdapter(binding, it.title)
-            }
+            playlist?.let { updateView(binding, it) }  // set up once with the passed variable
+
+            // now get live data from the database.  This enables editing (and instant feedback)
+            AppDatabase.getInstance(requireContext()).playlistDao().getPlaylistLive(playlistId).observe(viewLifecycleOwner, { pl ->
+                updateView(binding, pl)
+            })
 
             // set up toolbar and back button
             setHasOptionsMenu(true)
@@ -60,6 +62,13 @@ class ViewPlaylistFragment : Fragment() {
 
 
         return binding.root
+    }
+
+    private fun updateView(binding: FragmentPlaylistBinding, playlist: Playlist) {
+        binding.playlist = playlist
+        this.playlistId = playlist.playlistId
+        this.playlist = playlist
+        setupRecyclerViewAdapter(binding, playlist.title)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -152,7 +161,11 @@ class ViewPlaylistFragment : Fragment() {
 
     }
 
-    private fun sort(playlist: List<PlaylistEntry>): LinkedList<PlaylistEntry> {
+    private fun sort(playlist: List<PlaylistEntry>): List<PlaylistEntry> {
+        if (playlist.isEmpty()) {
+            return playlist
+        }
+
         val sortedList = LinkedList(listOf(playlist.first()))
 
         // find any elements that got moved to the front of the list
@@ -221,6 +234,10 @@ class ViewPlaylistFragment : Fragment() {
 
             Log.i(LOG_NAME, "Playlist $playlistId deleted.")
             activity?.onBackPressed()
+            true
+        } else if (item.itemId == R.id.edit_playlist) {
+            // todo: make "Edit Playlist" into a string resource
+            playlist?.let { pl -> NewPlaylistDialogFragment(null, null, "Edit Playlist", pl.title, pl.description, pl.playlistId).show(parentFragmentManager, "editPlaylistTag") }
             true
         } else {
             super.onOptionsItemSelected(item)
