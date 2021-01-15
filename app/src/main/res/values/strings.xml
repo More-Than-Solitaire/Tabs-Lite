@@ -43,6 +43,7 @@
     <string name="auto_scroll_speed_control">Auto scroll speed control</string>
     <string name="auto_scroll_toggle_button">Auto scroll toggle button</string>
     <string name="remove_from_playlist">Remove from playlist</string>
+    <string name="drag_handle_description">Drag handle</string>
 
     <string-array name="tab_sort_options">
         <item>Date Added</item>

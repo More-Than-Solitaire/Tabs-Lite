@@ -1,34 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout
+<layout xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
 
-<LinearLayout android:id="@+id/bottom_sheet"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="?attr/colorSurface"
-    android:orientation="vertical"
-    app:behavior_hideable="true"
-    app:behavior_peekHeight="80dp"
-    app:layout_behavior="@string/bottom_sheet_behavior"
-    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="chordName"
+            type="String" />
+    </data>
 
-    <TextView
-        android:id="@+id/chordTitleTextView"
+    <RelativeLayout
+        android:id="@+id/chordBottomSheet"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="48sp"
-        tools:text="F#m"  />
+        android:layout_height="wrap_content">
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/pager"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            app:srcCompat="@drawable/ic_drag_handle"
+            android:contentDescription="@string/drag_handle_description" />
 
-<!--
-    <com.google.android.material.tabs.TabLayout
+        <TextView
+            android:id="@+id/chordTitleTextView"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imageView"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="48sp"
+            android:text="@{chordName}"
+            tools:text="F#m" />
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/pager"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/chordTitleTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <!--
+        <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabDots"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -37,7 +51,9 @@
         app:tabIndicator="@null"
         app:tabPaddingEnd="6dp"
         app:tabPaddingStart="6dp" />
--->
+        -->
 
-</LinearLayout>
+        <!--    </LinearLayout>-->
+    </RelativeLayout>
+
 </layout>

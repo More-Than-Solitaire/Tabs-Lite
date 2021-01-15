@@ -30,6 +30,8 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentChordBottomSheetBinding.inflate(inflater, container, false)
+        binding.chordBottomSheet.clipToOutline = true
+
 
         val chords = ArrayList<Chord>()
 
@@ -45,22 +47,13 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
 
         binding.pager.adapter = ChordPagerAdapter(this, chords)
 
-        val chordNameTextView = view?.findViewById<TextView>(R.id.chordTitleTextView)
         if(chords.size > 0) {
-            if (chordNameTextView != null) {
-                chordNameTextView.text = chords[0].name
-            }
+            binding.chordName = chords[0].name
         } else {
             val chordVarsSize = chordVars.size
             Log.e(javaClass.simpleName, "Error starting chord view - chords size is 0.  chordVars size is $chordVarsSize ")
         }
 
-
-
         return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
     }
 }

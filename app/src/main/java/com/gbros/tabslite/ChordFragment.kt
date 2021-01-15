@@ -14,8 +14,6 @@ import com.chrynan.chords.util.maxFret
 import com.chrynan.chords.util.minFret
 import com.chrynan.chords.util.putChord
 import com.gbros.tabslite.databinding.FragmentChordBinding
-import com.gbros.tabslite.databinding.FragmentViewPagerBinding
-//import kotlinx.android.synthetic.main.fragment_chord.*
 import java.lang.StrictMath.max
 import java.lang.StrictMath.min
 
@@ -36,7 +34,7 @@ class ChordFragment : Fragment() {
     private val chord: Chord by lazy { arguments?.getChord(KEY_CHORD)!! }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View {
         Log.v(LOG_NAME, "Showing Chord $chord")
 
         val binding = FragmentChordBinding.inflate(inflater, container, false)
