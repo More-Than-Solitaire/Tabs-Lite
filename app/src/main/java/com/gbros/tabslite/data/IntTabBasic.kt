@@ -30,13 +30,13 @@ interface IntTabBasic : IntSong {
         // only allowed chars are alphanumeric and dash.
         val artist = artistName.trim().toLowerCase(Locale.US).replace(' ', '-').replace("[^\\w\\d-]".toRegex(), "")
         val name = songName.trim().toLowerCase(Locale.US).replace(' ', '-').replace("[^\\w\\d-]".toRegex(), "")
-        var url = "https://tabs.tabslite.com/tab/"
-        if(artist.isNotBlank() && name.isNotBlank()) {
-            url += "$artist/$name-$type-"
-        }
+        var url = "https://tabslite.com/tab/"
+//        if(artist.isNotBlank() && name.isNotBlank()) {
+//            url += "$artist/$name-$type-"
+//        }
         url += tabId.toString()
-        if (this is TabFull){
-            url += "#tsp='$transposed'"
+        if (this is TabFull && transposed != 0){
+            url += "?tsp=$transposed"
         }
 
         return url

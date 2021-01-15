@@ -82,13 +82,21 @@
         <argument
             android:name="playlistEntry"
             android:defaultValue="@null"
-            app:nullable="true"
-            app:argType="com.gbros.tabslite.data.PlaylistEntry" />
+            app:argType="com.gbros.tabslite.data.PlaylistEntry"
+            app:nullable="true" />
         <action
             android:id="@+id/action_tabDetailFragment2_self"
             app:destination="@id/tabDetailFragment2" />
         <action
             android:id="@+id/action_tabDetailFragment2_to_searchResultFragment"
             app:destination="@id/searchResultFragment" />
+        <deepLink
+            android:id="@+id/deepLink"
+            android:autoVerify="true"
+            app:uri="tabslite.com/tab/{tabId}" />
+        <deepLink
+            android:id="@+id/deepLink2"
+            android:autoVerify="true"
+            app:uri="tabslite.com/tab/{tabId}/" />
     </fragment>
 </navigation>
