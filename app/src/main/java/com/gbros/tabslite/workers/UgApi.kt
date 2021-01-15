@@ -165,7 +165,7 @@ object UgApi {
         Log.v(LOG_NAME, "API helper finished updating.")
         var apiKey: String
         if(!ApiHelper.apiInit){
-            apiKey = ApiHelper.updateApiKey() ?: ""  // try to initialize ourselves
+            ApiHelper.updateApiKey()  // try to initialize ourselves
 
             // if that didn't work, we don't have internet.
             if(!ApiHelper.apiInit) {

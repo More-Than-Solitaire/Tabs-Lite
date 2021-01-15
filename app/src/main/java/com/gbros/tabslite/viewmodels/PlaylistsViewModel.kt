@@ -5,8 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.gbros.tabslite.data.*
 
 class PlaylistsViewModel constructor(
-        playlistRepository: PlaylistRepository,
-        playlistEntryRepository: PlaylistEntryRepository
+        playlistRepository: PlaylistRepository
 ) : ViewModel() {
     val playlists: LiveData<List<Playlist>> =
             playlistRepository.getPlaylists()

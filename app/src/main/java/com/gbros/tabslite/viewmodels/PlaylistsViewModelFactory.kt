@@ -11,12 +11,11 @@ import com.gbros.tabslite.data.TabFullRepository
  * [PlaylistRepository] and a [PlaylistEntryRepository]
  */
 class PlaylistsViewModelFactory(
-        private val playlistRepository: PlaylistRepository,
-        private val playlistEntryRepository: PlaylistEntryRepository
+        private val playlistRepository: PlaylistRepository
 ) : ViewModelProvider.NewInstanceFactory() {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return PlaylistsViewModel(playlistRepository, playlistEntryRepository) as T
+        return PlaylistsViewModel(playlistRepository) as T
     }
 }

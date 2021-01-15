@@ -30,6 +30,7 @@ import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import java.lang.Runnable
+import java.util.concurrent.Executor
 
 private const val LOG_NAME = "tabslite.TabDetailFragm"
 
@@ -247,8 +248,7 @@ class TabDetailFragment : Fragment() {
             Log.v(LOG_NAME, "Getting tab ID (local): $tabId")
             tabId!!
         } else {
-            Log.v(LOG_NAME, "Getting tab ID (activity level)")
-            (activity as TabDetailActivity).tabId
+            throw Exception("TabID requested before being set.")
         }
     }
     private var seekBarChangeListener: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
@@ -553,9 +553,9 @@ class TabDetailFragment : Fragment() {
                         // get from the internet
                         val updateJob = GlobalScope.async { UgApi.updateChordVariations(input, AppDatabase.getInstance(requireContext())) }
                         view?.let { Snackbar.make(it, "Loading chord $chordName...", Snackbar.LENGTH_SHORT).show() }
-                        updateJob.invokeOnCompletion { cause ->
-                            if (cause != null) {
-                                Log.w(LOG_NAME, "Chord update didn't work.", cause.cause)
+                        updateJob.invokeOnCompletion { cause1 ->
+                            if (cause1 != null) {
+                                Log.w(LOG_NAME, "Chord update didn't work.", cause1.cause)
                             }
                             // try again
                             chordClicked(chordName, true)

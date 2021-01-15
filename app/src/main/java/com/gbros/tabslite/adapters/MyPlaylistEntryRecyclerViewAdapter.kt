@@ -83,7 +83,7 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private v
             }
 
 
-            binding.dragHandle.setOnTouchListener { v, event ->
+            binding.dragHandle.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {
                     dragCallback(this)
                     Log.d(LOG_NAME, "ACTION DOWN")

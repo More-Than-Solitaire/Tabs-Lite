@@ -92,8 +92,8 @@ class ViewPlaylistFragment : Fragment() {
                     val src = orderedEntries[myFrom]
                     val dest = orderedEntries[currentToPos]
 
-                    var destPrev: Int? = null
-                    var destNext: Int? = null
+                    val destPrev: Int?
+                    val destNext: Int?
 
                     if (currentToPos < myFrom) {
                         destPrev = dest.prevEntryId
@@ -150,7 +150,7 @@ class ViewPlaylistFragment : Fragment() {
             binding.favoriteTabsList.adapter = MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlistTitle, dragCallback)
             (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(orderedEntries)
 
-            binding.favoriteTabsList.setOnTouchListener { v, event ->
+            binding.favoriteTabsList.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_UP) {
                     finishMoveCallback()
                 }

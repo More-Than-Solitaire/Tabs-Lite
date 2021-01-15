@@ -22,7 +22,7 @@ class AddToPlaylistDialogFragment(private val tabId: Int, currentPlaylists: List
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             builder.setTitle("Add to playlist")
-                    .setItems(arrPlaylistNames) { dialog, which ->  // The 'which' argument contains the index position of the selected item
+                    .setItems(arrPlaylistNames) { _, which ->  // The 'which' argument contains the index position of the selected item
 
                         if (which < arrPlaylistNames.size -1) { // the last entry is our New Playlist option, so if they click that option, create a new playlist instead
                             val pId = playlists[which].playlistId

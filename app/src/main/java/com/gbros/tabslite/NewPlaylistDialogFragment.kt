@@ -45,7 +45,7 @@ class NewPlaylistDialogFragment(private val tabId: Int? = null,
             val builder = AlertDialog.Builder(mActivity)
             builder.setTitle(dialogTitle)
             builder.setView(content)
-            builder.setPositiveButton("Save") { dialog, which ->
+            builder.setPositiveButton("Save") { _, _ ->
                 val etTitle = content.findViewById<EditText>(R.id.etTitle).text.toString()
                 val etDesc = content.findViewById<EditText>(R.id.etDescription).text.toString()
 

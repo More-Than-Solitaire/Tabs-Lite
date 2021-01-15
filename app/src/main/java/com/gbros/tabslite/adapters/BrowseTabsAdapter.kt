@@ -40,12 +40,12 @@ class BrowseTabsAdapter :
         init {
             binding.setClickListener {
                 binding.tab?.let { tab ->
-                    navigateToTab(tab, it)
+                    navigateToTab(tab)
                 }
             }
         }
 
-        private fun navigateToTab(tab: IntTabBasic, view: View) {
+        private fun navigateToTab(tab: IntTabBasic) {
             // navigate to the tab detail page on item click
             Log.d(LOG_NAME, "Navigating from Favorites to Tab ${tab.tabId}")
             val direction = HomeViewPagerFragmentDirections.actionViewPagerFragmentToTabDetailFragment2(false, "Favorites", tab.tabId, null)

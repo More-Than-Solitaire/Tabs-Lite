@@ -44,6 +44,6 @@ object InjectorUtils {
     }
 
     fun providePlaylistsViewModelFactory(context: Context): PlaylistsViewModelFactory {
-        return PlaylistsViewModelFactory(getPlaylistRepository(context), getPlaylistEntryRepository(context))
+        return PlaylistsViewModelFactory(getPlaylistRepository(context))
     }
 }

@@ -1,22 +1,14 @@
 package com.gbros.tabslite
 
-import android.app.SearchManager
-import android.content.ComponentName
-import android.content.Context
-import android.database.Cursor
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.view.isGone
-import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.adapters.MySearchResultRecyclerViewAdapter
@@ -46,20 +38,6 @@ class SearchResultFragment : Fragment() {
     val adapter: MySearchResultRecyclerViewAdapter = MySearchResultRecyclerViewAdapter(callback)
     var lastPageExhausted = false  // whether or not we've gone through ALL the pages of search results yet.
     var searchPageNumber = 1
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        try {
-            if (activity is SearchResultsActivity) {
-                Log.e(LOG_NAME, "SearchResultsFragment created via activity.  Should use fragment Navigation instead!")
-            }
-
-        } catch (ex: Exception) {
-            Log.e(javaClass.simpleName, "Error in SearchResultFragment onActivityCreated", ex)
-            throw ex
-        }
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         try {

@@ -1,7 +1,6 @@
 package com.gbros.tabslite
 
 import android.content.Context
-import android.content.ContextWrapper
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,10 +9,8 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.observe
 import com.gbros.tabslite.adapters.BrowseTabsAdapter
 import com.gbros.tabslite.data.IntTabBasic
-import com.gbros.tabslite.data.TabBasic
 import com.gbros.tabslite.databinding.FragmentBrowseTabsBinding
 import com.gbros.tabslite.utilities.*
 import com.gbros.tabslite.utilities.InjectorUtils
@@ -68,13 +65,13 @@ class FavoriteTabsFragment : Fragment() {
         }
 
 
-        viewModel.favoriteTabs.observe(viewLifecycleOwner) { result ->
-            binding.hasHistory = !result.isNullOrEmpty()
+        viewModel.favoriteTabs.observe(viewLifecycleOwner, { tabs ->
+            binding.hasHistory = !tabs.isNullOrEmpty()
 
             activity?.application?.apply{
                 val storedPref = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getInt(FAVORITE_TABS_SORTING_PREF_NAME, 0)
                 binding.sortBy.setSelection(storedPref)
-                updateSorting(storedPref, result)
+                updateSorting(storedPref, tabs)
 
                 binding.sortBy.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                     /**
@@ -112,9 +109,9 @@ class FavoriteTabsFragment : Fragment() {
                 }
             } ?: run {
                 // default action if context is somehow null
-                adapter.submitList(result.sortedByDescending { t -> t.favoriteTime })  // needed because 0 is the default selection, so the sort might not be called the first time
-                Log.v(LOG_NAME, "Submitted new list of size ${result.size}.  Current adapter list size is now ${adapter.currentList.size}")
+                adapter.submitList(tabs.sortedByDescending { t -> t.favoriteTime })  // needed because 0 is the default selection, so the sort might not be called the first time
+                Log.v(LOG_NAME, "Submitted new list of size ${tabs.size}.  Current adapter list size is now ${adapter.currentList.size}")
             }
-        }
+        })
     }
 }

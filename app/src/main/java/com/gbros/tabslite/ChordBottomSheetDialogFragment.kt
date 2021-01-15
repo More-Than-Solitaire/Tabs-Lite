@@ -28,7 +28,7 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
 
     private val chordVars by lazy { arguments?.getParcelableArray(KEY_CHORD) as Array<ChordVariation> }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentChordBottomSheetBinding.inflate(inflater, container, false)
 
         val chords = ArrayList<Chord>()
