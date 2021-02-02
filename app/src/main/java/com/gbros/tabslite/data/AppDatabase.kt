@@ -62,7 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
         private val MIGRATION_6_7 = object : Migration(6, 7) {
             // add the playlist functionality / data
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS playlist (id INTEGER NOT NULL, user_created INTEGER NOT NULL, title TEXT NOT NULL, date_created INTEGER NOT NULL, date_modified LONG NOT NULL, description TEXT NOT NULL, PRIMARY KEY(id))")
+                database.execSQL("CREATE TABLE IF NOT EXISTS playlist (id INTEGER NOT NULL, user_created INTEGER NOT NULL, title TEXT NOT NULL, date_created INTEGER NOT NULL, date_modified INTEGER NOT NULL, description TEXT NOT NULL, PRIMARY KEY(id))")
                 database.execSQL("CREATE TABLE IF NOT EXISTS playlist_entry (id INTEGER NOT NULL, playlist_id INTEGER NOT NULL, tab_id INTEGER NOT NULL, next_entry_id INTEGER, prev_entry_id INTEGER, date_added INTEGER NOT NULL, transpose INTEGER NOT NULL, PRIMARY KEY(id))")
             }
         }
