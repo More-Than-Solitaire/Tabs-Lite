@@ -44,6 +44,7 @@
     <string name="auto_scroll_toggle_button">Auto scroll toggle button</string>
     <string name="remove_from_playlist">Remove from playlist</string>
     <string name="drag_handle_description">Drag handle</string>
+    <string name="no_results_available_tabs_coming_soon">Whoops! There are no supported versions of this song available. We hope to add support for tab-style songs in the future.</string>
 
     <string-array name="tab_sort_options">
         <item>Date Added</item>
