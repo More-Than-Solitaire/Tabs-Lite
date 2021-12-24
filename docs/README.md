@@ -2,7 +2,7 @@ An [open source](https://github.com/cullub/Tabs-Lite) guitar tablature applicati
 
 ## Download
 
-Our main download site it directly from Google Play here:
+Our main download site is directly from Google Play here:
 
 [<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width = "200px">](https://play.google.com/store/apps/details?id=com.gbros.tabslite)
 
@@ -30,4 +30,4 @@ If you want to play a song in a different key, you're in luck!  Key changes are 
 
 ## iOS Support
 
-We don't support iOS at this time, and don't have any plans to in the future.  However, the share link is designed to fall back to a web app should the native app not be installed, so feel free to share with your friends on iOS anyway.
+We don't support iOS at this time, and don't have any plans to in the future.  However, the share link is designed to fall back to a web app should the native app not be installed, so feel free to share with your friends on iOS anyway.  If you know an iOS dev that would like to work on this, have them get in touch!
