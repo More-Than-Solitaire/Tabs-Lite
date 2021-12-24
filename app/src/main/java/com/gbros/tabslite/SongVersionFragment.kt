@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.Log
 import android.view.*
 import android.widget.TextView
@@ -46,11 +47,16 @@ class SongVersionFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let { it ->
-            // possible tab.type's: "Tab" (not 100% sure on this one), "Chords", "Official"
-            // filter out "official" tabs -- the ones without nice chords and a "content" field.
-            // also filter out tabs vs chords.  // todo: maybe implement tabs
-            songVersions = (it.getParcelableArray(ARG_SONG_VERSIONS) as Array<TabBasic>).filter { tab -> tab.type == "Chords" }
-            songVersions = songVersions.sortedWith(compareByDescending {it.votes})  // thanks https://www.programiz.com/kotlin-programming/examples/sort-custom-objects-property
+            val rawVersionsList = it.getParcelableArray(ARG_SONG_VERSIONS) as Array<*>
+            if (!rawVersionsList.isNullOrEmpty()) {  // if there are no versions of this song at all, don't try to cast to Array<TabBasic>
+                // possible tab.type's: "Tab" (not 100% sure on this one), "Chords", "Official"
+                // filter out "official" tabs -- the ones without nice chords and a "content" field.
+                // also filter out tabs vs chords.  // todo: maybe implement tabs
+                songVersions =
+                    (rawVersionsList as Array<TabBasic>).filter { tab -> tab.type == "Chords" }
+                songVersions =
+                    songVersions.sortedWith(compareByDescending { it.votes })  // thanks https://www.programiz.com/kotlin-programming/examples/sort-custom-objects-property
+            }
         }
 
         setHasOptionsMenu(true)
