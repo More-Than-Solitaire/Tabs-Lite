@@ -2,14 +2,14 @@ package com.gbros.tabslite.adapters
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.ListAdapter
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.R
 import com.gbros.tabslite.SearchResultFragment.Callback
 import com.gbros.tabslite.ViewPlaylistFragmentDirections
@@ -51,7 +51,7 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private v
                     binding.entry?.let { playlistEntry ->
                         // navigate to the tab detail page on item click
                         Log.d(LOG_NAME, "Navigating from Playlist to Tab ${tab.tabId}")
-                        val direction = ViewPlaylistFragmentDirections.actionPlaylistFragmentToTabDetailFragment2(true, playlistName, tab.tabId, playlistEntry)
+                        val direction = ViewPlaylistFragmentDirections.actionPlaylistFragmentToTabDetailFragment2(tabId = tab.tabId, playlistEntry = playlistEntry, isPlaylist =  true, playlistName = playlistName)
                         binding.root.findNavController().navigate(direction)
                     }
                 }

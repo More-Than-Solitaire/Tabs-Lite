@@ -1,11 +1,8 @@
 package com.gbros.tabslite.adapters
 
-import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toUri
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
@@ -48,7 +45,7 @@ class BrowseTabsAdapter :
         private fun navigateToTab(tab: IntTabBasic) {
             // navigate to the tab detail page on item click
             Log.d(LOG_NAME, "Navigating from Favorites to Tab ${tab.tabId}")
-            val direction = HomeViewPagerFragmentDirections.actionViewPagerFragmentToTabDetailFragment2(false, "Favorites", tab.tabId, null)
+            val direction = HomeViewPagerFragmentDirections.actionViewPagerFragmentToTabDetailFragment2(tabId = tab.tabId, playlistEntry = null, isPlaylist = false, playlistName = "Favorites")
             binding.root.findNavController().navigate(direction)
         }
 

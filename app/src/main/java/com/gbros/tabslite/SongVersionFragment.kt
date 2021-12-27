@@ -73,7 +73,7 @@ class SongVersionFragment : Fragment() {
                     override fun onListFragmentInteraction(tabId: Int) {
                         Log.v(LOG_NAME, "Navigating to tab detail fragment (tabId: $tabId)")
 
-                        val direction = SongVersionFragmentDirections.actionSongVersionFragmentToTabDetailFragment2(false, "", tabId, null)
+                        val direction = SongVersionFragmentDirections.actionSongVersionFragmentToTabDetailFragment2( tabId = tabId, playlistEntry = null, isPlaylist =  false, playlistName =  "")
                         view.findNavController().navigate(direction)
                     }
                 }

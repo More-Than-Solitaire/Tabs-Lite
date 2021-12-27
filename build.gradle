@@ -2,50 +2,49 @@ buildscript {
     // Define versions in a single place
     ext {
         // Sdk and tools
-        compileSdkVersion = 30
-        minSdkVersion = 23
+        compileSdkVersion = 31
+        minSdkVersion = 24
         targetSdkVersion = 30
 
         // App dependencies
         appCompatVersion = '1.1.0'
-        constraintLayoutVersion = '2.1.0-alpha2'
+        constraintLayoutVersion = '2.1.2'
         coreTestingVersion = '2.1.0'
-        coroutinesVersion = '1.4.2-native-mt'
-        espressoVersion = '3.3.0'
-        fragmentVersion = '1.2.5'
+        coroutinesVersion = '1.6.0-native-mt'
+        espressoVersion = '3.4.0'
+        fragmentVersion = '1.4.0'
         glideVersion = '4.11.0'
         gradleVersion = '4.2.0-beta02'
-        gsonVersion = '2.8.6'
-        junitVersion = '4.13.1'
-        kotlinVersion = '1.4.21'
+        gsonVersion = '2.8.9'
+        junitVersion = '4.13.2'
+        kotlinVersion = '1.6.10'
         ktlintVersion = '0.33.0'
-        ktxVersion = '1.3.2'
+        ktxVersion = '1.7.0'
         lifecycleVersion = '2.2.0'
-        lifecycleLivedataVersion = '2.3.0-rc01'
-        lifecycleViewmodelVersion = '2.3.0-rc01'
+        lifecycleLivedataVersion = '2.4.0'
+        lifecycleViewmodelVersion = '2.4.0'
         materialVersion = '1.3.0-beta01'
-        navigationVersion = '2.3.2'
+        navigationVersion = '2.4.0-rc01'
         recyclerViewVersion = '1.2.0-beta01'
-        roomVersion = '2.3.0-alpha04'
+        roomVersion = '2.4.0'
         runnerVersion = '1.0.1'
-        truthVersion = '1.1'
-        testExtJunit = '1.1.2'
+        truthVersion = '1.1.3'
+        testExtJunit = '1.1.3'
         uiAutomatorVersion = '2.2.0'
         viewPagerVersion = '1.0.0'
-        workVersion = '2.4.0'
-        instantAppsVersion = '17.0.0'
+        workVersion = '2.7.1'
+        instantAppsVersion = '18.0.0'
 
-        chordsVersion = '2.3.1'
+        chordsVersion = '2.4.0'
     }
 
     repositories {
         google()
-        jcenter()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.0-beta03'
+        classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigationVersion"
     }
@@ -58,7 +57,6 @@ plugins {
 allprojects {
     repositories {
         google()
-        jcenter()
     }
 }
 

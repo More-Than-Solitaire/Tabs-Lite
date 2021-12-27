@@ -16,7 +16,7 @@
     <string name="menu_item_share_tab" translation_description="The label for the Share menu item">Share</string>
     <string name="menu_item_search" translation_description="The label for the Search menu item">Search</string>
     <string name="menu_item_search_hint" translation_description="The hint for the Search menu item">Find a song</string>
-    <string name="share_text_plant" translation_description="The default messaged used when sharing a plant on SNS, etc.">Check out %s in the Tabs Lite app!  %s</string>
+    <string name="share_text_plant" translation_description="The default messaged used when sharing a plant on SNS, etc.">Check out %1$s in the Tabs Lite app!  %2$s</string>
 
     <string name="tab_author">Tab Author: </string>
     <string name="difficulty">Difficulty: </string>

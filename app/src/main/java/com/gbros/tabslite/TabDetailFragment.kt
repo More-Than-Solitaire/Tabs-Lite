@@ -404,9 +404,9 @@ class TabDetailFragment : Fragment() {
         inflater.inflate(R.menu.menu_tab_detail, menu)
         optionsMenu = menu
 
-        if(isInstantApp(context)){
+        context?.let {if( isInstantApp(it) ){
             menu.findItem(R.id.get_app).isVisible = true
-        }
+        }}
 
         setHeartInitialState()
     }
@@ -470,9 +470,9 @@ class TabDetailFragment : Fragment() {
                         item.setIcon(R.drawable.ic_favorite)
                         binding.tab!!.favorite = true
 
-                        if(isInstantApp(context)) {
+                        context?.let {if( isInstantApp(it) ) {
                             favoriteWhileInstant()
-                        }
+                        }}
                     } else {
                         item.setIcon(R.drawable.ic_unfavorite)
                         binding.tab!!.favorite = false

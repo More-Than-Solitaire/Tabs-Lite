@@ -17,7 +17,7 @@
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar_layout"
@@ -27,32 +27,31 @@
             android:theme="@style/Theme.TabsLite.AppBarOverlay">
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
-            android:id="@+id/fragment_main_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|snap"
-            app:toolbarId="@id/toolbar"
-            >
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                style="@style/Widget.MaterialComponents.Toolbar.Primary"
+                android:id="@+id/fragment_main_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:layout_collapseMode="parallax"
-                app:menu="@menu/menu_main">
+                android:layout_height="wrap_content"
+                app:layout_scrollFlags="scroll|snap"
+                app:toolbarId="@id/toolbar">
 
-                <ImageView
-                    android:id="@+id/imageView2"
-                    android:layout_width="?attr/actionBarSize"
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    style="@style/Widget.MaterialComponents.Toolbar.Primary"
+                    android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:layout_weight="1"
-                    android:contentDescription="TODO"
-                    app:srcCompat="@drawable/ic_launcher_foreground"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:layout_collapseMode="parallax"
+                    app:menu="@menu/menu_main">
 
-            </androidx.appcompat.widget.Toolbar>
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
+                    <ImageView
+                        android:id="@+id/imageView2"
+                        android:layout_width="?attr/actionBarSize"
+                        android:layout_height="?attr/actionBarSize"
+                        android:layout_weight="1"
+                        android:contentDescription="TODO"
+                        app:srcCompat="@drawable/ic_launcher_foreground"
+                        app:tint="?attr/colorOnPrimary" />
+
+                </androidx.appcompat.widget.Toolbar>
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
 
             <!-- Override tabIconTint attribute of style with selector -->
             <com.google.android.material.tabs.TabLayout
@@ -61,7 +60,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:tabIconTint="@drawable/tab_icon_color_selector"
-                app:tabTextColor="?attr/colorOnPrimary"/>
+                app:tabTextColor="?attr/colorOnPrimary" />
 
         </com.google.android.material.appbar.AppBarLayout>
 

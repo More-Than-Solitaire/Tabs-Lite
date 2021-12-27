@@ -41,11 +41,11 @@
             android:name="songVersions"
             app:argType="com.gbros.tabslite.data.TabBasic[]" />
         <action
-            android:id="@+id/action_songVersionFragment_to_tabDetailFragment2"
-            app:destination="@id/tabDetailFragment2" />
-        <action
             android:id="@+id/action_songVersionFragment_to_searchResultFragment"
             app:destination="@id/searchResultFragment" />
+        <action
+            android:id="@+id/action_songVersionFragment_to_tabDetailFragment2"
+            app:destination="@id/tabDetailFragment2" />
     </fragment>
     <fragment
         android:id="@+id/playlistFragment"
@@ -73,15 +73,13 @@
             app:argType="boolean" />
         <argument
             android:name="playlistName"
-            android:defaultValue="\???"
-            app:argType="string" />
+            app:argType="string"
+            android:defaultValue=" " />
         <argument
             android:name="tabId"
-            app:argType="integer"
-            app:nullable="false" />
+            app:argType="integer" />
         <argument
             android:name="playlistEntry"
-            android:defaultValue="@null"
             app:argType="com.gbros.tabslite.data.PlaylistEntry"
             app:nullable="true" />
         <action
