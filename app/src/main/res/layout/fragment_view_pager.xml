@@ -46,7 +46,8 @@
                         android:layout_width="?attr/actionBarSize"
                         android:layout_height="?attr/actionBarSize"
                         android:layout_weight="1"
-                        android:contentDescription="TODO"
+                        android:contentDescription="@string/tabs_lite_icon_description"
+                        android:foregroundGravity="left|center"
                         app:srcCompat="@drawable/ic_launcher_foreground"
                         app:tint="?attr/colorOnPrimary" />
 

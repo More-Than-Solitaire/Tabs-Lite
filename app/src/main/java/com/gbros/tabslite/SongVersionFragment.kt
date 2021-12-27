@@ -1,33 +1,21 @@
 package com.gbros.tabslite
 
 import android.app.Activity
-import android.app.SearchManager
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.os.Bundle
-import android.os.Parcelable
 import android.util.Log
 import android.view.*
 import android.widget.TextView
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
-import androidx.core.net.toUri
-import androidx.core.view.isGone
-import androidx.core.view.isVisible
-import androidx.navigation.findNavController
 import com.gbros.tabslite.adapters.MyTabBasicRecyclerViewAdapter
-import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.TabBasic
-import com.gbros.tabslite.utilities.TabHelper
 import com.gbros.tabslite.workers.SearchHelper
 import com.google.android.gms.instantapps.InstantApps
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 
 private const val LOG_NAME = "tabslite.SongVersionFra"
 
@@ -85,22 +73,20 @@ class SongVersionFragment : Fragment() {
 
         // set up toolbar and back button
         val toolbar = view.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
-        (activity as AppCompatActivity).let {
-            it.setSupportActionBar(toolbar)
-            it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            it.supportActionBar?.setDisplayShowHomeEnabled(true)
-            it.supportActionBar?.setDisplayShowTitleEnabled(true)
+        toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+        toolbar.setNavigationOnClickListener {
+            it.findNavController().navigateUp()
+        }
 
-            // since we're filtering out tabs and official tabs, we could end up with no song versions.
-            val tvNoSupportedResults = view.findViewById<TextView>(R.id.tv_no_supported_results)
-            if (songVersions.isNotEmpty()) {
-                rView.isGone = false
-                tvNoSupportedResults.isGone = true
-                it.supportActionBar?.title = songVersions[0].toString()
-            } else {
-                rView.isGone = true
-                tvNoSupportedResults.isGone = false
-            }
+        // set toolbar title
+        val tvNoSupportedResults = view.findViewById<TextView>(R.id.tv_no_supported_results)
+        if (songVersions.isNotEmpty()) {
+            rView.isGone = false
+            tvNoSupportedResults.isGone = true
+            toolbar.title = songVersions[0].toString()
+        } else {
+            rView.isGone = true
+            tvNoSupportedResults.isGone = false
         }
 
         return view
@@ -111,8 +97,10 @@ class SongVersionFragment : Fragment() {
 
         requireActivity().menuInflater.inflate(R.menu.menu_main, menu)
 
-        if(com.google.android.gms.common.wrappers.InstantApps.isInstantApp(context)){
-            menu.findItem(R.id.get_app).isVisible = true
+        context?.let {
+            if( com.google.android.gms.common.wrappers.InstantApps.isInstantApp(it) ){
+                menu.findItem(R.id.get_app).isVisible = true
+            }
         }
 
         val searchView = menu.findItem(R.id.search).actionView as SearchView

@@ -1,15 +1,10 @@
 package com.gbros.tabslite
 
-import android.app.SearchManager
-import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.navigation.findNavController
@@ -29,7 +24,6 @@ class HomeActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.menu_main, menu)
 
         if(com.google.android.gms.common.wrappers.InstantApps.isInstantApp(this)){
@@ -61,7 +55,7 @@ class HomeActivity : AppCompatActivity() {
             }
         })
 
-        return true
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

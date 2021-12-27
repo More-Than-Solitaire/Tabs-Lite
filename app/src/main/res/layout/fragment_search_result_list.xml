@@ -28,21 +28,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_scrollFlags=""
-                app:toolbarId="@id/toolbar"
+                app:toolbarId="@id/search_result_toolbar"
                 >
 
                 <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbar"
+                    android:id="@+id/search_result_toolbar"
                     style="@style/Widget.MaterialComponents.Toolbar.Primary"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     app:layout_collapseMode="parallax"
                     >
+
                     <androidx.appcompat.widget.SearchView
-                        android:id="@+id/search"
+                        android:id="@+id/search_results_search"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        app:iconifiedByDefault="false"/>
+                        app:iconifiedByDefault="false"
+                        app:searchIcon="@null" />
                 </androidx.appcompat.widget.Toolbar>
             </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.google.android.material.appbar.AppBarLayout>

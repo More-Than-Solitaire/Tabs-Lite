@@ -2,17 +2,15 @@ package com.gbros.tabslite
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.chrynan.chords.model.Chord
 import com.chrynan.chords.model.ChordChart
 import com.chrynan.chords.model.FretNumber
-import com.chrynan.chords.util.getChord
 import com.chrynan.chords.util.maxFret
 import com.chrynan.chords.util.minFret
-import com.chrynan.chords.util.putChord
 import com.gbros.tabslite.databinding.FragmentChordBinding
 import java.lang.StrictMath.max
 import java.lang.StrictMath.min
@@ -29,10 +27,7 @@ private const val ARG_PARAM2 = "param2"
  * Use the [ChordFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class ChordFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private val chord: Chord by lazy { arguments?.getChord(KEY_CHORD)!! }
-
+class ChordFragment(private val chord: Chord) : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
         Log.v(LOG_NAME, "Showing Chord $chord")
@@ -49,25 +44,5 @@ class ChordFragment : Fragment() {
         binding.chordWidget.chart = stdChart.copy(fretEnd = FretNumber(endFret), fretStart = FretNumber(startFret))
 
         return binding.root
-    }
-
-    companion object {
-        private const val KEY_CHORD = "parcelableChordWrapperKey"
-
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param chord Chord to display.
-         * @return A new instance of fragment ChordFragment.
-         */
-        // TODO: maybe make this take a chord id?
-        @JvmStatic
-        fun newInstance(chord: Chord) =
-                ChordFragment().apply {
-                    arguments = Bundle().apply {
-                        putChord(KEY_CHORD, chord)
-                    }
-                }
     }
 }

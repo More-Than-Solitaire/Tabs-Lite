@@ -1,10 +1,12 @@
 package com.gbros.tabslite
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
@@ -39,7 +41,7 @@ class SearchResultFragment : Fragment() {
     var lastPageExhausted = false  // whether or not we've gone through ALL the pages of search results yet.
     var searchPageNumber = 1
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         try {
             var query = ""
             arguments?.let {
@@ -51,24 +53,25 @@ class SearchResultFragment : Fragment() {
             // start the search
             restartSearch(query, binding)
 
-            // toolbar
-            (activity as AppCompatActivity).let {
-                it.setSupportActionBar(binding.toolbar)
-                it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                it.supportActionBar?.setDisplayShowHomeEnabled(true)
+            binding.searchResultToolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+            binding.searchResultToolbar.setNavigationOnClickListener { view ->
+                val direction = SearchResultFragmentDirections.actionSearchResultFragmentToViewPagerFragment()
+                view.findNavController().navigate(direction)
             }
 
-            SearchHelper.initializeSearchBar(query, binding.search, requireContext(), viewLifecycleOwner, { q ->
+            SearchHelper.initializeSearchBar(query, binding.searchResultsSearch, requireContext(), viewLifecycleOwner, { q ->
                 Log.i(LOG_NAME, "Starting search for '$q'")
                 restartSearch(q, binding)
             })
-
 
             binding.searchResultList.adapter = adapter
 
             // auto-continue search if we scroll to bottom
             binding.searchResultList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    hideKeyboard()
+                    binding.searchResultsSearch.isSelected = false
+
                     if (!lastPageExhausted
                             && binding.progressBar.isGone  // use this as a flag for whether we're done with the last set
                             && recyclerView.needsMoreItems()
@@ -89,7 +92,20 @@ class SearchResultFragment : Fragment() {
         }
     }
 
+    private fun hideKeyboard() {
+        activity?.apply {
+            currentFocus?.let { view ->
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+            }
+        }
+    }
+
     private fun restartSearch(query: String, binding: FragmentSearchResultListBinding) {
+        // close keyboard
+        binding.searchResultsSearch.isSelected = false
+        hideKeyboard()
+
         // reset settings
         lastPageExhausted = false
         searchPageNumber = 1
@@ -138,9 +154,11 @@ class SearchResultFragment : Fragment() {
 //            }
             data.add(searchJob.getCompleted())
             val songs = data.getSongs()
-            activity?.runOnUiThread(Runnable {
+            activity?.runOnUiThread {
                 if (songs.isNotEmpty()) {
-                    (binding.searchResultList.adapter as MySearchResultRecyclerViewAdapter).submitList(songs)
+                    (binding.searchResultList.adapter as MySearchResultRecyclerViewAdapter).submitList(
+                        songs
+                    )
                     binding.textView.isGone = true
                 }
 
@@ -150,7 +168,7 @@ class SearchResultFragment : Fragment() {
                 } else {
                     binding.progressBar.isGone = true
                 }
-            })
+            }
 
             Unit
         }

@@ -30,6 +30,9 @@
         <action
             android:id="@+id/action_searchResultFragment_to_songVersionFragment"
             app:destination="@id/songVersionFragment" />
+        <action
+            android:id="@+id/action_searchResultFragment_to_view_pager_fragment"
+            app:destination="@id/view_pager_fragment" />
     </fragment>
     <fragment
         android:id="@+id/songVersionFragment"
