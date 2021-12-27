@@ -1,25 +1,42 @@
 package com.gbros.tabslite
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
-import com.google.android.material.tabs.TabLayoutMediator
 import com.gbros.tabslite.adapters.FAVORITE_TABS_PAGE_INDEX
-import com.gbros.tabslite.adapters.TOP_TABS_PAGE_INDEX
 import com.gbros.tabslite.adapters.PLAYLISTS_PAGE_INDEX
 import com.gbros.tabslite.adapters.PagerAdapter
+import com.gbros.tabslite.adapters.TOP_TABS_PAGE_INDEX
 import com.gbros.tabslite.databinding.FragmentViewPagerBinding
 import com.gbros.tabslite.workers.SearchHelper
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 
 private const val LOG_NAME = "tabslite.HomeViewPagerF"
 
 class HomeViewPagerFragment : Fragment() {
+
+    private val onTabSelectedListener = object : TabLayout.OnTabSelectedListener {
+        override fun onTabSelected(tab: TabLayout.Tab?) {
+            hideKeyboard()
+            if (::appBarLayout.isInitialized) {
+                appBarLayout.setExpanded(true)
+            }
+        }
+
+        override fun onTabReselected(tab: TabLayout.Tab?) { }
+
+        override fun onTabUnselected(tab: TabLayout.Tab?) { }
+    }
+
+    private lateinit var appBarLayout: AppBarLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,8 +46,10 @@ class HomeViewPagerFragment : Fragment() {
         val binding = FragmentViewPagerBinding.inflate(inflater, container, false)
         val tabLayout = binding.tabs
         val viewPager = binding.viewPager
+        appBarLayout = binding.appBarLayout
 
         viewPager.adapter = PagerAdapter(this)
+        tabLayout.addOnTabSelectedListener(onTabSelectedListener)
 
         // Set the icon and text for each tab
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
@@ -44,7 +63,7 @@ class HomeViewPagerFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        Log.d(LOG_NAME, "************************************************ options menu created")
+        Log.d(LOG_NAME, "options menu created")
         val searchMenuItem = menu.findItem(R.id.search)
         val searchView = searchMenuItem.actionView
         SearchHelper.initializeSearchBar("", searchView as SearchView, requireContext(), viewLifecycleOwner, {q ->
@@ -70,6 +89,15 @@ class HomeViewPagerFragment : Fragment() {
             TOP_TABS_PAGE_INDEX -> getString(R.string.suggested_tabs_title)
             PLAYLISTS_PAGE_INDEX -> getString(R.string.playlists_section_title)
             else -> null
+        }
+    }
+
+    private fun hideKeyboard() {
+        activity?.apply {
+            currentFocus?.let { view ->
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+            }
         }
     }
 }
