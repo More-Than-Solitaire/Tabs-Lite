@@ -83,7 +83,10 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         if (indexOfLineBreak == -1)  // in case of lines ending without a newline after.
             indexOfLineBreak = singleLyric.length
         val chords: CharSequence = singleLyric.subSequence(0, indexOfLineBreak).trimEnd()
-        val lyrics: CharSequence = singleLyric.subSequence(indexOfLineBreak + 1, singleLyric.length).trimEnd()
+        val lyrics: CharSequence = ""
+        if (indexOfLineBreak < singleLyric.length) {
+            singleLyric.subSequence(indexOfLineBreak + 1, singleLyric.length).trimEnd()
+        }
         tabLines.add(Pair(processChords(chords), processChords(lyrics)))
     }
     // takes a string and replaces all [ch]'s with clickable spans
