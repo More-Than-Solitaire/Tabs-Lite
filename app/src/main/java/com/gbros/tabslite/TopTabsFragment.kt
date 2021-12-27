@@ -17,7 +17,6 @@ import com.gbros.tabslite.workers.UgApi
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 
 private const val LOG_NAME = "tabslite.TopTabsFragmen"
 
@@ -63,7 +62,11 @@ class TopTabsFragment : Fragment() {
                 requireActivity().runOnUiThread {
                     binding.hasHistory = adapter.itemCount > 0  // unless we already have items here, show the No Tabs Here message
                     Handler().postDelayed({ binding.swipeRefresh.isRefreshing = false }, 700)
-                    view?.let { Snackbar.make(it, "You're not connected to the internet", Snackbar.LENGTH_SHORT).show() }
+                    view?.let {
+                        if (it.isAttachedToWindow) {
+                            Snackbar.make(it,"You're not connected to the internet", Snackbar.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             } else {
                 val tabBasics = Utils.tabsToTabBasics(topTabsJob.getCompleted())
