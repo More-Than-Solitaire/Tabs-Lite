@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -17,7 +16,6 @@ import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.databinding.FragmentPlaylistBinding
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -37,7 +35,6 @@ class ViewPlaylistFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
         val binding = FragmentPlaylistBinding.inflate(inflater, container, false)
-        binding.swipeRefresh.isEnabled = false
 
         // arguments
         arguments?.let { args ->
@@ -82,10 +79,11 @@ class ViewPlaylistFragment : Fragment() {
             // update the database only when touch is lifted
             var currentFromPos: Int? = null
             var currentToPos: Int = 0
+
             val finishMoveCallback = {
                 Log.d(LOG_NAME, "Finish move callback")
                 val myFrom = currentFromPos
-                if (myFrom != null) {
+                if (myFrom != null && currentToPos != myFrom) {
                     Log.d(LOG_NAME, "Moving from $myFrom to $currentToPos")
                     Log.d(LOG_NAME, "Original item at dest: ${orderedEntries[currentToPos].entryId}")
 
@@ -104,7 +102,6 @@ class ViewPlaylistFragment : Fragment() {
                     }
 
                     if (runonceflag) {
-//                                runonceflag = false
                         GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistEntryDao().moveEntry(src.prevEntryId, src.nextEntryId, src.entryId, destPrev, destNext) }
                     }
                 }
@@ -124,11 +121,6 @@ class ViewPlaylistFragment : Fragment() {
                     }
                     currentToPos = target.absoluteAdapterPosition
 
-
-                    // no need to update the list manually each time we move
-//                            val elmt = orderedEntries.removeAt(fromPos)
-//                            orderedEntries.add(toPos, elmt)
-
                     binding.favoriteTabsList.adapter?.notifyItemMoved(viewHolder.absoluteAdapterPosition, target.absoluteAdapterPosition)
                     return true
                 }
@@ -143,9 +135,6 @@ class ViewPlaylistFragment : Fragment() {
 
             val dragCallback = { viewHolder: RecyclerView.ViewHolder -> touchHelper.startDrag(viewHolder) }
             touchHelper.attachToRecyclerView(binding.favoriteTabsList)
-
-
-
 
             binding.favoriteTabsList.adapter = MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlistTitle, dragCallback)
             (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(orderedEntries)
