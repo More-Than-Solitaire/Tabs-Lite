@@ -4,12 +4,15 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.*
 import android.content.Context.CLIPBOARD_SERVICE
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.*
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
 import androidx.core.net.toUri
@@ -46,11 +49,19 @@ class TabDetailFragment : Fragment() {
     private lateinit var optionsMenu: Menu
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View {
         Log.d(LOG_NAME, "Starting TabDetailFragment")
 
         /* ************************************     BASIC SETUP     ************************************ */
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_tab_detail, container, false)
+
+        // hide notification bar in landscape mode
+        val notificationBarShouldBeVisible = resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
+        setNotificationBarVisibility(notificationBarShouldBeVisible)
+        binding.coordinatorLayout.fitsSystemWindows = notificationBarShouldBeVisible
+        binding.appbar.fitsSystemWindows = notificationBarShouldBeVisible
+        binding.toolbarLayout.fitsSystemWindows = notificationBarShouldBeVisible
+
         binding.lifecycleOwner = viewLifecycleOwner
         setHasOptionsMenu(true)
 
@@ -105,6 +116,42 @@ class TabDetailFragment : Fragment() {
         // consider pausing the autoscroll
         currentChordDialog?.dismiss()  // this doesn't parcelize well, so get rid of it before we pause
         super.onPause()
+    }
+
+
+    private fun setNotificationBarVisibility(visible: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            setNotificationBarVisibilityForNewAndroidVersions(visible)
+        } else {
+            setNotificationBarVisibilityForOldAndroidVersions(visible)
+        }
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    private fun setNotificationBarVisibilityForNewAndroidVersions(visible: Boolean) {
+        val windowInsetsController = activity?.window?.decorView?.windowInsetsController
+
+        if (visible) {
+            windowInsetsController?.show(
+                WindowInsets.Type.statusBars()
+                        or WindowInsets.Type.navigationBars()
+            )
+        } else {
+            windowInsetsController?.hide(
+                WindowInsets.Type.statusBars()
+                        or WindowInsets.Type.navigationBars()
+            )
+        }
+    }
+
+    private fun setNotificationBarVisibilityForOldAndroidVersions(visible: Boolean) {
+        if (visible) {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        }
+        else {
+            activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        }
     }
 
     /**
@@ -299,13 +346,25 @@ class TabDetailFragment : Fragment() {
             binding.transposeText = transposed.toString()
 
 
-            val updatedPE = playlistEntry
-            if (updatedPE != null) {
-                updatedPE.transpose = transposed
-                Log.d(LOG_NAME, "updated playlist entry transposition to $transposed: ${updatedPE.transpose}")
-                GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistEntryDao().update(updatedPE) }
+            if (playlistEntry != null) {
+                playlistEntry.transpose = transposed
+                Log.d(
+                    LOG_NAME,
+                    "updated playlist entry transposition to $transposed: ${playlistEntry.transpose}"
+                )
+                GlobalScope.launch {
+                    AppDatabase.getInstance(requireContext()).playlistEntryDao().update(
+                        playlistEntry
+                    )
+                }
             } else {
-                GlobalScope.launch { TabHelper.updateTabTransposeLevel(tabId, transposed, AppDatabase.getInstance(requireContext())) }  // todo: do something different if it's a playlist
+                GlobalScope.launch {
+                    TabHelper.updateTabTransposeLevel(
+                        tabId,
+                        transposed,
+                        AppDatabase.getInstance(requireContext())
+                    )
+                }  // todo: do something different if it's a playlist
             }
         }
     }
@@ -318,10 +377,8 @@ class TabDetailFragment : Fragment() {
                 binding.progressBar2.isGone = true
                 view?.let { Snackbar.make(it, "This tab is not available offline.", Snackbar.LENGTH_INDEFINITE).show() }
             }
-            Unit
         } else {
             startGetData(tabid, playlistEntry)
-            Unit
         }
     }
 
@@ -379,8 +436,6 @@ class TabDetailFragment : Fragment() {
                             v(LOG_NAME, "Updated Tab UI for tab ($tabId) '${fetchedTab.songName}'")
                         }
                     }
-
-                    Unit
                 }
             }
         } catch (ex: IllegalStateException){
