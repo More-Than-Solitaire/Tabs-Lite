@@ -13,7 +13,7 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.AttrRes
-import kotlin.math.absoluteValue
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -227,21 +227,18 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         return wordCharsToFit
     }
 
-
     fun transpose(howMuch: Int){
         if (howMuch != 0) {
-            val numSteps = howMuch.absoluteValue
-            val up = howMuch > 0
-
             for (tab in tabLines) {
-                transposeLine(up, numSteps, tab.first)
-                tab.second?.let { transposeLine(up, numSteps, it) }
+                transposeLine(howMuch, tab.first)
+                tab.second?.let { transposeLine(howMuch, it) }
             }
         }
         wrapTextIntoView()
     }
+
     // transpose one SpannableStringBuilder
-    private fun transposeLine(up: Boolean, numSteps: Int, line: SpannableStringBuilder) {
+    private fun transposeLine(howMuch: Int, line: SpannableStringBuilder) {
         val currentSpans = line.getSpans(0, line.length, ClickableSpan::class.java)
 
         for (span in currentSpans) {
@@ -250,75 +247,13 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
             val currentText = span.toString()
             line.removeSpan(span)
 
-            var newText = currentText
-            if (up) {
-                // transpose up
-                for (i in 0 until numSteps) {
-                    newText = transposeUp(newText)
-                }
-            } else {
-                // transpose down
-                for (i in 0 until numSteps) {
-                    newText = transposeDown(newText)
-                }
-            }
+            val newText = transposeChord(currentText, howMuch)
 
             line.replace(startIndex, endIndex, newText)  // edit the text
             line.setSpan(makeSpan(newText), startIndex, startIndex + newText.length,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)  // add a new span
         }
     }
-    private fun transposeUp(text: String): String {
-        return when {
-            text.startsWith("A#", true) -> "B" + text.substring(2)
-            text.startsWith("Ab", true) -> "A" + text.substring(2)
-            text.startsWith("A", true) -> "A#" + text.substring(1)
-            text.startsWith("Bb", true) -> "B" + text.substring(2)
-            text.startsWith("B", true) -> "C" + text.substring(1)
-            text.startsWith("C#", true) -> "D" + text.substring(2)
-            text.startsWith("C", true) -> "C#" + text.substring(1)
-            text.startsWith("D#", true) -> "E" + text.substring(2)
-            text.startsWith("Db", true) -> "D" + text.substring(2)
-            text.startsWith("D", true) -> "D#" + text.substring(1)
-            text.startsWith("Eb", true) -> "E" + text.substring(2)
-            text.startsWith("E", true) -> "F" + text.substring(1)
-            text.startsWith("F#", true) -> "G" + text.substring(2)
-            text.startsWith("F", true) -> "F#" + text.substring(1)
-            text.startsWith("G#", true) -> "A" + text.substring(2)
-            text.startsWith("Gb", true) -> "G" + text.substring(2)
-            text.startsWith("G", true) -> "G#" + text.substring(1)
-            else -> {
-                Log.e(LOG_NAME, "Weird Chord not transposed: $text")
-                text
-            }
-        }
-    }
-    private fun transposeDown(text: String): String {
-        return when {
-            text.startsWith("A#", true) -> "A" + text.substring(2)
-            text.startsWith("Ab", true) -> "G" + text.substring(2)
-            text.startsWith("A", true) -> "G#" + text.substring(1)
-            text.startsWith("Bb", true) -> "A" + text.substring(2)
-            text.startsWith("B", true) -> "A#" + text.substring(1)
-            text.startsWith("C#", true) -> "C" + text.substring(2)
-            text.startsWith("C", true) -> "B" + text.substring(1)
-            text.startsWith("D#", true) -> "D" + text.substring(2)
-            text.startsWith("Db", true) -> "C" + text.substring(2)
-            text.startsWith("D", true) -> "C#" + text.substring(1)
-            text.startsWith("Eb", true) -> "D" + text.substring(2)
-            text.startsWith("E", true) -> "D#" + text.substring(1)
-            text.startsWith("F#", true) -> "F" + text.substring(2)
-            text.startsWith("F", true) -> "E" + text.substring(1)
-            text.startsWith("G#", true) -> "G" + text.substring(2)
-            text.startsWith("Gb", true) -> "F" + text.substring(2)
-            text.startsWith("G", true) -> "F#" + text.substring(1)
-            else -> {
-                Log.e(LOG_NAME, "Weird Chord not transposed: $text")
-                text
-            }
-        }
-    }
-
 
     interface Callback {
         fun chordClicked(chordName: CharSequence)
@@ -339,10 +274,85 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
             return true
         }
     }
-    companion object Font {
+    companion object {
         var monoRegular: Typeface? = null
         var monoBold: Typeface? = null
+
+        fun transposeChord(chord: CharSequence, howMuch: Int): String {
+            val numSteps = abs(howMuch)
+            val up = howMuch > 0
+            var newChord = chord.toString()
+
+            if (newChord != "") {
+                if (up) {
+                    // transpose up
+                    for (i in 0 until numSteps) {
+                        newChord = transposeUp(newChord)
+                    }
+                } else {
+                    // transpose down
+                    for (i in 0 until numSteps) {
+                        newChord = transposeDown(newChord)
+                    }
+                }
+            }
+
+            return newChord
+        }
+
+        private fun transposeUp(text: String): String {
+            return when {
+                text.startsWith("A#", true) -> "B" + text.substring(2)
+                text.startsWith("Ab", true) -> "A" + text.substring(2)
+                text.startsWith("A", true) -> "A#" + text.substring(1)
+                text.startsWith("Bb", true) -> "B" + text.substring(2)
+                text.startsWith("B", true) -> "C" + text.substring(1)
+                text.startsWith("C#", true) -> "D" + text.substring(2)
+                text.startsWith("C", true) -> "C#" + text.substring(1)
+                text.startsWith("D#", true) -> "E" + text.substring(2)
+                text.startsWith("Db", true) -> "D" + text.substring(2)
+                text.startsWith("D", true) -> "D#" + text.substring(1)
+                text.startsWith("Eb", true) -> "E" + text.substring(2)
+                text.startsWith("E", true) -> "F" + text.substring(1)
+                text.startsWith("F#", true) -> "G" + text.substring(2)
+                text.startsWith("F", true) -> "F#" + text.substring(1)
+                text.startsWith("G#", true) -> "A" + text.substring(2)
+                text.startsWith("Gb", true) -> "G" + text.substring(2)
+                text.startsWith("G", true) -> "G#" + text.substring(1)
+                else -> {
+                    Log.e(LOG_NAME, "Weird Chord not transposed: $text")
+                    text
+                }
+            }
+        }
+        private fun transposeDown(text: String): String {
+            return when {
+                text.startsWith("A#", true) -> "A" + text.substring(2)
+                text.startsWith("Ab", true) -> "G" + text.substring(2)
+                text.startsWith("A", true) -> "G#" + text.substring(1)
+                text.startsWith("Bb", true) -> "A" + text.substring(2)
+                text.startsWith("B", true) -> "A#" + text.substring(1)
+                text.startsWith("C#", true) -> "C" + text.substring(2)
+                text.startsWith("C", true) -> "B" + text.substring(1)
+                text.startsWith("D#", true) -> "D" + text.substring(2)
+                text.startsWith("Db", true) -> "C" + text.substring(2)
+                text.startsWith("D", true) -> "C#" + text.substring(1)
+                text.startsWith("Eb", true) -> "D" + text.substring(2)
+                text.startsWith("E", true) -> "D#" + text.substring(1)
+                text.startsWith("F#", true) -> "F" + text.substring(2)
+                text.startsWith("F", true) -> "E" + text.substring(1)
+                text.startsWith("G#", true) -> "G" + text.substring(2)
+                text.startsWith("Gb", true) -> "F" + text.substring(2)
+                text.startsWith("G", true) -> "F#" + text.substring(1)
+                else -> {
+                    Log.e(LOG_NAME, "Weird Chord not transposed: $text")
+                    text
+                }
+            }
+        }
+
     }
+
     //thanks https://stackoverflow.com/a/51561533/3437608
     fun Context.getColorFromAttr(@AttrRes attrColor: Int, typedValue: TypedValue = TypedValue(), resolveRefs: Boolean = true): Int {
         theme.resolveAttribute(attrColor, typedValue, resolveRefs)

@@ -294,6 +294,7 @@ class TabDetailFragment : Fragment() {
             }
 
             Log.v(LOG_NAME, "Updating transpose level to $transposed by transposing $howMuch")
+            binding.key.text = TabTextView.transposeChord(binding.key.text, howMuch)
             binding.tabContent.transpose(howMuch)  // the actual transposition
             binding.transposeText = transposed.toString()
 
