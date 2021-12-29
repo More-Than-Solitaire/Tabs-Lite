@@ -56,23 +56,31 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         this.callback = callback
     }
 
+    // takes entire content for tab, and displays it.  Handles [tab][/tab] blocks as tab/chords dual-
+    // lined blocks, and handles any other content as plain text (but still searches for [ch][/ch] blocks
+    // to replace with the appropriate chords links
     fun setTabContent(content: CharSequence) {
         Log.v(LOG_NAME, "Setting tab content")
         var t = content
 
         tabLines.clear()  // remove any previous content
 
-        var lastIndex = 0
+        var indexOfEndOfTabBlock = 0
         Log.v(LOG_NAME, "Breaking single lines into chords/lyrics")
-        while (t.indexOf("[tab]", lastIndex) != -1) {
-            val firstIndex = t.indexOf("[tab]", 0)     // remove start tag
-            t = t.replaceRange(firstIndex, firstIndex + 5, "")
-            insertContentToTabLines(t.subSequence(lastIndex, firstIndex))
-            lastIndex = t.indexOf("[/tab]", firstIndex)    // remove end tag
-            t = t.replaceRange(lastIndex, lastIndex + 6, "")
-            linify(t.subSequence(firstIndex, lastIndex))
+        while (t.indexOf("[tab]", indexOfEndOfTabBlock) != -1) {
+            val indexOfStartOfTabBlock = t.indexOf("[tab]", 0)     // remove start tag
+            t = t.replaceRange(indexOfStartOfTabBlock, indexOfStartOfTabBlock + 5, "")
+
+            // any content that isn't inside [tab] blocks should be added without custom word-wrapping.  Default wrapping can take care of long lines here.
+            insertContentToTabLines(t.subSequence(indexOfEndOfTabBlock, indexOfStartOfTabBlock))
+
+            indexOfEndOfTabBlock = t.indexOf("[/tab]", indexOfStartOfTabBlock)    // remove end tag
+            t = t.replaceRange(indexOfEndOfTabBlock, indexOfEndOfTabBlock + 6, "")
+
+            // any content that *is* inside [tab] blocks should be custom word-wrapped (wrapped two lines at a time)
+            linify(t.subSequence(indexOfStartOfTabBlock, indexOfEndOfTabBlock))
         }
-        insertContentToTabLines(t.subSequence(lastIndex, t.length))
+        insertContentToTabLines(t.subSequence(indexOfEndOfTabBlock, t.length))
         wrapTextIntoView()
     }
 
@@ -101,11 +109,11 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
 
         while (text.indexOf("[ch]", 0) != -1 ) {
             val firstIndex = text.indexOf("[ch]", 0)
-            text = text.replaceRange(firstIndex, firstIndex + 4, "")
+            text = text.replaceRange(firstIndex, firstIndex + 4, "")  // remove "[ch]"
             result.append(text.subSequence(lastIndex, firstIndex))
 
             lastIndex = text.indexOf("[/ch]", lastIndex)
-            text = text.replaceRange(lastIndex, lastIndex + 5, "")
+            text = text.replaceRange(lastIndex, lastIndex + 5, "")  // remove "[/ch]"
             result.append(text.subSequence(firstIndex, lastIndex))
 
             val chordName = text.subSequence(firstIndex until lastIndex)
@@ -144,6 +152,7 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
     // word wraps the tabLines object into the textview
     private fun wrapTextIntoView() {
         Log.v(LOG_NAME, "Wrapping finished text into TextView")
+        val availableWidth = width.toFloat() - textSize / resources.displayMetrics.scaledDensity
         val spannableText = SpannableStringBuilder()
         for (linePair in tabLines) {
             val chord = linePair.first
@@ -153,16 +162,20 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
             var chordStart = 0
             while(chordStart < chord.length || (lyric != null && lyricStart < lyric.length)) {
                 if(linePair.second != null) {
-                    val wrapIndex = findMultipleLineWordBreakIndex(listOf(chord.subSequence(chordStart, chord.length),
+                    val wrapIndex = findMultipleLineWordBreakIndex(availableWidth, listOf(chord.subSequence(chordStart, chord.length),
                             lyric!!.subSequence(lyricStart, lyric.length)))
 
                     // make chord substring
-                    val chordLine = chord.subSequence(chordStart, min(chordStart + wrapIndex, chord.length))
-                    spannableText.append(chordLine.trimEnd()).append("\r\n")
+                    val chordLine = chord.subSequence(chordStart, min(chordStart + wrapIndex, chord.length)).trimEnd()
+                    spannableText.append(chordLine)
+                    if (chordLine.length < availableWidth) {
+                        spannableText.append(' ') // if we leave the chord at the end, the empty space following will become clickable.
+                    }
+                    spannableText.append("\r\n")
 
                     // make lyric substring
-                    val lyricLine = lyric.subSequence(lyricStart, min(lyricStart + wrapIndex, lyric.length))
-                    spannableText.append(lyricLine.trimEnd()).append("\r\n")
+                    val lyricLine = lyric.subSequence(lyricStart, min(lyricStart + wrapIndex, lyric.length)).trimEnd()
+                    spannableText.append(lyricLine).append("\r\n")
 
                     // update for next pass through
                     chordStart += chordLine.length
@@ -184,9 +197,8 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
             post(Runnable { requestLayout() })
         }
     }
-    private fun findMultipleLineWordBreakIndex(lines: List<CharSequence>): Int {
+    private fun findMultipleLineWordBreakIndex(availableWidth: Float, lines: List<CharSequence>): Int {
         // thanks @Andro https://stackoverflow.com/a/11498125
-        val availableWidth = width.toFloat() - textSize / resources.displayMetrics.scaledDensity
         val breakingChars = "‐–〜゠= \t\r\n"  // all the chars that we'll break a line at
         var totalCharsToFit: Int = 0
 

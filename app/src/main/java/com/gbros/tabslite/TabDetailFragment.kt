@@ -3,11 +3,9 @@ package com.gbros.tabslite
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.*
-import android.content.ClipboardManager
 import android.content.Context.CLIPBOARD_SERVICE
 import android.os.Bundle
 import android.os.Handler
-import android.text.*
 import android.util.Log
 import android.view.*
 import android.widget.SeekBar
@@ -29,13 +27,12 @@ import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
 import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
-import java.lang.Runnable
-import java.util.concurrent.Executor
 
 private const val LOG_NAME = "tabslite.TabDetailFragm"
 
 /**
- * A fragment representing a single Tab detail screen
+ * A fragment representing a single Tab detail screen.  This is the main purpose of the app, containing
+ * tab specific info, and a TabView for displaying the actual tab.
  */
 class TabDetailFragment : Fragment() {
     private val timerHandler = Handler()
