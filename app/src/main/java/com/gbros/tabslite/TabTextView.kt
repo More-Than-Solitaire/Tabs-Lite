@@ -63,6 +63,7 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         tabLines.clear()  // remove any previous content
 
         var lastIndex = 0
+        Log.v(LOG_NAME, "Breaking single lines into chords/lyrics")
         while (t.indexOf("[tab]", lastIndex) != -1) {
             val firstIndex = t.indexOf("[tab]", 0)     // remove start tag
             t = t.replaceRange(firstIndex, firstIndex + 5, "")
@@ -78,14 +79,13 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
     // takes a [tab] and breaks it into two lines (chord and lyric).  Adds chord processing and
     // puts it in `tabLines`.
     private fun linify(singleLyric: CharSequence){
-        Log.v(LOG_NAME, "Breaking single line into chords/lyrics")
-        var indexOfLineBreak = singleLyric.indexOf("\n")
-        if (indexOfLineBreak == -1)  // in case of lines ending without a newline after.
-            indexOfLineBreak = singleLyric.length
-        val chords: CharSequence = singleLyric.subSequence(0, indexOfLineBreak).trimEnd()
-        val lyrics: CharSequence = ""
-        if (indexOfLineBreak < singleLyric.length) {
-            singleLyric.subSequence(indexOfLineBreak + 1, singleLyric.length).trimEnd()
+        var indexOfExistingLineBreak = singleLyric.indexOf("\n")
+        if (indexOfExistingLineBreak == -1)  // in case of lines ending without a newline after.
+            indexOfExistingLineBreak = singleLyric.length
+        val chords: CharSequence = singleLyric.subSequence(0, indexOfExistingLineBreak).trimEnd()
+        var lyrics: CharSequence = ""
+        if (indexOfExistingLineBreak < singleLyric.length) {
+            lyrics = singleLyric.subSequence(indexOfExistingLineBreak + 1, singleLyric.length).trimEnd()
         }
         tabLines.add(Pair(processChords(chords), processChords(lyrics)))
     }
