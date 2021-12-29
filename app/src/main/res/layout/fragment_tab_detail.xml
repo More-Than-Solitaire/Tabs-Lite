@@ -179,6 +179,7 @@
                         android:paddingTop="8dp"
                         android:fontFamily="serif-monospace"
                         android:linksClickable="true"
+                        android:autoLink="web|email"
                         android:minHeight="@dimen/plant_description_min_height"
                         android:paddingEnd="0dp"
                         android:paddingStart="0dp"
