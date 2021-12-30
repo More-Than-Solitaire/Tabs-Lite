@@ -13,6 +13,9 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.AttrRes
+import com.gbros.tabslite.data.TabLine
+import com.gbros.tabslite.data.TabLineDouble
+import com.gbros.tabslite.data.TabLineSingle
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -21,7 +24,7 @@ import kotlin.math.min
 private const val LOG_NAME = "tabslite.TabTextView"
 
 class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcompat.widget.AppCompatTextView(context, attributeSet) {
-    private val tabLines = ArrayList<Pair<SpannableStringBuilder, SpannableStringBuilder?>>()
+    private val tabLines = ArrayList<TabLine>()
     private val mScaleDetector = object : ScaleGestureDetector(context, ScaleListener()) {
         override fun onTouchEvent(event: MotionEvent?): Boolean {
 
@@ -95,12 +98,12 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         if (indexOfExistingLineBreak < singleLyric.length) {
             lyrics = singleLyric.subSequence(indexOfExistingLineBreak + 1, singleLyric.length).trimEnd()
         }
-        tabLines.add(Pair(processChords(chords), processChords(lyrics)))
+        tabLines.add(TabLineDouble(processChords(chords), processChords(lyrics)))
     }
     // takes a string and replaces all [ch]'s with clickable spans
     // takes non-[tab] content, finds the [ch]'s, processes those, and adds the whole thing to tabLines
     private fun insertContentToTabLines(content: CharSequence){
-        tabLines.add(Pair(processChords(content), null))
+        tabLines.add(TabLineSingle(processChords(content)))
     }
     private fun processChords(content: CharSequence): SpannableStringBuilder {
         val result = SpannableStringBuilder()
@@ -154,37 +157,35 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         Log.v(LOG_NAME, "Wrapping finished text into TextView")
         val availableWidth = width.toFloat() - textSize / resources.displayMetrics.scaledDensity
         val spannableText = SpannableStringBuilder()
-        for (linePair in tabLines) {
-            val chord = linePair.first
-            val lyric = linePair.second
+        for (tabLine in tabLines) {
+            when (tabLine) {
+                is TabLineSingle -> spannableText.append(tabLine.line).append("\r\n")  // no need for custom wrapping
+                is TabLineDouble -> {
+                    var lyricStart = 0
+                    var chordStart = 0
 
-            var lyricStart = 0
-            var chordStart = 0
-            while(chordStart < chord.length || (lyric != null && lyricStart < lyric.length)) {
-                if(linePair.second != null) {
-                    val wrapIndex = findMultipleLineWordBreakIndex(availableWidth, listOf(chord.subSequence(chordStart, chord.length),
-                            lyric!!.subSequence(lyricStart, lyric.length)))
+                    while(chordStart < tabLine.chordsLine.length || lyricStart < tabLine.lyricsLine.length) {
+                        val wrapIndex = findMultipleLineWordBreakIndex(availableWidth, listOf(tabLine.chordsLine.subSequence(chordStart, tabLine.chordsLine.length),
+                            tabLine.lyricsLine.subSequence(lyricStart, tabLine.lyricsLine.length)))
 
-                    // make chord substring
-                    val chordLine = chord.subSequence(chordStart, min(chordStart + wrapIndex, chord.length)).trimEnd()
-                    spannableText.append(chordLine)
-                    if (chordLine.length < availableWidth) {
-                        spannableText.append(' ') // if we leave the chord at the end, the empty space following will become clickable.
+                        // make chord substring
+                        val singleLineChordsSubstring = tabLine.chordsLine.subSequence(chordStart, min(chordStart + wrapIndex, tabLine.chordsLine.length))
+                        spannableText.append(singleLineChordsSubstring.trimEnd())
+                        if (singleLineChordsSubstring.trimEnd().length < availableWidth) {
+                            spannableText.append(' ') // if we leave the chord at the end, the empty space following will become clickable.
+                        }
+                        spannableText.append("\r\n")
+
+                        // make lyric substring
+                        val singleLineLyricsSubstring = tabLine.lyricsLine.subSequence(lyricStart, min(lyricStart + wrapIndex, tabLine.lyricsLine.length))
+                        spannableText.append(singleLineLyricsSubstring.trimEnd()).append("\r\n")
+
+                        // update for next pass through
+                        chordStart += singleLineChordsSubstring.length
+                        lyricStart += singleLineLyricsSubstring.length
                     }
-                    spannableText.append("\r\n")
-
-                    // make lyric substring
-                    val lyricLine = lyric.subSequence(lyricStart, min(lyricStart + wrapIndex, lyric.length)).trimEnd()
-                    spannableText.append(lyricLine).append("\r\n")
-
-                    // update for next pass through
-                    chordStart += chordLine.length
-                    lyricStart += lyricLine.length
-                } else {
-                    // if lyric is null, don't do custom wrapping
-                    spannableText.append(linePair.first.trimEnd()).append("\r\n")
-                    break
                 }
+                else -> Log.w(LOG_NAME, "wrapTextIntoView() ran into an unrecognized type of TabLine.  Did you add functionality?")
             }
         }
 
@@ -229,9 +230,15 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
 
     fun transpose(howMuch: Int){
         if (howMuch != 0) {
-            for (tab in tabLines) {
-                transposeLine(howMuch, tab.first)
-                tab.second?.let { transposeLine(howMuch, it) }
+            for (tabLine in tabLines) {
+                when (tabLine) {
+                    is TabLineSingle -> transposeLine(howMuch, tabLine.line)
+                    is TabLineDouble -> {
+                        transposeLine(howMuch, tabLine.chordsLine)
+                        transposeLine(howMuch, tabLine.lyricsLine)
+                    }
+                    else -> Log.w(LOG_NAME, "transpose() encountered an unexpected TabLine type.  Did you add new functionality?")
+                }
             }
         }
         wrapTextIntoView()
