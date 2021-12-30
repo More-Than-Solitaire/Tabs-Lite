@@ -35,7 +35,7 @@ buildscript {
         workVersion = '2.7.1'
         instantAppsVersion = '18.0.0'
 
-        chordsVersion = '2.4.0'
+        chordsVersion = '2.4.1'
     }
 
     repositories {

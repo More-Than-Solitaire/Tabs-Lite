@@ -97,9 +97,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2"
     implementation "com.google.android.gms:play-services-instantapps:$rootProject.instantAppsVersion"
 
-    implementation "com.chrynan.chords:chords-core:$rootProject.chordsVersion"
-    implementation "com.chrynan.chords:chords-core-jvm:$rootProject.chordsVersion"
-    implementation "com.chrynan.chords:chords-android:$rootProject.chordsVersion"
+    implementation "com.chrynan.chords:chords-compose:$rootProject.chordsVersion"
 
     // Testing dependencies
     androidTestImplementation "androidx.arch.core:core-testing:$rootProject.coreTestingVersion"
