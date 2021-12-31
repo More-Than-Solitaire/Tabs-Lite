@@ -1,11 +1,13 @@
 package com.gbros.tabslite
 
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.DOWN
 import androidx.recyclerview.widget.ItemTouchHelper.UP
@@ -18,6 +20,9 @@ import com.gbros.tabslite.databinding.FragmentPlaylistBinding
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
+
+
+
 
 
 private const val LOG_NAME = "tabslite.ViewPlaylistFr"
@@ -47,13 +52,13 @@ class ViewPlaylistFragment : Fragment() {
             })
 
             // set up toolbar and back button
-            setHasOptionsMenu(true)
-            (activity as AppCompatActivity).let {
-                it.setSupportActionBar(binding.toolbar)
-                it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                it.supportActionBar?.setDisplayShowHomeEnabled(true)
-                it.supportActionBar?.setDisplayShowTitleEnabled(true)
-                it.supportActionBar?.title = playlist?.title
+            binding.toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+            binding.toolbar.setNavigationOnClickListener {
+                it.findNavController().navigateUp()
+            }
+
+            binding.toolbar.setOnMenuItemClickListener {
+                onOptionsItemSelected(it)
             }
         }
 
@@ -210,19 +215,14 @@ class ViewPlaylistFragment : Fragment() {
         return sortedList
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        //menu.clear()
-        inflater.inflate(R.menu.menu_playlist, menu)
-        return super.onCreateOptionsMenu(menu, inflater)
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return if (item.itemId == R.id.delete_playlist) {
-            GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistDao().deletePlaylist(playlistId) }  // delete playlist itself
-            GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistEntryDao().deletePlaylist(playlistId) }  // delete entries in playlist
+            context?.let { context ->  // confirm deletion
+                val builder: AlertDialog.Builder = AlertDialog.Builder(context)
+                builder.setMessage("Delete Playlist?").setPositiveButton("Yes", deletePlaylistConfirmationDialogListener)
+                    .setNegativeButton("No", deletePlaylistConfirmationDialogListener).show()
+            }
 
-            Log.i(LOG_NAME, "Playlist $playlistId deleted.")
-            activity?.onBackPressed()
             true
         } else if (item.itemId == R.id.edit_playlist) {
             // todo: make "Edit Playlist" into a string resource
@@ -232,4 +232,24 @@ class ViewPlaylistFragment : Fragment() {
             super.onOptionsItemSelected(item)
         }
     }
+
+    private var deletePlaylistConfirmationDialogListener =
+        DialogInterface.OnClickListener { _, which ->
+            when (which) {
+                DialogInterface.BUTTON_POSITIVE -> {
+                    // exit playlist view
+                    activity?.onBackPressed()
+
+                    // delete playlist itself
+                    GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistDao().deletePlaylist(playlistId)}
+
+                    // delete entries in playlist
+                    GlobalScope.launch {AppDatabase.getInstance(requireContext()).playlistEntryDao().deletePlaylist(playlistId)
+                    }
+
+                    Log.i(LOG_NAME, "Playlist $playlistId deleted.")
+                }
+                DialogInterface.BUTTON_NEGATIVE -> {}
+            }
+        }
 }

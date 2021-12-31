@@ -48,7 +48,7 @@
                     app:layout_collapseMode="pin"
                     app:contentInsetStartWithNavigation="0dp"
                     app:title="@{playlist.title}"
-                    app:menu="@menu/menu_main"
+                    app:menu="@menu/menu_playlist"
                     />
             </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.google.android.material.appbar.AppBarLayout>

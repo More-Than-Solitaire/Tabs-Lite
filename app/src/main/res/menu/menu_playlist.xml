@@ -9,10 +9,10 @@
     <item android:id="@+id/edit_playlist"
         android:title="@string/edit_playlist"
         android:icon="@drawable/ic_edit"
-        app:showAsAction="collapseActionView|never" />
+        app:showAsAction="ifRoom" />
     <item android:id="@+id/delete_playlist"
         android:title="@string/delete_playlist"
         android:icon="@drawable/ic_delete"
-        app:showAsAction="collapseActionView|never" />
+        app:showAsAction="ifRoom" />
 
 </menu>
