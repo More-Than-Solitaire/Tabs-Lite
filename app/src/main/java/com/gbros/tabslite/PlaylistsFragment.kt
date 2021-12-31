@@ -9,13 +9,11 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.gbros.tabslite.adapters.BrowseTabsAdapter
 import com.gbros.tabslite.adapters.PlaylistAdapter
-import com.gbros.tabslite.data.IntTabBasic
 import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.databinding.FragmentPlaylistsBinding
-import com.gbros.tabslite.utilities.*
 import com.gbros.tabslite.utilities.InjectorUtils
+import com.gbros.tabslite.utilities.PLAYLIST_SORTING_PREF_NAME
 import com.gbros.tabslite.utilities.PREFS_NAME
 import com.gbros.tabslite.viewmodels.PlaylistsViewModel
 
@@ -42,9 +40,9 @@ class PlaylistsFragment : Fragment() {
         binding.favoriteTabsList.adapter = adapter
 
         binding.createPlaylist.setOnClickListener {
-            (activity as HomeActivity).focusSearch()  // TODO: create a new playlist on this click
+            // create a new playlist
+            NewPlaylistDialogFragment().show(parentFragmentManager, "newPlaylistTag")
         }
-        binding.swipeRefresh.isEnabled = false
 
         return binding.root
     }

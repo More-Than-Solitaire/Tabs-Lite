@@ -11,7 +11,7 @@
     <string name="find_songs" translation_description="Button text that prompts user to search for tabs to add to their (empty) playlist.">Find some songs</string>
     <string name="create_playlist" translation_description="Button text that prompts user to new playlist.">Create New Playlist</string>
     <string name="favorites_empty" translation_description="Text that is shown on the 'Favorite Tabs' and 'Popular' screens when no tabs are there">There are no tabs here</string>
-    <string name="playlist_empty" translation_description="If there's a playlist with no tabs">This playlist doesn\'t have any tabs yet</string>
+    <string name="playlist_empty" translation_description="If there's a playlist with no tabs">There\'s nothing here!</string>
     <string name="playlists_empty" translation_description="Text that is shown on the 'Playlists' screen when no playlists are there">You don\'t have any playlists yet</string>
     <string name="menu_item_share_tab" translation_description="The label for the Share menu item">Share</string>
     <string name="menu_item_search" translation_description="The label for the Search menu item">Search</string>
@@ -46,6 +46,7 @@
     <string name="drag_handle_description">Drag handle</string>
     <string name="no_results_available_tabs_coming_soon">Whoops! There are no supported versions of this song available. We hope to add support for tab-style songs in the future.</string>
     <string name="tabs_lite_icon_description">Tabs Lite icon</string>
+    <string name="how_to_add_to_playlist">Add songs to a playlist by opening the song you\'d like to add and clicking Add to Playlist in the menu.</string>
 
     <string-array name="tab_sort_options">
         <item>Date Added</item>

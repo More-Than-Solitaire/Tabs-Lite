@@ -99,9 +99,9 @@
 
                     <LinearLayout
                         isGone="@{notEmpty}"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:gravity="center"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center|fill_vertical"
                         android:orientation="vertical"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -113,19 +113,21 @@
                             android:id="@+id/empty_garden"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textAlignment="center"
+                            android:layout_margin="@dimen/margin_normal"
                             android:text="@string/playlist_empty"
+                            android:textAlignment="center"
                             android:textAppearance="?attr/textAppearanceHeadline5"
                             tools:text="This playlist doesn't have any tabs yet" />
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/find_new_songs"
-                            android:layout_width="wrap_content"
+                        <TextView
+                            android:id="@+id/how_to_add_to_playlist"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/find_song"
-                            android:textColor="?attr/colorPrimary"
-                            app:backgroundTint="?attr/colorOnPrimary"
-                            app:shapeAppearance="@style/ShapeAppearance.Sunflower.Button.Add" />
+                            android:layout_margin="@dimen/margin_normal"
+                            android:text="@string/how_to_add_to_playlist"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                            tools:text="To add songs to a playlist, find the song you'd like to add, then click Add to Playlist in the menu." />
 
                     </LinearLayout>
 

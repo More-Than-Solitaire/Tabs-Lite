@@ -8,7 +8,7 @@
      both required to preserve the toolbar scroll / collapse state when navigating to a new screen and then coming back.
     -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/coordinator_layout"
+        android:id="@+id/view_pager_coordinator_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true">
@@ -30,7 +30,7 @@
                 android:id="@+id/fragment_main_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_scrollFlags="scroll|snap"
+                app:layout_scrollFlags="scroll|snap|enterAlways"
                 app:toolbarId="@id/toolbar">
 
                 <androidx.appcompat.widget.Toolbar
