@@ -624,6 +624,7 @@ class TabDetailFragment : Fragment() {
                         // we made it!  show the chord diagrams
                         currentChordDialog?.dismiss()
                         currentChordDialog = ChordBottomSheetDialogFragment.newInstance(chordVars)
+                        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
                         currentChordDialog?.show((activity as AppCompatActivity).supportFragmentManager, null)
                     }
                 }

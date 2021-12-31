@@ -5,14 +5,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import com.chrynan.chords.model.*
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.chrynan.chords.model.Chord
+import com.chrynan.chords.model.ChordMarker
 import com.gbros.tabslite.adapters.ChordPagerAdapter
 import com.gbros.tabslite.data.ChordVariation
-import com.gbros.tabslite.databinding.FragmentChordBinding
 import com.gbros.tabslite.databinding.FragmentChordBottomSheetBinding
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
+private const val LOG_NAME = "tabslite.ChordBottomShe"
 
 class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
     companion object {
@@ -28,9 +28,14 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
 
     private val chordVars by lazy { arguments?.getParcelableArray(KEY_CHORD) as Array<ChordVariation> }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.CustomBottomSheetDialogTheme) // so the darkened background doesn't seem to slide up
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentChordBottomSheetBinding.inflate(inflater, container, false)
-        binding.chordBottomSheet.clipToOutline = true
+        //binding.chordBottomSheet.clipToOutline = true
 
 
         val chords = ArrayList<Chord>()

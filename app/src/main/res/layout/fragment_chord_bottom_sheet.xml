@@ -12,6 +12,9 @@
 
     <RelativeLayout
         android:id="@+id/chordBottomSheet"
+        android:backgroundTintMode="multiply"
+        android:backgroundTint="@color/cardview_dark_background"
+        android:background="@color/cardview_shadow_end_color"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -39,7 +42,7 @@
             android:id="@+id/pager"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/chordTitleTextView"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <!--
         <com.google.android.material.tabs.TabLayout

@@ -28,14 +28,18 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.TabsLite.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+    <style name="Theme.TabsLite.AppBarOverlay" parent="ThemeOverlay.AppCompat.DayNight.ActionBar" />
     <style name="Theme.TabsLite.AppBarOverlayDark" parent="ThemeOverlay.MaterialComponents.ActionBar"/>
 
     <style name="TextAppearance.TabsLite.Toolbar.Text" parent="TextAppearance.MaterialComponents.Headline5">
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
-    <style name="Theme.WindowTranslucent.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="CustomBottomSheetDialogTheme" parent="Theme.MaterialComponents.DayNight.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CustomBottomSheetStyle</item>
+    </style>
 
-    <style name="Theme.WindowTranslucent.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="CustomBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">?attr/colorSurface</item>
+    </style>
 </resources>
