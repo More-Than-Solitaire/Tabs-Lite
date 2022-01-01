@@ -12,9 +12,10 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/playlists_coordinator_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <LinearLayout
+            android:id="@+id/playlists_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical" >
@@ -69,19 +70,18 @@
                 android:clipToPadding="false"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:spanCount="1"
-                tools:listitem="@layout/list_item_playlist" />
+                tools:listitem="@layout/list_item_playlist"
+                />
         </LinearLayout>
-
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/create_playlist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
+            android:layout_gravity="top|end"
             android:layout_margin="16dp"
             android:src="@drawable/ic_plus"
             android:contentDescription="@string/add_to_playlist"
-            app:layout_anchor="@id/sortBy"
-            app:layout_anchorGravity="top|end"
             />
+
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

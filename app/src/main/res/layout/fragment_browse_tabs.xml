@@ -53,7 +53,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/favorites_empty"
-                android:textAppearance="?attr/textAppearanceHeadline5" />
+                android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/find_new_songs"
