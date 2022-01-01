@@ -33,8 +33,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_scrollFlags="scroll|snap|enterAlways"
-                app:contentScrim="?attr/colorPrimaryContainer"
-                app:statusBarScrim="?attr/colorPrimaryContainer"
+                app:contentScrim="?attr/colorPrimaryInverse"
+                app:statusBarScrim="?attr/colorPrimaryInverse"
                 android:fitsSystemWindows="true"
                 app:toolbarId="@id/toolbar">
 
@@ -52,7 +52,7 @@
                         android:layout_weight="1"
                         android:contentDescription="@string/tabs_lite_icon_description"
                         android:foregroundGravity="left|center"
-                        app:tint="?attr/colorOnPrimaryContainer"
+                        app:tint="?attr/colorOnSurface"
                         app:srcCompat="@drawable/ic_launcher_foreground"
                         />
 
@@ -64,7 +64,7 @@
                 android:id="@+id/tabs"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:backgroundTint="?attr/colorPrimaryContainer"
+                android:backgroundTint="?attr/colorPrimaryInverse"
                 app:tabIndicatorColor="?attr/colorOnPrimaryContainer"
                 app:tabSelectedTextColor="?attr/colorOnPrimaryContainer"
                 app:tabTextColor="?attr/colorOnPrimaryContainer"

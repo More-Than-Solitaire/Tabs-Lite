@@ -72,7 +72,6 @@ class TabDetailFragment : Fragment() {
         binding.lifecycleOwner = viewLifecycleOwner
         setHasOptionsMenu(true)
         setPlaylistButtonsEnabled(false, false)
-        setStatusBarColor(R.attr.colorSurface)
 
         // title bar
         (activity as AppCompatActivity).apply {
@@ -148,14 +147,6 @@ class TabDetailFragment : Fragment() {
                 binding.btnNext.isEnabled = false
             }
         }
-    }
-
-    private fun setStatusBarColor(attrColor: Int) {
-        val typedValue = TypedValue()
-        val theme = context!!.theme
-        theme.resolveAttribute(attrColor, typedValue, true)
-        @ColorInt val color = typedValue.data
-        activity?.window?.statusBarColor = color
     }
 
     private fun setNotificationBarVisibility(visible: Boolean) {

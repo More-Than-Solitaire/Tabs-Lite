@@ -140,7 +140,7 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
             override fun updateDrawState(ds: TextPaint) {
                 super.updateDrawState(ds)
                 context?.apply {
-                    ds.color = getColorFromAttr(R.attr.colorPrimary)
+                    ds.color = getColorFromAttr(R.attr.colorOnSurface)
                     ds.bgColor = getColorFromAttr(R.attr.colorSurfaceVariant)
                 }
                 ds.typeface = monoBold
