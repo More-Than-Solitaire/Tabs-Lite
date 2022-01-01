@@ -47,6 +47,10 @@
     <string name="no_results_available_tabs_coming_soon">Whoops! There are no supported versions of this song available. We hope to add support for tab-style songs in the future.</string>
     <string name="tabs_lite_icon_description">Tabs Lite icon</string>
     <string name="how_to_add_to_playlist">Add songs to a playlist by opening the song you\'d like to add and clicking Add to Playlist in the menu.</string>
+    <string name="playlist_title">Playlist title</string>
+    <string name="description_optional">Description (optional)</string>
+    <string name="previous_tab_in_playlist">Previous tab in playlist</string>
+    <string name="next_tab_in_playlist">Next tab in playlist</string>
 
     <string-array name="tab_sort_options">
         <item>Date Added</item>

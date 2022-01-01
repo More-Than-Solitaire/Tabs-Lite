@@ -58,7 +58,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="@string/playlists_empty"
-                    android:textAppearance="?attr/textAppearanceHeadline5" />
+                    android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView

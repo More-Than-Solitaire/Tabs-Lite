@@ -21,7 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fitsSystemWindows="true"
-            android:theme="@style/Theme.TabsLite.AppBarOverlay">
+            >
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/fragment_main_toolbar"
@@ -33,10 +33,10 @@
 
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/search_result_toolbar"
-                    style="@style/Widget.MaterialComponents.Toolbar.Primary"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     app:layout_collapseMode="parallax"
+                    android:gravity="center_vertical"
                     >
 
                     <androidx.appcompat.widget.SearchView

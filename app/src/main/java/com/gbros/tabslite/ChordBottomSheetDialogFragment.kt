@@ -28,15 +28,8 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
 
     private val chordVars by lazy { arguments?.getParcelableArray(KEY_CHORD) as Array<ChordVariation> }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setStyle(STYLE_NORMAL, R.style.CustomBottomSheetDialogTheme) // so the darkened background doesn't seem to slide up
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentChordBottomSheetBinding.inflate(inflater, container, false)
-        //binding.chordBottomSheet.clipToOutline = true
-
 
         val chords = ArrayList<Chord>()
 
@@ -56,7 +49,7 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
             binding.chordName = chords[0].name
         } else {
             val chordVarsSize = chordVars.size
-            Log.e(javaClass.simpleName, "Error starting chord view - chords size is 0.  chordVars size is $chordVarsSize ")
+            Log.e(LOG_NAME, "Error starting chord view - chords size is 0.  chordVars size is $chordVarsSize ")
         }
 
         return binding.root

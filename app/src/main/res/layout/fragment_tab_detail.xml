@@ -21,12 +21,6 @@
             name="isPlaylist"
             type="Boolean" />
         <variable
-            name="enableNext"
-            type="Boolean" />
-        <variable
-            name="enablePrev"
-            type="Boolean" />
-        <variable
             name="transposeText"
             type="String"
             />
@@ -38,7 +32,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        android:background="?attr/colorSurface"
         tools:context="com.gbros.tabslite.HomeActivity"
         tools:ignore="MergeRootFrame"
         >
@@ -49,7 +42,7 @@
             android:layout_height="wrap_content"
             android:fitsSystemWindows="true"
             android:stateListAnimator="@animator/show_toolbar"
-            android:background="?attr/colorSurface"
+
             android:animateLayoutChanges="true">
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/toolbar_layout"
@@ -59,7 +52,6 @@
                 app:contentScrim="?attr/colorSurface"
                 app:statusBarScrim="?attr/colorSurface"
                 app:collapsedTitleGravity="left"
-                app:collapsedTitleTextAppearance="@style/TextAppearance.TabsLite.Toolbar.Text"
                 app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed|snap"
                 app:title="@{tab.toString()}"
                 app:titleEnabled="true"
@@ -70,8 +62,6 @@
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:background="@android:color/transparent"
-                    app:titleTextColor="?attr/colorOnSurface"
                     app:layout_collapseMode="pin"
                     app:contentInsetStartWithNavigation="0dp"
                     app:menu="@menu/menu_tab_detail"
@@ -112,7 +102,7 @@
                         android:layout_marginTop="5dp"
                         android:gravity="center_horizontal"
                         android:text="@{tab.toString()}"
-                        android:textAppearance="?attr/textAppearanceHeadline5"
+                        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
@@ -122,11 +112,11 @@
                         android:id="@+id/difficulty_dsc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="@dimen/margin_small"
+                        android:layout_marginTop="@dimen/margin_small"
                         android:text="@string/difficulty"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+                        app:layout_constraintTop_toBottomOf="@+id/playlist_cardview" />
 
                     <TextView
                         android:id="@+id/tuning_dsc"
@@ -134,7 +124,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="@string/tuning"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/difficulty" />
 
@@ -145,7 +134,6 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
                         android:text="@string/tab_author"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Small"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/key_dsc" />
 
@@ -155,7 +143,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="@{tab.contributorUserName}"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         app:layout_constraintBottom_toBottomOf="@+id/author_dsc"
                         app:layout_constraintStart_toEndOf="@+id/author_dsc"
                         tools:text="author name"/>
@@ -167,7 +154,7 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="16dp"
                         android:text="Transpose"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/author_dsc" />
 
@@ -175,17 +162,13 @@
                         android:id="@+id/tab_content"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="0dp"
-                        android:paddingTop="8dp"
+                        android:autoLink="web|email"
                         android:fontFamily="serif-monospace"
                         android:linksClickable="true"
-                        android:autoLink="web|email"
                         android:minHeight="@dimen/plant_description_min_height"
-                        android:paddingEnd="0dp"
-                        android:paddingStart="0dp"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textColorHighlight="?attr/colorSecondary"
-                        android:textColorLink="?attr/colorAccent"
+                        android:paddingHorizontal="0dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="@dimen/margin_extra_large"
                         android:textSize="18sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.0"
@@ -198,7 +181,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{tab.difficulty}"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         app:layout_constraintBottom_toBottomOf="@+id/difficulty_dsc"
                         app:layout_constraintStart_toEndOf="@+id/difficulty_dsc"
                         tools:text="novice" />
@@ -208,7 +190,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{tab.tuning}"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         app:layout_constraintBottom_toBottomOf="@+id/tuning_dsc"
                         app:layout_constraintStart_toEndOf="@+id/tuning_dsc"
                         tools:text="E A D G B E" />
@@ -219,7 +200,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="Capo: "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/tuning_dsc" />
 
@@ -228,7 +208,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{tab.getCapoText()}"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         app:layout_constraintBottom_toBottomOf="@+id/capo_dsc"
                         app:layout_constraintStart_toEndOf="@+id/capo_dsc"
                         tools:text="1"/>
@@ -239,7 +218,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="Key: "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/capo_dsc" />
 
@@ -248,7 +226,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{tab.tonalityName}"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         app:layout_constraintBottom_toBottomOf="@+id/key_dsc"
                         app:layout_constraintStart_toEndOf="@+id/key_dsc"
                         tools:text="C#"/>
@@ -269,9 +246,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:backgroundTint="?attr/colorPrimaryVariant"
                         android:text="+"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                         app:layout_constraintBottom_toBottomOf="@+id/transpose_dsc"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="@+id/transpose_dsc"
@@ -282,9 +258,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="16dp"
-                        android:backgroundTint="?attr/colorPrimaryVariant"
                         android:text="-"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                         app:layout_constraintBottom_toBottomOf="@+id/transpose_up"
                         app:layout_constraintEnd_toStartOf="@+id/transpose_up"
                         app:layout_constraintTop_toTopOf="@+id/transpose_up"
@@ -296,7 +271,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:text="@{transposeText}"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                         app:layout_constraintBottom_toBottomOf="@+id/transpose_dsc"
                         app:layout_constraintStart_toEndOf="@+id/transpose_dsc"
                         tools:text="11" />
@@ -305,7 +280,6 @@
                         android:id="@+id/cancel_transpose"
                         android:layout_width="27dp"
                         android:layout_height="36dp"
-                        android:textColor="?attr/colorAccent"
                         android:layout_marginStart="2dp"
                         style="?borderlessButtonStyle"
                         android:fontFamily="sans-serif-light"
@@ -322,68 +296,78 @@
                         app:layout_constraintStart_toEndOf="@+id/transpose_amt"
                         app:layout_constraintTop_toTopOf="@+id/transpose_amt" />
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
+                    <com.google.android.material.card.MaterialCardView
                         isGone="@{!isPlaylist}"
-                        android:id="@+id/linearLayout"
-                        android:layout_width="0dp"
+                        android:id="@+id/playlist_cardview"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/margin_small"
                         android:orientation="horizontal"
-                        android:background="@color/control"
                         android:theme="@style/Theme.TabsLite.LightButton"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/tab_detail_name">
 
-                        <TextView
-                            android:id="@+id/playlist_name"
-                            android:layout_width="0dp"
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="@{playlistNameStr}"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                            android:textColor="@color/emptyStar"
-                            android:maxLines="1"
-                            android:ellipsize="end"
-                            app:layout_constraintBottom_toBottomOf="@+id/btn_top_skip_prev"
-                            app:layout_constraintEnd_toStartOf="@+id/btn_top_skip_prev"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="@+id/btn_top_skip_prev"
-                            tools:text="My Playlist 101" />
+                            android:orientation="horizontal"
+                            android:padding="@dimen/margin_small"
+                            android:baselineAligned="false"
+                            >
 
-                        <Button
-                            android:id="@+id/btn_top_skip_prev"
-                            android:layout_width="47dp"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="0dp"
-                            android:background="?attr/selectableItemBackground"
-                            android:enabled="@{enablePrev}"
-                            android:text=""
-                            app:cornerRadius="0dp"
-                            app:icon="@drawable/ic_skip_back"
-                            app:layout_constraintEnd_toStartOf="@id/btn_top_skip_next"
-                            app:layout_constraintTop_toTopOf="parent" />
+                            <TextView
+                                android:id="@+id/playlist_name"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/margin_normal"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:text="@{playlistNameStr}"
+                                android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toStartOf="@+id/btn_top_skip_prev"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                tools:text="My Playlist 101" />
 
-                        <Button
-                            android:id="@+id/btn_top_skip_next"
-                            android:layout_width="47dp"
-                            android:layout_height="48dp"
-                            android:background="?attr/selectableItemBackground"
-                            android:enabled="@{enableNext}"
-                            android:text=""
-                            android:theme="@style/Theme.TabsLite.LightButton"
-                            app:cornerRadius="0dp"
-                            app:icon="@drawable/ic_skip_forward"
-                            app:iconPadding="0dp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
+                            <ImageButton
+                                android:id="@+id/btn_top_skip_prev"
+                                android:layout_width="wrap_content"
+                                android:padding="@dimen/margin_small"
+                                android:layout_marginVertical="0dp"
+                                android:layout_height="match_parent"
+                                android:background="?attr/selectableItemBackground"
+                                android:contentDescription="@string/previous_tab_in_playlist"
+                                android:enabled="false"
+                                android:src="@drawable/ic_skip_back"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toStartOf="@+id/btn_top_skip_next"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <ImageButton
+                                android:id="@+id/btn_top_skip_next"
+                                android:layout_marginVertical="0dp"
+                                android:padding="@dimen/margin_small"
+                                android:layout_marginEnd="@dimen/margin_normal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:background="?attr/selectableItemBackground"
+                                android:contentDescription="@string/next_tab_in_playlist"
+                                android:enabled="false"
+                                android:src="@drawable/ic_skip_forward"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/bottom_playlist_controls"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="-16dp"
-                        app:layout_constraintTop_toBottomOf="@id/tab_content"
-                        isGone="@{!isPlaylist}">
+                        android:layout_marginTop="39dp"
+                        app:layout_constraintTop_toBottomOf="@id/tab_content">
 
                         <Button
                             android:id="@+id/btn_next"
@@ -392,7 +376,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="16dp"
                             android:drawableEnd="@drawable/ic_skip_forward"
-                            android:enabled="@{enableNext}"
+                            android:enabled="false"
                             android:paddingBottom="8dp"
                             android:text="@{nextTabButtonText}"
                             app:layout_constraintBottom_toBottomOf="parent"
@@ -405,7 +389,7 @@
                             isGone="@{!isPlaylist}"
                             android:layout_width="wrap_content"
                             android:layout_height="0dp"
-                            android:enabled="@{enablePrev}"
+                            android:enabled="false"
                             android:text="Prev"
                             app:icon="@drawable/ic_skip_back"
                             app:layout_constraintBottom_toBottomOf="@+id/btn_next"
@@ -425,37 +409,31 @@
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab"
-            style="@style/Widget.MaterialComponents.FloatingActionButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="80dp"
-            android:backgroundTint="?attr/colorPrimaryVariant"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/auto_scroll_toggle_button"
             android:onClick="@{() -> callback.scrollButtonClicked()}"
             app:layout_anchorGravity="end|bottom"
-            app:layout_anchor="@id/tab_detail_scrollview"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_anchor="@id/tab_content"
             app:srcCompat="@drawable/ic_fab_autoscroll" />
 
         <SeekBar
             android:id="@+id/autoscrollSpeed"
             android:layout_width="200dp"
             android:layout_height="30dp"
-            android:layout_marginBottom="232dp"
-            android:layout_marginRight="-56dp"
+            android:layout_marginBottom="168dp"
+            android:layout_marginEnd="-56dp"
             android:background="@drawable/seekbar_background"
             android:contentDescription="@string/auto_scroll_speed_control"
-            android:elevation="12dp"
+            android:elevation="6dp"
             android:progress="50"
             android:rotation="270"
-            app:layout_anchor="@id/tab_detail_scrollview"
+            app:layout_anchor="@id/fab"
             app:layout_anchorGravity="end|bottom"
-            app:layout_constraintEnd_toEndOf="@+id/fab"
-            app:layout_constraintStart_toStartOf="@+id/fab"
-            app:layout_constraintBottom_toTopOf="@+id/fab" />
+            />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

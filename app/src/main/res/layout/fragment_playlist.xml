@@ -35,7 +35,6 @@
                 android:layout_height="match_parent"
                 android:fitsSystemWindows="true"
                 app:collapsedTitleGravity="left"
-                app:collapsedTitleTextAppearance="@style/TextAppearance.TabsLite.Toolbar.Text"
                 app:layout_scrollFlags="exitUntilCollapsed"
                 app:title="@{playlist.title}"
                 app:titleEnabled="false"
@@ -81,7 +80,7 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/margin_normal"
                         android:text="@{playlist.description}"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                         app:layout_collapseMode="none"
                         app:layout_constraintTop_toTopOf="parent"
                         tools:text="This is the cool playlist we created once upon a time long long ago for that one event we did back in the day." />
@@ -126,7 +125,7 @@
                             android:layout_margin="@dimen/margin_normal"
                             android:text="@string/how_to_add_to_playlist"
                             android:textAlignment="center"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                             tools:text="To add songs to a playlist, find the song you'd like to add, then click Add to Playlist in the menu." />
 
                     </LinearLayout>

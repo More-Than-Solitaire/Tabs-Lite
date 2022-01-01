@@ -3,7 +3,7 @@
     <path
         android:pathData="M4 10h12v2H4zm0-4h12v2H4zm0 8h8v2H4zm10 0v6l5-3z"
         android:fillColor="#00000000"
-        android:strokeColor="?attr/colorPrimaryDark"
+        android:strokeColor="?attr/colorOnPrimaryContainer"
         android:fillType="evenOdd"
         android:strokeWidth="1" />
 </vector>

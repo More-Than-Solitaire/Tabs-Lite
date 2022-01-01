@@ -13,8 +13,6 @@
     <RelativeLayout
         android:id="@+id/chordBottomSheet"
         android:backgroundTintMode="multiply"
-        android:backgroundTint="@color/cardview_dark_background"
-        android:background="@color/cardview_shadow_end_color"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -29,13 +27,13 @@
 
         <TextView
             android:id="@+id/chordTitleTextView"
-            android:layout_centerHorizontal="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/imageView"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="48sp"
+            android:layout_centerHorizontal="true"
             android:text="@{chordName}"
+            android:textSize="48sp"
+            android:textColor="?attr/colorOnSurface"
             tools:text="F#m" />
 
         <androidx.viewpager2.widget.ViewPager2

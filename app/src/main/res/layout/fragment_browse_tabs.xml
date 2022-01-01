@@ -31,7 +31,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:entries="@array/tab_sort_options"
-            android:gravity="right|center_vertical"
+            android:gravity="end|center_vertical"
             android:padding="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/lblSortBy"
@@ -60,8 +60,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/find_song"
-                android:textColor="?attr/colorPrimary"
-                app:backgroundTint="?attr/colorOnPrimary"
                 app:shapeAppearance="@style/ShapeAppearance.Sunflower.Button.Add" />
 
         </LinearLayout>

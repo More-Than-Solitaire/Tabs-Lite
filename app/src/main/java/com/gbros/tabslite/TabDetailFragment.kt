@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.*
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -14,6 +15,7 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.res.colorResource
 import androidx.core.app.ShareCompat
 import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
@@ -30,6 +32,11 @@ import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
 import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
+import android.content.res.Resources.Theme
+
+import android.util.TypedValue
+import androidx.annotation.ColorInt
+
 
 private const val LOG_NAME = "tabslite.TabDetailFragm"
 
@@ -64,10 +71,8 @@ class TabDetailFragment : Fragment() {
 
         binding.lifecycleOwner = viewLifecycleOwner
         setHasOptionsMenu(true)
-
-        // disable next and previous buttons until they're set to the correct action
-        binding.enableNext = false
-        binding.enablePrev = false
+        setPlaylistButtonsEnabled(false, false)
+        setStatusBarColor(R.attr.colorSurface)
 
         // title bar
         (activity as AppCompatActivity).apply {
@@ -118,6 +123,40 @@ class TabDetailFragment : Fragment() {
         super.onPause()
     }
 
+    private fun setPlaylistButtonsEnabled(prev: Boolean? = null, next: Boolean? = null) {
+        // disable and grey out next and previous buttons until they're set to the correct action
+        if (prev != null) {
+            if (prev) {
+                binding.btnTopSkipPrev.isEnabled = true
+                binding.btnTopSkipPrev.imageAlpha = 255
+                binding.btnPrev.isEnabled = true
+            } else {
+                binding.btnTopSkipPrev.isEnabled = false
+                binding.btnTopSkipPrev.imageAlpha = 75
+                binding.btnPrev.isEnabled = false
+            }
+        }
+
+        if (next != null) {
+            if (next) {
+                binding.btnTopSkipNext.isEnabled = true
+                binding.btnTopSkipNext.imageAlpha = 255
+                binding.btnNext.isEnabled = true
+            } else {
+                binding.btnTopSkipNext.isEnabled = false
+                binding.btnTopSkipNext.imageAlpha = 75
+                binding.btnNext.isEnabled = false
+            }
+        }
+    }
+
+    private fun setStatusBarColor(attrColor: Int) {
+        val typedValue = TypedValue()
+        val theme = context!!.theme
+        theme.resolveAttribute(attrColor, typedValue, true)
+        @ColorInt val color = typedValue.data
+        activity?.window?.statusBarColor = color
+    }
 
     private fun setNotificationBarVisibility(visible: Boolean) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -184,17 +223,16 @@ class TabDetailFragment : Fragment() {
                     val nextEntry = getNextJob.getCompleted()
                     if (nextEntry != null) {
                         // we now have the info for when the user clicks the Next buttons.
-                        binding.enableNext = true
                         binding.btnNext.setOnClickListener { loadTab(nextEntry.tabId, binding, isPlaylist, nextEntry) }
                         binding.btnTopSkipNext.setOnClickListener { loadTab(nextEntry.tabId, binding, isPlaylist, nextEntry) }
-
+                        (activity as AppCompatActivity).runOnUiThread { setPlaylistButtonsEnabled(next = true) }
                     } else {
                         Log.w(LOG_NAME, "Warning! nextId != null, but fetching the referenced entry returned null.  This should not happen.  TabId $tabid, nextId $nextId")
                     }
                 }
             } else {
                 // no next tab in this playlist
-                binding.enableNext = false
+                (activity as AppCompatActivity).runOnUiThread { setPlaylistButtonsEnabled(next = false) }
             }
 
             // update PREV buttons
@@ -206,7 +244,7 @@ class TabDetailFragment : Fragment() {
                     val prevEntry = getPrevJob.getCompleted()
                     if (prevEntry != null) {
                         // we now have the info for when the user clicks the PREV buttons.
-                        binding.enablePrev = true
+                        (activity as AppCompatActivity).runOnUiThread { setPlaylistButtonsEnabled(prev = true) }
                         binding.btnPrev.setOnClickListener { loadTab(prevEntry.tabId, binding, isPlaylist, prevEntry) }
                         binding.btnTopSkipPrev.setOnClickListener { loadTab(prevEntry.tabId, binding, isPlaylist, prevEntry) }
                         Log.d(LOG_NAME, "set playlist buttons")
@@ -216,7 +254,7 @@ class TabDetailFragment : Fragment() {
                 }
             } else {
                 // no previous tab in this playlist
-                binding.enablePrev = false
+                (activity as AppCompatActivity).runOnUiThread { setPlaylistButtonsEnabled(prev = false) }
             }
         }
     }

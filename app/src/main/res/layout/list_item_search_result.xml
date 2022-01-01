@@ -17,7 +17,6 @@
         android:clickable="true"
         android:onClick="@{clickListener}"
         android:focusable="true"
-        android:foreground="?android:attr/selectableItemBackground"
         android:layout_marginTop="@dimen/margin_extra_small"
         android:layout_marginLeft="@dimen/margin_extra_small"
         android:layout_marginRight="@dimen/margin_extra_small"
@@ -31,15 +30,13 @@
 
             <TextView
                 android:id="@+id/versionName"
-                style="@android:style/Widget.DeviceDefault.TextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_marginStart="5dp"
                 android:text="@{song.songName}"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textColor="?attr/colorAccent"
-                tools:text="Even If"/>
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                tools:text="Even If" />
 
             <TextView
                 android:id="@+id/songArtist"
@@ -50,7 +47,8 @@
                 android:layout_marginStart="0dp"
                 android:layout_marginTop="5dp"
                 android:text="@{song.artistName}"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textColor="?attr/colorOnPrimaryContainer"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
                 tools:text="MercyMe"/>
 
 <!--  for now, official tabs are not happening.
@@ -76,7 +74,7 @@
                 android:layout_marginEnd="18dp"
                 android:layout_marginBottom="-13dp"
                 android:text=""
-                tools:text="17"/>
+                tools:text="17" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 

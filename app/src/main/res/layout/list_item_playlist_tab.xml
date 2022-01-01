@@ -47,7 +47,6 @@
 
             <TextView
                 android:id="@+id/versionName"
-                style="@android:style/Widget.DeviceDefault.TextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
@@ -55,7 +54,7 @@
                 android:layout_toStartOf="@+id/type"
                 android:layout_toEndOf="@+id/dragHandle"
                 android:text="@{tab.songName}"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                 android:textColor="?attr/colorAccent"
                 tools:text="My Song Name" />
 
@@ -68,17 +67,17 @@
                 android:layout_marginStart="0dp"
                 android:layout_marginTop="5dp"
                 android:text="@{tab.artistName}"
-                tools:text="Zac Brown Band"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                tools:text="Zac Brown Band" />
 
             <TextView
                 android:id="@+id/type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@+id/textViewOptions"
                 android:layout_alignParentTop="true"
                 android:layout_marginTop="5dp"
                 android:layout_marginEnd="11dp"
+                android:layout_toStartOf="@+id/textViewOptions"
                 android:text="@{tab.type}"
                 tools:text="Chords" />
 
@@ -99,12 +98,12 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
+                android:clickable="true"
                 android:paddingStart="6dp"
                 android:paddingEnd="8dp"
-                android:textStyle="bold"
-                android:clickable="true"
                 android:text="&#8942;"
-                android:textAppearance="?android:textAppearanceLarge" />
+                android:textAppearance="?android:textAppearanceLarge"
+                android:textStyle="bold" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 </layout>

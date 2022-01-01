@@ -11,3 +11,12 @@ fun bindIsGone(view: View, isGone: Boolean) {
         View.VISIBLE
     }
 }
+
+@BindingAdapter("isVisible")
+fun bindIsVisible(view: View, isVisible: Boolean) {
+    view.visibility = if (isVisible) {
+        View.VISIBLE
+    } else {
+        View.INVISIBLE
+    }
+}

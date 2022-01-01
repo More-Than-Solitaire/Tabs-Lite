@@ -4,7 +4,7 @@ buildscript {
         // Sdk and tools
         compileSdkVersion = 31
         minSdkVersion = 24
-        targetSdkVersion = 30
+        targetSdkVersion = 31
 
         // App dependencies
         appCompatVersion = '1.1.0'

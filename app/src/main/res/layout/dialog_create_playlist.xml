@@ -12,7 +12,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="top"
-        android:hint="Playlist title"
+        android:hint="@string/playlist_title"
         android:inputType="text"
         android:maxLines="1"
         android:minLines="1"
@@ -25,7 +25,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="top"
-        android:hint="Description (optional)"
+        android:hint="@string/description_optional"
         android:inputType="textMultiLine"
         android:maxLines="8"
         android:scrollbars="vertical" />

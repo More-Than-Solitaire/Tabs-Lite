@@ -6,34 +6,31 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:foreground="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
         android:layout_marginTop="@dimen/margin_extra_small"
-        android:layout_marginLeft="@dimen/margin_extra_small"
-        android:layout_marginRight="@dimen/margin_extra_small"
+        android:layout_marginHorizontal="@dimen/margin_extra_small"
         >
 
         <RelativeLayout
             android:id="@+id/layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="4dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp">
+            android:padding="10dp"
+            android:gravity="center_vertical"
+            >
 
             <TextView
                 android:id="@+id/versionName"
-                style="@android:style/Widget.DeviceDefault.TextView"
-                android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_marginStart="5dp"
                 android:layout_marginEnd="15dp"
                 android:layout_toStartOf="@+id/star1"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                tools:text="Version 1"/>
+                android:gravity="center_vertical"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                tools:text="Version 1" />
 
             <!--
             todo: implement an author name under the version name
@@ -54,10 +51,9 @@
                 android:id="@+id/numRatings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignBottom="@+id/versionName"
                 android:layout_alignParentEnd="true"
-                android:layout_marginEnd="10dp"
-                android:layout_marginBottom="2dp"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/margin_small"
                 tools:text="20" />
 
             <ImageView
@@ -65,13 +61,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_marginEnd="45dp"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="50dp"
                 app:srcCompat="@drawable/ic_rating_star_empty" />
 
             <ImageView
                 android:id="@+id/star4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:layout_marginEnd="0dp"
                 android:layout_toStartOf="@+id/star5"
                 app:srcCompat="@drawable/ic_rating_star_half" />
@@ -80,6 +78,7 @@
                 android:id="@+id/star3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:layout_marginEnd="0dp"
                 android:layout_toStartOf="@+id/star4"
                 app:srcCompat="@drawable/ic_rating_star_full" />
@@ -88,6 +87,7 @@
                 android:id="@+id/star2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:layout_marginEnd="0dp"
                 android:layout_toStartOf="@+id/star3"
                 app:srcCompat="@drawable/ic_rating_star_full" />
@@ -96,6 +96,7 @@
                 android:id="@+id/star1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:layout_marginEnd="0dp"
                 android:layout_toStartOf="@+id/star2"
                 app:srcCompat="@drawable/ic_rating_star_full" />
