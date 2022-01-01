@@ -6,9 +6,6 @@ Our main download site is directly from Google Play here:
 
 [<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width = "200px">](https://play.google.com/store/apps/details?id=com.gbros.tabslite)
 
-
-Alternatively, you can [join the public Beta](https://play.google.com/apps/testing/com.gbros.tabslite) for early access to potentially buggy new features.  If you want to build this project from scratch, feel free to clone this repo and build it from Android Studio.
-
 ## About
 
 Find your favorites out of over a million available chords and tabs! Play along at your own speed with built-in auto scroll and speed adjustment, and save to your favorites to enable offline access.
