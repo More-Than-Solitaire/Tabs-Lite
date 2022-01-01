@@ -76,8 +76,8 @@
             app:argType="boolean" />
         <argument
             android:name="playlistName"
-            app:argType="string"
-            android:defaultValue=" " />
+            android:defaultValue=" "
+            app:argType="string" />
         <argument
             android:name="tabId"
             app:argType="integer" />
@@ -94,10 +94,12 @@
         <deepLink
             android:id="@+id/deepLink"
             android:autoVerify="true"
+            app:action="ACTION_VIEW"
             app:uri="tabslite.com/tab/{tabId}" />
         <deepLink
             android:id="@+id/deepLink2"
             android:autoVerify="true"
+            app:action="ACTION_VIEW"
             app:uri="tabslite.com/tab/{tabId}/" />
     </fragment>
 </navigation>
