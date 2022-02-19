@@ -32,29 +32,38 @@ class HomeActivity : AppCompatActivity() {
 
         searchView = menu.findItem(R.id.search).actionView as SearchView
         searchMenuItem = menu.findItem(R.id.search)
-        SearchHelper.initializeSearchBar("", searchView, this, this, {q ->
+        SearchHelper.initializeSearchBar("", searchView, this, this) { q ->
             Log.i(LOG_NAME, "Starting search from Home for '$q'")
 
             //which navigation direction depends on which is the current fragment
             val navHost = supportFragmentManager.findFragmentById(R.id.nav_host)
             navHost?.let { navFragment ->
-                navFragment.childFragmentManager.primaryNavigationFragment?.let { fragment->
+                navFragment.childFragmentManager.primaryNavigationFragment?.let { fragment ->
                     when (fragment.javaClass) {
                         TabDetailFragment::class.java -> {
-                            val direction = TabDetailFragmentDirections.actionTabDetailFragment2ToSearchResultFragment(q)
+                            val direction =
+                                TabDetailFragmentDirections.actionTabDetailFragment2ToSearchResultFragment(
+                                    q
+                                )
                             findNavController(R.id.nav_host).navigate(direction)
                         }
                         HomeViewPagerFragment::class.java -> {
-                            val direction = HomeViewPagerFragmentDirections.actionViewPagerFragmentToSearchResultFragment(q)
+                            val direction =
+                                HomeViewPagerFragmentDirections.actionViewPagerFragmentToSearchResultFragment(
+                                    q
+                                )
                             findNavController(R.id.nav_host).navigate(direction)
                         }
                         else -> {
-                            Log.e(LOG_NAME, "Search directions not implemented for this class (${fragment.javaClass.canonicalName}}")
+                            Log.e(
+                                LOG_NAME,
+                                "Search directions not implemented for this class (${fragment.javaClass.canonicalName}}"
+                            )
                         }
                     }
                 }
             }
-        })
+        }
 
         return super.onCreateOptionsMenu(menu)
     }

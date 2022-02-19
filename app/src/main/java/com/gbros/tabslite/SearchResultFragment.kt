@@ -59,10 +59,10 @@ class SearchResultFragment : Fragment() {
                 view.findNavController().navigate(direction)
             }
 
-            SearchHelper.initializeSearchBar(query, binding.searchResultsSearch, requireContext(), viewLifecycleOwner, { q ->
+            SearchHelper.initializeSearchBar(query, binding.searchResultsSearch, requireContext(), viewLifecycleOwner) { q ->
                 Log.i(LOG_NAME, "Starting search for '$q'")
                 restartSearch(q, binding)
-            })
+            }
 
             binding.searchResultList.adapter = adapter
 
@@ -149,9 +149,6 @@ class SearchResultFragment : Fragment() {
 
             Unit
         } else {
-//            if(activity is SearchResultsActivity) {
-//                data.add((activity as SearchResultsActivity).searchJob.getCompleted())
-//            }
             data.add(searchJob.getCompleted())
             val songs = data.getSongs()
             activity?.runOnUiThread {

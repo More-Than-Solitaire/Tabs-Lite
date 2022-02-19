@@ -37,13 +37,17 @@ class SongVersionFragment : Fragment() {
         arguments?.let { it ->
             val rawVersionsList = it.getParcelableArray(ARG_SONG_VERSIONS) as Array<*>
             if (!rawVersionsList.isNullOrEmpty()) {  // if there are no versions of this song at all, don't try to cast to Array<TabBasic>
-                // possible tab.type's: "Tab" (not 100% sure on this one), "Chords", "Official"
-                // filter out "official" tabs -- the ones without nice chords and a "content" field.
-                // also filter out tabs vs chords.  // todo: maybe implement tabs
-                songVersions =
-                    (rawVersionsList as Array<TabBasic>).filter { tab -> tab.type == "Chords" }
-                songVersions =
-                    songVersions.sortedWith(compareByDescending { it.votes })  // thanks https://www.programiz.com/kotlin-programming/examples/sort-custom-objects-property
+                try {
+                    // possible tab.type's: "Tab" (not 100% sure on this one), "Chords", "Official"
+                    // filter out "official" tabs -- the ones without nice chords and a "content" field.
+                    // also filter out tabs vs chords.  // todo: maybe implement tabs
+                    songVersions =
+                        (rawVersionsList as Array<TabBasic>).filter { tab -> tab.type == "Chords" }
+                    songVersions =
+                        songVersions.sortedWith(compareByDescending { it.votes })  // thanks https://www.programiz.com/kotlin-programming/examples/sort-custom-objects-property
+                } catch (_: ClassCastException) {
+                    Log.w(LOG_NAME, "Cast failure to Array<TabBasic>.  Unsure how this can happen.  rawVersionsList is $rawVersionsList")
+                }
             }
         }
 

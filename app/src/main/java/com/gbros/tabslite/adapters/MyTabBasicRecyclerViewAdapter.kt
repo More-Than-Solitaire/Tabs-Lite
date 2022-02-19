@@ -1,33 +1,29 @@
 package com.gbros.tabslite.adapters
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.R
 import com.gbros.tabslite.SongVersionFragment
 import com.gbros.tabslite.data.TabBasic
 
 /**
  * [RecyclerView.Adapter] that can display a [TabBasic] (usually a search result) and makes a call to the
- * specified [OnListFragmentInteractionListener].
+ * specified [SongVersionFragment.OnListFragmentInteractionListener].
  */
 class MyTabBasicRecyclerViewAdapter(
         private val mValues: List<TabBasic>,
         private val mListener: SongVersionFragment.OnListFragmentInteractionListener?)
     : RecyclerView.Adapter<MyTabBasicRecyclerViewAdapter.SongVersionViewHolder>() {
 
-    private val mOnClickListener: View.OnClickListener
-
-    init {
-        mOnClickListener = View.OnClickListener { v: View ->
-            val item = v.tag as TabBasic
-            // Notify the active callbacks interface (the activity, if the fragment is attached to
-            // one) that an item has been selected.
-            mListener?.onListFragmentInteraction(item.tabId)
-        }
+    private val mOnClickListener: View.OnClickListener = View.OnClickListener { v: View ->
+        val item = v.tag as TabBasic
+        // Notify the active callbacks interface (the activity, if the fragment is attached to
+        // one) that an item has been selected.
+        mListener?.onListFragmentInteraction(item.tabId)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongVersionViewHolder {
