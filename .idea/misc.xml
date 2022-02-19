@@ -20,7 +20,7 @@
         <entry key="..\:/Users/Caleb/StudioProjects/Tabs-Lite/app/src/main/res/layout/fragment_chord.xml" value="0.21829710144927536" />
         <entry key="..\:/Users/Caleb/StudioProjects/Tabs-Lite/app/src/main/res/layout/fragment_chord_bottom_sheet.xml" value="0.21829710144927536" />
         <entry key="..\:/Users/Caleb/StudioProjects/Tabs-Lite/app/src/main/res/layout/fragment_playlist.xml" value="0.21829710144927536" />
-        <entry key="..\:/Users/Caleb/StudioProjects/Tabs-Lite/app/src/main/res/layout/fragment_playlists.xml" value="0.21829710144927536" />
+        <entry key="..\:/Users/Caleb/StudioProjects/Tabs-Lite/app/src/main/res/layout/fragment_playlists.xml" value="0.5" />
         <entry key="..\:/Users/Caleb/StudioProjects/Tabs-Lite/app/src/main/res/layout/fragment_search_result_list.xml" value="0.21829710144927536" />
         <entry key="..\:/Users/Caleb/StudioProjects/Tabs-Lite/app/src/main/res/layout/fragment_song_version.xml" value="0.21829710144927536" />
         <entry key="..\:/Users/Caleb/StudioProjects/Tabs-Lite/app/src/main/res/layout/fragment_tab_detail.xml" value="0.4466666666666667" />
@@ -38,7 +38,7 @@
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="11" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
