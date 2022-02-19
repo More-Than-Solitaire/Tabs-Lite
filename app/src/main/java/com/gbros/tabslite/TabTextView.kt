@@ -195,13 +195,13 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
             requestLayout()
         } else {
             Log.v(LOG_NAME, "Could not call requestLayout() (isInLayout = true). Posting runnable instead")
-            post(Runnable { requestLayout() })
+            post { requestLayout() }
         }
     }
     private fun findMultipleLineWordBreakIndex(availableWidth: Float, lines: List<CharSequence>): Int {
         // thanks @Andro https://stackoverflow.com/a/11498125
         val breakingChars = "‐–〜゠= \t\r\n"  // all the chars that we'll break a line at
-        var totalCharsToFit: Int = 0
+        var totalCharsToFit = 0
 
         // find max number of chars that will fit on a line
         for (line in lines) {
@@ -272,7 +272,7 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
             mScaleFactor *= detector.scaleFactor
 
             // Don't let the object get too small or too large.
-            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f))
+            mScaleFactor = 0.1f.coerceAtLeast(mScaleFactor.coerceAtMost(5.0f))
 
             this@TabTextView.apply {
                 setTextSize(0, textSize * mScaleFactor)
@@ -288,23 +288,25 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         fun transposeChord(chord: CharSequence, howMuch: Int): String {
             val numSteps = abs(howMuch)
             val up = howMuch > 0
-            var newChord = chord.toString()
 
-            if (newChord != "") {
-                if (up) {
-                    // transpose up
-                    for (i in 0 until numSteps) {
-                        newChord = transposeUp(newChord)
-                    }
-                } else {
-                    // transpose down
-                    for (i in 0 until numSteps) {
-                        newChord = transposeDown(newChord)
+            val chordParts = chord.split('/').toTypedArray()  // handle chords with a base note like G/B
+            for (i in chordParts.indices) {
+                if (chordParts[i] != "") {
+                    if (up) {
+                        // transpose up
+                        for (j in 0 until numSteps) {
+                            chordParts[i] = transposeUp(chordParts[i])
+                        }
+                    } else {
+                        // transpose down
+                        for (j in 0 until numSteps) {
+                            chordParts[i] = transposeDown(chordParts[i])
+                        }
                     }
                 }
             }
 
-            return newChord
+            return chordParts.joinToString("/")
         }
 
         private fun transposeUp(text: String): String {
@@ -357,7 +359,6 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
                 }
             }
         }
-
     }
 
     //thanks https://stackoverflow.com/a/51561533/3437608
