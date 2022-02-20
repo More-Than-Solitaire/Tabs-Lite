@@ -2,10 +2,12 @@ package com.gbros.tabslite
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.*
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context.CLIPBOARD_SERVICE
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.res.Configuration
-import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -15,7 +17,6 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.res.colorResource
 import androidx.core.app.ShareCompat
 import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
@@ -31,11 +32,10 @@ import com.gbros.tabslite.workers.UgApi
 import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
 import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.*
-import android.content.res.Resources.Theme
-
-import android.util.TypedValue
-import androidx.annotation.ColorInt
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 
 private const val LOG_NAME = "tabslite.TabDetailFragm"
@@ -95,8 +95,6 @@ class TabDetailFragment : Fragment() {
             }
         })
 
-
-
         /* ************************************     Load Tab/UI     ************************************ */
         arguments?.let { argBundle ->
             tabId = argBundle.getInt("tabId")  // should we replace this with a TabBasic since that's normally what the sender already has?
@@ -113,12 +111,16 @@ class TabDetailFragment : Fragment() {
             binding.nextTabButtonText = "Next"
         }
 
+        // set screen to always on while the tab is open
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         return binding.root
     }
 
     override fun onPause() {
-        // consider pausing the autoscroll
+        // consider pausing the autoscroll?
         currentChordDialog?.dismiss()  // this doesn't parcelize well, so get rid of it before we pause
+        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         super.onPause()
     }
 
@@ -296,7 +298,6 @@ class TabDetailFragment : Fragment() {
                         timerHandler.removeCallbacks(timerRunnable)
                         fab.setImageResource(R.drawable.ic_fab_autoscroll)
                         autoscrollSpeed.isGone = true
-                        (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                         binding.appbar.setExpanded(true, true)  // thanks https://stackoverflow.com/a/32137264/3437608
                     } else {
                         // start scrolling
@@ -304,7 +305,6 @@ class TabDetailFragment : Fragment() {
                         fab.setImageResource(R.drawable.ic_fab_pause_autoscroll)
                         autoscrollSpeed.isGone = false
                         autoscrollSpeed.alpha = 1.0F
-                        (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                         binding.appbar.setExpanded(false, true)
                         Handler().postDelayed({
                             autoscrollSpeed.alpha = 0.4F
