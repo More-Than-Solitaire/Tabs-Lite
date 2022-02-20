@@ -10,7 +10,9 @@ class PlaylistEntryRepository private constructor(private val playlistEntryDao: 
     fun update(entry: PlaylistEntry) = playlistEntryDao.update(entry)
     fun setNextEntryId(nextEntryId: Int?, thisEntryId: Int?) = playlistEntryDao.setNextEntryId(nextEntryId, thisEntryId)
     fun deletePlaylist(playlistId: Int) = playlistEntryDao.deletePlaylist(playlistId)
-
+    fun getFavoriteTabEntries() = playlistEntryDao.getLivePlaylistItems(-1)
+    fun addToFavorites(tabId: Int, transpose: Int = 0) = playlistEntryDao.insert(-1, tabId, null, null, System.currentTimeMillis(), transpose)
+    fun removeFromFavorites(tabId: Int) = playlistEntryDao.deleteTabFromPlaylist(tabId, -1)
 
     companion object {
         // For Singleton instantiation

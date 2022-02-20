@@ -2,10 +2,12 @@ package com.gbros.tabslite
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.*
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context.CLIPBOARD_SERVICE
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.res.Configuration
-import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -15,7 +17,6 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.res.colorResource
 import androidx.core.app.ShareCompat
 import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
@@ -25,17 +26,17 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.PlaylistEntry
+import com.gbros.tabslite.data.PlaylistEntryRepository
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.TabHelper
 import com.gbros.tabslite.workers.UgApi
 import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
 import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.*
-import android.content.res.Resources.Theme
-
-import android.util.TypedValue
-import androidx.annotation.ColorInt
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 
 private const val LOG_NAME = "tabslite.TabDetailFragm"
@@ -436,9 +437,9 @@ class TabDetailFragment : Fragment() {
                     val fetchedTab = getTabFromDbJob.getCompleted()  // actually get the data
 
                     if (binding.tab != null && binding.tab!!.tabId == tabId) {  // we're reloading the same tab
-                        val favorite: Boolean = binding.tab!!.favorite
-                        TabHelper.setFavorite(getTabId(), favorite, AppDatabase.getInstance(requireContext()))  // reloading would reset favorite status, so save that
-                        fetchedTab.favorite = favorite  // update UI
+                        val favorite: Boolean = binding.isFavorite
+                        val transposed: Int = binding.tab!!.transposed
+                        setFavorite(tabId, favorite, transposed)
                     }
 
                     Log.v(LOG_NAME, "Set binding.tab to tab fetched from database.")
@@ -550,16 +551,16 @@ class TabDetailFragment : Fragment() {
                     if (item.isChecked) {
                         // now it's a favorite
                         item.setIcon(R.drawable.ic_favorite)
-                        binding.tab!!.favorite = true
 
                         context?.let {if( isInstantApp(it) ) {
                             favoriteWhileInstant()
                         }}
                     } else {
                         item.setIcon(R.drawable.ic_unfavorite)
-                        binding.tab!!.favorite = false
                     }
-                    tabId?.let { TabHelper.setFavorite(it, item.isChecked, AppDatabase.getInstance(requireContext())) }
+                    tabId?.let {
+                        setFavorite(it, item.isChecked, binding.tab!!.transposed)
+                    }
                 }
                 true
             }
@@ -617,6 +618,25 @@ class TabDetailFragment : Fragment() {
 
     interface Callback {
         fun scrollButtonClicked()
+    }
+
+    private fun setFavorite(tabId: Int, favorite: Boolean, transposed: Int = 0) {
+        GlobalScope.launch {
+            if (favorite) {
+                PlaylistEntryRepository.getInstance(
+                    AppDatabase.getInstance(
+                        requireContext()
+                    ).playlistEntryDao()
+                ).addToFavorites(tabId, transposed)
+            } else {
+                PlaylistEntryRepository.getInstance(
+                    AppDatabase.getInstance(
+                        requireContext()
+                    ).playlistEntryDao()
+                ).removeFromFavorites(tabId)
+            }
+        }
+
     }
 
     private fun chordClicked(chordName: CharSequence, noUpdate: Boolean = false){

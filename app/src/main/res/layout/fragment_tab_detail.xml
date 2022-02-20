@@ -24,6 +24,10 @@
             name="transposeText"
             type="String"
             />
+        <variable
+            name="isFavorite"
+            type="Boolean"
+            />
     </data>
 
     <!-- todo: redo all the strings (search for plant) -->
