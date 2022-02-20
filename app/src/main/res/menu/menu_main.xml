@@ -6,11 +6,6 @@
         android:icon="@drawable/ic_search"
         app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
-    <item android:id="@+id/get_app"
-        android:title="@string/get_app"
-        android:icon="@drawable/ic_get_app"
-        app:showAsAction="always"
-        android:visible="false"/>
     <item android:id="@+id/dark_mode_toggle"
         android:title="@string/toggle_dark_mode"
         android:icon="@drawable/ic_dark_mode_toggle"

@@ -2,16 +2,12 @@ package com.gbros.tabslite
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.ClipDescription
-import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
-import android.view.ViewGroup
 import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Playlist
-import com.gbros.tabslite.data.PlaylistDao
 import com.gbros.tabslite.utilities.PlaylistHelper
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
@@ -29,12 +25,6 @@ class NewPlaylistDialogFragment(private val tabId: Int? = null,
 ) : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-//        val getDataJob = GlobalScope.async { AppDatabase.getInstance(requireContext()).playlistDao().getCurrentPlaylists() }
-//        getDataJob.invokeOnCompletion {
-//            val playlists = getDataJob.getCompleted()
-//        }
-
-
         return activity?.let { mActivity ->
             //todo: get current playlists
             val content = layoutInflater.inflate(R.layout.dialog_create_playlist, null)

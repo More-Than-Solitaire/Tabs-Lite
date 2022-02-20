@@ -34,7 +34,7 @@ class PlaylistsFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentPlaylistsBinding.inflate(inflater, container, false)
         val adapter = PlaylistAdapter()
         binding.favoriteTabsList.adapter = adapter

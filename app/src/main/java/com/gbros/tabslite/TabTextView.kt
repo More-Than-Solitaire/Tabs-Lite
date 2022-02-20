@@ -37,7 +37,7 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
             return super.onTouchEvent(event)
         }
     }
-    private lateinit var callback: Callback
+    private lateinit var callback: (chord: CharSequence) -> Unit
 
     override fun onFinishInflate() {
         super.onFinishInflate()
@@ -55,7 +55,7 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         return mScaleDetector.onTouchEvent(event)
     }
 
-    fun setCallback(callback: Callback){
+    fun setCallback(callback: (chord: CharSequence) -> Unit){
         this.callback = callback
     }
 
@@ -134,7 +134,7 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
             override fun onClick(view: View) {
                 Selection.setSelection((view as TextView).text as Spannable, 0)
                 view.invalidate()
-                callback.chordClicked(chordName.toString())
+                callback(chordName.toString())
             }
 
             override fun updateDrawState(ds: TextPaint) {
@@ -262,9 +262,6 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
         }
     }
 
-    interface Callback {
-        fun chordClicked(chordName: CharSequence)
-    }
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             // Handle the scale..

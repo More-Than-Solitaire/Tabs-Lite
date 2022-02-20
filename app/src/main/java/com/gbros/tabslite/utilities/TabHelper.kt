@@ -1,10 +1,7 @@
 package com.gbros.tabslite.utilities
 
-import android.content.Context
 import android.util.Log
-import androidx.lifecycle.viewModelScope
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.data.TabRequestType
 import com.gbros.tabslite.workers.UgApi
 import com.google.gson.Gson
@@ -23,6 +20,16 @@ object TabHelper {
     }
 
 
+    /**
+     * Gets tab based on tabId.  First checks the internal database for a cache hit, and if successful returns that. If
+     * not (or if the force parameter is enabled), the tab is loaded from the internet.  If an internet load is performed
+     * then the resulting tab and chords are cached automatically in the app database.
+     *
+     * @param tabId         The ID of the tab to load
+     * @param database      The database instance to load a tab from (or into)
+     * @param force         (Optional) if true, the app will skip the database cache check and reload the tab from the internet
+     * @param tabAccessType (Optional) string parameter for internet tab load request
+     */
     suspend fun fetchTabFromInternet(tabId: Int, database: AppDatabase, force: Boolean = false, tabAccessType: String = "public"): Boolean = coroutineScope {
         // get the tab and corresponding chords, and put them in the database.  Then return true
         if (!force && database.tabFullDao().exists(tabId)) {

@@ -7,7 +7,6 @@ import android.database.Cursor
 import android.database.MatrixCursor
 import android.provider.BaseColumns
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.cursoradapter.widget.CursorAdapter
 import androidx.cursoradapter.widget.SimpleCursorAdapter
@@ -16,25 +15,23 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.gbros.tabslite.HomeActivity
-import com.google.gson.Gson
 import com.gbros.tabslite.R
-import com.gbros.tabslite.databinding.FragmentSearchResultListBinding
-import kotlinx.coroutines.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 private const val LOG_NAME = "tabslite.SearchHelper"
 
 object SearchHelper {
-    val gson = Gson()
-
     // search suggestions
     val from = arrayOf("suggestion")
     val to = intArrayOf(R.id.suggestion_text)
 
-    fun getSearchSuggestionAdapter(context: Context): SimpleCursorAdapter {
+    private fun getSearchSuggestionAdapter(context: Context): SimpleCursorAdapter {
         return SimpleCursorAdapter(context, R.layout.list_item_search_suggestion,
                 null, from, to, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER)
     }
 
-    fun getObserverForSuggestionAdapter(adapter: SimpleCursorAdapter): Observer<MatrixCursor> {
+    private fun getObserverForSuggestionAdapter(adapter: SimpleCursorAdapter): Observer<MatrixCursor> {
         return Observer<MatrixCursor> { newSuggestion -> adapter.changeCursor(newSuggestion) }
     }
 
@@ -97,9 +94,14 @@ object SearchHelper {
         val onSuggestionListener = object : SearchView.OnSuggestionListener {
             override fun onSuggestionClick(position: Int): Boolean {
                 val cursor: Cursor = searchView.suggestionsAdapter.getItem(position) as Cursor
-                val txt: String = cursor.getString(cursor.getColumnIndex("suggestion"))
-                searchView.setQuery(txt, true)
-                return true
+                val columnIndex = cursor.getColumnIndex("suggestion")
+                return if (columnIndex >= 0) {
+                    val txt: String = cursor.getString(columnIndex)
+                    searchView.setQuery(txt, true)
+                    true
+                } else {
+                    false
+                }
             }
 
             // todo: what does this mean?

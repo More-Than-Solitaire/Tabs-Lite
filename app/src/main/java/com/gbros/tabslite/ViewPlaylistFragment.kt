@@ -47,9 +47,9 @@ class ViewPlaylistFragment : Fragment() {
             playlist?.let { updateView(binding, it) }  // set up once with the passed variable
 
             // now get live data from the database.  This enables editing (and instant feedback)
-            AppDatabase.getInstance(requireContext()).playlistDao().getPlaylistLive(playlistId).observe(viewLifecycleOwner, { pl ->
+            AppDatabase.getInstance(requireContext()).playlistDao().getPlaylistLive(playlistId).observe(viewLifecycleOwner) { pl ->
                 updateView(binding, pl)
-            })
+            }
 
             // set up toolbar and back button
             binding.toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
@@ -75,7 +75,7 @@ class ViewPlaylistFragment : Fragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupRecyclerViewAdapter(binding: FragmentPlaylistBinding, playlistTitle: String) {
-        AppDatabase.getInstance(requireContext()).playlistEntryDao().getLivePlaylistItems(playlistId).observe(viewLifecycleOwner, { entries ->
+        AppDatabase.getInstance(requireContext()).playlistEntryDao().getLivePlaylistItems(playlistId).observe(viewLifecycleOwner) { entries ->
             binding.notEmpty = entries.isNotEmpty()
 
             val orderedEntries = sort(entries)
@@ -90,7 +90,10 @@ class ViewPlaylistFragment : Fragment() {
                 val myFrom = currentFromPos
                 if (myFrom != null && currentToPos != myFrom) {
                     Log.d(LOG_NAME, "Moving from $myFrom to $currentToPos")
-                    Log.d(LOG_NAME, "Original item at dest: ${orderedEntries[currentToPos].entryId}")
+                    Log.d(
+                        LOG_NAME,
+                        "Original item at dest: ${orderedEntries[currentToPos].entryId}"
+                    )
 
                     val src = orderedEntries[myFrom]
                     val dest = orderedEntries[currentToPos]
@@ -107,7 +110,15 @@ class ViewPlaylistFragment : Fragment() {
                     }
 
                     if (runonceflag) {
-                        GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistEntryDao().moveEntry(src.prevEntryId, src.nextEntryId, src.entryId, destPrev, destNext) }
+                        GlobalScope.launch {
+                            AppDatabase.getInstance(requireContext()).playlistEntryDao().moveEntry(
+                                src.prevEntryId,
+                                src.nextEntryId,
+                                src.entryId,
+                                destPrev,
+                                destNext
+                            )
+                        }
                     }
                 }
 
@@ -117,32 +128,44 @@ class ViewPlaylistFragment : Fragment() {
             }
 
             // drag to reorder
-            val touchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(UP + DOWN, 0) {
+            val touchHelper =
+                ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(UP + DOWN, 0) {
 
-                override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-                    // track the latest coordinates
-                    if (currentFromPos == null) {
-                        currentFromPos = viewHolder.absoluteAdapterPosition
+                    override fun onMove(
+                        recyclerView: RecyclerView,
+                        viewHolder: RecyclerView.ViewHolder,
+                        target: RecyclerView.ViewHolder
+                    ): Boolean {
+                        // track the latest coordinates
+                        if (currentFromPos == null) {
+                            currentFromPos = viewHolder.absoluteAdapterPosition
+                        }
+                        currentToPos = target.absoluteAdapterPosition
+
+                        binding.favoriteTabsList.adapter?.notifyItemMoved(
+                            viewHolder.absoluteAdapterPosition,
+                            target.absoluteAdapterPosition
+                        )
+                        return true
                     }
-                    currentToPos = target.absoluteAdapterPosition
 
-                    binding.favoriteTabsList.adapter?.notifyItemMoved(viewHolder.absoluteAdapterPosition, target.absoluteAdapterPosition)
-                    return true
-                }
+                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    }
 
-                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                }
+                    override fun isLongPressDragEnabled(): Boolean {
+                        return false  // true means a long press will enable reorder anywhere in the list item
+                    }
+                })
 
-                override fun isLongPressDragEnabled(): Boolean {
-                    return false  // true means a long press will enable reorder anywhere in the list item
-                }
-            })
-
-            val dragCallback = { viewHolder: RecyclerView.ViewHolder -> touchHelper.startDrag(viewHolder) }
+            val dragCallback =
+                { viewHolder: RecyclerView.ViewHolder -> touchHelper.startDrag(viewHolder) }
             touchHelper.attachToRecyclerView(binding.favoriteTabsList)
 
-            binding.favoriteTabsList.adapter = MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlistTitle, dragCallback)
-            (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(orderedEntries)
+            binding.favoriteTabsList.adapter =
+                MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlistTitle, dragCallback)
+            (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(
+                orderedEntries
+            )
 
             binding.favoriteTabsList.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_UP) {
@@ -151,7 +174,7 @@ class ViewPlaylistFragment : Fragment() {
 
                 return@setOnTouchListener false  // so the touch gets passed down to the drag handler in MyPlaylistEntryRecyclerViewAdapter.kt
             }
-        })
+        }
 
     }
 

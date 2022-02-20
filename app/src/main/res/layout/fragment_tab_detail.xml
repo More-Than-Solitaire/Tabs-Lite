@@ -9,9 +9,6 @@
             name="tab"
             type="com.gbros.tabslite.data.TabFull" />
         <variable
-            name="callback"
-            type="com.gbros.tabslite.TabDetailFragment.Callback" />
-        <variable
             name="nextTabButtonText"
             type="String" />
         <variable
@@ -22,6 +19,10 @@
             type="Boolean" />
         <variable
             name="transposeText"
+            type="String"
+            />
+        <variable
+            name="tonalityName"
             type="String"
             />
     </data>
@@ -225,7 +226,7 @@
                         android:id="@+id/key"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{tab.tonalityName}"
+                        android:text="@{tonalityName}"
                         app:layout_constraintBottom_toBottomOf="@+id/key_dsc"
                         app:layout_constraintStart_toEndOf="@+id/key_dsc"
                         tools:text="C#"/>
@@ -415,7 +416,6 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/auto_scroll_toggle_button"
-            android:onClick="@{() -> callback.scrollButtonClicked()}"
             app:layout_anchorGravity="end|bottom"
             app:layout_anchor="@id/tab_content"
             app:srcCompat="@drawable/ic_fab_autoscroll" />

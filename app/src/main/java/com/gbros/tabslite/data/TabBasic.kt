@@ -5,8 +5,13 @@ import androidx.annotation.Nullable
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
-import kotlin.collections.ArrayList
 
+/**
+ * A basic description of a tab.
+ *
+ * This class is used by the search feature to return details about potential results without downloading
+ * the entire tab for each search result.
+ */
 @Parcelize
 data class TabBasic(
         @PrimaryKey @ColumnInfo(name = "id") override var tabId: Int,
@@ -38,146 +43,3 @@ data class TabBasic(
 ) : IntTabBasic, Parcelable {
     override fun toString() = "$songName by $artistName"
 }
-
-
-/*
-data class TabBasic : IntTabBasic{
-    override var songId: Int = -1
-        get() = field
-        set(value) {field = value}
-    override var songName: String = ""
-        get() = field
-        set(value) {field = value}
-
-    override var artistName: String = ""
-        get() = field
-        set(value) {field = value}
-
-    override var isVerified: Boolean = false
-        get() = field
-        set(value) {field = value}
-
-    override var numVersions: Int = 1
-        get() = field
-        set(value) {field = value}
-
-
-
-
-    override var tabId: Int = -1
-        get() = field
-        set(value) {field = value}
-
-    override var type: String = ""
-        get() = field
-        set(value) {field = value}
-
-    override var part: String = ""
-        get() = field
-        set(value) {field = value}
-
-    override var version: Int = 0
-        get() = field
-        set(value) {field = value}
-
-    override var votes: Int = 0
-        get() = field
-        set(value) {field = value}
-
-    override var rating: Double = 0.0
-        get() = field
-        set(value) {field = value}
-
-    override var date: Int = 0
-        get() = field
-        set(value) {field = value}
-
-    override var status: String = ""
-        get() = field
-        set(value) {field = value}
-
-    override var presetId: Int = 0
-        get() = field
-        set(value) {field = value}
-
-    override var tabAccessType: String = ""
-        get() = field
-        set(value) {field = value}
-
-    override var tpVersion: Int = 0
-        get() = field
-        set(value) {field = value}
-
-    override var tonalityName: String = ""
-        get() = field
-        set(value) {field = value}
-
-    override var versionDescription: String = ""
-        get() = field
-        set(value) {field = value}
-
-    // in JSON these are in a separate sublevel "recording"
-    override var recordingIsAcoustic: Boolean = false
-        get() = field
-        set(value) {field = value}
-
-    override var recordingTonalityName: String = ""
-        get() = field
-        set(value) {field = value}
-
-    override var recordingArtists: ArrayList<String> = ArrayList()
-        get() = field
-        set(value) {field = value}
-
-    override var recordingPerformance: String = ""
-        get() = field
-        set(value) {field = value}
-
-    override fun toString() = songName
-
-    constructor(songId: Int = 0, songName: String = "", artistName: String = "",
-                isVerified: Boolean = false, numVersions: Int = 1, tabId: Int = 0, type: String = "",
-                part: String = "", version: Int = 0, votes: Int = 0, rating: Double = 0.0,
-                date: Int = 0, status: String = "", presetId: Int = 0, tabAccessType: String = "public",
-                tpVersion: Int = 0, tonalityName: String = "", versionDescription: String = "",
-                recordingIsAcoustic: Boolean = false, recordingTonalityName: String = "",
-                recordingArtists: ArrayList<String> = ArrayList(), recordingPerformance: String = ""){
-        this.songId                 = songId
-        this.songName               = songName
-        this.artistName             = artistName
-        this.isVerified             = isVerified
-        this.numVersions            = numVersions
-        this.tabId                  = tabId
-        this.type                   = type
-        this.part                   = part
-        this.version                = version
-        this.votes                  = votes
-        this.rating                 = rating
-        this.date                   = date
-        this.status                 = status
-        this.presetId               = presetId
-        this.tabAccessType          = tabAccessType
-        this.tpVersion              = tpVersion
-        this.tonalityName           = tonalityName
-        this.versionDescription     = versionDescription
-        this.recordingIsAcoustic    = recordingIsAcoustic
-        this.recordingTonalityName  = recordingTonalityName
-        this.recordingArtists       = recordingArtists
-        this.recordingPerformance   = recordingPerformance
-    }
-
-    /*
-    constructor(songId: Int, songName: String, artistName: String, isVerified: Boolean,
-                tabId: Int, type: String, version: Int) {
-        this.songId                 = songId
-        this.songName               = songName
-        this.artistName             = artistName
-        this.isVerified             = isVerified
-        this.tabId                  = tabId
-        this.type                   = type
-        this.version                = version
-    }
-      */
-}
-*/
-

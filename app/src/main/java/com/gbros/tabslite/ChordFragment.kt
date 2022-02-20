@@ -17,15 +17,8 @@ import java.lang.StrictMath.min
 
 private const val LOG_NAME = "tabslite.ChordFragment "
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
 /**
- * A simple [Fragment] subclass.
- * Use the [ChordFragment.newInstance] factory method to
- * create an instance of this fragment.
+ * A chord view fragment for displaying a chord fingering.
  */
 class ChordFragment(private val chord: Chord) : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,

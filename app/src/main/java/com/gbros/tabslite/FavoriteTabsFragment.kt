@@ -12,7 +12,7 @@ import androidx.fragment.app.viewModels
 import com.gbros.tabslite.adapters.BrowseTabsAdapter
 import com.gbros.tabslite.data.IntTabBasic
 import com.gbros.tabslite.databinding.FragmentBrowseTabsBinding
-import com.gbros.tabslite.utilities.*
+import com.gbros.tabslite.utilities.FAVORITE_TABS_SORTING_PREF_NAME
 import com.gbros.tabslite.utilities.InjectorUtils
 import com.gbros.tabslite.utilities.PREFS_NAME
 import com.gbros.tabslite.viewmodels.FavoriteTabsListViewModel
@@ -65,53 +65,72 @@ class FavoriteTabsFragment : Fragment() {
         }
 
 
-        viewModel.favoriteTabs.observe(viewLifecycleOwner, { tabs ->
+        viewModel.favoriteTabs.observe(viewLifecycleOwner) { tabs ->
             binding.hasHistory = !tabs.isNullOrEmpty()
 
-            activity?.application?.apply{
-                val storedPref = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getInt(FAVORITE_TABS_SORTING_PREF_NAME, 0)
+            activity?.application?.apply {
+                val storedPref = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getInt(
+                    FAVORITE_TABS_SORTING_PREF_NAME,
+                    0
+                )
                 binding.sortBy.setSelection(storedPref)
                 updateSorting(storedPref, tabs)
 
-                binding.sortBy.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    /**
-                     * Callback method to be invoked when the selection disappears from this
-                     * view. The selection can disappear for instance when touch is activated
-                     * or when the adapter becomes empty.
-                     *
-                     * @param parent The AdapterView that now contains no selected item.
-                     */
-                    override fun onNothingSelected(parent: AdapterView<*>?) { }
+                binding.sortBy.onItemSelectedListener =
+                    object : AdapterView.OnItemSelectedListener {
+                        /**
+                         * Callback method to be invoked when the selection disappears from this
+                         * view. The selection can disappear for instance when touch is activated
+                         * or when the adapter becomes empty.
+                         *
+                         * @param parent The AdapterView that now contains no selected item.
+                         */
+                        override fun onNothingSelected(parent: AdapterView<*>?) {}
 
-                    /**
-                     *
-                     * Callback method to be invoked when an item in this view has been
-                     * selected. This callback is invoked only when the newly selected
-                     * position is different from the previously selected position or if
-                     * there was no selected item.
-                     *
-                     * Implementers can call getItemAtPosition(position) if they need to access the
-                     * data associated with the selected item.
-                     *
-                     * @param parent The AdapterView where the selection happened
-                     * @param view The view within the AdapterView that was clicked
-                     * @param position The position of the view in the adapter
-                     * @param id The row id of the item that is selected
-                     */
-                    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                        updateSorting(position, adapter.currentList)
-                        // save our spot for next run
-                        activity?.application?.apply{
-                            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putInt(FAVORITE_TABS_SORTING_PREF_NAME, position).apply()
-                            Log.v(LOG_NAME, "Storing FavoriteTabs SortBy preference ($position)")
-                        } ?: Log.w(LOG_NAME, "Could not store FavoriteTabs SortBy preference ($position).")
+                        /**
+                         *
+                         * Callback method to be invoked when an item in this view has been
+                         * selected. This callback is invoked only when the newly selected
+                         * position is different from the previously selected position or if
+                         * there was no selected item.
+                         *
+                         * Implementers can call getItemAtPosition(position) if they need to access the
+                         * data associated with the selected item.
+                         *
+                         * @param parent The AdapterView where the selection happened
+                         * @param view The view within the AdapterView that was clicked
+                         * @param position The position of the view in the adapter
+                         * @param id The row id of the item that is selected
+                         */
+                        override fun onItemSelected(
+                            parent: AdapterView<*>?,
+                            view: View?,
+                            position: Int,
+                            id: Long
+                        ) {
+                            updateSorting(position, adapter.currentList)
+                            // save our spot for next run
+                            activity?.application?.apply {
+                                getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+                                    .putInt(FAVORITE_TABS_SORTING_PREF_NAME, position).apply()
+                                Log.v(
+                                    LOG_NAME,
+                                    "Storing FavoriteTabs SortBy preference ($position)"
+                                )
+                            } ?: Log.w(
+                                LOG_NAME,
+                                "Could not store FavoriteTabs SortBy preference ($position)."
+                            )
+                        }
                     }
-                }
             } ?: run {
                 // default action if context is somehow null
                 adapter.submitList(tabs.sortedByDescending { t -> t.favoriteTime })  // needed because 0 is the default selection, so the sort might not be called the first time
-                Log.v(LOG_NAME, "Submitted new list of size ${tabs.size}.  Current adapter list size is now ${adapter.currentList.size}")
+                Log.v(
+                    LOG_NAME,
+                    "Submitted new list of size ${tabs.size}.  Current adapter list size is now ${adapter.currentList.size}"
+                )
             }
-        })
+        }
     }
 }

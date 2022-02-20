@@ -66,11 +66,12 @@ class HomeViewPagerFragment : Fragment() {
         Log.d(LOG_NAME, "options menu created")
         val searchMenuItem = menu.findItem(R.id.search)
         val searchView = searchMenuItem.actionView
-        SearchHelper.initializeSearchBar("", searchView as SearchView, requireContext(), viewLifecycleOwner, {q ->
+        SearchHelper.initializeSearchBar("", searchView as SearchView, requireContext(), viewLifecycleOwner) { q ->
             Log.i(LOG_NAME, "Starting search from Home for '$q'")
-            val direction = HomeViewPagerFragmentDirections.actionViewPagerFragmentToSearchResultFragment(q)
+            val direction =
+                HomeViewPagerFragmentDirections.actionViewPagerFragmentToSearchResultFragment(q)
             view?.findNavController()?.navigate(direction)
-        })
+        }
         super.onCreateOptionsMenu(menu, inflater)
     }
 

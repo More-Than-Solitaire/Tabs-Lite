@@ -1,7 +1,5 @@
 package com.gbros.tabslite
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -15,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.adapters.MyTabBasicRecyclerViewAdapter
 import com.gbros.tabslite.data.TabBasic
 import com.gbros.tabslite.workers.SearchHelper
-import com.google.android.gms.instantapps.InstantApps
 
 private const val LOG_NAME = "tabslite.SongVersionFra"
 
@@ -101,31 +98,18 @@ class SongVersionFragment : Fragment() {
 
         requireActivity().menuInflater.inflate(R.menu.menu_main, menu)
 
-        context?.let {
-            if( com.google.android.gms.common.wrappers.InstantApps.isInstantApp(it) ){
-                menu.findItem(R.id.get_app).isVisible = true
-            }
-        }
-
         val searchView = menu.findItem(R.id.search).actionView as SearchView
-        SearchHelper.initializeSearchBar("", searchView, requireContext(), viewLifecycleOwner, {q ->
+        SearchHelper.initializeSearchBar("", searchView, requireContext(), viewLifecycleOwner) { q ->
             Log.i(LOG_NAME, "Starting search from SongVersionFragment for query '$q'")
-            val direction = SongVersionFragmentDirections.actionSongVersionFragmentToSearchResultFragment(q)
+            val direction =
+                SongVersionFragmentDirections.actionSongVersionFragmentToSearchResultFragment(q)
             view?.findNavController()?.navigate(direction)
-        })
+        }
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.dark_mode_toggle -> {
                 context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }  // show dialog asking user which mode they want
-                true
-            }
-            R.id.get_app -> {
-                val postInstall = Intent(Intent.ACTION_MAIN)
-                        .addCategory(Intent.CATEGORY_DEFAULT)
-                        .setPackage("com.gbros.tabslite")
-                InstantApps.showInstallPrompt((activity as Activity), postInstall, 0, null)
-
                 true
             }
             else -> {

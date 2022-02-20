@@ -1,16 +1,11 @@
 package com.gbros.tabslite
 
-import android.app.Activity
-import android.app.AlertDialog
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context.CLIPBOARD_SERVICE
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.SeekBar
@@ -18,7 +13,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
-import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
 import androidx.core.widget.NestedScrollView
@@ -29,8 +23,6 @@ import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.TabHelper
 import com.gbros.tabslite.workers.UgApi
-import com.google.android.gms.common.wrappers.InstantApps.isInstantApp
-import com.google.android.gms.instantapps.InstantApps
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Runnable
@@ -49,11 +41,12 @@ class TabDetailFragment : Fragment() {
     private var isScrolling: Boolean = false
     private var scrollDelayMs: Long = 34  // default scroll speed (smaller is faster)
     private var currentChordDialog: ChordBottomSheetDialogFragment? = null
-
-    private var tabId: Int? = null
+    private var playlistEntry: PlaylistEntry? = null
 
     private lateinit var binding: FragmentTabDetailBinding
     private lateinit var optionsMenu: Menu
+
+    //region Fragment overrides
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -89,19 +82,15 @@ class TabDetailFragment : Fragment() {
         setScrollCallback(binding)  // does this break when we leave it scrolling before pausing?
 
         // chord views
-        binding.tabContent.setCallback(object : TabTextView.Callback {
-            override fun chordClicked(chordName: CharSequence) {
-                this@TabDetailFragment.chordClicked(chordName)
-            }
-        })
+        binding.tabContent.setCallback(this::chordClicked)
 
         /* ************************************     Load Tab/UI     ************************************ */
         arguments?.let { argBundle ->
-            tabId = argBundle.getInt("tabId")  // should we replace this with a TabBasic since that's normally what the sender already has?
+            val tabId = argBundle.getInt("tabId")  // should we replace this with a TabBasic since that's normally what the sender already has?
 
             val isPlaylist = argBundle.getBoolean("isPlaylist", false)
-            val playlistEntry = argBundle.getParcelable<PlaylistEntry>("playlistEntry") //todo: test what happens when this is null
-            loadTab(tabId!!, binding, isPlaylist, playlistEntry)  // load current tab
+            playlistEntry = argBundle.getParcelable("playlistEntry") //todo: test what happens when this is null
+            loadTab(tabId, binding, playlistEntry)  // load current tab
 
 
             // playlist related buttons
@@ -109,6 +98,11 @@ class TabDetailFragment : Fragment() {
             binding.isPlaylist = isPlaylist
             binding.playlistNameStr = playlistName
             binding.nextTabButtonText = "Next"
+
+            // transpose
+            binding.transposeUp.setOnClickListener { transpose(true, playlistEntry) }
+            binding.transposeDown.setOnClickListener { transpose(false, playlistEntry) }
+            binding.cancelTranspose.setOnClickListener { binding.tab?.let { transpose(-it.transposed, playlistEntry) } }
         }
 
         // set screen to always on while the tab is open
@@ -123,6 +117,75 @@ class TabDetailFragment : Fragment() {
         activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         super.onPause()
     }
+
+    /**
+     * Manually inflate the menu so we'll have access to what the items do
+     */
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.menu_tab_detail, menu)
+        optionsMenu = menu
+        binding.tab?.let { setHeartIconState(it.favorite) }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_share -> {
+                if(!(activity?.application as DefaultApplication).runningOnFirebaseTest()){  // disable share menu for test lab
+                    createShareIntent()
+                }
+                true
+            }
+            R.id.action_favorite -> {
+                if(binding.tab != null) {
+                    setHeartIconState(!item.isChecked)  // this will update item.isChecked
+                    binding.tab!!.favorite = item.isChecked
+                    TabHelper.setFavorite(binding.tab!!.tabId, item.isChecked, AppDatabase.getInstance(requireContext()))
+                }
+                true
+            }
+            R.id.action_reload -> {  // reload button clicked (refresh page)
+                if(binding.tab != null) {
+                    binding.progressBar2.isGone = false
+                    loadTab(binding.tab!!.tabId, binding, playlistEntry, true)
+                    true
+                } else {
+                    false
+                }
+            }
+            R.id.dark_mode_toggle -> {
+                // show dialog asking user which mode they want
+                context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }
+                true
+            }
+            R.id.action_add_to_playlist -> {
+                // show add to playlist dialog
+                if (binding.tab != null) {
+                    Log.v(LOG_NAME, "Adding tab to playlist")
+                    val getPlaylistsFromDbJob = GlobalScope.async {
+                        AppDatabase.getInstance(requireContext()).playlistDao()
+                            .getCurrentPlaylists()
+                    }
+                    getPlaylistsFromDbJob.invokeOnCompletion {
+                        val playlists = getPlaylistsFromDbJob.getCompleted()
+                        val transposition = binding.tab!!.transposed
+                        AddToPlaylistDialogFragment(binding.tab!!.tabId, playlists, transposition).show(
+                            childFragmentManager,
+                            "AddToPlaylistDialogTag"
+                        )
+                        Log.v(LOG_NAME, "Add to playlist task handed off to dialog.")
+                    }
+
+                    true
+                } else {
+                    false
+                }
+            }
+            else -> false
+        }
+    }
+
+    //endregion
 
     private fun setPlaylistButtonsEnabled(prev: Boolean? = null, next: Boolean? = null) {
         // disable and grey out next and previous buttons until they're set to the correct action
@@ -157,7 +220,6 @@ class TabDetailFragment : Fragment() {
         } else {
             setNotificationBarVisibilityForOldAndroidVersions(visible)
         }
-
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -189,25 +251,31 @@ class TabDetailFragment : Fragment() {
     /**
      * Loads a tab into the current view
      *
-     * @param   tabid           the ID of the tab to load into the view
-     * @param   binding         the view binding to reset UI elements
-     * @param   isPlaylist      whether this tab is to be loaded as a playlist entry
-     * @param   playlistEntry   if [isPlaylist], the playlist entry corresponding to the tab to be loaded
+     * This function does an asynchronous tab fetch from the database (or the internet if none cached), then calls
+     * [onDataStored] with the completed tab information.
+     *
+     * @param   tabId           the ID of the tab to load into the view
+     * @param   binding         the view binding to reset UI elements; used in calling [onDataStored]
+     * @param   playlistEntry   the playlist entry corresponding to the tab to be loaded, or null if none exists
      */
-    private fun loadTab(tabid: Int, binding: FragmentTabDetailBinding, isPlaylist: Boolean = false, playlistEntry: PlaylistEntry? = null) {
-        Log.i(LOG_NAME, "Loading tab $tabid")
-        tabId = tabid // hopefully we can get rid of this global variable eventually
-        val getDataJob = GlobalScope.async { TabHelper.fetchTabFromInternet(getTabId(), AppDatabase.getInstance(requireContext())) }
-        getDataJob.invokeOnCompletion(onDataStored(tabid, playlistEntry))
+    private fun loadTab(tabId: Int, binding: FragmentTabDetailBinding, playlistEntry: PlaylistEntry? = null, forceInternetLoad: Boolean = false) {
+        Log.i(LOG_NAME, "Loading tab $tabId")
+        val getDataJob = GlobalScope.async { TabHelper.fetchTabFromInternet(tabId, AppDatabase.getInstance(requireContext()), forceInternetLoad) }
+        getDataJob.invokeOnCompletion(onDataStored(tabId, binding, playlistEntry))
+        setNextAndPreviousTabs(playlistEntry, binding)
+    }
 
-        // transpose
-        binding.transposeUp.setOnClickListener { transpose(true, playlistEntry) }
-        binding.transposeDown.setOnClickListener { transpose(false, playlistEntry) }
-        binding.cancelTranspose.setOnClickListener { binding.tab?.let { transpose(-binding.tab!!.transposed, playlistEntry) } }
-
-
+    /**
+     * Get next and previous tabs if they exist for this entry in a playlist.  Automatically enables and disables
+     * the Next and Previous buttons as needed.
+     *
+     * @param playlistEntry     The entry in the playlist for this tab.  If not null, isPlaylist is assumed to be
+     *                          true. If null, this function does nothing.
+     * @param binding           The FragmentTabDetailBinding for calling [loadTab]
+     */
+    private fun setNextAndPreviousTabs(playlistEntry: PlaylistEntry?, binding: FragmentTabDetailBinding) {
         // get next and previous tabs if they exist  //todo: move to new function
-        if (isPlaylist && playlistEntry != null ) {
+        if (playlistEntry != null ) {
             // update NEXT buttons
             val nextId = playlistEntry.nextEntryId
             if (nextId != null) {
@@ -216,11 +284,11 @@ class TabDetailFragment : Fragment() {
                     val nextEntry = getNextJob.getCompleted()
                     if (nextEntry != null) {
                         // we now have the info for when the user clicks the Next buttons.
-                        binding.btnNext.setOnClickListener { loadTab(nextEntry.tabId, binding, isPlaylist, nextEntry) }
-                        binding.btnTopSkipNext.setOnClickListener { loadTab(nextEntry.tabId, binding, isPlaylist, nextEntry) }
+                        binding.btnNext.setOnClickListener { loadTab(nextEntry.tabId, binding, nextEntry) }
+                        binding.btnTopSkipNext.setOnClickListener { loadTab(nextEntry.tabId, binding, nextEntry) }
                         (activity as AppCompatActivity).runOnUiThread { setPlaylistButtonsEnabled(next = true) }
                     } else {
-                        Log.w(LOG_NAME, "Warning! nextId != null, but fetching the referenced entry returned null.  This should not happen.  TabId $tabid, nextId $nextId")
+                        Log.e(LOG_NAME, "Warning! nextId != null, but fetching the referenced entry returned null.  This should not happen. nextId: $nextId")
                     }
                 }
             } else {
@@ -238,11 +306,11 @@ class TabDetailFragment : Fragment() {
                     if (prevEntry != null) {
                         // we now have the info for when the user clicks the PREV buttons.
                         (activity as AppCompatActivity).runOnUiThread { setPlaylistButtonsEnabled(prev = true) }
-                        binding.btnPrev.setOnClickListener { loadTab(prevEntry.tabId, binding, isPlaylist, prevEntry) }
-                        binding.btnTopSkipPrev.setOnClickListener { loadTab(prevEntry.tabId, binding, isPlaylist, prevEntry) }
+                        binding.btnPrev.setOnClickListener { loadTab(prevEntry.tabId, binding, prevEntry) }
+                        binding.btnTopSkipPrev.setOnClickListener { loadTab(prevEntry.tabId, binding, prevEntry) }
                         Log.d(LOG_NAME, "set playlist buttons")
                     } else {
-                        Log.w(LOG_NAME, "Warning! prevId != null, but fetching the referenced entry returned null.  This should not happen.  TabId $tabid, prevId $prevId")
+                        Log.w(LOG_NAME, "Warning! prevId != null, but fetching the referenced entry returned null.  This should not happen.  prevId: $prevId")
                     }
                 }
             } else {
@@ -252,6 +320,9 @@ class TabDetailFragment : Fragment() {
         }
     }
 
+    /**
+     * Set the scroll listener, which shows and hides the toolbar based on scroll position.
+     */
     private fun setScrollListener(binding: FragmentTabDetailBinding) {
         // create toolbar scroll change worker
         var isToolbarShown = false
@@ -278,55 +349,55 @@ class TabDetailFragment : Fragment() {
         // scroll change listener begins at Y = 0 when image is fully collapsed
         binding.tabDetailScrollview.setOnScrollChangeListener(scrollChangeListener)
     }
+
+    /**
+     * Sets the floating action button callback function to start and stop autoscroll
+     */
     private fun setScrollCallback(binding: FragmentTabDetailBinding) {
-        binding.apply {
-            // autoscroll
-            val timerRunnable: Runnable = object : Runnable {
-                override fun run() {
-                    tabDetailScrollview.smoothScrollBy(0, 1) // 5 is how many pixels you want it to scroll vertically by
-                    timerHandler.postDelayed(this, scrollDelayMs) // 10 is how many milliseconds you want this thread to run
-                }
+        val timerRunnable: Runnable = object : Runnable {
+            override fun run() {
+                binding.tabDetailScrollview.smoothScrollBy(0, 1) // 5 is how many pixels you want it to scroll vertically by
+                timerHandler.postDelayed(this, scrollDelayMs) // 10 is how many milliseconds you want this thread to run
             }
+        }
 
-            callback = object : Callback {
-                override fun scrollButtonClicked() {
-                    if (isScrolling) {
-                        // stop scrolling
-                        autoscrollSpeed.alpha = 1.0F
-                        fab.alpha = 1.0F
-
-                        timerHandler.removeCallbacks(timerRunnable)
-                        fab.setImageResource(R.drawable.ic_fab_autoscroll)
-                        autoscrollSpeed.isGone = true
-                        binding.appbar.setExpanded(true, true)  // thanks https://stackoverflow.com/a/32137264/3437608
-                    } else {
-                        // start scrolling
-                        timerHandler.postDelayed(timerRunnable, 0)
-                        fab.setImageResource(R.drawable.ic_fab_pause_autoscroll)
-                        autoscrollSpeed.isGone = false
-                        autoscrollSpeed.alpha = 1.0F
-                        binding.appbar.setExpanded(false, true)
-                        Handler().postDelayed({
-                            autoscrollSpeed.alpha = 0.4F
-                            fab.alpha = 0.4F
-                        }, 100)
-                    }
-                    isScrolling = !isScrolling
+        binding.apply{
+            fab.setOnClickListener { _ ->
+                if (isScrolling) {
+                    // stop scrolling
+                    autoscrollSpeed.alpha = 1.0F
+                    fab.alpha = 1.0F
+                    timerHandler.removeCallbacks(timerRunnable)
+                    fab.setImageResource(R.drawable.ic_fab_autoscroll)
+                    autoscrollSpeed.isGone = true
+                    binding.appbar.setExpanded(true, true)  // thanks https://stackoverflow.com/a/32137264/3437608
+                } else {
+                    // start scrolling
+                    timerHandler.postDelayed(timerRunnable, 0)
+                    fab.setImageResource(R.drawable.ic_fab_pause_autoscroll)
+                    autoscrollSpeed.isGone = false
+                    autoscrollSpeed.alpha = 1.0F
+                    binding.appbar.setExpanded(false, true)
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        autoscrollSpeed.alpha = 0.4F
+                        fab.alpha = 0.4F
+                    }, 100)
                 }
+                isScrolling = !isScrolling
             }
         }
     }
-    private fun getTabId(): Int {
-        return if (tabId != null) {
-            Log.v(LOG_NAME, "Getting tab ID (local): $tabId")
-            tabId!!
-        } else {
-            throw Exception("TabID requested before being set.")
-        }
-    }
+
+    /**
+     * Listener for the scroll speed seek bar.  Changes the autoscroll speed based on the seek bar position.
+     */
     private var seekBarChangeListener: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
+        /**
+         * updated continuously as the user slides the thumb, based on the current position of the seekbar. This function
+         * converts the "progress" or seek position to scroll speed.  (Or, rather, milliseconds of delay between each 1px
+         * scroll action.)
+         */
         override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-            // updated continuously as the user slides the thumb
             //convert progress to delay between 1px updates
             var myDelay = (100 - progress) / 100.0  // delay on a scale of 0 to 1
             myDelay *= 63                           // delay on a scale of 0 to 63  -- this sets the slowest autoscroll speed
@@ -334,35 +405,46 @@ class TabDetailFragment : Fragment() {
             scrollDelayMs = (myDelay).toLong()
         }
 
+        /**
+         * Called when the user starts touching the seekbar, setting the opacity to 100%
+         */
         override fun onStartTrackingTouch(seekBar: SeekBar) {
-            // called when the user first touches the SeekBar
             // thanks stackoverflow.com/a/7689776
-            binding.autoscrollSpeed.alpha = 1.0F  // set opacity to 100% while touching the bar
+            binding.autoscrollSpeed.alpha = 1.0F
             binding.fab.alpha = 1.0F
         }
+
+        /**
+         * called when the user stops touching the SeekBar, to set opacity to 40%
+         */
         override fun onStopTrackingTouch(seekBar: SeekBar) {
-            // called when the user first touches the SeekBar
             // thanks stackoverflow.com/a/7689776
-            binding.autoscrollSpeed.alpha = 0.4F  // set opacity to 40% while not touching the bar
+            binding.autoscrollSpeed.alpha = 0.4F
             binding.fab.alpha = 0.4F
         }
     }
 
+    /**
+     * Transposes the tab up or down one half-step.  If playlistEntry isn't null, updates the saved transposition
+     * amount for this playlist entry.
+     */
     private fun transpose(up: Boolean, playlistEntry: PlaylistEntry?){
         val howMuch = if(up) 1 else -1
         transpose(howMuch, playlistEntry)
     }
+
     /**
      * update local variables, database, and the tab content view with a new transposition level.
      * Updates the chords (content) as well as the TextView showing the current transposition level.
      *
-     * @param howMuch   the amount to transpose, relative to the current transposition amount.
+     * @param howMuch       the amount to transpose, relative to the current transposition amount.
+     * @param playlistEntry (nullable) the playlist entry to update with the new transposition amount.
      */
     private fun transpose(howMuch: Int, playlistEntry: PlaylistEntry?){
         binding.tab?.apply {
             transposed += howMuch  // update the view
 
-            //13 half steps in an octave (both sides inclusive)
+            //12 half steps in an octave
             if (transposed >= 12) {
                 transposed -= 12
             } else if (transposed <= -12) {
@@ -370,7 +452,9 @@ class TabDetailFragment : Fragment() {
             }
 
             Log.v(LOG_NAME, "Updating transpose level to $transposed by transposing $howMuch")
-            binding.key.text = TabTextView.transposeChord(binding.key.text, howMuch)
+            if(binding.tonalityName != "") {
+                binding.tonalityName = TabTextView.transposeChord(binding.tonalityName!!, howMuch)
+            }
             binding.tabContent.transpose(howMuch)  // the actual transposition
             binding.transposeText = transposed.toString()
 
@@ -393,12 +477,12 @@ class TabDetailFragment : Fragment() {
                         transposed,
                         AppDatabase.getInstance(requireContext())
                     )
-                }  // todo: do something different if it's a playlist
+                }
             }
         }
     }
 
-    private fun onDataStored(tabid: Int, playlistEntry: PlaylistEntry? = null) = { cause: Throwable? ->
+    private fun onDataStored(tabId: Int, binding: FragmentTabDetailBinding, playlistEntry: PlaylistEntry? = null) = { cause: Throwable? ->
         if(cause != null) {
             //oh no; something happened and it failed.  whoops.
             Log.w(LOG_NAME, "Error fetching and storing tab data from online source on the async thread.  Internet connection likely not available.")
@@ -407,7 +491,7 @@ class TabDetailFragment : Fragment() {
                 view?.let { Snackbar.make(it, "This tab is not available offline.", Snackbar.LENGTH_INDEFINITE).show() }
             }
         } else {
-            startGetData(tabid, playlistEntry)
+            startGetData(tabId, playlistEntry)
         }
     }
 
@@ -437,7 +521,7 @@ class TabDetailFragment : Fragment() {
 
                     if (binding.tab != null && binding.tab!!.tabId == tabId) {  // we're reloading the same tab
                         val favorite: Boolean = binding.tab!!.favorite
-                        TabHelper.setFavorite(getTabId(), favorite, AppDatabase.getInstance(requireContext()))  // reloading would reset favorite status, so save that
+                        TabHelper.setFavorite(tabId, favorite, AppDatabase.getInstance(requireContext()))  // reloading would reset favorite status, so save that
                         fetchedTab.favorite = favorite  // update UI
                     }
 
@@ -446,23 +530,23 @@ class TabDetailFragment : Fragment() {
                     binding.tabContent.doOnLayout {
                         activity?.runOnUiThread {
                             binding.tabContent.setTabContent(fetchedTab.content)
-                            Log.v(LOG_NAME, "Processed tab content for tab (${getTabId()}) '${fetchedTab.songName}'.  Length: ${fetchedTab.content.length}")
+                            Log.v(LOG_NAME, "Processed tab content for tab (${binding.tab?.tabId}) '${fetchedTab.songName}'.  Length: ${fetchedTab.content.length}")
 
-                            setHeartInitialState()  // set initial state of "save" heart
+                            binding.tab?.let{ setHeartIconState(it.favorite) }  // set initial state of "save" heart
                             (activity as AppCompatActivity).title = fetchedTab.toString()  // toolbar title
                             binding.progressBar2.isGone = true
 
                             binding.tab = fetchedTab
+                            binding.tonalityName = fetchedTab.tonalityName
 
                             // update transposition
-                            var tspAmt = fetchedTab.transposed
+                            var tspAmt = playlistEntry?.transpose ?: fetchedTab.transposed
                             binding.tab!!.transposed = 0        // currently, the tab hasn't been transposed.  The transpose() function will change the tab.transpose variable
                             if (playlistEntry != null)
                                 tspAmt = playlistEntry.transpose
                             transpose(tspAmt, playlistEntry)
 
-                            Log.
-                            v(LOG_NAME, "Updated Tab UI for tab ($tabId) '${fetchedTab.songName}'")
+                            Log.v(LOG_NAME, "Updated Tab UI for tab ($tabId) '${fetchedTab.songName}'")
                         }
                     }
                 }
@@ -472,132 +556,21 @@ class TabDetailFragment : Fragment() {
         }
     }
 
-
-    private fun setHeartInitialState(){
-        if(binding.tab != null && binding.tab!!.favorite && this::optionsMenu.isInitialized) {
+    private fun setHeartIconState(checked: Boolean){
+        if(this::optionsMenu.isInitialized) {
             val heart = optionsMenu.findItem(R.id.action_favorite)
-            heart.isChecked = true
-            heart.setIcon(R.drawable.ic_favorite)
+            heart.isChecked = checked
+            if (checked) {
+                heart.setIcon(R.drawable.ic_favorite)
+            } else {
+                heart.setIcon(R.drawable.ic_unfavorite)
+            }
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.menu_tab_detail, menu)
-        optionsMenu = menu
-
-        context?.let {if( isInstantApp(it) ){
-            menu.findItem(R.id.get_app).isVisible = true
-        }}
-
-        setHeartInitialState()
-    }
-
-    // assumes viewModel is initialized and tab exists
-    private fun favoriteWhileInstant(){
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle("Download full version for all features")
-        builder.setMessage("This tab has been saved for offline in your favorites, but the only " +
-                "way to access it is via link since you're using the Instant version.  To view " +
-                "your favorite tabs in a list, please upgrade to the full version of the app.")
-
-        builder.setPositiveButton("Upgrade") { dialog: DialogInterface, _: Int ->
-            showInstallPrompt()
-            dialog.dismiss()
-        }
-
-        builder.setNeutralButton("Copy Link") { dialog: DialogInterface, _: Int ->
-            val link = binding.tab!!.getUrl()
-            val title = binding.tab.toString()
-            val clipBoard = context?.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-            val clipData = ClipData.newPlainText(title, link)
-            clipBoard.setPrimaryClip(clipData)
-
-            view?.let { Snackbar.make(it, "Link copied to clipboard.", Snackbar.LENGTH_SHORT) }  // todo: @string-ify
-            dialog.dismiss()
-        }
-
-        builder.create()
-        builder.show()
-    }
-
-    private fun showInstallPrompt() {
-        val postInstall: Intent
-        if(binding.tab != null){
-            postInstall = Intent(Intent.ACTION_VIEW)
-            postInstall.data = binding.tab!!.getUrl().toUri()
-            postInstall.setPackage("com.gbros.tabslite")
-            postInstall.setClassName("com.gbros.tabslite", "com.gbros.tabslite.TabDetailActivity")
-        } else {
-           postInstall = Intent(Intent.ACTION_MAIN)
-                    .addCategory(Intent.CATEGORY_DEFAULT)
-                    .setPackage("com.gbros.tabslite")
-        }
-        InstantApps.showInstallPrompt((activity as Activity), postInstall, 0, null)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_share -> {
-                if(!(activity?.application as DefaultApplication).runningOnFirebaseTest()){
-                    createShareIntent()     // disable share menu for test lab
-                }
-                true
-            }
-            R.id.action_favorite -> {
-                if(binding.tab != null) {
-                    item.isChecked = !item.isChecked
-                    if (item.isChecked) {
-                        // now it's a favorite
-                        item.setIcon(R.drawable.ic_favorite)
-                        binding.tab!!.favorite = true
-
-                        context?.let {if( isInstantApp(it) ) {
-                            favoriteWhileInstant()
-                        }}
-                    } else {
-                        item.setIcon(R.drawable.ic_unfavorite)
-                        binding.tab!!.favorite = false
-                    }
-                    tabId?.let { TabHelper.setFavorite(it, item.isChecked, AppDatabase.getInstance(requireContext())) }
-                }
-                true
-            }
-            R.id.action_reload -> {  // reload button clicked (refresh page)
-                binding.progressBar2.isGone = false
-                val fetchTabFromInternetJob = GlobalScope.async {
-                    TabHelper.fetchTabFromInternet(tabId = getTabId(), force = true, database = AppDatabase.getInstance(requireContext()))
-                }
-                fetchTabFromInternetJob.invokeOnCompletion(onDataStored(getTabId()))
-                true
-            }
-            R.id.dark_mode_toggle -> {
-                // show dialog asking user which mode they want
-                context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }
-                true
-            }
-            R.id.get_app -> {
-                showInstallPrompt()
-                true
-            }
-            R.id.action_add_to_playlist -> {
-                // show add to playlist dialog
-                Log.v(LOG_NAME, "Adding tab to playlist")
-                val getPlaylistsFromDbJob = GlobalScope.async { AppDatabase.getInstance(requireContext()).playlistDao().getCurrentPlaylists() }
-                getPlaylistsFromDbJob.invokeOnCompletion {
-                    val playlists = getPlaylistsFromDbJob.getCompleted()
-                    val transposition = if (binding.tab == null) 0 else binding.tab!!.transposed
-                    AddToPlaylistDialogFragment(getTabId(), playlists, transposition).show(childFragmentManager, "AddToPlaylistDialogTag")
-                    Log.v(LOG_NAME, "Add to playlist task handed off to dialog.")
-                }
-
-                true
-            }
-            else -> false
-        }
-    }
-
-    // Helper function for calling a share functionality.
+    /**
+     * Helper function for creating a share intent.  Creates a basic share link and text, and tells Android to open a Share dialog.
+     */
     private fun createShareIntent() {
         val shareText = binding.tab.let { tab ->
             if (tab == null) {
@@ -615,10 +588,16 @@ class TabDetailFragment : Fragment() {
         startActivity(shareIntent)
     }
 
-    interface Callback {
-        fun scrollButtonClicked()
-    }
-
+    /**
+     * Show a chord fingering.
+     *
+     * This method gets the requested chord from the internal database (if cached) or the internet and the displays
+     * it in a bottom sheet dialog.
+     *
+     * @param chordName     The chord to display
+     * @param noUpdate      (Optional) If true, the chord will not be loaded from the internet.  This is used as a retry
+     *                      recursive parameter to try an internet fetch twice before failing
+     */
     private fun chordClicked(chordName: CharSequence, noUpdate: Boolean = false){
         val input = ArrayList<CharSequence>()
         input.add(chordName)
