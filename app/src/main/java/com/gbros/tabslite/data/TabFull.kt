@@ -1,8 +1,10 @@
 package com.gbros.tabslite.data
 
 import androidx.annotation.Nullable
-import androidx.room.*
-import kotlin.collections.ArrayList
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
 
 // todo: implement bpm or switch entirely over to TabRequestType
 @Entity(
@@ -46,7 +48,7 @@ data class TabFull(
         @ColumnInfo(name = "contributor_user_id") var contributorUserId: Int = -1,
         @ColumnInfo(name = "contributor_user_name") var contributorUserName: String = "",
         @ColumnInfo(name = "content") var content: String = "",
-        @ColumnInfo(name = "favorite") var favorite: Boolean = false,
+        @ColumnInfo(name = "favorite") var favorite: Boolean = false,  // deprecated; use playlist functionality instead
 
         @ColumnInfo(name = "transposed") var transposed: Int = 0,
 

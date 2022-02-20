@@ -23,14 +23,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
 
-
-
-
-
 private const val LOG_NAME = "tabslite.ViewPlaylistFr"
 
 class ViewPlaylistFragment : Fragment() {
-
     companion object {
         fun newInstance() = ViewPlaylistFragment()
     }
@@ -111,7 +106,6 @@ class ViewPlaylistFragment : Fragment() {
             binding.notEmpty = entries.isNotEmpty()
 
             val orderedEntries = sort(entries)
-
 
             // update the database only when touch is lifted
             var currentFromPos: Int? = null

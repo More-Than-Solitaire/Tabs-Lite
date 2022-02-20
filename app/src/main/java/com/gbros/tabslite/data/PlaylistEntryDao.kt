@@ -45,11 +45,17 @@ interface PlaylistEntryDao {
     @Update
     fun update(entry: PlaylistEntry)
 
+    @Query("INSERT INTO playlist_entry (playlist_id, tab_id, next_entry_id, prev_entry_id, date_added, transpose) VALUES (:playlistId, :tabId, :nextEntryId, :prevEntryId, :dateAdded, :transpose)")
+    fun insert(playlistId: Int, tabId: Int, nextEntryId: Int?, prevEntryId: Int?, dateAdded: Long, transpose: Int)
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: PlaylistEntry): Long
 
     @Query("DELETE FROM playlist_entry WHERE id = :id")
     fun deleteEntry(id: Int)
+
+    @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId AND tab_id = :tabId")
+    fun deleteTabFromPlaylist(tabId: Int, playlistId: Int)
 
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId")
     fun deletePlaylist(playlistId: Int)

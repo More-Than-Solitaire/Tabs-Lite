@@ -7,10 +7,8 @@ import com.gbros.tabslite.workers.UgApi
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 
 private const val LOG_NAME = "tabslite.TabHelper   "
 
@@ -60,15 +58,4 @@ object TabHelper {
             }
         }
     }
-
-    fun setFavorite(tabId: Int, isFavorite: Boolean, database: AppDatabase) {
-        GlobalScope.launch {
-            if(isFavorite) {
-                database.tabFullDao().favoriteTab(tabId)
-            } else {
-                database.tabFullDao().unfavoriteTab(tabId)
-            }
-        }
-    }
-
 }

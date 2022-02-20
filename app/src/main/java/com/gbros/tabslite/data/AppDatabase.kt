@@ -66,6 +66,12 @@ abstract class AppDatabase : RoomDatabase() {
                 database.execSQL("CREATE TABLE IF NOT EXISTS playlist_entry (id INTEGER NOT NULL, playlist_id INTEGER NOT NULL, tab_id INTEGER NOT NULL, next_entry_id INTEGER, prev_entry_id INTEGER, date_added INTEGER NOT NULL, transpose INTEGER NOT NULL, PRIMARY KEY(id))")
             }
         }
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            // migrate favorites over to the playlist with special ID -1
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("INSERT INTO playlist_entry (playlist_id, tab_id, next_entry_id, prev_entry_id, date_added, transpose) SELECT -1, id, NULL, NULL, favorite_time, transposed FROM tabs WHERE favorite IS 1")
+            }
+        }
 
 
         // Create and pre-populate the database. See this article for more details:
@@ -73,7 +79,7 @@ abstract class AppDatabase : RoomDatabase() {
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
                     .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
-                            MIGRATION_5_6, MIGRATION_6_7)
+                            MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                     .build()
         }
     }

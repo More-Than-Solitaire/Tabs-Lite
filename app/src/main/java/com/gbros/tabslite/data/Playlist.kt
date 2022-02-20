@@ -1,13 +1,15 @@
 package com.gbros.tabslite.data
 
 import android.os.Parcelable
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
-import java.util.*
-
 /**
- * [Playlist] represents any playlists the user may have on the device.
+ * [Playlist] represents any playlists the user may have on the device.  Playlist ID -1 is a special
+ * playlist for favorite tabs.  That playlist doesn't have an entry here so that it doesn't show up
+ * in the playlist tab, however entries are still found by ID in the playlist_entry database.
  */
 @Entity(tableName = "playlist")
 
