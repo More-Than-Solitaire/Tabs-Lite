@@ -24,6 +24,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.findNavController
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.PlaylistEntry
+import com.gbros.tabslite.data.TabFull
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.TabHelper
 import com.gbros.tabslite.workers.SearchHelper
@@ -52,10 +53,6 @@ class TabDetailFragment : Fragment() {
     private lateinit var optionsMenu: Menu
 
     //region Fragment overrides
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -127,7 +124,6 @@ class TabDetailFragment : Fragment() {
                 menuInflater.inflate(R.menu.menu_main, menu)
                 menuInflater.inflate(R.menu.menu_tab_detail, menu)
                 optionsMenu = menu
-                binding.tab?.let { setHeartIconState(it.favorite) }
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -140,9 +136,28 @@ class TabDetailFragment : Fragment() {
                     }
                     R.id.action_favorite -> {
                         if(binding.tab != null) {
-                            setHeartIconState(!menuItem.isChecked)  // this will update item.isChecked
-                            binding.tab!!.favorite = menuItem.isChecked
-                            TabHelper.setFavorite(binding.tab!!.tabId, menuItem.isChecked, AppDatabase.getInstance(requireContext()))
+                            val isNowFavorite = !menuItem.isChecked
+
+                            // update menu icon
+                            menuItem.isChecked = isNowFavorite  // update .isChecked state
+                            if (isNowFavorite) {
+                                menuItem.setIcon(R.drawable.ic_favorite)
+                            } else {
+                                menuItem.setIcon(R.drawable.ic_unfavorite)
+                            }
+
+                            // update database
+                            GlobalScope.launch {
+                                val playlistEntryDb = AppDatabase.getInstance(requireContext()).playlistEntryDao()
+                                if (isNowFavorite) {
+                                    playlistEntryDb.insertToFavorites(
+                                        binding.tab!!.tabId,
+                                        binding.tab!!.transposed
+                                    )
+                                } else {
+                                    playlistEntryDb.deleteTabFromFavorites(binding.tab!!.tabId)
+                                }
+                            }
                         }
                         true
                     }
@@ -479,37 +494,31 @@ class TabDetailFragment : Fragment() {
             }
 
             Log.v(LOG_NAME, "Updating transpose level to $transposed by transposing $howMuch")
-            if(binding.tonalityName != "") {
-                binding.tonalityName = TabTextView.transposeChord(binding.tonalityName!!, howMuch)
+            if (binding.tonalityName != "") {
+                binding.tonalityName =
+                    TabTextView.transposeChord(binding.tonalityName!!, howMuch)
             }
             binding.tabContent.transpose(howMuch)  // the actual transposition
             binding.transposeText = transposed.toString()
 
-
-            if (playlistEntry != null) {
-                playlistEntry.transpose = transposed
-                Log.d(
-                    LOG_NAME,
-                    "updated playlist entry transposition to $transposed: ${playlistEntry.transpose}"
-                )
-                GlobalScope.launch {
-                    AppDatabase.getInstance(requireContext()).playlistEntryDao().update(
-                        playlistEntry
-                    )
-                }
-            } else {
-                GlobalScope.launch {
-                    TabHelper.updateTabTransposeLevel(
-                        tabId,
-                        transposed,
-                        AppDatabase.getInstance(requireContext())
-                    )
+            if (howMuch != 0) {  // only contact the database if there's a change
+                if (playlistEntry != null) {
+                    playlistEntry.transpose = transposed
+                    Log.d(LOG_NAME, "updated playlist entry transposition to $transposed: ${playlistEntry.transpose}")
+                    GlobalScope.launch {
+                        AppDatabase.getInstance(requireContext()).playlistEntryDao().update(playlistEntry)
+                    }
+                } else {
+                    GlobalScope.launch {
+                        AppDatabase.getInstance(requireContext()).playlistEntryDao()
+                            .updateFavoriteTabTransposition(tabId, transposed)
+                    }
                 }
             }
         }
     }
 
-    private fun onDataStored(tabId: Int, binding: FragmentTabDetailBinding, playlistEntry: PlaylistEntry? = null) = { cause: Throwable? ->
+    private fun onDataStored(tabId: Int, binding: FragmentTabDetailBinding, playlistEntry: PlaylistEntry?) = { cause: Throwable? ->
         if(cause != null) {
             //oh no; something happened and it failed.  whoops.
             Log.w(LOG_NAME, "Error fetching and storing tab data from online source on the async thread.  Internet connection likely not available.")
@@ -528,7 +537,7 @@ class TabDetailFragment : Fragment() {
      * @param tabId         the ID of the tab to retrieve from the database
      * @param playlistEntry (optional) if part of a playlist, set this option to use the playlist specific transposition settings, etc.
      */
-    private fun startGetData(tabId: Int, playlistEntry: PlaylistEntry? = null) {
+    private fun startGetData(tabId: Int, playlistEntry: PlaylistEntry?) {
         try {
             val getTabFromDbJob = GlobalScope.async {
                 Log.v(LOG_NAME, "Fetching tab $tabId from the database.")
@@ -546,35 +555,8 @@ class TabDetailFragment : Fragment() {
                     Log.v(LOG_NAME, "Data Received for tab fetch")
                     val fetchedTab = getTabFromDbJob.getCompleted()  // actually get the data
 
-                    if (binding.tab != null && binding.tab!!.tabId == tabId) {  // we're reloading the same tab
-                        val favorite: Boolean = binding.tab!!.favorite
-                        TabHelper.setFavorite(tabId, favorite, AppDatabase.getInstance(requireContext()))  // reloading would reset favorite status, so save that
-                        fetchedTab.favorite = favorite  // update UI
-                    }
-
-                    Log.v(LOG_NAME, "Set binding.tab to tab fetched from database.")
-                    // thanks https://cheesecakelabs.com/blog/understanding-android-views-dimensions-set/
                     binding.tabContent.doOnLayout {
-                        activity?.runOnUiThread {
-                            binding.tabContent.setTabContent(fetchedTab.content)
-                            Log.v(LOG_NAME, "Processed tab content for tab (${binding.tab?.tabId}) '${fetchedTab.songName}'.  Length: ${fetchedTab.content.length}")
-
-                            binding.tab?.let{ setHeartIconState(it.favorite) }  // set initial state of "save" heart
-                            (activity as AppCompatActivity).title = fetchedTab.toString()  // toolbar title
-                            binding.progressBar2.isGone = true
-
-                            binding.tab = fetchedTab
-                            binding.tonalityName = fetchedTab.tonalityName
-
-                            // update transposition
-                            var tspAmt = playlistEntry?.transpose ?: fetchedTab.transposed
-                            binding.tab!!.transposed = 0        // currently, the tab hasn't been transposed.  The transpose() function will change the tab.transpose variable
-                            if (playlistEntry != null)
-                                tspAmt = playlistEntry.transpose
-                            transpose(tspAmt, playlistEntry)
-
-                            Log.v(LOG_NAME, "Updated Tab UI for tab ($tabId) '${fetchedTab.songName}'")
-                        }
+                        activity?.runOnUiThread { showTab(fetchedTab, playlistEntry) }
                     }
                 }
             }
@@ -583,15 +565,53 @@ class TabDetailFragment : Fragment() {
         }
     }
 
-    private fun setHeartIconState(checked: Boolean){
-        if(this::optionsMenu.isInitialized) {
-            val heart = optionsMenu.findItem(R.id.action_favorite)
-            heart.isChecked = checked
-            if (checked) {
-                heart.setIcon(R.drawable.ic_favorite)
-            } else {
-                heart.setIcon(R.drawable.ic_unfavorite)
+
+    /**
+     * Display a TabFull.  Updates UI based on the tab, the given playlistEntry if we're reading from a playlist,
+     * and the favorite status of this tab.
+     */
+    private fun showTab(tabToShow: TabFull, playlistEntry: PlaylistEntry?) {
+        (activity as AppCompatActivity).title = tabToShow.toString()  // toolbar title
+        binding.tab = tabToShow
+        binding.tabContent.setTabContent(tabToShow.content)
+        Log.v(LOG_NAME, "Processed tab content for tab (${binding.tab?.tabId}) '${tabToShow.songName}'.  Length: ${tabToShow.content.length}")
+        binding.tonalityName = tabToShow.tonalityName
+        binding.progressBar2.isGone = true
+
+        val getFavoritesPlaylistEntryJob = GlobalScope.async {
+            AppDatabase.getInstance(requireContext()).playlistEntryDao().getFavoritesPlaylistEntry(tabToShow.tabId)
+        }
+        getFavoritesPlaylistEntryJob.invokeOnCompletion {
+            val favoritesPlaylistEntry = getFavoritesPlaylistEntryJob.getCompleted()
+            (activity as AppCompatActivity).runOnUiThread { setHeartIconState(favoritesPlaylistEntry != null) }  // set heart icon
+
+            // update transposition
+            var tspAmt = 0
+            if (playlistEntry != null) {
+                // prioritize getting the transposition amount from the non-favorites playlist entry, if applicable
+                tspAmt = playlistEntry.transpose
+            } else if (favoritesPlaylistEntry != null) {
+                // get the transposition amount from the Favorites playlist
+                tspAmt = favoritesPlaylistEntry.transpose
             }
+
+            // currently, the tab text hasn't been transposed.  The transpose() function will change the tab.transpose variable
+            binding.tab!!.transposed = 0
+            (activity as AppCompatActivity).runOnUiThread { transpose(tspAmt, playlistEntry) }
+        }
+
+        Log.v(LOG_NAME, "Updated Tab UI for tab (${tabToShow.tabId}) '${tabToShow.songName}'")
+    }
+
+    /**
+     * Helper UI function to set the heart icon to a specific value (filled or unfilled)
+     */
+    private fun setHeartIconState(favorite: Boolean) {
+        val favoriteMenuItem = optionsMenu.findItem(R.id.action_favorite)
+        if (favorite) {
+            favoriteMenuItem.setIcon(R.drawable.ic_favorite)
+        } else {
+            favoriteMenuItem.setIcon(R.drawable.ic_unfavorite)
         }
     }
 

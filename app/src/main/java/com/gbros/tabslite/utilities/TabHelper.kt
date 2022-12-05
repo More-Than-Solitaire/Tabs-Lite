@@ -13,11 +13,6 @@ import kotlinx.coroutines.coroutineScope
 private const val LOG_NAME = "tabslite.TabHelper   "
 
 object TabHelper {
-    suspend fun updateTabTransposeLevel(tabId: Int, currValue: Int, database: AppDatabase) = coroutineScope {
-        database.tabFullDao().updateTransposed(tabId, currValue)
-    }
-
-
     /**
      * Gets tab based on tabId.  First checks the internal database for a cache hit, and if successful returns that. If
      * not (or if the force parameter is enabled), the tab is loaded from the internet.  If an internet load is performed

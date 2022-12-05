@@ -50,7 +50,7 @@ data class TabFull(
         @ColumnInfo(name = "content") var content: String = "",
         @ColumnInfo(name = "favorite") var favorite: Boolean = false,  // deprecated; use playlist functionality instead
 
-        @ColumnInfo(name = "transposed") var transposed: Int = 0,
+        @ColumnInfo(name = "transposed") var transposed: Int = 0,  // deprecated; use playlist functionality instead
 
         @ColumnInfo(name = "favorite_time") @Nullable override var favoriteTime: Long? = null
 

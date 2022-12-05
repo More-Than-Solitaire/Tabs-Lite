@@ -48,6 +48,9 @@ interface PlaylistEntryDao {
     @Query("INSERT INTO playlist_entry (playlist_id, tab_id, next_entry_id, prev_entry_id, date_added, transpose) VALUES (:playlistId, :tabId, :nextEntryId, :prevEntryId, :dateAdded, :transpose)")
     fun insert(playlistId: Int, tabId: Int, nextEntryId: Int?, prevEntryId: Int?, dateAdded: Long, transpose: Int)
 
+    fun insertToFavorites(tabId: Int, transpose: Int)
+        = insert(-1, tabId, null, null, System.currentTimeMillis(), transpose)
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: PlaylistEntry): Long
 
@@ -57,6 +60,17 @@ interface PlaylistEntryDao {
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId AND tab_id = :tabId")
     fun deleteTabFromPlaylist(tabId: Int, playlistId: Int)
 
+    fun deleteTabFromFavorites(tabId: Int) = deleteTabFromPlaylist(tabId, -1)
+
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId")
     fun deletePlaylist(playlistId: Int)
+
+    @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = -1 AND tab_id = :tabId)")
+    suspend fun tabExistsInFavorites(tabId: Int): Boolean
+
+    @Query("SELECT * FROM playlist_entry WHERE playlist_id = -1 AND tab_id = :tabId")
+    suspend fun getFavoritesPlaylistEntry(tabId: Int): PlaylistEntry?
+
+    @Query("UPDATE playlist_entry SET transpose = :transpose WHERE playlist_id = -1 AND tab_id = :tabId")
+    fun updateFavoriteTabTransposition(tabId: Int, transpose: Int)
 }
