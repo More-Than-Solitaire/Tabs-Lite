@@ -12,16 +12,21 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.core.app.ShareCompat
+import androidx.core.view.MenuProvider
 import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
 import androidx.core.widget.NestedScrollView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.navigation.findNavController
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.TabHelper
+import com.gbros.tabslite.workers.SearchHelper
 import com.gbros.tabslite.workers.UgApi
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
@@ -37,7 +42,7 @@ private const val LOG_NAME = "tabslite.TabDetailFragm"
  * tab specific info, and a TabView for displaying the actual tab.
  */
 class TabDetailFragment : Fragment() {
-    private val timerHandler = Handler()
+    private val timerHandler = Handler(Looper.getMainLooper())
     private var isScrolling: Boolean = false
     private var scrollDelayMs: Long = 34  // default scroll speed (smaller is faster)
     private var currentChordDialog: ChordBottomSheetDialogFragment? = null
@@ -47,6 +52,10 @@ class TabDetailFragment : Fragment() {
     private lateinit var optionsMenu: Menu
 
     //region Fragment overrides
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -63,7 +72,6 @@ class TabDetailFragment : Fragment() {
         binding.toolbarLayout.fitsSystemWindows = notificationBarShouldBeVisible
 
         binding.lifecycleOwner = viewLifecycleOwner
-        setHasOptionsMenu(true)
         setPlaylistButtonsEnabled(false, false)
 
         // title bar
@@ -89,7 +97,7 @@ class TabDetailFragment : Fragment() {
             val tabId = argBundle.getInt("tabId")  // should we replace this with a TabBasic since that's normally what the sender already has?
 
             val isPlaylist = argBundle.getBoolean("isPlaylist", false)
-            playlistEntry = argBundle.getParcelable("playlistEntry") //todo: test what happens when this is null
+            playlistEntry = argBundle.getParcelable("playlistEntry") //todo: test what happens when this is null  (when this is removed from kotlin, see https://stackoverflow.com/questions/73019160/android-getparcelableextra-deprecated)
             loadTab(tabId, binding, playlistEntry)  // load current tab
 
 
@@ -111,78 +119,97 @@ class TabDetailFragment : Fragment() {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_main, menu)
+                menuInflater.inflate(R.menu.menu_tab_detail, menu)
+                optionsMenu = menu
+                binding.tab?.let { setHeartIconState(it.favorite) }
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_share -> {
+                        if(!(activity?.application as DefaultApplication).runningOnFirebaseTest()){  // disable share menu for test lab
+                            createShareIntent()
+                        }
+                        true
+                    }
+                    R.id.action_favorite -> {
+                        if(binding.tab != null) {
+                            setHeartIconState(!menuItem.isChecked)  // this will update item.isChecked
+                            binding.tab!!.favorite = menuItem.isChecked
+                            TabHelper.setFavorite(binding.tab!!.tabId, menuItem.isChecked, AppDatabase.getInstance(requireContext()))
+                        }
+                        true
+                    }
+                    R.id.action_reload -> {  // reload button clicked (refresh page)
+                        if(binding.tab != null) {
+                            binding.progressBar2.isGone = false
+                            loadTab(binding.tab!!.tabId, binding, playlistEntry, true)
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    R.id.dark_mode_toggle -> {
+                        // show dialog asking user which mode they want
+                        context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }
+                        true
+                    }
+                    R.id.action_add_to_playlist -> {
+                        // show add to playlist dialog
+                        if (binding.tab != null) {
+                            Log.v(LOG_NAME, "Adding tab to playlist")
+                            val getPlaylistsFromDbJob = GlobalScope.async {
+                                AppDatabase.getInstance(requireContext()).playlistDao()
+                                    .getCurrentPlaylists()
+                            }
+                            getPlaylistsFromDbJob.invokeOnCompletion {
+                                val playlists = getPlaylistsFromDbJob.getCompleted()
+                                val transposition = binding.tab!!.transposed
+                                AddToPlaylistDialogFragment(binding.tab!!.tabId, playlists, transposition).show(
+                                    childFragmentManager,
+                                    "AddToPlaylistDialogTag"
+                                )
+                                Log.v(LOG_NAME, "Add to playlist task handed off to dialog.")
+                            }
+
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    R.id.search -> {
+                        val searchView = menuItem.actionView as SearchView
+                        if (!SearchHelper.InitilizationComplete) {
+                            SearchHelper.initializeSearchBar(
+                                "",
+                                searchView,
+                                requireContext(),
+                                viewLifecycleOwner
+                            ) { q ->
+                                Log.i(LOG_NAME, "Starting search from Home for '$q'")
+                                val direction = TabDetailFragmentDirections.actionTabDetailFragment2ToSearchResultFragment(q)
+                                view.findNavController().navigate(direction)
+                            }
+                        }
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
     override fun onPause() {
         // consider pausing the autoscroll?
         currentChordDialog?.dismiss()  // this doesn't parcelize well, so get rid of it before we pause
         activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         super.onPause()
-    }
-
-    /**
-     * Manually inflate the menu so we'll have access to what the items do
-     */
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.menu_tab_detail, menu)
-        optionsMenu = menu
-        binding.tab?.let { setHeartIconState(it.favorite) }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_share -> {
-                if(!(activity?.application as DefaultApplication).runningOnFirebaseTest()){  // disable share menu for test lab
-                    createShareIntent()
-                }
-                true
-            }
-            R.id.action_favorite -> {
-                if(binding.tab != null) {
-                    setHeartIconState(!item.isChecked)  // this will update item.isChecked
-                    binding.tab!!.favorite = item.isChecked
-                    TabHelper.setFavorite(binding.tab!!.tabId, item.isChecked, AppDatabase.getInstance(requireContext()))
-                }
-                true
-            }
-            R.id.action_reload -> {  // reload button clicked (refresh page)
-                if(binding.tab != null) {
-                    binding.progressBar2.isGone = false
-                    loadTab(binding.tab!!.tabId, binding, playlistEntry, true)
-                    true
-                } else {
-                    false
-                }
-            }
-            R.id.dark_mode_toggle -> {
-                // show dialog asking user which mode they want
-                context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }
-                true
-            }
-            R.id.action_add_to_playlist -> {
-                // show add to playlist dialog
-                if (binding.tab != null) {
-                    Log.v(LOG_NAME, "Adding tab to playlist")
-                    val getPlaylistsFromDbJob = GlobalScope.async {
-                        AppDatabase.getInstance(requireContext()).playlistDao()
-                            .getCurrentPlaylists()
-                    }
-                    getPlaylistsFromDbJob.invokeOnCompletion {
-                        val playlists = getPlaylistsFromDbJob.getCompleted()
-                        val transposition = binding.tab!!.transposed
-                        AddToPlaylistDialogFragment(binding.tab!!.tabId, playlists, transposition).show(
-                            childFragmentManager,
-                            "AddToPlaylistDialogTag"
-                        )
-                        Log.v(LOG_NAME, "Add to playlist task handed off to dialog.")
-                    }
-
-                    true
-                } else {
-                    false
-                }
-            }
-            else -> false
-        }
     }
 
     //endregion
@@ -580,7 +607,8 @@ class TabDetailFragment : Fragment() {
             }
         }
 
-        val shareIntent = ShareCompat.IntentBuilder.from(requireActivity())
+        val shareIntent = ShareCompat
+                .IntentBuilder(requireActivity())
                 .setText(shareText)
                 .setType("text/plain")
                 .createChooserIntent()

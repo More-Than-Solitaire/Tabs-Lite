@@ -5,8 +5,10 @@ import android.util.Log
 import android.view.*
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuProvider
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -31,9 +33,10 @@ class SongVersionFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         arguments?.let { it ->
             val rawVersionsList = it.getParcelableArray(ARG_SONG_VERSIONS) as Array<*>
-            if (!rawVersionsList.isNullOrEmpty()) {  // if there are no versions of this song at all, don't try to cast to Array<TabBasic>
+            if (rawVersionsList.isNotEmpty()) {  // if there are no versions of this song at all, don't try to cast to Array<TabBasic>
                 try {
                     // possible tab.type's: "Tab" (not 100% sure on this one), "Chords", "Official"
                     // filter out "official" tabs -- the ones without nice chords and a "content" field.
@@ -47,8 +50,6 @@ class SongVersionFragment : Fragment() {
                 }
             }
         }
-
-        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -93,29 +94,36 @@ class SongVersionFragment : Fragment() {
         return view
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        requireActivity().menuInflater.inflate(R.menu.menu_main, menu)
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_main, menu)
+            }
 
-        val searchView = menu.findItem(R.id.search).actionView as SearchView
-        SearchHelper.initializeSearchBar("", searchView, requireContext(), viewLifecycleOwner) { q ->
-            Log.i(LOG_NAME, "Starting search from SongVersionFragment for query '$q'")
-            val direction =
-                SongVersionFragmentDirections.actionSongVersionFragmentToSearchResultFragment(q)
-            view?.findNavController()?.navigate(direction)
-        }
-    }
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.dark_mode_toggle -> {
-                context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }  // show dialog asking user which mode they want
-                true
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.dark_mode_toggle -> {
+                        context?.let { (activity?.application as DefaultApplication).darkModeDialog(it) }  // show dialog asking user which mode they want
+                        true
+                    }
+                    R.id.search -> {
+                        val searchView = menuItem.actionView as SearchView
+                        SearchHelper.initializeSearchBar("", searchView, requireContext(), viewLifecycleOwner) { q ->
+                            Log.i(LOG_NAME, "Starting search from Home for '$q'")
+                            val direction = SongVersionFragmentDirections.actionSongVersionFragmentToSearchResultFragment(q)
+                            view.findNavController().navigate(direction)
+                        }
+
+                        true
+                    }
+                    else -> {
+                        false // let someone else take care of this click
+                    }
+                }
             }
-            else -> {
-                false // let someone else take care of this click
-            }
-        }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onDetach() {

@@ -26,9 +26,9 @@ private const val LOG_NAME = "tabslite.TabTextView"
 class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcompat.widget.AppCompatTextView(context, attributeSet) {
     private val tabLines = ArrayList<TabLine>()
     private val mScaleDetector = object : ScaleGestureDetector(context, ScaleListener()) {
-        override fun onTouchEvent(event: MotionEvent?): Boolean {
+        override fun onTouchEvent(event: MotionEvent): Boolean {
 
-            if(event != null && event.pointerCount == 2){
+            if(event.pointerCount == 2){
                 // for two finger touches, no intercepts so we can zoom
                 parent.requestDisallowInterceptTouchEvent(true)
             } else {
@@ -52,7 +52,11 @@ class TabTextView(context: Context, attributeSet: AttributeSet): androidx.appcom
     }
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
         super.dispatchTouchEvent(event)
-        return mScaleDetector.onTouchEvent(event)
+        if (event != null) {
+            return mScaleDetector.onTouchEvent(event)
+        } else {
+            return false
+        }
     }
 
     fun setCallback(callback: (chord: CharSequence) -> Unit){

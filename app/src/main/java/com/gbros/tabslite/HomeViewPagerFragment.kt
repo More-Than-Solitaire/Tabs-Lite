@@ -7,7 +7,10 @@ import android.view.*
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.navigation.findNavController
 import com.gbros.tabslite.adapters.FAVORITE_TABS_PAGE_INDEX
 import com.gbros.tabslite.adapters.PLAYLISTS_PAGE_INDEX
@@ -42,7 +45,7 @@ class HomeViewPagerFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentViewPagerBinding.inflate(inflater, container, false)
         val tabLayout = binding.tabs
         val viewPager = binding.viewPager
@@ -56,23 +59,45 @@ class HomeViewPagerFragment : Fragment() {
             tab.setIcon(getTabIcon(position))
             tab.text = getTabTitle(position)
         }.attach()
-
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
 
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        Log.d(LOG_NAME, "options menu created")
-        val searchMenuItem = menu.findItem(R.id.search)
-        val searchView = searchMenuItem.actionView
-        SearchHelper.initializeSearchBar("", searchView as SearchView, requireContext(), viewLifecycleOwner) { q ->
-            Log.i(LOG_NAME, "Starting search from Home for '$q'")
-            val direction =
-                HomeViewPagerFragmentDirections.actionViewPagerFragmentToSearchResultFragment(q)
-            view?.findNavController()?.navigate(direction)
-        }
-        super.onCreateOptionsMenu(menu, inflater)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_main, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when(menuItem.itemId) {
+                    R.id.search -> {
+                    val searchView = menuItem.actionView as SearchView
+                        searchView.findViewTreeLifecycleOwner()?.let {
+                            SearchHelper.initializeSearchBar(
+                                "",
+                                searchView,
+                                requireContext(),
+                                it
+                            ) { q ->
+                                Log.i(LOG_NAME, "Starting search from Home for '$q'")
+                                val direction =
+                                    HomeViewPagerFragmentDirections.actionViewPagerFragmentToSearchResultFragment(
+                                        q
+                                    )
+                                view.findNavController().navigate(direction)
+                            }
+                        }
+
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun getTabIcon(position: Int): Int {

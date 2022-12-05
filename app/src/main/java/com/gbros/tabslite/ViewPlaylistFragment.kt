@@ -6,7 +6,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.DOWN
@@ -37,6 +39,30 @@ class ViewPlaylistFragment : Fragment() {
     var playlistId = 0
     var playlist: Playlist? = null
 
+    var menuProvider = object : MenuProvider {
+        override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+
+        }
+
+        override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+            return if (menuItem.itemId == R.id.delete_playlist) {
+                context?.let { context ->  // confirm deletion
+                    val builder: AlertDialog.Builder = AlertDialog.Builder(context)
+                    builder.setMessage("Delete Playlist?").setPositiveButton("Yes", deletePlaylistConfirmationDialogListener)
+                        .setNegativeButton("No", deletePlaylistConfirmationDialogListener).show()
+                }
+
+                true
+            } else if (menuItem.itemId == R.id.edit_playlist) {
+                // todo: make "Edit Playlist" into a string resource
+                playlist?.let { pl -> NewPlaylistDialogFragment(null, null, "Edit Playlist", pl.title, pl.description, pl.playlistId).show(parentFragmentManager, "editPlaylistTag") }
+                true
+            } else {
+                false
+            }
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
         val binding = FragmentPlaylistBinding.inflate(inflater, container, false)
@@ -58,12 +84,18 @@ class ViewPlaylistFragment : Fragment() {
             }
 
             binding.toolbar.setOnMenuItemClickListener {
-                onOptionsItemSelected(it)
+                menuProvider.onMenuItemSelected(it)
             }
         }
 
 
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(menuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun updateView(binding: FragmentPlaylistBinding, playlist: Playlist) {
@@ -238,30 +270,12 @@ class ViewPlaylistFragment : Fragment() {
         return sortedList
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if (item.itemId == R.id.delete_playlist) {
-            context?.let { context ->  // confirm deletion
-                val builder: AlertDialog.Builder = AlertDialog.Builder(context)
-                builder.setMessage("Delete Playlist?").setPositiveButton("Yes", deletePlaylistConfirmationDialogListener)
-                    .setNegativeButton("No", deletePlaylistConfirmationDialogListener).show()
-            }
-
-            true
-        } else if (item.itemId == R.id.edit_playlist) {
-            // todo: make "Edit Playlist" into a string resource
-            playlist?.let { pl -> NewPlaylistDialogFragment(null, null, "Edit Playlist", pl.title, pl.description, pl.playlistId).show(parentFragmentManager, "editPlaylistTag") }
-            true
-        } else {
-            super.onOptionsItemSelected(item)
-        }
-    }
-
     private var deletePlaylistConfirmationDialogListener =
         DialogInterface.OnClickListener { _, which ->
             when (which) {
                 DialogInterface.BUTTON_POSITIVE -> {
                     // exit playlist view
-                    activity?.onBackPressed()
+                    activity?.onBackPressedDispatcher?.onBackPressed()
 
                     // delete playlist itself
                     GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistDao().deletePlaylist(playlistId)}

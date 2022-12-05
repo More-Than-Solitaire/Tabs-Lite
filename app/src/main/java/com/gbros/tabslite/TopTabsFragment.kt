@@ -2,13 +2,13 @@ package com.gbros.tabslite
 
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.fragment.app.Fragment
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
 import com.gbros.tabslite.adapters.BrowseTabsAdapter
 import com.gbros.tabslite.databinding.FragmentBrowseTabsBinding
@@ -24,13 +24,12 @@ class TopTabsFragment : Fragment() {
 
     private lateinit var binding: FragmentBrowseTabsBinding
     val adapter = BrowseTabsAdapter()
-    private lateinit var mSwipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentBrowseTabsBinding.inflate(inflater, container, false)
         binding.favoriteTabsList.adapter = adapter
         binding.swipeRefresh.isEnabled = true
@@ -42,8 +41,8 @@ class TopTabsFragment : Fragment() {
         return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         binding.findNewSongs.setOnClickListener {
             (activity as HomeActivity).focusSearch()
         }
@@ -61,7 +60,7 @@ class TopTabsFragment : Fragment() {
                 Log.w(javaClass.simpleName, "Error finding top tabs. GetTopTabs job returned non-null. " + cause.message, cause.cause)
                 requireActivity().runOnUiThread {
                     binding.hasHistory = adapter.itemCount > 0  // unless we already have items here, show the No Tabs Here message
-                    Handler().postDelayed({ binding.swipeRefresh.isRefreshing = false }, 700)
+                    Handler(Looper.getMainLooper()).postDelayed({ binding.swipeRefresh.isRefreshing = false }, 700)
                     view?.let {
                         if (it.isAttachedToWindow) {
                             Snackbar.make(it,"You're not connected to the internet", Snackbar.LENGTH_SHORT).show()

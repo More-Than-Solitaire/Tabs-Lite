@@ -26,6 +26,8 @@ object SearchHelper {
     val from = arrayOf("suggestion")
     val to = intArrayOf(R.id.suggestion_text)
 
+    var InitilizationComplete = false
+
     private fun getSearchSuggestionAdapter(context: Context): SimpleCursorAdapter {
         return SimpleCursorAdapter(context, R.layout.list_item_search_suggestion,
                 null, from, to, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER)
@@ -61,56 +63,66 @@ object SearchHelper {
     }
 
     fun initializeSearchBar(defaultQuery: String, searchView: SearchView, context: Context,
-                            owner: LifecycleOwner, searchCallback: (query: String) -> Unit){
-        Log.d(LOG_NAME, "init search")
-        //setup search bar
-        val searchManager = context.getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(ComponentName(context, HomeActivity::class.java)) )
-        searchView.isIconified = false
-        searchView.setQuery(defaultQuery, false)
-        searchView.clearFocus()
+                            owner: LifecycleOwner, searchCallback: (query: String) -> Unit) {
+        if (!InitilizationComplete) {
+            Log.d(LOG_NAME, "init search")
+            //setup search bar
+            val searchManager = context.getSystemService(Context.SEARCH_SERVICE) as SearchManager
+            searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(
+                    ComponentName(
+                        context,
+                        HomeActivity::class.java
+                    )
+                )
+            )
+            searchView.isIconified = false
+            searchView.setQuery(defaultQuery, false)
+            searchView.clearFocus()
 
 
+            // don't allow stacking of search activities.  If we search again, get rid of this instance
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextChange(newText: String): Boolean {
+                    updateSuggestions(newText) //update the suggestions
+                    return false
+                }
 
-        // don't allow stacking of search activities.  If we search again, get rid of this instance
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextChange(newText: String): Boolean {
-                updateSuggestions(newText) //update the suggestions
-                return false
-            }
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    searchCallback(query)
+                    return true // false means tell the searchview that we didn't handle the search so it still calls another search
+                }
 
-            override fun onQueryTextSubmit(query: String): Boolean {
-                searchCallback(query)
-                return true // false means tell the searchview that we didn't handle the search so it still calls another search
-            }
+            })
 
-        })
-
-        //set up search suggestions
-        searchView.suggestionsAdapter = getSearchSuggestionAdapter(context)
-        getSuggestionCursor().observe(owner,getObserverForSuggestionAdapter(searchView.suggestionsAdapter as SimpleCursorAdapter))
+            //set up search suggestions
+            searchView.suggestionsAdapter = getSearchSuggestionAdapter(context)
+            getSuggestionCursor().observe(
+                owner,
+                getObserverForSuggestionAdapter(searchView.suggestionsAdapter as SimpleCursorAdapter)
+            )
 
 
-        val onSuggestionListener = object : SearchView.OnSuggestionListener {
-            override fun onSuggestionClick(position: Int): Boolean {
-                val cursor: Cursor = searchView.suggestionsAdapter.getItem(position) as Cursor
-                val columnIndex = cursor.getColumnIndex("suggestion")
-                return if (columnIndex >= 0) {
-                    val txt: String = cursor.getString(columnIndex)
-                    searchView.setQuery(txt, true)
-                    true
-                } else {
-                    false
+            val onSuggestionListener = object : SearchView.OnSuggestionListener {
+                override fun onSuggestionClick(position: Int): Boolean {
+                    val cursor: Cursor = searchView.suggestionsAdapter.getItem(position) as Cursor
+                    val columnIndex = cursor.getColumnIndex("suggestion")
+                    return if (columnIndex >= 0) {
+                        val txt: String = cursor.getString(columnIndex)
+                        searchView.setQuery(txt, true)
+                        true
+                    } else {
+                        false
+                    }
+                }
+
+                // todo: what does this mean?
+                override fun onSuggestionSelect(position: Int): Boolean {
+                    // Your code here
+                    return true
                 }
             }
-
-            // todo: what does this mean?
-            override fun onSuggestionSelect(position: Int): Boolean {
-                // Your code here
-                return true
-            }
+            searchView.setOnSuggestionListener(onSuggestionListener)
         }
-        searchView.setOnSuggestionListener(onSuggestionListener)
     }
-
 }
