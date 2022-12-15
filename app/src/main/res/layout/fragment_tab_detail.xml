@@ -3,11 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="com.gbros.tabslite.data.TabFull"/>
+        <import type="com.gbros.tabslite.data.IntTabFull"/>
         <import type="com.gbros.tabslite.data.TabBasic"/>
         <variable
             name="tab"
-            type="com.gbros.tabslite.data.TabFull" />
+            type="com.gbros.tabslite.data.IntTabFull" />
         <variable
             name="nextTabButtonText"
             type="String" />
@@ -18,13 +18,11 @@
             name="isPlaylist"
             type="Boolean" />
         <variable
-            name="transposeText"
-            type="String"
-            />
-        <variable
             name="tonalityName"
-            type="String"
-            />
+            type="String" />
+        <variable
+            name="transposed"
+            type="String" />
     </data>
 
     <!-- todo: redo all the strings (search for plant) -->
@@ -271,7 +269,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
-                        android:text="@{transposeText}"
+                        android:text="@{transposed}"
                         android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                         app:layout_constraintBottom_toBottomOf="@+id/transpose_dsc"
                         app:layout_constraintStart_toEndOf="@+id/transpose_dsc"

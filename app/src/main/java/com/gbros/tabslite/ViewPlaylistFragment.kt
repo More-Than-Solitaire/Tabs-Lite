@@ -275,7 +275,7 @@ class ViewPlaylistFragment : Fragment() {
                     GlobalScope.launch { AppDatabase.getInstance(requireContext()).playlistDao().deletePlaylist(playlistId)}
 
                     // delete entries in playlist
-                    GlobalScope.launch {AppDatabase.getInstance(requireContext()).playlistEntryDao().deletePlaylist(playlistId)
+                    GlobalScope.launch {AppDatabase.getInstance(requireContext()).playlistEntryDao().clearPlaylist(playlistId)
                     }
 
                     Log.i(LOG_NAME, "Playlist $playlistId deleted.")

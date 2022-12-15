@@ -1,18 +1,17 @@
 package com.gbros.tabslite.workers
 
 import android.util.Log
+import com.gbros.tabslite.data.*
+import com.gbros.tabslite.utilities.ApiHelper
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
-import com.gbros.tabslite.data.*
-import com.gbros.tabslite.utilities.ApiHelper
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import java.io.FileNotFoundException
 import java.io.InputStream
-import java.lang.IllegalStateException
 import java.net.*
 
 private const val LOG_NAME = "tabslite.UgApi"
@@ -131,29 +130,36 @@ object UgApi {
         database.chordVariationDao().getChordVariations(chordId.toString())
     }
 
-    //todo: store top tabs in database for offline access?
-    private lateinit var topTabs: List<SearchRequestType.Tab>
-    suspend fun getTopTabs(force: Boolean = false): List<SearchRequestType.Tab> = coroutineScope {
-        if(this@UgApi::topTabs.isInitialized && !force){
-            // return cached value if exists
-            return@coroutineScope topTabs
-        }
-
+    suspend fun fetchTopTabs(appDatabase: AppDatabase, force: Boolean = false) = coroutineScope {
         // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
         // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
         val inputStream = authenticatedStream("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0")
+        val playlistEntryDao = appDatabase.playlistEntryDao()
+        val tabFullDao = appDatabase.tabFullDao()
         if (inputStream != null) {
             val jsonReader = JsonReader(inputStream.reader())
             val typeToken = object : TypeToken<List<SearchRequestType.Tab>>() {}.type
-            topTabs = gson.fromJson(jsonReader, typeToken)
+            val topTabs: List<TabFull> = (gson.fromJson(jsonReader, typeToken) as List<SearchRequestType.Tab>).map { t -> t.tabFull() }
             inputStream.close()
 
-            topTabs
+            // clear top tabs playlist, then add all these to the top tabs playlist
+            playlistEntryDao.clearTopTabsPlaylist()
+            var prevId: Int?
+            var currentId: Int? = null
+            var nextId: Int? = null
+            for (tab in topTabs) {
+                prevId = currentId
+                currentId = nextId
+                nextId = tab.tabId
+                if (currentId != null) {
+                    playlistEntryDao.insert(-2, currentId, nextId, prevId, System.currentTimeMillis(), 0)
+                }
+                tabFullDao.insert(tab)
+            }
+            playlistEntryDao.insert(-2, nextId!!, null, currentId, System.currentTimeMillis(), 0)  // save the last one
         } else {
-            // todo: return historical tabs rather than nothing
             Log.w(LOG_NAME, "Error fetching top tabs.  AuthenticatedStream returned null.  Could be due to no internet access.")
             cancel("Error fetching top tabs.  AuthenticatedStream returned null.  Could be due to no internet access.")
-            emptyList()
         }
     }
 

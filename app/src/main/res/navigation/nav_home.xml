@@ -83,7 +83,7 @@
             app:argType="integer" />
         <argument
             android:name="playlistEntry"
-            app:argType="com.gbros.tabslite.data.PlaylistEntry"
+            app:argType="com.gbros.tabslite.data.IntPlaylistEntry"
             app:nullable="true" />
         <action
             android:id="@+id/action_tabDetailFragment2_self"

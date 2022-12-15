@@ -9,7 +9,7 @@ class PlaylistEntryRepository private constructor(private val playlistEntryDao: 
     suspend fun getLastEntryInPlaylist(playlistId: Int) = playlistEntryDao.getLastEntryInPlaylist(playlistId)
     fun update(entry: PlaylistEntry) = playlistEntryDao.update(entry)
     fun setNextEntryId(nextEntryId: Int?, thisEntryId: Int?) = playlistEntryDao.setNextEntryId(nextEntryId, thisEntryId)
-    fun deletePlaylist(playlistId: Int) = playlistEntryDao.deletePlaylist(playlistId)
+    fun deletePlaylist(playlistId: Int) = playlistEntryDao.clearPlaylist(playlistId)
     fun getFavoriteTabEntries() = playlistEntryDao.getLivePlaylistItems(-1)
     fun addToFavorites(tabId: Int, transpose: Int = 0) = playlistEntryDao.insert(-1, tabId, null, null, System.currentTimeMillis(), transpose)
     fun removeFromFavorites(tabId: Int) = playlistEntryDao.deleteTabFromPlaylist(tabId, -1)

@@ -17,23 +17,23 @@ interface PlaylistEntryDao {
     @Query("SELECT * FROM playlist_entry WHERE playlist_id = :playlistId AND next_entry_id IS NULL")
     suspend fun getLastEntryInPlaylist(playlistId: Int): PlaylistEntry?
 
-    @Query("SELECT * FROM playlist_entry WHERE id = :entryId")
+    @Query("SELECT * FROM playlist_entry WHERE entry_id = :entryId")
     suspend fun getEntryById(entryId: Int): PlaylistEntry?
 
-    @Query("UPDATE playlist_entry SET next_entry_id = :nextEntryId WHERE id = :thisEntryId")
+    @Query("UPDATE playlist_entry SET next_entry_id = :nextEntryId WHERE entry_id = :thisEntryId")
     fun setNextEntryId(thisEntryId: Int?, nextEntryId: Int?)
 
-    @Query("UPDATE playlist_entry SET prev_entry_id = :prevEntryId WHERE id = :thisEntryId")
+    @Query("UPDATE playlist_entry SET prev_entry_id = :prevEntryId WHERE entry_id = :thisEntryId")
     fun setPrevEntryId(thisEntryId: Int?, prevEntryId: Int?)
 
     @Query("""
-            UPDATE playlist_entry SET next_entry_id = (CASE id
+            UPDATE playlist_entry SET next_entry_id = (CASE entry_id
                     when :srcPrv then :srcNxt
                     when :src then :destNxt
                     when :destPrv then :src
                     else next_entry_id
                     END),
-                prev_entry_id = (CASE id
+                prev_entry_id = (CASE entry_id
                     when :srcNxt then :srcPrv
                     when :src then :destPrv
                     when :destNxt then :src
@@ -54,8 +54,8 @@ interface PlaylistEntryDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: PlaylistEntry): Long
 
-    @Query("DELETE FROM playlist_entry WHERE id = :id")
-    fun deleteEntry(id: Int)
+    @Query("DELETE FROM playlist_entry WHERE entry_id = :entry_id")
+    fun deleteEntry(entry_id: Int)
 
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId AND tab_id = :tabId")
     fun deleteTabFromPlaylist(tabId: Int, playlistId: Int)
@@ -63,7 +63,10 @@ interface PlaylistEntryDao {
     fun deleteTabFromFavorites(tabId: Int) = deleteTabFromPlaylist(tabId, -1)
 
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId")
-    fun deletePlaylist(playlistId: Int)
+    fun clearPlaylist(playlistId: Int)
+
+    @Query("DELETE FROM playlist_entry WHERE playlist_id = -2")
+    fun clearTopTabsPlaylist()
 
     @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = -1 AND tab_id = :tabId)")
     suspend fun tabExistsInFavorites(tabId: Int): Boolean

@@ -16,11 +16,15 @@ import com.gbros.tabslite.adapters.FAVORITE_TABS_PAGE_INDEX
 import com.gbros.tabslite.adapters.PLAYLISTS_PAGE_INDEX
 import com.gbros.tabslite.adapters.PagerAdapter
 import com.gbros.tabslite.adapters.TOP_TABS_PAGE_INDEX
+import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.databinding.FragmentViewPagerBinding
 import com.gbros.tabslite.workers.SearchHelper
+import com.gbros.tabslite.workers.UgApi
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 private const val LOG_NAME = "tabslite.HomeViewPagerF"
 
@@ -46,6 +50,10 @@ class HomeViewPagerFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        // update the top tabs list
+        val appDatabase = AppDatabase.getInstance(requireContext())
+        GlobalScope.launch { UgApi.fetchTopTabs(appDatabase, true) }
+
         val binding = FragmentViewPagerBinding.inflate(inflater, container, false)
         val tabLayout = binding.tabs
         val viewPager = binding.viewPager

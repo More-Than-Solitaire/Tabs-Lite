@@ -5,11 +5,11 @@ import androidx.lifecycle.ViewModelProvider
 import com.gbros.tabslite.data.*
 
 /**
- * Factory for creating a [TabDetailViewModel] with a constructor that takes a [TabFullRepository]
+ * Factory for creating a [TabDetailViewModel] with a constructor that takes a [TabFullDao]
  * and an ID for the current [TabFull].
  */
 class TabDetailViewModelFactory(
-        private val tabRepository: TabFullRepository,
+        private val tabRepository: TabFullDao,
         private val chordVariationRepository: ChordVariationRepository,
         private val tabId: Int
 ) : ViewModelProvider.NewInstanceFactory() {

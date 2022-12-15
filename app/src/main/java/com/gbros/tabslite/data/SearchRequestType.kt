@@ -1,7 +1,6 @@
 package com.gbros.tabslite.data
 
 import com.gbros.tabslite.utilities.Utils
-import kotlin.collections.ArrayList
 
 class SearchRequestType(var tabs: List<Tab>, var artists: List<String>){
     class Tab(var id: Int, var song_id: Int, var song_name: String, val artist_id: Int, var artist_name: String,
@@ -10,7 +9,20 @@ class SearchRequestType(var tabs: List<Tab>, var artists: List<String>){
               var tab_access_type: String = "", var tp_version: Int = 0, var tonality_name: String = "",
               val version_description: String? = "", var verified: Int = 0,
               val recording: TabRequestType.RecordingInfo?
-    )
+    ) {
+        fun tabFull(): TabFull {
+            val dateToUse = if (date.isNullOrEmpty()) 0 else date.toInt()
+            val versionDscToUse = if (version_description.isNullOrEmpty()) "" else version_description
+            val recordingAcoustic = if (recording != null) recording.is_acoustic == 1 else false
+            val recordingTonality = recording?.tonality_name ?: ""
+            val recordingPerformance = recording?.performance.toString()
+            val recordingArtists = recording?.getArtists() ?: ArrayList()
+
+            return TabFull(id, song_id, song_name, artist_name, type, part, version, votes, rating, dateToUse, status,
+                preset_id, tab_access_type, tp_version, tonality_name, versionDscToUse, verified == 1, recordingAcoustic,
+                recordingTonality, recordingPerformance, recordingArtists)
+        }
+    }
 
     constructor() : this(ArrayList(), ArrayList())
 

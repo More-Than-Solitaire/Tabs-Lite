@@ -12,7 +12,7 @@ import com.gbros.tabslite.utilities.DATABASE_NAME
 /**
  * The Room database for this app
  */
-@Database(entities = [TabFull::class, ChordVariation::class, Playlist::class, PlaylistEntry::class], version = 7, exportSchema = false)
+@Database(entities = [TabFull::class, ChordVariation::class, Playlist::class, PlaylistEntry::class], version = 9, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chordVariationDao(): ChordVariationDao
@@ -72,6 +72,23 @@ abstract class AppDatabase : RoomDatabase() {
                 database.execSQL("INSERT INTO playlist_entry (playlist_id, tab_id, next_entry_id, prev_entry_id, date_added, transpose) SELECT -1, id, NULL, NULL, favorite_time, transposed FROM tabs WHERE favorite IS 1")
             }
         }
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            // rename playlist_entry.id to playlist_entry.entry_id
+            // remove unused columns from tabs table
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // create new temp table
+                database.execSQL("CREATE TABLE IF NOT EXISTS playlist_entry_new (entry_id INTEGER NOT NULL, playlist_id INTEGER NOT NULL, tab_id INTEGER NOT NULL, next_entry_id INTEGER, prev_entry_id INTEGER, date_added INTEGER NOT NULL, transpose INTEGER NOT NULL, PRIMARY KEY(entry_id))")
+
+                // copy data from old table to new
+                database.execSQL("INSERT INTO playlist_entry_new (entry_id, playlist_id, tab_id, next_entry_id, prev_entry_id, date_added, transpose) SELECT id, playlist_id, tab_id, next_entry_id, prev_entry_id, date_added, transpose FROM playlist_entry")
+
+                // delete old playlist_entry table
+                database.execSQL("DROP TABLE playlist_entry")
+
+                // rename new table to playlist_entry
+                database.execSQL("ALTER TABLE playlist_entry_new RENAME TO playlist_entry")
+            }
+        }
 
 
         // Create and pre-populate the database. See this article for more details:
@@ -79,7 +96,7 @@ abstract class AppDatabase : RoomDatabase() {
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
                     .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
-                            MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                            MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                     .build()
         }
     }

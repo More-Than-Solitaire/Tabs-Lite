@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.findNavController
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.IntPlaylistEntry
 import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.data.TabFull
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
@@ -47,7 +48,7 @@ class TabDetailFragment : Fragment() {
     private var isScrolling: Boolean = false
     private var scrollDelayMs: Long = 34  // default scroll speed (smaller is faster)
     private var currentChordDialog: ChordBottomSheetDialogFragment? = null
-    private var playlistEntry: PlaylistEntry? = null
+    private var playlistEntry: IntPlaylistEntry? = null
 
     private lateinit var binding: FragmentTabDetailBinding
     private lateinit var optionsMenu: Menu
@@ -105,9 +106,10 @@ class TabDetailFragment : Fragment() {
             binding.nextTabButtonText = "Next"
 
             // transpose
+            binding.transposed = "0"
             binding.transposeUp.setOnClickListener { transpose(true, playlistEntry) }
             binding.transposeDown.setOnClickListener { transpose(false, playlistEntry) }
-            binding.cancelTranspose.setOnClickListener { binding.tab?.let { transpose(-it.transposed, playlistEntry) } }
+            binding.cancelTranspose.setOnClickListener { transpose(-(binding.transposed!!.toInt()), playlistEntry) }
         }
 
         // set screen to always on while the tab is open
@@ -152,7 +154,7 @@ class TabDetailFragment : Fragment() {
                                 if (isNowFavorite) {
                                     playlistEntryDb.insertToFavorites(
                                         binding.tab!!.tabId,
-                                        binding.tab!!.transposed
+                                        binding.transposed!!.toInt()
                                     )
                                 } else {
                                     playlistEntryDb.deleteTabFromFavorites(binding.tab!!.tabId)
@@ -185,8 +187,7 @@ class TabDetailFragment : Fragment() {
                             }
                             getPlaylistsFromDbJob.invokeOnCompletion {
                                 val playlists = getPlaylistsFromDbJob.getCompleted()
-                                val transposition = binding.tab!!.transposed
-                                AddToPlaylistDialogFragment(binding.tab!!.tabId, playlists, transposition).show(
+                                AddToPlaylistDialogFragment(binding.tab!!.tabId, playlists, binding.transposed!!.toInt()).show(
                                     childFragmentManager,
                                     "AddToPlaylistDialogTag"
                                 )
@@ -300,7 +301,7 @@ class TabDetailFragment : Fragment() {
      * @param   binding         the view binding to reset UI elements; used in calling [onDataStored]
      * @param   playlistEntry   the playlist entry corresponding to the tab to be loaded, or null if none exists
      */
-    private fun loadTab(tabId: Int, binding: FragmentTabDetailBinding, playlistEntry: PlaylistEntry? = null, forceInternetLoad: Boolean = false) {
+    private fun loadTab(tabId: Int, binding: FragmentTabDetailBinding, playlistEntry: IntPlaylistEntry? = null, forceInternetLoad: Boolean = false) {
         Log.i(LOG_NAME, "Loading tab $tabId")
         val getDataJob = GlobalScope.async { TabHelper.fetchTabFromInternet(tabId, AppDatabase.getInstance(requireContext()), forceInternetLoad) }
         getDataJob.invokeOnCompletion(onDataStored(tabId, binding, playlistEntry))
@@ -315,7 +316,7 @@ class TabDetailFragment : Fragment() {
      *                          true. If null, this function does nothing.
      * @param binding           The FragmentTabDetailBinding for calling [loadTab]
      */
-    private fun setNextAndPreviousTabs(playlistEntry: PlaylistEntry?, binding: FragmentTabDetailBinding) {
+    private fun setNextAndPreviousTabs(playlistEntry: IntPlaylistEntry?, binding: FragmentTabDetailBinding) {
         // get next and previous tabs if they exist  //todo: move to new function
         if (playlistEntry != null ) {
             // update NEXT buttons
@@ -470,7 +471,7 @@ class TabDetailFragment : Fragment() {
      * Transposes the tab up or down one half-step.  If playlistEntry isn't null, updates the saved transposition
      * amount for this playlist entry.
      */
-    private fun transpose(up: Boolean, playlistEntry: PlaylistEntry?){
+    private fun transpose(up: Boolean, playlistEntry: IntPlaylistEntry?){
         val howMuch = if(up) 1 else -1
         transpose(howMuch, playlistEntry)
     }
@@ -482,43 +483,37 @@ class TabDetailFragment : Fragment() {
      * @param howMuch       the amount to transpose, relative to the current transposition amount.
      * @param playlistEntry (nullable) the playlist entry to update with the new transposition amount.
      */
-    private fun transpose(howMuch: Int, playlistEntry: PlaylistEntry?){
-        binding.tab?.apply {
-            transposed += howMuch  // update the view
+    private fun transpose(howMuch: Int, playlistEntry: IntPlaylistEntry?){
+        var currentTransposeAmount = binding.transposed!!.toInt()
+        currentTransposeAmount += howMuch  // update the view
 
-            //12 half steps in an octave
-            if (transposed >= 12) {
-                transposed -= 12
-            } else if (transposed <= -12) {
-                transposed += 12
-            }
+        //12 half steps in an octave
+        if (currentTransposeAmount >= 12) {
+            currentTransposeAmount -= 12
+        } else if (currentTransposeAmount <= -12) {
+            currentTransposeAmount += 12
+        }
 
-            Log.v(LOG_NAME, "Updating transpose level to $transposed by transposing $howMuch")
-            if (binding.tonalityName != "") {
-                binding.tonalityName =
-                    TabTextView.transposeChord(binding.tonalityName!!, howMuch)
-            }
-            binding.tabContent.transpose(howMuch)  // the actual transposition
-            binding.transposeText = transposed.toString()
+        Log.v(LOG_NAME, "Updating transpose level to $currentTransposeAmount by transposing $howMuch")
+        if (binding.tonalityName != "") {
+            binding.tonalityName =
+                TabTextView.transposeChord(binding.tonalityName!!, howMuch)
+        }
+        binding.tabContent.transpose(howMuch)  // the actual transposition
+        binding.transposed = currentTransposeAmount.toString()  // update view
 
-            if (howMuch != 0) {  // only contact the database if there's a change
-                if (playlistEntry != null) {
-                    playlistEntry.transpose = transposed
-                    Log.d(LOG_NAME, "updated playlist entry transposition to $transposed: ${playlistEntry.transpose}")
-                    GlobalScope.launch {
-                        AppDatabase.getInstance(requireContext()).playlistEntryDao().update(playlistEntry)
-                    }
-                } else {
-                    GlobalScope.launch {
-                        AppDatabase.getInstance(requireContext()).playlistEntryDao()
-                            .updateFavoriteTabTransposition(tabId, transposed)
-                    }
-                }
+        // only contact the database if there's a change in transposition AND the tab's in a playlist (e.g. favorites)
+        if (howMuch != 0 && playlistEntry != null) {
+            playlistEntry.transpose = currentTransposeAmount
+            Log.d(LOG_NAME, "updated playlist entry transposition to ${currentTransposeAmount}: ${playlistEntry.transpose}")
+            GlobalScope.launch {
+                AppDatabase.getInstance(requireContext()).playlistEntryDao()
+                    .update(PlaylistEntry(playlistEntry))
             }
         }
     }
 
-    private fun onDataStored(tabId: Int, binding: FragmentTabDetailBinding, playlistEntry: PlaylistEntry?) = { cause: Throwable? ->
+    private fun onDataStored(tabId: Int, binding: FragmentTabDetailBinding, playlistEntry: IntPlaylistEntry?) = { cause: Throwable? ->
         if(cause != null) {
             //oh no; something happened and it failed.  whoops.
             Log.w(LOG_NAME, "Error fetching and storing tab data from online source on the async thread.  Internet connection likely not available.")
@@ -537,7 +532,7 @@ class TabDetailFragment : Fragment() {
      * @param tabId         the ID of the tab to retrieve from the database
      * @param playlistEntry (optional) if part of a playlist, set this option to use the playlist specific transposition settings, etc.
      */
-    private fun startGetData(tabId: Int, playlistEntry: PlaylistEntry?) {
+    private fun startGetData(tabId: Int, playlistEntry: IntPlaylistEntry?) {
         try {
             val getTabFromDbJob = GlobalScope.async {
                 Log.v(LOG_NAME, "Fetching tab $tabId from the database.")
@@ -570,7 +565,7 @@ class TabDetailFragment : Fragment() {
      * Display a TabFull.  Updates UI based on the tab, the given playlistEntry if we're reading from a playlist,
      * and the favorite status of this tab.
      */
-    private fun showTab(tabToShow: TabFull, playlistEntry: PlaylistEntry?) {
+    private fun showTab(tabToShow: TabFull, playlistEntry: IntPlaylistEntry?) {
         (activity as AppCompatActivity).title = tabToShow.toString()  // toolbar title
         binding.tab = tabToShow
         binding.tabContent.setTabContent(tabToShow.content)
@@ -595,8 +590,8 @@ class TabDetailFragment : Fragment() {
                 tspAmt = favoritesPlaylistEntry.transpose
             }
 
-            // currently, the tab text hasn't been transposed.  The transpose() function will change the tab.transpose variable
-            binding.tab!!.transposed = 0
+            // currently, the tab text hasn't been transposed.  The transpose() function will change the binding.transposed variable
+            binding.transposed = "0"
             (activity as AppCompatActivity).runOnUiThread { transpose(tspAmt, playlistEntry) }
         }
 

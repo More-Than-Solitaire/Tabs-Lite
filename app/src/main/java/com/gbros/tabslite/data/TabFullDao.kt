@@ -17,10 +17,13 @@ interface TabFullDao {
     @Query("SELECT * FROM tabs WHERE id IN (:tabIds)")
     fun getTabs(tabIds: List<Int>): LiveData<List<TabFull>>
 
-    @Query("SELECT * FROM tabs WHERE id IN (SELECT tab_id FROM playlist_entry WHERE playlist_id = -1)")
-    fun getFavoriteTabs(): LiveData<List<TabFull>>
+    @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON playlist_entry.tab_id WHERE playlist_entry.playlist_id = -1")
+    fun getFavoriteTabs(): LiveData<List<TabFullWithPlaylistEntry>>
 
-    @Query("SELECT EXISTS(SELECT 1 FROM tabs WHERE id = :tabId LIMIT 1)")
+    @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = :playlistId")
+    fun getPlaylistTabs(playlistId: Int): LiveData<List<TabFullWithPlaylistEntry>>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM tabs WHERE id = :tabId AND content != '' LIMIT 1)")
     suspend fun exists(tabId: Int): Boolean
 
     @Query("SELECT * FROM tabs WHERE song_name LIKE :songName + '%'")
@@ -31,9 +34,6 @@ interface TabFullDao {
 
     @Query("SELECT * FROM tabs WHERE artist_name LIKE '%' + :artist + '%'")
     fun getTabsByArtist(artist: String): LiveData<List<TabFull>>
-
-    @Query("UPDATE tabs SET transposed = :transposed WHERE id = :tabId")
-    suspend fun updateTransposed(tabId: Int, transposed: Int)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(tab: TabFull)

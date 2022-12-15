@@ -8,3 +8,5 @@ const val PREFS_NAME = "com.gbros.tabslite.PREFS"
 const val DARK_MODE_PREF_NAME = "com.gbros.tabslite.DARKMODE"
 const val FAVORITE_TABS_SORTING_PREF_NAME = "com.gbros.tabslite.FAVORITE_SORTING"
 const val PLAYLIST_SORTING_PREF_NAME = "com.gbros.tabslite.PLAYLIST_SORTING"
+const val FAVORITES_PLAYLIST_ID = -1
+const val TOP_TABS_PLAYLIST_ID = -2
