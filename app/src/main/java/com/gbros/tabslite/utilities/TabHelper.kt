@@ -2,7 +2,7 @@ package com.gbros.tabslite.utilities
 
 import android.util.Log
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.TabRequestType
+import com.gbros.tabslite.data.tabcontent.TabRequestType
 import com.gbros.tabslite.workers.UgApi
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

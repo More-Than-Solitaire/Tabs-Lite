@@ -42,7 +42,7 @@
 
         <argument
             android:name="songVersions"
-            app:argType="com.gbros.tabslite.data.TabBasic[]" />
+            app:argType="com.gbros.tabslite.data.Tab[]" />
         <action
             android:id="@+id/action_songVersionFragment_to_searchResultFragment"
             app:destination="@id/searchResultFragment" />

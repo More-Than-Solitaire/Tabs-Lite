@@ -9,7 +9,7 @@
             type="android.view.View.OnClickListener"/>
         <variable
             name="tab"
-            type="com.gbros.tabslite.data.IntTabBasic"/>
+            type="com.gbros.tabslite.data.IntTabFull"/>
         <variable
             name="entry"
             type="com.gbros.tabslite.data.PlaylistEntry" />

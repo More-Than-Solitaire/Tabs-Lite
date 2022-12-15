@@ -14,7 +14,7 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.adapters.MySearchResultRecyclerViewAdapter
-import com.gbros.tabslite.data.SearchRequestType
+import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.databinding.FragmentSearchResultListBinding
 import com.gbros.tabslite.workers.SearchHelper
 import com.gbros.tabslite.workers.UgApi

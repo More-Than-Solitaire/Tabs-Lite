@@ -1,21 +1,20 @@
 package com.gbros.tabslite.adapters
 
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.ListAdapter
+
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-
-
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.SearchResultFragment.Callback
-import com.gbros.tabslite.data.IntSong
+import com.gbros.tabslite.data.IntTabFull
 import com.gbros.tabslite.databinding.ListItemSearchResultBinding
 
 /**
- * [RecyclerView.Adapter] that can display a [IntSong] and makes a call to the
+ * [RecyclerView.Adapter] that can display a [IntTabBasic] and makes a call to the
  * specified [Callback].
  */
-class MySearchResultRecyclerViewAdapter(val callback: Callback) : ListAdapter<IntSong, RecyclerView.ViewHolder>(SongDiffCallback()) {
+class MySearchResultRecyclerViewAdapter(val callback: Callback) : ListAdapter<IntTabFull, RecyclerView.ViewHolder>(SongDiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = ListItemSearchResultBinding.inflate(LayoutInflater.from(parent.context), parent,false)
         return ViewHolder(view)
@@ -38,7 +37,7 @@ class MySearchResultRecyclerViewAdapter(val callback: Callback) : ListAdapter<In
             }
         }
 
-        fun bind(item: IntSong) {
+        fun bind(item: IntTabFull) {
             binding.apply {
                 song = item
                 executePendingBindings()
@@ -47,13 +46,13 @@ class MySearchResultRecyclerViewAdapter(val callback: Callback) : ListAdapter<In
     }
 }
 
-private class SongDiffCallback : DiffUtil.ItemCallback<IntSong>() {
+private class SongDiffCallback : DiffUtil.ItemCallback<IntTabFull>() {
 
-    override fun areItemsTheSame(oldItem: IntSong, newItem: IntSong): Boolean {
+    override fun areItemsTheSame(oldItem: IntTabFull, newItem: IntTabFull): Boolean {
         return oldItem.songId == newItem.songId
     }
 
-    override fun areContentsTheSame(oldItem: IntSong, newItem: IntSong): Boolean {
+    override fun areContentsTheSame(oldItem: IntTabFull, newItem: IntTabFull): Boolean {
         return oldItem.songId == newItem.songId
     }
 }

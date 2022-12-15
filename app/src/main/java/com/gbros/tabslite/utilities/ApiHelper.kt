@@ -1,13 +1,13 @@
 package com.gbros.tabslite.utilities
 
-import android.content.SharedPreferences
 import android.util.Log
+import com.gbros.tabslite.data.servertypes.ServerTimestampType
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
-import com.gbros.tabslite.data.ServerTimestampType
-import kotlinx.coroutines.*
-import java.lang.Exception
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import java.math.BigInteger
 import java.net.HttpURLConnection
 import java.net.URL
@@ -15,7 +15,6 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 object ApiHelper {

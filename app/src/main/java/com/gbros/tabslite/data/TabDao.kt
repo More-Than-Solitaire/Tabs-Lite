@@ -10,12 +10,12 @@ import androidx.room.Query
  * The Data Access Object for the Tab Full class.
  */
 @Dao
-interface TabFullDao {
+interface TabDao {
     @Query("SELECT * FROM tabs WHERE id = :tabId")
-    suspend fun getTab(tabId: Int): TabFull
+    suspend fun getTab(tabId: Int): Tab
 
     @Query("SELECT * FROM tabs WHERE id IN (:tabIds)")
-    fun getTabs(tabIds: List<Int>): LiveData<List<TabFull>>
+    fun getTabs(tabIds: List<Int>): LiveData<List<Tab>>
 
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON playlist_entry.tab_id WHERE playlist_entry.playlist_id = -1")
     fun getFavoriteTabs(): LiveData<List<TabFullWithPlaylistEntry>>
@@ -27,14 +27,14 @@ interface TabFullDao {
     suspend fun exists(tabId: Int): Boolean
 
     @Query("SELECT * FROM tabs WHERE song_name LIKE :songName + '%'")
-    fun getTabsByName(songName: String): LiveData<List<TabFull>>
+    fun getTabsByName(songName: String): LiveData<List<Tab>>
 
     @Query("SELECT * FROM tabs WHERE song_id = :songId")
-    fun getTabsBySongId(songId: Int): LiveData<List<TabFull>>
+    fun getTabsBySongId(songId: Int): LiveData<List<Tab>>
 
     @Query("SELECT * FROM tabs WHERE artist_name LIKE '%' + :artist + '%'")
-    fun getTabsByArtist(artist: String): LiveData<List<TabFull>>
+    fun getTabsByArtist(artist: String): LiveData<List<Tab>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(tab: TabFull)
+    suspend fun insert(tab: Tab)
 }

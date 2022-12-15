@@ -12,11 +12,11 @@ import com.gbros.tabslite.utilities.DATABASE_NAME
 /**
  * The Room database for this app
  */
-@Database(entities = [TabFull::class, ChordVariation::class, Playlist::class, PlaylistEntry::class], version = 9, exportSchema = false)
+@Database(entities = [Tab::class, ChordVariation::class, Playlist::class, PlaylistEntry::class], version = 9, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chordVariationDao(): ChordVariationDao
-    abstract fun tabFullDao(): TabFullDao
+    abstract fun tabFullDao(): TabDao
     abstract fun playlistDao(): PlaylistDao
     abstract fun playlistEntryDao(): PlaylistEntryDao
 

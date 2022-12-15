@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
-import android.content.res.Configuration
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatDelegate
 import com.gbros.tabslite.utilities.ApiHelper
@@ -26,12 +25,6 @@ class DefaultApplication : Application() {
 
         // initialize the API key.  Must be at the Application level, because the app has multiple entry points.
         GlobalScope.launch { ApiHelper.updateApiKey() }  // set the api key now before we need it
-    }
-
-    // Called by the system when the device configuration changes while your component is running.
-    // Overriding this method is totally optional!
-    override fun onConfigurationChanged ( newConfig : Configuration) {
-        super.onConfigurationChanged(newConfig)
     }
 
     // This is called when the overall system is running low on memory,

@@ -25,7 +25,7 @@ import androidx.navigation.findNavController
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.IntPlaylistEntry
 import com.gbros.tabslite.data.PlaylistEntry
-import com.gbros.tabslite.data.TabFull
+import com.gbros.tabslite.data.Tab
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
 import com.gbros.tabslite.utilities.TabHelper
 import com.gbros.tabslite.workers.SearchHelper
@@ -208,7 +208,7 @@ class TabDetailFragment : Fragment() {
                                 requireContext(),
                                 viewLifecycleOwner
                             ) { q ->
-                                Log.i(LOG_NAME, "Starting search from Home for '$q'")
+                                Log.i(LOG_NAME, "Starting search from TabDetailFragment for '$q'")
                                 val direction = TabDetailFragmentDirections.actionTabDetailFragment2ToSearchResultFragment(q)
                                 view.findNavController().navigate(direction)
                             }
@@ -565,7 +565,7 @@ class TabDetailFragment : Fragment() {
      * Display a TabFull.  Updates UI based on the tab, the given playlistEntry if we're reading from a playlist,
      * and the favorite status of this tab.
      */
-    private fun showTab(tabToShow: TabFull, playlistEntry: IntPlaylistEntry?) {
+    private fun showTab(tabToShow: Tab, playlistEntry: IntPlaylistEntry?) {
         (activity as AppCompatActivity).title = tabToShow.toString()  // toolbar title
         binding.tab = tabToShow
         binding.tabContent.setTabContent(tabToShow.content)

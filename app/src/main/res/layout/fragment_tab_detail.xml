@@ -4,7 +4,6 @@
 
     <data>
         <import type="com.gbros.tabslite.data.IntTabFull"/>
-        <import type="com.gbros.tabslite.data.TabBasic"/>
         <variable
             name="tab"
             type="com.gbros.tabslite.data.IntTabFull" />

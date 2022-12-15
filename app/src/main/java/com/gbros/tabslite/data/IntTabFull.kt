@@ -1,6 +1,34 @@
 package com.gbros.tabslite.data
 
-interface IntTabFull: IntTabBasic {
+import android.os.Parcelable
+
+interface IntTabFull: Parcelable {
+    val tabId: Int
+    val type: String
+    val part: String
+    val version: Int
+    val votes: Int
+    val rating: Double
+    val date: Int
+    val status: String
+    val presetId: Int
+    val tabAccessType: String
+    val tpVersion: Int
+    val tonalityName: String
+    val versionDescription: String
+
+    val songId: Int
+    val songName: String
+    val artistName: String
+    val isVerified: Boolean
+    val numVersions: Int
+
+    // in JSON these are in a separate sublevel "recording"
+    val recordingIsAcoustic: Boolean
+    val recordingTonalityName: String
+    val recordingPerformance: String
+    val recordingArtists: ArrayList<String>
+
     var recommended: ArrayList<String>
     var userRating: Int
     var difficulty: String
@@ -22,5 +50,12 @@ interface IntTabFull: IntTabBasic {
             3 -> "3rd Fret"
             else -> capo.toString() + "th Fret"
         }
+    }
+
+    fun getUrl(): String{
+        // only allowed chars are alphanumeric and dash.
+        var url = "https://tabslite.com/tab/"
+        url += tabId.toString()
+        return url
     }
 }

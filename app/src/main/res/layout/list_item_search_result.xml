@@ -8,7 +8,7 @@
             type="android.view.View.OnClickListener"/>
         <variable
             name="song"
-            type="com.gbros.tabslite.data.IntSong"/>
+            type="com.gbros.tabslite.data.IntTabFull"/>
     </data>
 
     <androidx.cardview.widget.CardView

@@ -2,6 +2,9 @@ package com.gbros.tabslite.workers
 
 import android.util.Log
 import com.gbros.tabslite.data.*
+import com.gbros.tabslite.data.servertypes.SearchRequestType
+import com.gbros.tabslite.data.servertypes.SearchSuggestionType
+import com.gbros.tabslite.data.tabcontent.TabRequestType
 import com.gbros.tabslite.utilities.ApiHelper
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -138,8 +141,8 @@ object UgApi {
         val tabFullDao = appDatabase.tabFullDao()
         if (inputStream != null) {
             val jsonReader = JsonReader(inputStream.reader())
-            val typeToken = object : TypeToken<List<SearchRequestType.Tab>>() {}.type
-            val topTabs: List<TabFull> = (gson.fromJson(jsonReader, typeToken) as List<SearchRequestType.Tab>).map { t -> t.tabFull() }
+            val typeToken = object : TypeToken<List<SearchRequestType.SearchResultTab>>() {}.type
+            val topTabs: List<Tab> = (gson.fromJson(jsonReader, typeToken) as List<SearchRequestType.SearchResultTab>).map { t -> t.tabFull() }
             inputStream.close()
 
             // clear top tabs playlist, then add all these to the top tabs playlist

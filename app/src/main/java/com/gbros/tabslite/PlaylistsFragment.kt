@@ -10,12 +10,13 @@ import android.widget.AdapterView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.gbros.tabslite.adapters.PlaylistAdapter
+import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.databinding.FragmentPlaylistsBinding
-import com.gbros.tabslite.utilities.InjectorUtils
 import com.gbros.tabslite.utilities.PLAYLIST_SORTING_PREF_NAME
 import com.gbros.tabslite.utilities.PREFS_NAME
 import com.gbros.tabslite.viewmodels.PlaylistsViewModel
+import com.gbros.tabslite.viewmodels.PlaylistsViewModelFactory
 
 private const val LOG_NAME = "tabslite.PlaylistsFragm"
 
@@ -27,7 +28,7 @@ class PlaylistsFragment : Fragment() {
     private lateinit var binding: FragmentPlaylistsBinding
 
     private val viewModel: PlaylistsViewModel by viewModels {
-        InjectorUtils.providePlaylistsViewModelFactory(requireContext())
+        PlaylistsViewModelFactory(AppDatabase.getInstance(requireContext().applicationContext).playlistDao())
     }
 
     override fun onCreateView(

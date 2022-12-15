@@ -3,12 +3,15 @@ package com.gbros.tabslite.data
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.parcelize.Parcelize
 
 // todo: implement bpm or switch entirely over to TabRequestType
 @Entity(
         tableName = "tabs"
 )
-data class TabFull(
+
+@Parcelize
+data class Tab(
     @PrimaryKey @ColumnInfo(name = "id") override var tabId: Int,
     @ColumnInfo(name = "song_id") override var songId: Int = -1,
     @ColumnInfo(name = "song_name") override var songName: String = "",
@@ -51,11 +54,11 @@ data class TabFull(
     @ColumnInfo(name = "favorite_time") var unused_fav_time: Int? = 0,  // kept so we don't have to upgrade the database
     @ColumnInfo(name = "transposed") var unused_transposed: Int = 0     // kept so we don't have to upgrade the database
 ) : IntTabFull {
-    constructor(tabBasic: IntTabBasic) : this(tabBasic.tabId, tabBasic.songId, tabBasic.songName, tabBasic.artistName, tabBasic.type,
-        tabBasic.part, tabBasic.version, tabBasic.votes, tabBasic.rating, tabBasic.date, tabBasic.status, tabBasic.presetId,
-        tabBasic.tabAccessType, tabBasic.tpVersion, tabBasic.tonalityName, tabBasic.versionDescription, tabBasic.isVerified,
-        tabBasic.recordingIsAcoustic, tabBasic.recordingTonalityName, tabBasic.recordingPerformance, tabBasic.recordingArtists,
-        tabBasic.numVersions)
+//    constructor(tabBasic: IntTabBasic) : this(tabBasic.tabId, tabBasic.songId, tabBasic.songName, tabBasic.artistName, tabBasic.type,
+//        tabBasic.part, tabBasic.version, tabBasic.votes, tabBasic.rating, tabBasic.date, tabBasic.status, tabBasic.presetId,
+//        tabBasic.tabAccessType, tabBasic.tpVersion, tabBasic.tonalityName, tabBasic.versionDescription, tabBasic.isVerified,
+//        tabBasic.recordingIsAcoustic, tabBasic.recordingTonalityName, tabBasic.recordingPerformance, tabBasic.recordingArtists,
+//        tabBasic.numVersions)
 
     override fun toString() = "$songName by $artistName"
 }

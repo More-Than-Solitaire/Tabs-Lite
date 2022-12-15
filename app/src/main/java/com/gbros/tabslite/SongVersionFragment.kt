@@ -13,10 +13,11 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.adapters.MyTabBasicRecyclerViewAdapter
-import com.gbros.tabslite.data.TabBasic
+import com.gbros.tabslite.data.Tab
 import com.gbros.tabslite.workers.SearchHelper
 
 private const val LOG_NAME = "tabslite.SongVersionFra"
+const val ARG_SONG_VERSIONS = "songVersions"
 
 /**
  * A fragment representing a list of Items.  This fragment is the list of different versions of the same song.
@@ -28,7 +29,8 @@ private const val LOG_NAME = "tabslite.SongVersionFra"
  */
 class SongVersionFragment : Fragment() {
 
-    private var songVersions : List<TabBasic> = emptyList()
+
+    private var songVersions : List<Tab> = emptyList()
     private var listener: OnListFragmentInteractionListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +44,7 @@ class SongVersionFragment : Fragment() {
                     // filter out "official" tabs -- the ones without nice chords and a "content" field.
                     // also filter out tabs vs chords.  // todo: maybe implement tabs
                     songVersions =
-                        (rawVersionsList as Array<TabBasic>).filter { tab -> tab.type == "Chords" }
+                        (rawVersionsList as Array<Tab>).filter { tab -> tab.type == "Chords" }
                     songVersions =
                         songVersions.sortedWith(compareByDescending { it.votes })  // thanks https://www.programiz.com/kotlin-programming/examples/sort-custom-objects-property
                 } catch (_: ClassCastException) {
@@ -145,20 +147,5 @@ class SongVersionFragment : Fragment() {
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
         fun onListFragmentInteraction(tabId: Int)
-    }
-
-    companion object {
-
-        // TODO: Customize parameter argument names
-        const val ARG_SONG_VERSIONS = "songVersions"
-
-        // TODO: Customize parameter initialization
-        @JvmStatic
-        fun newInstance(songVersions: Array<TabBasic>) =
-                SongVersionFragment().apply {
-                    arguments = Bundle().apply {
-                        putParcelableArray(ARG_SONG_VERSIONS, songVersions)
-                    }
-                }
     }
 }

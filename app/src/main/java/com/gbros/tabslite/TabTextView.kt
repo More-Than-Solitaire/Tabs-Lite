@@ -13,9 +13,9 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.AttrRes
-import com.gbros.tabslite.data.TabLine
-import com.gbros.tabslite.data.TabLineDouble
-import com.gbros.tabslite.data.TabLineSingle
+import com.gbros.tabslite.data.tabcontent.TabLine
+import com.gbros.tabslite.data.tabcontent.TabLineDouble
+import com.gbros.tabslite.data.tabcontent.TabLineSingle
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

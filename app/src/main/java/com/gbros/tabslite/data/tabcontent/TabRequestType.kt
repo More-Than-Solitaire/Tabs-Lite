@@ -1,9 +1,12 @@
-package com.gbros.tabslite.data
+package com.gbros.tabslite.data.tabcontent
 
 import android.util.Log
-import com.chrynan.chords.model.*
-import java.util.*
-import kotlin.collections.ArrayList
+import com.chrynan.chords.model.ChordMarker
+import com.chrynan.chords.model.Finger
+import com.chrynan.chords.model.FretNumber
+import com.chrynan.chords.model.StringNumber
+import com.gbros.tabslite.data.ChordVariation
+import com.gbros.tabslite.data.Tab
 
 class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var artist_name: String,
                      var type: String, var part: String, var version: Int, var votes: Int,
@@ -48,7 +51,8 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
                       var type: String, var part: String, var version: Int, var votes: Int,
                       var rating: Double, var date: String, var status: String, var preset_id: Int,
                       var tab_access_type: String, var tp_version: Int, var tonality_name: String,
-                      var version_description: String, var verified: Int, var recording: RecordingInfo)
+                      var version_description: String, var verified: Int, var recording: RecordingInfo
+    )
     class ContributorInfo(var user_id: Int, var username: String)
     class ChordInfo(var chord: String, var variations: List<VarInfo>){
         class VarInfo(var id: String, var listCapos: List<ChordVariation.CapoInfo>, var noteIndex: Int,
@@ -96,7 +100,7 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
                     barMarkerSet.add(myMarker)
                 }
 
-                return ChordVariation(varId = id.toLowerCase(Locale.ROOT), chordId = chordName,
+                return ChordVariation(varId = id.lowercase(), chordId = chordName,
                         noteChordMarkers = noteMarkerSet, openChordMarkers = openMarkerSet,
                         mutedChordMarkers = mutedMarkerSet, barChordMarkers = barMarkerSet)
             }
@@ -115,8 +119,8 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
         class MeasureInfo(var measure: Int)
     }
 
-    fun getTabFull(): TabFull {
-        val tab = TabFull(tabId = id, songId = song_id, songName = song_name, artistName = artist_name,
+    fun getTabFull(): Tab {
+        val tab = Tab(tabId = id, songId = song_id, songName = song_name, artistName = artist_name,
                 type = type, part = part, version = version, votes = votes, rating = rating.toDouble(),
                 date = date.toInt(), status = status, presetId = preset_id, tabAccessType = tab_access_type,
                 tpVersion = tp_version, tonalityName = tonality_name,
