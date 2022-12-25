@@ -273,13 +273,13 @@ object UgApi {
         } else {
             Log.v(LOG_NAME, "Loading tab $tabId.")
             val url = "https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType"
-            val inputStream = UgApi.authenticatedStream(url)
+            val inputStream = authenticatedStream(url)
             if(inputStream != null) {
                 Log.v(LOG_NAME, "Obtained input stream for tab $tabId.")
                 val jsonReader = JsonReader(inputStream.reader())
                 val tabRequestTypeToken = object : TypeToken<TabRequestType>() {}.type
                 val result: TabRequestType = Gson().fromJson(jsonReader, tabRequestTypeToken)
-                Log.v(LOG_NAME, "Parsed response for tab $tabId.")
+                Log.v(LOG_NAME, "Parsed response for tab $tabId. Name: ${result.song_name}, capo ${result.capo}")
 
                 database.tabFullDao().insert(result.getTabFull())
                 database.chordVariationDao().insertAll(result.getChordVariations())  // save all the chords we come across.  Might as well since we already downloaded them.

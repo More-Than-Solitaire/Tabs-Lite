@@ -8,16 +8,16 @@ import com.chrynan.chords.model.StringNumber
 import com.gbros.tabslite.data.ChordVariation
 import com.gbros.tabslite.data.Tab
 
-class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var artist_name: String,
+class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var artist_id: Int, var artist_name: String,
                      var type: String, var part: String, var version: Int, var votes: Int,
                      var rating: Double, var date: String, var status: String, var preset_id: Int,
                      var tab_access_type: String, var tp_version: Int, var tonality_name: String,
                      val version_description: String?, var verified: Int, val recording: RecordingInfo?,
-                     var versions: List<VersionInfo>, var recommended: List<VersionInfo>,
-                     var user_rating: Int, var difficulty: String, var tuning: String, var capo: Int,
-                     var urlWeb: String, var strumming: List<StrummingInfo>, var videosCount: Int,
-                     var pros_brother: String?, var contributor: ContributorInfo,
-                     var applicature: List<ChordInfo>, val content: String?) {
+                     var versions: List<VersionInfo>, var user_rating: Int, var difficulty: String,
+                     var tuning: String, var capo: Int, var urlWeb: String,
+                     var strumming: List<StrummingInfo>, var videosCount: Int,
+                     var contributor: ContributorInfo, var pros_brother: String?,
+                     var recommended: List<VersionInfo>, var applicature: List<ChordInfo>, val content: String?) {
     class RecordingInfo (var is_acoustic: Int, var tonality_name: String, var performance: PerformanceInfo?,
                          var recording_artists: List<RecordingArtistsInfo>){
         class RecordingArtistsInfo(var join_field: String, var artist: ContributorInfo){
@@ -125,7 +125,7 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
                 date = date.toInt(), status = status, presetId = preset_id, tabAccessType = tab_access_type,
                 tpVersion = tp_version, tonalityName = tonality_name,
                 isVerified = (verified!=0), contributorUserId = contributor.user_id,
-                contributorUserName = contributor.username)
+                contributorUserName = contributor.username, capo = capo)
 
         if(version_description != null) {
             tab.versionDescription = version_description
