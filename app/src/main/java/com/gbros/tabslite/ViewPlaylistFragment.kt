@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.DOWN
 import androidx.recyclerview.widget.ItemTouchHelper.UP
 import androidx.recyclerview.widget.RecyclerView
-import com.gbros.tabslite.adapters.MyPlaylistEntryRecyclerViewAdapter
+import com.gbros.tabslite.adapters.PlaylistEntryRecyclerViewAdapter
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.data.PlaylistEntry
@@ -188,8 +188,8 @@ class ViewPlaylistFragment : Fragment() {
             touchHelper.attachToRecyclerView(binding.favoriteTabsList)
 
             binding.favoriteTabsList.adapter =
-                MyPlaylistEntryRecyclerViewAdapter(requireContext(), playlistTitle, dragCallback)
-            (binding.favoriteTabsList.adapter as MyPlaylistEntryRecyclerViewAdapter).submitList(
+                PlaylistEntryRecyclerViewAdapter(requireContext(), playlistTitle, dragCallback)
+            (binding.favoriteTabsList.adapter as PlaylistEntryRecyclerViewAdapter).submitList(
                 orderedEntries
             )
 

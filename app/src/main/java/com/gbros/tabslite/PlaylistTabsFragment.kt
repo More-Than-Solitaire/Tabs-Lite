@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.gbros.tabslite.adapters.BrowseTabsAdapter
+import com.gbros.tabslite.adapters.TabFullWithPlaylistEntryToTabListAdapter
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.databinding.FragmentBrowseTabsBinding
 import com.gbros.tabslite.utilities.FAVORITE_TABS_SORTING_PREF_NAME
@@ -32,7 +32,7 @@ class PlaylistTabsFragment(playlistId: Int) : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentBrowseTabsBinding.inflate(inflater, container, false)
-        val adapter = BrowseTabsAdapter()
+        val adapter = TabFullWithPlaylistEntryToTabListAdapter()
         binding.favoriteTabsList.adapter = adapter
 
         binding.findNewSongs.setOnClickListener {
@@ -49,7 +49,7 @@ class PlaylistTabsFragment(playlistId: Int) : Fragment() {
     }
 
     private fun subscribeUi(binding: FragmentBrowseTabsBinding) {
-        val adapter = binding.favoriteTabsList.adapter as BrowseTabsAdapter
+        val adapter = binding.favoriteTabsList.adapter as TabFullWithPlaylistEntryToTabListAdapter
 
         viewModel.tabList.observe(viewLifecycleOwner) { tabs ->
             binding.hasHistory = !tabs.isNullOrEmpty()

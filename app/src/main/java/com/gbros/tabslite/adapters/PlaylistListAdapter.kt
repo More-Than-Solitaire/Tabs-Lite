@@ -1,23 +1,15 @@
 package com.gbros.tabslite.adapters
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
-import com.gbros.tabslite.HomeViewPagerFragmentDirections
 import com.gbros.tabslite.R
+import com.gbros.tabslite.adapters.viewholders.PlaylistViewHolder
 import com.gbros.tabslite.data.Playlist
-import com.gbros.tabslite.databinding.ListItemPlaylistBinding
 
-
-class PlaylistAdapter :
-        ListAdapter<Playlist, PlaylistAdapter.PlaylistViewHolder>(
-                PlaylistDiffCallback()
-        ) {
+class PlaylistListAdapter: ListAdapter<Playlist, PlaylistViewHolder>(PlaylistDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaylistViewHolder {
         return PlaylistViewHolder(
@@ -32,30 +24,6 @@ class PlaylistAdapter :
         holder.bind(getItem(position))
     }
 
-    class PlaylistViewHolder(private val binding: ListItemPlaylistBinding): RecyclerView.ViewHolder(binding.root) {
-        init {
-            binding.setClickListener {
-                binding.list?.let { playlist ->
-                    playlistClicked(playlist, it)
-                }
-            }
-        }
-
-        /**
-         * On Playlist click, use navigation to go to the playlist fragment to display a playlist
-         */
-        private fun playlistClicked(playlist: Playlist, view: View) {
-            val direction = HomeViewPagerFragmentDirections.actionViewPagerFragmentToPlaylistFragment(playlist)
-            view.findNavController().navigate(direction)
-        }
-
-        fun bind(playlist: Playlist) {
-            binding.apply {
-                list = playlist
-                executePendingBindings()
-            }
-        }
-    }
 }
 
 private class PlaylistDiffCallback : DiffUtil.ItemCallback<Playlist>() {

@@ -12,7 +12,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.gbros.tabslite.adapters.MyTabBasicRecyclerViewAdapter
+import com.gbros.tabslite.adapters.TabFullToSongVersionRecyclerViewAdapter
 import com.gbros.tabslite.data.Tab
 import com.gbros.tabslite.workers.SearchHelper
 
@@ -71,7 +71,7 @@ class SongVersionFragment : Fragment() {
                 }
 
                 layoutManager = LinearLayoutManager(context)
-                adapter = MyTabBasicRecyclerViewAdapter(songVersions, listener)
+                adapter = TabFullToSongVersionRecyclerViewAdapter(songVersions, listener)
             }
         }
 

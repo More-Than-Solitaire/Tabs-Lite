@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.gbros.tabslite.adapters.PlaylistAdapter
+import com.gbros.tabslite.adapters.PlaylistListAdapter
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.databinding.FragmentPlaylistsBinding
@@ -37,7 +37,7 @@ class PlaylistsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentPlaylistsBinding.inflate(inflater, container, false)
-        val adapter = PlaylistAdapter()
+        val adapter = PlaylistListAdapter()
         binding.favoriteTabsList.adapter = adapter
 
         binding.createPlaylist.setOnClickListener {
@@ -54,7 +54,7 @@ class PlaylistsFragment : Fragment() {
     }
 
     private fun subscribeUi(binding: FragmentPlaylistsBinding) {
-        val adapter = binding.favoriteTabsList.adapter as PlaylistAdapter
+        val adapter = binding.favoriteTabsList.adapter as PlaylistListAdapter
         fun updateSorting(position: Int, list: List<Playlist>) {
 
             val sortedResult = when(position){

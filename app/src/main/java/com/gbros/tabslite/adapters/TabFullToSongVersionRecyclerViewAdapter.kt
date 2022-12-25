@@ -3,21 +3,20 @@ package com.gbros.tabslite.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.R
 import com.gbros.tabslite.SongVersionFragment
+import com.gbros.tabslite.adapters.viewholders.SongVersionViewHolder
 import com.gbros.tabslite.data.IntTabFull
 
 /**
  * [RecyclerView.Adapter] that can display a [IntTabFull] (usually a search result) and makes a call to the
  * specified [SongVersionFragment.OnListFragmentInteractionListener].
  */
-class MyTabBasicRecyclerViewAdapter(
+class TabFullToSongVersionRecyclerViewAdapter(
     private val mValues: List<IntTabFull>,
     private val mListener: SongVersionFragment.OnListFragmentInteractionListener?)
-    : RecyclerView.Adapter<MyTabBasicRecyclerViewAdapter.SongVersionViewHolder>() {
+    : RecyclerView.Adapter<SongVersionViewHolder>() {
 
     private val mOnClickListener: View.OnClickListener = View.OnClickListener { v: View ->
         val item = v.tag as IntTabFull
@@ -90,23 +89,4 @@ class MyTabBasicRecyclerViewAdapter(
     }
 
     override fun getItemCount(): Int = mValues.size
-
-    inner class SongVersionViewHolder(private val mView: View) : RecyclerView.ViewHolder(mView) {
-
-        val mVersionName: TextView = mView.findViewById(R.id.versionName)
-        val mNumRatings: TextView = mView.findViewById(R.id.numRatings)
-        val mStar5: ImageView = mView.findViewById(R.id.star5)
-        val mStar4: ImageView = mView.findViewById(R.id.star4)
-        val mStar3: ImageView = mView.findViewById(R.id.star3)
-        val mStar2: ImageView = mView.findViewById(R.id.star2)
-        val mStar1: ImageView = mView.findViewById(R.id.star1)
-
-        override fun toString(): String {
-            return super.toString() + " " + mVersionName.text
-        }
-
-        fun setTag(tag: IntTabFull) {
-            mView.tag = tag
-        }
-    }
 }

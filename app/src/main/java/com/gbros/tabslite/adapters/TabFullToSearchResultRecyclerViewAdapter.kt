@@ -7,42 +7,24 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.gbros.tabslite.SearchResultFragment.Callback
+import com.gbros.tabslite.adapters.viewholders.SearchResultViewHolder
 import com.gbros.tabslite.data.IntTabFull
 import com.gbros.tabslite.databinding.ListItemSearchResultBinding
 
 /**
- * [RecyclerView.Adapter] that can display a [IntTabBasic] and makes a call to the
+ * [RecyclerView.Adapter] that can display a [IntTabFull] and makes a call to the
  * specified [Callback].
  */
-class MySearchResultRecyclerViewAdapter(val callback: Callback) : ListAdapter<IntTabFull, RecyclerView.ViewHolder>(SongDiffCallback()) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+class TabFullToSearchResultRecyclerViewAdapter(val callback: Callback) : ListAdapter<IntTabFull, SearchResultViewHolder>(SongDiffCallback()) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchResultViewHolder {
         val view = ListItemSearchResultBinding.inflate(LayoutInflater.from(parent.context), parent,false)
-        return ViewHolder(view)
+        return SearchResultViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: SearchResultViewHolder, position: Int) {
         val item = getItem(position)
-        (holder as ViewHolder).bind(item)
+        holder.bind(item)
         holder.setClickListener(callback)
-    }
-
-    class ViewHolder(
-            private val binding: ListItemSearchResultBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
-        fun setClickListener(callback: Callback){
-            binding.setClickListener {
-                binding.song?.let { song ->
-                    callback.viewSongVersions(song.songId)
-                }
-            }
-        }
-
-        fun bind(item: IntTabFull) {
-            binding.apply {
-                song = item
-                executePendingBindings()
-            }
-        }
     }
 }
 

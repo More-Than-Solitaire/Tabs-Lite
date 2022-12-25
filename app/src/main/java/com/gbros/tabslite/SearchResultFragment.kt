@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.gbros.tabslite.adapters.MySearchResultRecyclerViewAdapter
+import com.gbros.tabslite.adapters.TabFullToSearchResultRecyclerViewAdapter
 import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.databinding.FragmentSearchResultListBinding
 import com.gbros.tabslite.workers.SearchHelper
@@ -37,7 +37,7 @@ class SearchResultFragment : Fragment() {
             view?.findNavController()?.navigate(direction)
         }
     }
-    val adapter: MySearchResultRecyclerViewAdapter = MySearchResultRecyclerViewAdapter(callback)
+    val adapter: TabFullToSearchResultRecyclerViewAdapter = TabFullToSearchResultRecyclerViewAdapter(callback)
     var lastPageExhausted = false  // whether or not we've gone through ALL the pages of search results yet.
     var searchPageNumber = 1
 
@@ -153,7 +153,7 @@ class SearchResultFragment : Fragment() {
             val songs = data.getSongs()
             activity?.runOnUiThread {
                 if (songs.isNotEmpty()) {
-                    (binding.searchResultList.adapter as MySearchResultRecyclerViewAdapter).submitList(
+                    (binding.searchResultList.adapter as TabFullToSearchResultRecyclerViewAdapter).submitList(
                         songs
                     )
                     binding.textView.isGone = true
