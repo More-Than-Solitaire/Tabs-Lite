@@ -27,7 +27,6 @@ import com.gbros.tabslite.data.IntPlaylistEntry
 import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.data.Tab
 import com.gbros.tabslite.databinding.FragmentTabDetailBinding
-import com.gbros.tabslite.utilities.TabHelper
 import com.gbros.tabslite.workers.SearchHelper
 import com.gbros.tabslite.workers.UgApi
 import com.google.android.material.snackbar.Snackbar
@@ -306,7 +305,7 @@ class TabDetailFragment : Fragment() {
      */
     private fun loadTab(tabId: Int, binding: FragmentTabDetailBinding, playlistEntry: IntPlaylistEntry? = null, forceInternetLoad: Boolean = false) {
         Log.i(LOG_NAME, "Loading tab $tabId")
-        val getDataJob = GlobalScope.async { TabHelper.fetchTabFromInternet(tabId, AppDatabase.getInstance(requireContext()), forceInternetLoad) }
+        val getDataJob = GlobalScope.async { UgApi.fetchTabFromInternet(tabId, AppDatabase.getInstance(requireContext()), forceInternetLoad) }
         getDataJob.invokeOnCompletion(onDataStored(tabId, binding, playlistEntry))
         setNextAndPreviousTabs(playlistEntry, binding)
     }

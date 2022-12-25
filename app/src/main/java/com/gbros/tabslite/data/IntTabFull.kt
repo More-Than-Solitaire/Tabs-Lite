@@ -1,6 +1,9 @@
 package com.gbros.tabslite.data
 
 import android.os.Parcelable
+import android.util.Log
+
+private const val LOG_NAME = "tabslite.IntTabFull    "
 
 interface IntTabFull: Parcelable {
     val tabId: Int
@@ -43,6 +46,7 @@ interface IntTabFull: Parcelable {
     var content: String
 
     fun getCapoText(): String {
+        Log.d(LOG_NAME, "found capo $capo for tab $songName")
         return when (capo) {
             0 -> "None"
             1 -> "1st Fret"

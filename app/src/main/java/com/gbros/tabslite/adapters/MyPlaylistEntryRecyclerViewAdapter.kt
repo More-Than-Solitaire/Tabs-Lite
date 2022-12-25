@@ -16,7 +16,7 @@ import com.gbros.tabslite.ViewPlaylistFragmentDirections
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.databinding.ListItemPlaylistTabBinding
-import com.gbros.tabslite.utilities.TabHelper
+import com.gbros.tabslite.workers.UgApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -101,7 +101,7 @@ class MyPlaylistEntryRecyclerViewAdapter(private val context: Context, private v
                 entry = item
 
                 // get tab from internet
-                val getDataJob = GlobalScope.async { TabHelper.fetchTabFromInternet(item.tabId, AppDatabase.getInstance(context)) }
+                val getDataJob = GlobalScope.async { UgApi.fetchTabFromInternet(item.tabId, AppDatabase.getInstance(context)) }
                 getDataJob.invokeOnCompletion {
                     if (getDataJob.getCompleted()) {
                         // get tab from db
