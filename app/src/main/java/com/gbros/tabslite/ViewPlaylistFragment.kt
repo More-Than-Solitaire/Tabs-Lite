@@ -26,17 +26,12 @@ import java.util.*
 private const val LOG_NAME = "tabslite.ViewPlaylistFr"
 
 class ViewPlaylistFragment : Fragment() {
-    companion object {
-        fun newInstance() = ViewPlaylistFragment()
-    }
-
-    var runonceflag = true
+    private var runonceflag = true
     var playlistId = 0
     var playlist: Playlist? = null
 
-    var menuProvider = object : MenuProvider {
+    private var menuProvider = object : MenuProvider {
         override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-
         }
 
         override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -83,13 +78,11 @@ class ViewPlaylistFragment : Fragment() {
             }
         }
 
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         requireActivity().addMenuProvider(menuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
@@ -183,15 +176,13 @@ class ViewPlaylistFragment : Fragment() {
                     }
                 })
 
-            val dragCallback =
-                { viewHolder: RecyclerView.ViewHolder -> touchHelper.startDrag(viewHolder) }
             touchHelper.attachToRecyclerView(binding.favoriteTabsList)
 
-            binding.favoriteTabsList.adapter =
-                PlaylistEntryRecyclerViewAdapter(requireContext(), playlistTitle, dragCallback)
-            (binding.favoriteTabsList.adapter as PlaylistEntryRecyclerViewAdapter).submitList(
-                orderedEntries
-            )
+            val dragCallback = { viewHolder: RecyclerView.ViewHolder ->
+                touchHelper.startDrag(viewHolder)
+            }
+            binding.favoriteTabsList.adapter = PlaylistEntryRecyclerViewAdapter(requireContext(), playlistTitle, dragCallback)
+            (binding.favoriteTabsList.adapter as PlaylistEntryRecyclerViewAdapter).submitList(orderedEntries)
 
             binding.favoriteTabsList.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_UP) {

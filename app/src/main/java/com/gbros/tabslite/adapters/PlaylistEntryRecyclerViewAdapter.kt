@@ -16,7 +16,9 @@ private const val LOG_NAME = "tabslite.MyPlaylistEntr"
  * [RecyclerView.Adapter] that can display a [PlaylistEntry] and makes a call to the
  * specified [Callback].
  */
-class PlaylistEntryRecyclerViewAdapter(private val context: Context, private val playlistName: String, private val dragCallback: (RecyclerView.ViewHolder) -> Unit) : ListAdapter<PlaylistEntry, PlaylistEntryViewHolder>(PlaylistEntryCallback()) {
+class PlaylistEntryRecyclerViewAdapter(private val context: Context, private val playlistName: String,
+                                       private val dragCallback: (RecyclerView.ViewHolder) -> Unit)
+    : ListAdapter<PlaylistEntry, PlaylistEntryViewHolder>(PlaylistEntryCallback()) {
     private var selectedState = false // if a row is long-pressed, we'll switch to "selected" state and show checkboxes
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaylistEntryViewHolder {
