@@ -40,12 +40,12 @@ object SearchHelper {
     private val suggestionCursor: MutableLiveData<MatrixCursor> by lazy {
         MutableLiveData<MatrixCursor>()
     }
-    fun getSuggestionCursor(): LiveData<MatrixCursor> {
+    private fun getSuggestionCursor(): LiveData<MatrixCursor> {
         return suggestionCursor
     }
     @ExperimentalCoroutinesApi
     fun updateSuggestions(q: String) {
-
+        Log.d(LOG_NAME, "updating search suggestions based on query $q")
         val suggestionsJob = GlobalScope.async { UgApi.searchSuggest(q) }
         suggestionsJob.start()
         suggestionsJob.invokeOnCompletion { cause ->
@@ -92,7 +92,6 @@ object SearchHelper {
                     searchCallback(query)
                     return true // false means tell the searchview that we didn't handle the search so it still calls another search
                 }
-
             })
 
             //set up search suggestions
@@ -119,10 +118,12 @@ object SearchHelper {
                 // todo: what does this mean?
                 override fun onSuggestionSelect(position: Int): Boolean {
                     // Your code here
+                    Log.v(LOG_NAME, "onSuggestionSelect for position $position")
                     return true
                 }
             }
             searchView.setOnSuggestionListener(onSuggestionListener)
+            InitilizationComplete = true;
         }
     }
 }

@@ -126,6 +126,10 @@ class TabDetailFragment : Fragment() {
                 menuInflater.inflate(R.menu.menu_main, menu)
                 menuInflater.inflate(R.menu.menu_tab_detail, menu)
                 optionsMenu = menu
+
+                binding.tab?.let {
+                    setHeartIconState(it.tabId)  // make sure the favorites heart doesn't get reset when app is paused
+                }
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -137,6 +141,7 @@ class TabDetailFragment : Fragment() {
                         true
                     }
                     R.id.action_favorite -> {
+                        Log.d(LOG_NAME, "setting favorite status")
                         if(binding.tab != null) {
                             val isNowFavorite = !menuItem.isChecked
 
@@ -596,6 +601,17 @@ class TabDetailFragment : Fragment() {
         }
 
         Log.v(LOG_NAME, "Updated Tab UI for tab (${tabToShow.tabId}) '${tabToShow.songName}'")
+    }
+
+
+    private fun setHeartIconState(tabId: Int) {
+        val getFavoritesPlaylistEntryJob = GlobalScope.async {
+            AppDatabase.getInstance(requireContext()).playlistEntryDao().getFavoritesPlaylistEntry(tabId)
+        }
+        getFavoritesPlaylistEntryJob.invokeOnCompletion {
+            val favoritesPlaylistEntry = getFavoritesPlaylistEntryJob.getCompleted()
+            (activity as AppCompatActivity).runOnUiThread { setHeartIconState(favoritesPlaylistEntry != null) }  // set heart icon
+        }
     }
 
     /**
