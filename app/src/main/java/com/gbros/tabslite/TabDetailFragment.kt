@@ -206,17 +206,15 @@ class TabDetailFragment : Fragment() {
                     }
                     R.id.search -> {
                         val searchView = menuItem.actionView as SearchView
-                        if (!SearchHelper.InitilizationComplete) {
-                            SearchHelper.initializeSearchBar(
-                                "",
-                                searchView,
-                                requireContext(),
-                                viewLifecycleOwner
-                            ) { q ->
-                                Log.i(LOG_NAME, "Starting search from TabDetailFragment for '$q'")
-                                val direction = TabDetailFragmentDirections.actionTabDetailFragment2ToSearchResultFragment(q)
-                                view.findNavController().navigate(direction)
-                            }
+                        SearchHelper.initializeSearchBar(
+                            "",
+                            searchView,
+                            requireContext(),
+                            viewLifecycleOwner
+                        ) { q ->
+                            Log.i(LOG_NAME, "Starting search from TabDetailFragment for '$q'")
+                            val direction = TabDetailFragmentDirections.actionTabDetailFragment2ToSearchResultFragment(q)
+                            view.findNavController().navigate(direction)
                         }
                         true
                     }
