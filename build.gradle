@@ -1,41 +1,12 @@
 buildscript {
-    // Define versions in a single place
     ext {
         // Sdk and tools
-        compileSdkVersion = 33
+        compileSdkVersion = 34
         minSdkVersion = 24
-        targetSdkVersion = 33
+        targetSdkVersion = 34
 
-        // App dependencies
-        appCompatVersion = '1.1.0'
-        constraintLayoutVersion = '2.1.4'
-        coreTestingVersion = '2.1.0'
-        coroutinesVersion = '1.6.4'
-        espressoVersion = '3.5.0'
-        fragmentVersion = '1.5.4'
-        glideVersion = '4.11.0'
-        gradleVersion = '4.2.0-beta02'
-        gsonVersion = '2.10'
-        junitVersion = '4.13.2'
-        kotlinVersion = '1.7.20'
-        ktlintVersion = '0.33.0'
-        ktxVersion = '1.9.0'
-        lifecycleVersion = '2.2.0'
-        lifecycleLivedataVersion = '2.5.1'
-        lifecycleViewmodelVersion = '2.5.1'
-        materialVersion = '1.3.0-beta01'
-        navigationVersion = '2.5.3'
-        recyclerViewVersion = '1.2.0-beta01'
-        roomVersion = '2.4.3'
-        runnerVersion = '1.0.1'
-        truthVersion = '1.1.3'
-        testExtJunit = '1.1.4'
-        uiAutomatorVersion = '2.2.0'
-        viewPagerVersion = '1.0.0'
-        workVersion = '2.7.1'
-        instantAppsVersion = '18.0.1'
-
-        chordsVersion = '2.4.1'
+        kotlinVersion = '1.9.21'
+        ktlintVersion = '1.1.0'
     }
 
     repositories {
@@ -44,14 +15,14 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath 'com.android.tools.build:gradle:8.2.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigationVersion"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.7.6"
     }
 }
 
 plugins {
-    id "com.diffplug.gradle.spotless" version "3.24.0"
+    id "com.diffplug.spotless" version "6.23.3"
 }
 
 allprojects {
