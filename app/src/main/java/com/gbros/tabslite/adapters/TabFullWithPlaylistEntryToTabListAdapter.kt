@@ -15,7 +15,7 @@ import com.gbros.tabslite.adapters.viewholders.TabViewHolder
 import com.gbros.tabslite.data.TabFullWithPlaylistEntry
 import com.gbros.tabslite.utilities.FAVORITE_TABS_SORTING_PREF_NAME
 
-private const val LOG_NAME = "tabslite.TabFullWi...er"
+private const val LOG_NAME = "tabs.TabFullWith...pter"
 
 /**
  * [RecyclerView.Adapter] that can display a [TabFullWithPlaylistEntry] and makes a call to the
@@ -37,10 +37,9 @@ class TabFullWithPlaylistEntryToTabListAdapter : ListAdapter<TabFullWithPlaylist
         holder.bind(getItem(position))
     }
 
-
     fun updateSorting(position: Int, list: List<TabFullWithPlaylistEntry>) {
         val sortedResult = when(position){
-            0 -> list.sortedByDescending { t -> t.dateAdded }  //todo: replace with date of adding to favorites
+            0 -> list.sortedByDescending { t -> t.dateAdded }
             1 -> list.sortedBy { t -> t.songName }
             2 -> list.sortedBy { t -> t.artistName }
             3 -> list.sortedByDescending { t -> t.votes }
