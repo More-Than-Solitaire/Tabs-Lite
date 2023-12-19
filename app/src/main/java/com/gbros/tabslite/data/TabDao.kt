@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 
 /**
  * The Data Access Object for the Tab Full class.
@@ -17,9 +18,11 @@ interface TabDao {
     @Query("SELECT * FROM tabs WHERE id IN (:tabIds)")
     fun getTabs(tabIds: List<Int>): LiveData<List<Tab>>
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON playlist_entry.tab_id WHERE playlist_entry.playlist_id = -1")
     fun getFavoriteTabs(): LiveData<List<TabFullWithPlaylistEntry>>
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = :playlistId")
     fun getPlaylistTabs(playlistId: Int): LiveData<List<TabFullWithPlaylistEntry>>
 
