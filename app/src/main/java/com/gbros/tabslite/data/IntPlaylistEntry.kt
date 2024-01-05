@@ -10,4 +10,8 @@ interface IntPlaylistEntry: Parcelable {
     val prevEntryId: Int?
     val dateAdded: Long
     var transpose: Int
+
+    fun transpose(halfSteps: Int) {
+        transpose = (transpose + halfSteps) % 12
+    }
 }

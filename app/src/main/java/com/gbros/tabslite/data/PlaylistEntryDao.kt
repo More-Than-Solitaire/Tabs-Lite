@@ -1,7 +1,12 @@
 package com.gbros.tabslite.data
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
 
 /**
  * The Data Access Object for the Chord Variation class.
@@ -42,14 +47,56 @@ interface PlaylistEntryDao {
             """)
     fun moveEntry(srcPrv: Int?, srcNxt: Int?, src: Int, destPrv: Int?, destNxt: Int?)
 
+    /**
+     * Move an entry to before another entry
+     */
+    fun moveEntryBefore(entry: IntPlaylistEntry, beforeEntry: IntPlaylistEntry) {
+        moveEntry(entry.prevEntryId, entry.nextEntryId, entry.entryId, beforeEntry.prevEntryId, beforeEntry.entryId)
+    }
+
+    /**
+     * Move an entry to after another entry
+     */
+    fun moveEntryAfter(entry: IntPlaylistEntry, afterEntry: IntPlaylistEntry) {
+        moveEntry(entry.prevEntryId, entry.nextEntryId, entry.entryId, afterEntry.entryId, afterEntry.nextEntryId)
+    }
+
+    @Transaction
+    fun removeEntryFromPlaylist(entry: IntPlaylistEntry) {
+        if (entry.prevEntryId != null) {
+            // Update the next entry ID of the previous entry to skip the removed entry
+            setNextEntryId(entry.prevEntryId, entry.nextEntryId)
+        }
+
+        if (entry.nextEntryId != null) {
+            // Update the previous entry ID of the next entry to skip the removed entry
+            setPrevEntryId(entry.nextEntryId, entry.prevEntryId)
+        }
+
+        // Remove the entry itself
+        deleteEntry(entry.entryId)
+    }
+
     @Update
     fun update(entry: PlaylistEntry)
 
     @Query("INSERT INTO playlist_entry (playlist_id, tab_id, next_entry_id, prev_entry_id, date_added, transpose) VALUES (:playlistId, :tabId, :nextEntryId, :prevEntryId, :dateAdded, :transpose)")
-    fun insert(playlistId: Int, tabId: Int, nextEntryId: Int?, prevEntryId: Int?, dateAdded: Long, transpose: Int)
+    suspend fun insert(playlistId: Int, tabId: Int, nextEntryId: Int?, prevEntryId: Int?, dateAdded: Long, transpose: Int)
 
-    fun insertToFavorites(tabId: Int, transpose: Int)
+    suspend fun insertToFavorites(tabId: Int, transpose: Int)
         = insert(-1, tabId, null, null, System.currentTimeMillis(), transpose)
+
+    @Transaction
+    suspend fun addToPlaylist(playlistId: Int, tabId: Int, transpose: Int) {
+        val lastEntry = getLastEntryInPlaylist(playlistId = playlistId)
+        val newEntry = PlaylistEntry(entryId = 0, playlistId = playlistId, tabId = tabId, nextEntryId = null, prevEntryId = lastEntry?.entryId, dateAdded = System.currentTimeMillis(), transpose = transpose )
+        val newEntryId = insert(newEntry).toInt()
+
+        if (lastEntry != null) {
+            val updatedLastEntry = PlaylistEntry(entryId = lastEntry.entryId, playlistId = lastEntry.playlistId, tabId = lastEntry.tabId, nextEntryId = newEntryId, prevEntryId = lastEntry.prevEntryId, dateAdded = lastEntry.dateAdded, transpose = lastEntry.transpose)
+            update(updatedLastEntry)
+        }
+    }
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: PlaylistEntry): Long
@@ -58,9 +105,9 @@ interface PlaylistEntryDao {
     fun deleteEntry(entry_id: Int)
 
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId AND tab_id = :tabId")
-    fun deleteTabFromPlaylist(tabId: Int, playlistId: Int)
+    suspend fun deleteTabFromPlaylist(tabId: Int, playlistId: Int)
 
-    fun deleteTabFromFavorites(tabId: Int) = deleteTabFromPlaylist(tabId, -1)
+    suspend fun deleteTabFromFavorites(tabId: Int) = deleteTabFromPlaylist(tabId, -1)
 
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId")
     fun clearPlaylist(playlistId: Int)
@@ -69,11 +116,14 @@ interface PlaylistEntryDao {
     fun clearTopTabsPlaylist()
 
     @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = -1 AND tab_id = :tabId)")
-    suspend fun tabExistsInFavorites(tabId: Int): Boolean
+    fun tabExistsInFavorites(tabId: Int): LiveData<Boolean>
 
     @Query("SELECT * FROM playlist_entry WHERE playlist_id = -1 AND tab_id = :tabId")
     suspend fun getFavoritesPlaylistEntry(tabId: Int): PlaylistEntry?
 
     @Query("UPDATE playlist_entry SET transpose = :transpose WHERE playlist_id = -1 AND tab_id = :tabId")
     fun updateFavoriteTabTransposition(tabId: Int, transpose: Int)
+
+    @Query("UPDATE playlist_entry SET transpose = :transpose WHERE entry_id = :entryId")
+    suspend fun updateEntryTransposition(entryId: Int, transpose: Int)
 }

@@ -2,8 +2,8 @@ package com.gbros.tabslite.workers
 
 import android.util.Log
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.ChordVariation
 import com.gbros.tabslite.data.Tab
+import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.data.servertypes.SearchSuggestionType
 import com.gbros.tabslite.data.tabcontent.TabRequestType
@@ -17,7 +17,11 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import java.io.FileNotFoundException
 import java.io.InputStream
-import java.net.*
+import java.net.ConnectException
+import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
+import java.net.URL
+import java.net.URLEncoder
 
 private const val LOG_NAME = "tabslite.UgApi       "
 
@@ -26,8 +30,8 @@ object UgApi {
 
     private var lastSuggestionRequest = ""
     private var lastResult = SearchSuggestionType(emptyList())
-    suspend fun searchSuggest(q: String): List<String> = coroutineScope {
 
+    suspend fun searchSuggest(q: String): List<String> = coroutineScope {
         var result = lastResult.suggestions
         var query = q
         try {
@@ -39,7 +43,6 @@ object UgApi {
                 //processing past 5 chars is done in app
                 result = lastResult.suggestions.filter { s -> s.contains(q) }
             } else {
-
                 val connection = URL("https://api.ultimate-guitar.com/api/v1/tab/suggestion?q=$query").openConnection() as HttpURLConnection
                 val inputStream = connection.inputStream
                 val jsonReader = JsonReader(inputStream.reader())
@@ -53,10 +56,9 @@ object UgApi {
             Log.i(LOG_NAME, "Search suggestions file not found for query $query.", ex)
             this.cancel("SearchSuggest coroutine canceled due to 404", ex)
         } catch (ex: Exception) {
-            Log.e(LOG_NAME, "SearchSuggest error while finding search suggestions.")
+            Log.e(LOG_NAME, "SearchSuggest error while finding search suggestions.", ex)
             this.cancel("SearchSuggest coroutine canceled due to unexpected error", ex)
         }
-
 
         // suggestion caching
         lastSuggestionRequest = query
@@ -135,7 +137,7 @@ object UgApi {
         database.chordVariationDao().getChordVariations(chordId.toString())
     }
 
-    suspend fun fetchTopTabs(appDatabase: AppDatabase, force: Boolean = false) = coroutineScope {
+    suspend fun fetchTopTabs(appDatabase: AppDatabase) = coroutineScope {
         // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
         // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
         val inputStream = authenticatedStream("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0")

@@ -54,8 +54,10 @@ object SearchHelper {
                 val suggestions = suggestionsJob.getCompleted()
                 for (i in suggestions.indices) {
                     c.addRow(arrayOf(i, suggestions[i]))
+                    Log.d(LOG_NAME, "found search suggestion: " + suggestions[i])
                 }
             }
+
             suggestionCursor.postValue(c)
         }
     }

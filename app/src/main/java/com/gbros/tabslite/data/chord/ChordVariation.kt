@@ -1,12 +1,13 @@
-package com.gbros.tabslite.data
+package com.gbros.tabslite.data.chord
 
 import android.os.Parcelable
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.chrynan.chords.model.Chord
 import com.chrynan.chords.model.ChordMarker
-import kotlinx.parcelize.Parcelize
 import kotlinx.android.parcel.RawValue
-import java.util.*
-import kotlin.collections.ArrayList
+import kotlinx.parcelize.Parcelize
 
 /**
  * [ChordVariation] represents all the chords the user has come across so far.  The chords here are
@@ -29,4 +30,17 @@ data class ChordVariation(
     class CapoInfo(var fret: Int, var startString: Int, var lastString: Int, var finger: Int) : Parcelable
 
     override fun toString() = varId
+
+    /**
+     * Converts this [ChordVariation] to a [com.chrynan.chords.model.Chord]
+     */
+    fun toChrynanChord(): Chord {
+        val markerSet = HashSet<ChordMarker>()
+        markerSet.addAll(noteChordMarkers)
+        markerSet.addAll(openChordMarkers)
+        markerSet.addAll(mutedChordMarkers)
+        markerSet.addAll(barChordMarkers)
+
+        return Chord(chordId, markerSet)
+    }
 }

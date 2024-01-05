@@ -7,6 +7,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.chord.ChordVariationDao
 import com.gbros.tabslite.utilities.DATABASE_NAME
 
 /**
@@ -90,13 +92,76 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            // rename playlist_entry.id to playlist_entry.entry_id
+            // remove unused columns from tabs table
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // ***** drop favorite, favorite_time, and transposed columns from 'tabs' table *****
+                // Create new table with columns removed
+                db.execSQL("CREATE TABLE tabs_new (" +
+                        "id INTEGER PRIMARY KEY NOT NULL," +
+                        "song_id INTEGER NOT NULL DEFAULT -1," +
+                        "song_name TEXT NOT NULL DEFAULT ''," +
+                        "artist_name TEXT NOT NULL DEFAULT ''," +
+                        "type TEXT NOT NULL DEFAULT ''," +
+                        "part TEXT NOT NULL DEFAULT ''," +
+                        "version INTEGER NOT NULL DEFAULT 0," +
+                        "votes INTEGER NOT NULL DEFAULT 0," +
+                        "rating REAL NOT NULL DEFAULT 0.0," +
+                        "date INTEGER NOT NULL DEFAULT 0," +
+                        "status TEXT NOT NULL DEFAULT ''," +
+                        "preset_id INTEGER NOT NULL DEFAULT 0," +
+                        "tab_access_type TEXT NOT NULL DEFAULT 'public'," +
+                        "tp_version INTEGER NOT NULL DEFAULT 0," +
+                        "tonality_name TEXT NOT NULL DEFAULT ''," +
+                        "version_description TEXT NOT NULL DEFAULT ''," +
+                        "verified INTEGER NOT NULL DEFAULT 0," +
+                        "recording_is_acoustic INTEGER NOT NULL DEFAULT 0," +
+                        "recording_tonality_name TEXT NOT NULL DEFAULT ''," +
+                        "recording_performance TEXT NOT NULL DEFAULT ''," +
+                        "recording_artists TEXT NOT NULL DEFAULT ''," +
+                        "num_versions INTEGER NOT NULL DEFAULT 1," +
+                        "recommended TEXT NOT NULL DEFAULT ''," +
+                        "user_rating INTEGER NOT NULL DEFAULT 0," +
+                        "difficulty TEXT NOT NULL DEFAULT 'novice'," +
+                        "tuning TEXT NOT NULL DEFAULT 'E A D G B E'," +
+                        "capo INTEGER NOT NULL DEFAULT 0," +
+                        "url_web TEXT NOT NULL DEFAULT ''," +
+                        "strumming TEXT NOT NULL DEFAULT ''," +
+                        "videos_count INTEGER NOT NULL DEFAULT 0," +
+                        "pro_brother INTEGER NOT NULL DEFAULT 0," +
+                        "contributor_user_id INTEGER NOT NULL DEFAULT -1," +
+                        "contributor_user_name TEXT NOT NULL DEFAULT ''," +
+                        "content TEXT NOT NULL DEFAULT ''" +
+                        ")"
+                )
+
+                // Copy the data from the old table to the new table
+                db.execSQL("INSERT INTO tabs_new SELECT " +
+                        "id, song_id, song_name, artist_name, type, part, version, votes, rating, date, status, " +
+                        "preset_id, tab_access_type, tp_version, tonality_name, version_description, verified, " +
+                        "recording_is_acoustic, recording_tonality_name, recording_performance, recording_artists, " +
+                        "num_versions, recommended, user_rating, difficulty, tuning, capo, url_web, strumming, " +
+                        "videos_count, pro_brother, contributor_user_id, contributor_user_name, content " +
+                        "FROM Tab"
+                )
+
+                // Drop the old table
+                db.execSQL("DROP TABLE tabs")
+
+                // Rename the new table to the original table name
+                db.execSQL("ALTER TABLE tabs_new RENAME TO tabs")
+            }
+        }
+
 
         // Create and pre-populate the database. See this article for more details:
         // https://medium.com/google-developers/7-pro-tips-for-room-fbadea4bfbd1#4785
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
                     .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
-                            MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                            MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
+                            MIGRATION_9_10)
                     .build()
         }
     }

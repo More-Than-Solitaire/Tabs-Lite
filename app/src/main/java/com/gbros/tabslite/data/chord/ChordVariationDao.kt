@@ -1,6 +1,10 @@
-package com.gbros.tabslite.data
+package com.gbros.tabslite.data.chord
 
-import androidx.room.*
+import androidx.lifecycle.LiveData
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 
 /**
  * The Data Access Object for the Chord Variation class.
@@ -9,6 +13,9 @@ import androidx.room.*
 interface ChordVariationDao {
     @Query("SELECT * FROM chord_variation WHERE chord_id = :chordId")
     suspend fun getChordVariations(chordId: String): List<ChordVariation>
+
+    @Query("SELECT * FROM chord_variation WHERE chord_id = :chordId")
+    fun chordVariations(chordId: String): LiveData<List<ChordVariation>>
 
     @Query("SELECT * FROM chord_variation WHERE id = :variationId")
     suspend fun getChordVariation(variationId: String): ChordVariation

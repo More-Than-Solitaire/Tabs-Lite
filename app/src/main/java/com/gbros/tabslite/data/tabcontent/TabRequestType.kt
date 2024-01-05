@@ -5,7 +5,7 @@ import com.chrynan.chords.model.ChordMarker
 import com.chrynan.chords.model.Finger
 import com.chrynan.chords.model.FretNumber
 import com.chrynan.chords.model.StringNumber
-import com.gbros.tabslite.data.ChordVariation
+import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.Tab
 
 class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var artist_id: Int, var artist_name: String,

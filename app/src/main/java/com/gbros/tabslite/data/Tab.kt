@@ -49,11 +49,7 @@ data class Tab(
     @ColumnInfo(name = "contributor_user_id") override var contributorUserId: Int = -1,
     @ColumnInfo(name = "contributor_user_name") override var contributorUserName: String = "",
     @ColumnInfo(name = "content") override var content: String = "",
-
-    @ColumnInfo(name = "favorite") var unused_fav: Int = 0,             // kept so we don't have to upgrade the database
-    @ColumnInfo(name = "favorite_time") var unused_fav_time: Int? = 0,  // kept so we don't have to upgrade the database
-    @ColumnInfo(name = "transposed") var unused_transposed: Int = 0     // kept so we don't have to upgrade the database
-) : IntTabFull {
+    ) : IntTabFull {
 
     override fun toString() = "$songName by $artistName"
 }

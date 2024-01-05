@@ -18,12 +18,12 @@ interface TabDao {
     @Query("SELECT * FROM tabs WHERE id IN (:tabIds)")
     fun getTabs(tabIds: List<Int>): LiveData<List<Tab>>
 
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON playlist_entry.tab_id WHERE playlist_entry.playlist_id = -1")
-    fun getFavoriteTabs(): LiveData<List<TabFullWithPlaylistEntry>>
+    fun getFavoriteTabs(): LiveData<List<TabFullWithPlaylistEntry>> = getPlaylistTabs(-1)
+
+    fun getPopularTabs(): LiveData<List<TabFullWithPlaylistEntry>> = getPlaylistTabs(-2)
 
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = :playlistId")
+    @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id INNER JOIN playlist ON playlist_entry.playlist_id = playlist.id WHERE playlist_entry.playlist_id = :playlistId")
     fun getPlaylistTabs(playlistId: Int): LiveData<List<TabFullWithPlaylistEntry>>
 
     @Query("SELECT EXISTS(SELECT 1 FROM tabs WHERE id = :tabId AND content != '' LIMIT 1)")

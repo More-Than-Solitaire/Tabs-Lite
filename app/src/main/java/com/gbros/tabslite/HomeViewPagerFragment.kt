@@ -3,7 +3,12 @@ package com.gbros.tabslite
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -52,7 +57,7 @@ class HomeViewPagerFragment : Fragment() {
     ): View {
         // update the top tabs list
         val appDatabase = AppDatabase.getInstance(requireContext())
-        GlobalScope.launch { UgApi.fetchTopTabs(appDatabase, true) }
+        GlobalScope.launch { UgApi.fetchTopTabs(appDatabase) }
 
         val binding = FragmentViewPagerBinding.inflate(inflater, container, false)
         val tabLayout = binding.tabs

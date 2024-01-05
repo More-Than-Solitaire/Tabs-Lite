@@ -6,9 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.chrynan.chords.model.Chord
-import com.chrynan.chords.model.ChordMarker
 import com.gbros.tabslite.adapters.ChordPagerAdapter
-import com.gbros.tabslite.data.ChordVariation
+import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.databinding.FragmentChordBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -34,13 +33,7 @@ class ChordBottomSheetDialogFragment: BottomSheetDialogFragment() {
         val chords = ArrayList<Chord>()
 
         for (chord in chordVars){
-            val markerSet = HashSet<ChordMarker>()
-            markerSet.addAll(chord.noteChordMarkers)
-            markerSet.addAll(chord.openChordMarkers)
-            markerSet.addAll(chord.mutedChordMarkers)
-            markerSet.addAll(chord.barChordMarkers)
-
-            chords.add(Chord(chord.chordId, markerSet))
+            chords.add(chord.toChrynanChord())
         }
 
         binding.pager.adapter = ChordPagerAdapter(this, chords)

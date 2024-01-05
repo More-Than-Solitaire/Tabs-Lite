@@ -1,7 +1,10 @@
 package com.gbros.tabslite.data
 
+import android.util.Log
 import androidx.room.ColumnInfo
 import kotlinx.parcelize.Parcelize
+
+private const val LOG_NAME = "tabslite.TabFullWith"
 
 @Parcelize
 data class TabFullWithPlaylistEntry(
@@ -27,7 +30,7 @@ data class TabFullWithPlaylistEntry(
     @ColumnInfo(name = "preset_id") override val presetId: Int,
     @ColumnInfo(name = "tab_access_type") override val tabAccessType: String,
     @ColumnInfo(name = "tp_version") override val tpVersion: Int,
-    @ColumnInfo(name = "tonality_name") override val tonalityName: String,
+    @ColumnInfo(name = "tonality_name") override var tonalityName: String,
     @ColumnInfo(name = "version_description") override val versionDescription: String,
     @ColumnInfo(name = "recording_is_acoustic") override val recordingIsAcoustic: Boolean,
     @ColumnInfo(name = "recording_tonality_name") override val recordingTonalityName: String,
@@ -46,8 +49,22 @@ data class TabFullWithPlaylistEntry(
     @ColumnInfo(name = "contributor_user_id") override var contributorUserId: Int = -1,
     @ColumnInfo(name = "contributor_user_name") override var contributorUserName: String = "",
     @ColumnInfo(name = "content") override var content: String = "",
+
+    // columns from Playlist
+    @ColumnInfo(name = "user_created") val playlistUserCreated: Boolean,
+    @ColumnInfo(name = "title") val playlistTitle: String,
+    @ColumnInfo(name = "date_created") val playlistDateCreated: Long,
+    @ColumnInfo(name = "date_modified") val playlistDateModified: Long,
+    @ColumnInfo(name = "description") val playlistDescription: String
 ) : IntTabFull, IntPlaylistEntry {
     override fun getCapoText(): String {
         return super.getCapoText()
+    }
+
+
+    override fun transpose(halfSteps: Int) {
+        Log.d(LOG_NAME, "transposing $halfSteps")
+        super<IntTabFull>.transpose(halfSteps)  // this'll update the text and tonality name (key)
+        super<IntPlaylistEntry>.transpose(halfSteps)  // update the settings from Playlist (transpose).  Still need to update database if we want to save this
     }
 }
