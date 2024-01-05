@@ -10,15 +10,14 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,14 +46,14 @@ fun HomeScreen(liveFavoriteTabs: LiveData<List<TabFullWithPlaylistEntry>>, liveP
     var pagerNav by remember { mutableIntStateOf(0) }
 
     Column {
-        TopAppBar(title = { /*TODO*/ })
+
         TabsSearchBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 2.dp)
         )
         TabRow(selectedTabIndex = pagerState.currentPage) {
-            TabRowItem(selected = pagerState.currentPage == 0, inactiveIcon = Icons.Outlined.Favorite, activeIcon = Icons.Filled.Favorite, title = "Favorites") {
+            TabRowItem(selected = pagerState.currentPage == 0, inactiveIcon = Icons.Default.FavoriteBorder, activeIcon = Icons.Filled.Favorite, title = "Favorites") {
                 pagerNav = -1
                 pagerNav = 0
             }
@@ -62,7 +61,7 @@ fun HomeScreen(liveFavoriteTabs: LiveData<List<TabFullWithPlaylistEntry>>, liveP
                 pagerNav = -1
                 pagerNav = 1
             }
-            TabRowItem(selected = pagerState.currentPage == 2, inactiveIcon = ImageVector.vectorResource(R.drawable.ic_playlist_outlined), activeIcon = ImageVector.vectorResource(R.drawable.ic_playlist_filled), title = "Playlists") {
+            TabRowItem(selected = pagerState.currentPage == 2, inactiveIcon = ImageVector.vectorResource(R.drawable.ic_playlist_play_light), activeIcon = ImageVector.vectorResource(R.drawable.ic_playlist_play), title = "Playlists") {
                 pagerNav = -1
                 pagerNav = 2
             }
