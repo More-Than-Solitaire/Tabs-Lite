@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <!-- Number of columns for garden and plant list grid -->
-    <integer name="grid_columns">2</integer>
-
-</resources>

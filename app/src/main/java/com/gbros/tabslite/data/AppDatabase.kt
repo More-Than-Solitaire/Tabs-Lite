@@ -9,7 +9,8 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.ChordVariationDao
-import com.gbros.tabslite.utilities.DATABASE_NAME
+
+const val DATABASE_NAME = "local-tabs-db"
 
 /**
  * The Room database for this app

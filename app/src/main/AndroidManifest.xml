@@ -13,25 +13,12 @@
         android:name=".DefaultApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
         android:allowBackup="true"
         android:fullBackupOnly="true">
         <activity
             android:name=".HomeActivity"
             android:exported="true">
-
-            <nav-graph android:value="@navigation/nav_home" />
-
-            <meta-data
-                android:name="android.app.default_searchable"
-                android:value=".HomeActivity" />
-
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable"
-                android:value=".HomeActivity" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

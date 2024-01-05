@@ -35,7 +35,7 @@ fun TabPlaylistNavigation(tab: TabFullWithPlaylistEntry) {
                 )
                 IconButton(onClick = { /*TODO*/ }) {
                     Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.ic_skip_back),
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_skip_back) ,
                         contentDescription = "Previous"
                     )
                 }

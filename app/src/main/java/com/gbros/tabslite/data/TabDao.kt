@@ -6,6 +6,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
+import com.gbros.tabslite.utilities.FAVORITES_PLAYLIST_ID
+import com.gbros.tabslite.utilities.TOP_TABS_PLAYLIST_ID
 
 /**
  * The Data Access Object for the Tab Full class.
@@ -18,9 +20,9 @@ interface TabDao {
     @Query("SELECT * FROM tabs WHERE id IN (:tabIds)")
     fun getTabs(tabIds: List<Int>): LiveData<List<Tab>>
 
-    fun getFavoriteTabs(): LiveData<List<TabFullWithPlaylistEntry>> = getPlaylistTabs(-1)
+    fun getFavoriteTabs(): LiveData<List<TabFullWithPlaylistEntry>> = getPlaylistTabs(FAVORITES_PLAYLIST_ID)
 
-    fun getPopularTabs(): LiveData<List<TabFullWithPlaylistEntry>> = getPlaylistTabs(-2)
+    fun getPopularTabs(): LiveData<List<TabFullWithPlaylistEntry>> = getPlaylistTabs(TOP_TABS_PLAYLIST_ID)
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id INNER JOIN playlist ON playlist_entry.playlist_id = playlist.id WHERE playlist_entry.playlist_id = :playlistId")

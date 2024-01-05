@@ -61,7 +61,6 @@ data class TabFullWithPlaylistEntry(
         return super.getCapoText()
     }
 
-
     override fun transpose(halfSteps: Int) {
         Log.d(LOG_NAME, "transposing $halfSteps")
         super<IntTabFull>.transpose(halfSteps)  // this'll update the text and tonality name (key)

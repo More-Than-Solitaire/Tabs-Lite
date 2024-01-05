@@ -2,7 +2,7 @@ package com.gbros.tabslite.data.chord
 
 import androidx.lifecycle.MediatorLiveData
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.workers.UgApi
+import com.gbros.tabslite.utilities.UgApi
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

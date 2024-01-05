@@ -122,7 +122,7 @@ fun AutoscrollFloatingActionButton(onPlay: (initialSpeed: Float) -> Unit, onPaus
                     Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "Play")
                 } else {
                     Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.ic_fab_pause_autoscroll),
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_pause),
                         contentDescription = "Pause"
                     )
                 }
