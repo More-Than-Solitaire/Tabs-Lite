@@ -34,47 +34,51 @@ object UgApi {
     private val gson = Gson()
 
     private var lastSuggestionRequest = ""
-    private var lastResult = SearchSuggestionType(emptyList())
+    private val cachedSearchSuggestions = HashMap<String, List<String>>()
 
     // endregion
 
     // region public methods
 
-    suspend fun searchSuggest(q: String): List<String> = coroutineScope {
-        var result = lastResult.suggestions
-        var query = q
+    suspend fun searchSuggest(q: String): List<String> = withContext(Dispatchers.IO) {
+        // If we've already cached search suggestions for this query, skip the internet call and return them directly
+        if (cachedSearchSuggestions.contains(q)) {
+            return@withContext cachedSearchSuggestions.getValue(q)
+        } else if (q.length > 5 && cachedSearchSuggestions.contains(q.slice(0 until 5))) {
+            // ug api only allows a max of 5 chars for search suggestion requests.  rest of processing is done in app
+            val cachedSuggestions = cachedSearchSuggestions.getValue(q.slice(0 until 5))
+            return@withContext cachedSuggestions.filter { s -> s.contains(q) }
+        }
+
+        // fetch search suggestions from the internet
         try {
-            if (query.length > 5) { // ug api only allows a max of 5 chars for search suggestion requests.  rest of processing is done in app
-                query = query.slice(0 until 5)
+            var query = q
+            if (q.length > 5) { // ug api only allows a max of 5 chars for search suggestion requests.  rest of processing is done in app
+                query = q.slice(0 until 5)
             }
 
-            if (query == lastSuggestionRequest) {
-                //processing past 5 chars is done in app
-                result = lastResult.suggestions.filter { s -> s.contains(q) }
-            } else {
-                val connection =
-                    URL("https://api.ultimate-guitar.com/api/v1/tab/suggestion?q=$query").openConnection() as HttpURLConnection
-                val inputStream = connection.inputStream
+            val connection = URL("https://api.ultimate-guitar.com/api/v1/tab/suggestion?q=$query").openConnection() as HttpURLConnection
+            val suggestions = connection.inputStream.use {inputStream ->
                 val jsonReader = JsonReader(inputStream.reader())
                 val searchSuggestionTypeToken = object : TypeToken<SearchSuggestionType>() {}.type
-                lastResult = gson.fromJson(jsonReader, searchSuggestionTypeToken)
-                result = lastResult.suggestions
-                inputStream.close()
+                gson.fromJson<SearchSuggestionType?>(jsonReader, searchSuggestionTypeToken).suggestions
+            }
+
+            cachedSearchSuggestions[query] = suggestions
+
+            if (q.length > 5) {
+                return@withContext suggestions.filter { s -> s.contains(q) }
+            } else {
+                return@withContext suggestions
             }
         } catch (ex: FileNotFoundException) {
             // no suggestions for this query
-            Log.i(LOG_NAME, "Search suggestions file not found for query $query.", ex)
-            this.cancel("SearchSuggest coroutine canceled due to 404", ex)
+            Log.i(LOG_NAME, "Search suggestions 404 file not found for query $q.", ex)
+            return@withContext listOf()
         } catch (ex: Exception) {
             Log.e(LOG_NAME, "SearchSuggest error while finding search suggestions.", ex)
-            this.cancel("SearchSuggest coroutine canceled due to unexpected error", ex)
+            throw Exception("SearchSuggest error while finding search suggestions.", ex)
         }
-
-        // suggestion caching
-        lastSuggestionRequest = query
-
-        // processing past 5 chars is done in app
-        result
     }
 
     /**

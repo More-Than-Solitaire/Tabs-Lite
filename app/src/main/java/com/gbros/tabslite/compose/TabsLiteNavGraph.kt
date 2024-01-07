@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.gbros.tabslite.compose.homescreen.HomeScreen
 import com.gbros.tabslite.compose.playlists.PlaylistScreen
 import com.gbros.tabslite.compose.searchresultsonglist.SearchScreen
 import com.gbros.tabslite.compose.songversionlist.SongVersionScreen

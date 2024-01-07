@@ -1,11 +1,14 @@
 package com.gbros.tabslite.compose.tabview
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,10 +17,12 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.compose.ErrorCard
 import com.gbros.tabslite.compose.addtoplaylistdialog.AddToPlaylistDialog
 import com.gbros.tabslite.compose.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.data.AppDatabase
@@ -33,7 +38,6 @@ private const val LOG_NAME = "tabslite.TabView    "
 @Composable
 fun TabView(tab: ITab, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId: (id: Int) -> Unit) {
     var transposedContent by remember(key1 = tab.content) {mutableStateOf(tab.content)}
-//    val transposeLevel by remember(key1 = tab.transpose) { mutableIntStateOf(tab.transpose) }
 
     // handle chord clicks
     var chordToShow by remember { mutableStateOf("") }
@@ -47,10 +51,13 @@ fun TabView(tab: ITab, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId:
     var showAddToPlaylistDialog by remember { mutableStateOf(false) }
 
     // handle reload
+    var loading by remember { mutableStateOf(tab.content.isBlank()) }
     var reloadTab by remember { mutableStateOf(false) }
     LaunchedEffect(key1 = reloadTab) {
         if (reloadTab) {
+            loading = true
             tab.fetchFullTab(db,true)
+            loading = false
         }
     }
 
@@ -67,19 +74,32 @@ fun TabView(tab: ITab, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId:
         TabSummary(tab = tab)
         TabTransposeSection(currentTransposition = tab.transpose) {
             tab.transpose(it)
-//            transposeLevel += it
             transposedContent = tab.content
         }
 
         // content
-        TabText(
-            text = transposedContent,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 64.dp)
-        ) { chord ->
-            chordToShow = chord
-            bottomSheetTrigger = true
+        if (!loading && transposedContent.isNotBlank()) {
+            TabText(
+                text = transposedContent,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 64.dp)
+            ) { chord ->
+                chordToShow = chord
+                bottomSheetTrigger = true
+            }
+        } else {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                if (loading) {
+                    CircularProgressIndicator()
+                    LaunchedEffect(key1 = Unit) {
+                        delay(5000)
+                        loading = false // loading failed after 5 seconds
+                    }
+                } else {
+                    ErrorCard(text = "Couldn't load tab.  Please check your internet connection." )
+                }
+            }
         }
 
         // chord bottom sheet display if a chord was clicked

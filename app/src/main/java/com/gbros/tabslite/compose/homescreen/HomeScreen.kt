@@ -1,4 +1,4 @@
-package com.gbros.tabslite.compose
+package com.gbros.tabslite.compose.homescreen
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -34,8 +34,8 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
-import com.gbros.tabslite.compose.playlists.PlaylistList
 import com.gbros.tabslite.compose.songlist.SongList
+import com.gbros.tabslite.compose.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.ui.theme.AppTheme
 
@@ -111,7 +111,7 @@ fun HomeScreen(
             when (page) {
                 0 -> SongList(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true)
                 1 -> SongList(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true)
-                2 -> PlaylistList(livePlaylists = db.playlistDao().getPlaylists(), navigateToPlaylistById = navigateToPlaylistById )  //todo: add create-playlist FAB
+                2 -> PlaylistPage(livePlaylists = db.playlistDao().getPlaylists(), navigateToPlaylistById = navigateToPlaylistById)
             }
         }
     }
