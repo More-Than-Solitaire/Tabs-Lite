@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
  * This class represents all variations of a particular chord.  Upon initialization, they will be fetched from the
  * local database if they exist there, or loaded from the internet if needed.
  */
-class CompleteChord(private var db: AppDatabase, val chordName: String) : ICompleteChord() {
+class CompleteChord(private var db: AppDatabase, chordName: String) : ICompleteChord(chordName) {
 
     //region private data
 

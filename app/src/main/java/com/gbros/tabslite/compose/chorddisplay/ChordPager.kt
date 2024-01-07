@@ -180,7 +180,7 @@ internal class CompleteChordForTest: ICompleteChord {
         )
     ))
 
-    constructor(initialValues: List<ChordVariation>) : super(initialValues)
+    constructor(initialValues: List<ChordVariation>) : super("Am", initialValues)
 }
 
 //endregion

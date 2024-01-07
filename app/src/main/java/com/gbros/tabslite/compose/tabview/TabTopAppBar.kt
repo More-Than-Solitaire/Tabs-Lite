@@ -37,12 +37,13 @@ import androidx.core.content.ContextCompat
 import com.gbros.tabslite.R
 import com.gbros.tabslite.compose.addtoplaylistdialog.AddToPlaylistDialog
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.TabFullWithPlaylistEntry
+import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TabTopAppBar(tab: TabFullWithPlaylistEntry) {
+fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit) {
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
     val isFavorite by db.playlistEntryDao().tabExistsInFavorites(tab.tabId).observeAsState(initial = false)
@@ -62,7 +63,7 @@ fun TabTopAppBar(tab: TabFullWithPlaylistEntry) {
             )
         },
         navigationIcon = {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = navigateBack) {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
             }
         },
@@ -160,8 +161,8 @@ fun TabTopAppBar(tab: TabFullWithPlaylistEntry) {
 
 @Composable @Preview
 private fun TabTopAppBarPreview() {
-    val tabForTest = TabFullWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, 1, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = "hallelujahTabForTest")
+    val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = "hallelujahTabForTest")
     AppTheme {
-        TabTopAppBar(tab = tabForTest)
+        TabTopAppBar(tab = tabForTest, navigateBack = {})
     }
 }

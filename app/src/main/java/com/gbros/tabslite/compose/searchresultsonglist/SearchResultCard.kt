@@ -15,11 +15,12 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
-import com.gbros.tabslite.data.IntTabFull
-import com.gbros.tabslite.data.TabFullWithPlaylistEntry
+import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
+import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun SearchResultSongListItem(song: IntTabFull, onClick: () -> Unit){
+fun SearchResultCard(song: ITab, onClick: () -> Unit){
     Card(
         modifier = Modifier
             .clickable(onClick = onClick)
@@ -46,14 +47,16 @@ fun SearchResultSongListItem(song: IntTabFull, onClick: () -> Unit){
                 )
             }
             Text(
-                text = pluralStringResource(id = R.plurals.num_song_versions, song.numVersions, song.numVersions)
+                text = pluralStringResource(id = R.plurals.num_song_versions, song.numVersions / 2, song.numVersions / 2)
             )
         }
     }
 }
 
 @Composable @Preview
-private fun SearchResultSongListItemPreview() {
-    val tabForTest = TabFullWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, 1, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
-    SearchResultSongListItem(song = tabForTest) {}
+private fun SearchResultCardPreview() {
+    val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
+    AppTheme {
+        SearchResultCard(song = tabForTest) {}
+    }
 }

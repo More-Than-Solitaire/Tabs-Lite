@@ -2,18 +2,19 @@ package com.gbros.tabslite.utilities
 
 import android.util.Log
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.Tab
-import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.data.servertypes.SearchSuggestionType
-import com.gbros.tabslite.data.tabcontent.TabRequestType
+import com.gbros.tabslite.data.servertypes.TabRequestType
+import com.gbros.tabslite.data.tab.TabDataType
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.net.ConnectException
@@ -24,11 +25,20 @@ import java.net.URLEncoder
 
 private const val LOG_NAME = "tabslite.UgApi         "
 
+/**
+ * The API interface handling all API-specific logic to get data from the server (or send to the server)
+ */
 object UgApi {
+    // region private data
+
     private val gson = Gson()
 
     private var lastSuggestionRequest = ""
     private var lastResult = SearchSuggestionType(emptyList())
+
+    // endregion
+
+    // region public methods
 
     suspend fun searchSuggest(q: String): List<String> = coroutineScope {
         var result = lastResult.suggestions
@@ -67,54 +77,63 @@ object UgApi {
         result
     }
 
-    suspend fun search(q: String, pageNum: Int = 1): SearchRequestType = coroutineScope {
+    suspend fun search(query: String, page: Int): SearchRequestType {
         val url =
-            "https://api.ultimate-guitar.com/api/v1/tab/search?title=$q&page=$pageNum&type[]=300&official[]=0"
-        val inputStream = authenticatedStream(url)
-        if (inputStream != null) {
-            val jsonReader = JsonReader(inputStream.reader())
-            var result = SearchRequestType()
+            "https://api.ultimate-guitar.com/api/v1/tab/search?title=$query&page=$page&type[]=300&official[]=0"
 
-            try {
-                val searchResultTypeToken = object : TypeToken<SearchRequestType>() {}.type
-                result = gson.fromJson(jsonReader, searchResultTypeToken)
-            } catch (ex: JsonSyntaxException) {
-                Log.v(
-                    LOG_NAME,
-                    "Search exception.  Probably just a 'did you mean' search suggestion at the end."
-                )
-                try {
-                    val stringTypeToken = object : TypeToken<String>() {}.type
-                    val suggestedSearch: String = gson.fromJson(jsonReader, stringTypeToken)
-
-                    this.cancel("search:$suggestedSearch")
-                } catch (ex: IllegalStateException) {
-                    inputStream.close()
-                    Log.e(
-                        LOG_NAME,
-                        "Search illegal state exception!  Check SearchRequestType for consistency with data.  Url: $url",
-                        ex
-                    )
-                    this.cancel("Illegal State.", ex)
-                    throw ex
-                }
-            }
-            inputStream.close()
-
-            Log.v(LOG_NAME, "Search for $q page $pageNum success.")
-            result
-        } else {
-            Log.i(
-                LOG_NAME,
-                "Error getting search results.  Probably just the end of results for query $q"
-            )
-            cancel("Error getting search results.  Probably just the end of results for query $q")
-            SearchRequestType()
+        val inputStream: InputStream?
+        try {
+            inputStream = authenticatedStream(url)
+        } catch (ex: Exception) {
+            // end of search results
+            return SearchRequestType()
         }
+
+        var result: SearchRequestType
+        val jsonReader = JsonReader(inputStream.reader())
+
+        try {
+            val searchResultTypeToken = object : TypeToken<SearchRequestType>() {}.type
+            result = gson.fromJson(jsonReader, searchResultTypeToken)
+            Log.v(LOG_NAME, "Search for $query page $page success.")
+        } catch (syntaxException: JsonSyntaxException) {
+            // usually this block happens when the end of the exact query is reached and a 'did you mean' suggestion is available
+            Log.v(
+                LOG_NAME,
+                "Search exception.  Probably just a 'did you mean' search suggestion at the end."
+            )
+            try {
+                val stringTypeToken = object : TypeToken<String>() {}.type
+                val suggestedSearch: String = gson.fromJson(jsonReader, stringTypeToken)
+
+                result = SearchRequestType(suggestedSearch)
+            } catch (ex: IllegalStateException) {
+                inputStream.close()
+                Log.e(
+                    LOG_NAME,
+                    "Search illegal state exception!  Check SearchRequestType for consistency with data.  Query: $query, page $page",
+                    syntaxException
+                )
+
+                throw Exception(
+                    "Search illegal state exception!  Check SearchRequestType for consistency with data.  Query: $query, page $page",
+                    ex
+                )
+            }
+        } finally {
+            inputStream.close()
+        }
+
+        return result
     }
 
-    suspend fun updateChordVariations(chordIds: List<CharSequence>, database: AppDatabase, force: Boolean = false, tuning: String = "E A D G B E",
-                                      instrument: String = "guitar") = coroutineScope {
+    suspend fun updateChordVariations(
+        chordIds: List<CharSequence>,
+        database: AppDatabase,
+        force: Boolean = false,
+        tuning: String = "E A D G B E",
+        instrument: String = "guitar"
+    ) = coroutineScope {
         var chordParam = ""
         for (chord in chordIds) {
             if (force || !database.chordVariationDao()
@@ -152,11 +171,6 @@ object UgApi {
         }
     }
 
-    suspend fun getChordVariations(chordId: CharSequence, database: AppDatabase): List<ChordVariation> =
-        coroutineScope {
-            database.chordVariationDao().getChordVariations(chordId.toString())
-        }
-
     suspend fun fetchTopTabs(appDatabase: AppDatabase) = coroutineScope {
         // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
         // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
@@ -167,7 +181,7 @@ object UgApi {
         if (inputStream != null) {
             val jsonReader = JsonReader(inputStream.reader())
             val typeToken = object : TypeToken<List<SearchRequestType.SearchResultTab>>() {}.type
-            val topTabs: List<Tab> = (gson.fromJson(
+            val topTabs: List<TabDataType> = (gson.fromJson(
                 jsonReader,
                 typeToken
             ) as List<SearchRequestType.SearchResultTab>).map { t -> t.tabFull() }
@@ -211,7 +225,47 @@ object UgApi {
         }
     }
 
-    suspend fun authenticatedStream(url: String): InputStream? = coroutineScope {
+    /**
+     * Gets tab based on tabId.  Loads tab from internet and caches the result automatically in the
+     * app database.
+     *
+     * @param tabId         The ID of the tab to load
+     * @param database      The database instance to load a tab from (or into)
+     * @param tabAccessType (Optional) string parameter for internet tab load request
+     */
+    suspend fun fetchTabFromInternet(
+        tabId: Int,
+        database: AppDatabase,
+        tabAccessType: String = "public"
+    ): TabDataType = withContext(Dispatchers.IO) {
+        // get the tab and corresponding chords, and put them in the database.  Then return true
+        Log.v(LOG_NAME, "Loading tab $tabId.")
+        val url =
+            "https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType"
+        val requestResponse: TabRequestType = with(authenticatedStream(url)) {
+            val jsonReader = JsonReader(reader())
+            val tabRequestTypeToken = object : TypeToken<TabRequestType>() {}.type
+            Gson().fromJson(jsonReader, tabRequestTypeToken)
+        }
+
+        Log.v(
+            LOG_NAME,
+            "Parsed response for tab $tabId. Name: ${requestResponse.song_name}, capo ${requestResponse.capo}"
+        )
+
+        // save all the chords we come across.  Might as well since we already downloaded them.
+        database.chordVariationDao().insertAll(requestResponse.getChordVariations())
+
+        val result = requestResponse.getTabFull()
+        database.tabFullDao().insert(result)
+        return@withContext result
+    }
+
+    // endregion
+
+    // region private methods
+
+    private suspend fun authenticatedStream(url: String): InputStream = withContext(Dispatchers.IO) {
         Log.v(LOG_NAME, "Getting authenticated stream for url: $url.")
         while (ApiHelper.updatingApiKey) {
             delay(20)
@@ -223,12 +277,7 @@ object UgApi {
 
             // if that didn't work, we don't have internet.
             if (!ApiHelper.apiInit) {
-                Log.w(
-                    LOG_NAME,
-                    "Not fetching url $url.  API Key initialization failed.  Likely no internet access."
-                )
-                cancel("API Key initialization failed.  Likely no internet access.")
-                return@coroutineScope null
+                throw Exception("API Key initialization failed while fetching $url.  Likely no internet access.")
             }
         }
         apiKey = ApiHelper.apiKey
@@ -248,7 +297,10 @@ object UgApi {
                 "x-ug-client-id",
                 deviceId
             )             // stays constant over time; api key and client id are related to each other.
-            conn.setRequestProperty("x-ug-api-key", apiKey)                 // updates periodically.
+            conn.setRequestProperty(
+                "x-ug-api-key",
+                apiKey
+            )                 // updates periodically.
             conn.connectTimeout = (5000)  // timeout of 5 seconds
             conn.readTimeout = 6000
             responseCode = conn.responseCode
@@ -298,85 +350,23 @@ object UgApi {
                 }
             }
 
-            val inputStream = conn.getInputStream()
+            val inputStream = conn.inputStream
             Log.v(LOG_NAME, "Success fetching url $url")
-            inputStream
+            return@withContext inputStream
         } catch (ex: FileNotFoundException) {
-            Log.i(
-                LOG_NAME,
-                "404 NOT FOUND during fetch of url $url with parameters apiKey: $apiKey and deviceId: $deviceId.  Response code $responseCode (negative number means it was set after refreshing api key)"
-            )
-            cancel("Not Found", ex)
-            null
+            throw Exception("Normal: 404 NOT FOUND during fetch of url $url with parameters apiKey: " +
+                    "$apiKey and deviceId: $deviceId.  Response code $responseCode (negative number " +
+                    "means it was set after refreshing api key)", ex)
         } catch (ex: ConnectException) {
-            Log.i(
-                LOG_NAME,
-                "Could not fetch $url. Response code 0 (no internet access).  Java.net.ConnectException."
-            )
-            cancel("Not Connected to the Internet.")
-            null
+            throw Exception("Normal: Could not fetch $url. Response code 0 (no internet access).", ex)
         } catch (ex: SocketTimeoutException) {
-            Log.i(
-                LOG_NAME,
-                "Could not fetch $url. Response code 0 (no internet access).  Java.net.SocketTimeoutException."
-            )
-            cancel("Not Connected to the Internet.")
-            null
+            throw Exception("Normal: Could not fetch $url. Response code 0 (no internet access).", ex)
         } catch (ex: Exception) {
-            Log.e(
-                LOG_NAME,
-                "Exception during fetch of url $url with parameters apiKey: $apiKey and deviceId: $deviceId.  Response code $responseCode (negative number means it was set after refreshing api key)",
-                ex
-            )
-            cancel("Exception!", ex)
-            null
+            throw Exception("Unexpected exception during fetch of url $url with parameters apiKey: " +
+                    "$apiKey and deviceId: $deviceId.  Response code $responseCode (negative number " +
+                    "means it was set after refreshing api key)", ex)
         }
     }
 
-    /**
-     * Gets tab based on tabId.  First checks the internal database for a cache hit, and if successful returns that. If
-     * not (or if the force parameter is enabled), the tab is loaded from the internet.  If an internet load is performed
-     * then the resulting tab and chords are cached automatically in the app database.
-     *
-     * @param tabId         The ID of the tab to load
-     * @param database      The database instance to load a tab from (or into)
-     * @param force         (Optional) if true, the app will skip the database cache check and reload the tab from the internet
-     * @param tabAccessType (Optional) string parameter for internet tab load request
-     */
-    suspend fun fetchTabFromInternet(tabId: Int, database: AppDatabase, force: Boolean = false, tabAccessType: String = "public"): Boolean =
-        coroutineScope {
-            // get the tab and corresponding chords, and put them in the database.  Then return true
-            if (!force && database.tabFullDao().exists(tabId)) {
-                Log.v(LOG_NAME, "Cache hit for tab $tabId.  Not fetching from internet.")
-                true
-            } else {
-                Log.v(LOG_NAME, "Loading tab $tabId.")
-                val url =
-                    "https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType"
-                val inputStream = authenticatedStream(url)
-                if (inputStream != null) {
-                    Log.v(LOG_NAME, "Obtained input stream for tab $tabId.")
-                    val jsonReader = JsonReader(inputStream.reader())
-                    val tabRequestTypeToken = object : TypeToken<TabRequestType>() {}.type
-                    val result: TabRequestType = Gson().fromJson(jsonReader, tabRequestTypeToken)
-                    Log.v(
-                        LOG_NAME,
-                        "Parsed response for tab $tabId. Name: ${result.song_name}, capo ${result.capo}"
-                    )
-
-                    database.tabFullDao().insert(result.getTabFull())
-                    database.chordVariationDao()
-                        .insertAll(result.getChordVariations())  // save all the chords we come across.  Might as well since we already downloaded them.
-                    Log.v(LOG_NAME, "Inserted tab and chords into database for tab $tabId.")
-
-                    inputStream.close()
-
-                    true
-                } else {
-                    Log.e(LOG_NAME, "Error fetching tab with tabId $tabId.  This shouldn't happen")
-                    cancel("Error fetching tab with tabId $tabId.  This shouldn't happen")
-                    false
-                }
-            }
-        }
+    // endregion
 }

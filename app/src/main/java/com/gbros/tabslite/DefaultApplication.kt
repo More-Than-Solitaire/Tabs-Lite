@@ -6,7 +6,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-// thanks https://github.com/codepath/android_guides/wiki/Understanding-the-Android-Application-Class
 class DefaultApplication : Application() {
     /**
      * Called when the application is starting, before any other application objects have been created.

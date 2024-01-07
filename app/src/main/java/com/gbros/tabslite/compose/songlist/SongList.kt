@@ -10,25 +10,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.gbros.tabslite.data.TabFullWithPlaylistEntry
+import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 
 @Composable
-fun SongList(liveSongs: LiveData<List<TabFullWithPlaylistEntry>>, navigateToTabById: (Int) -> Unit, verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp), modifier: Modifier = Modifier){
+fun SongList(modifier: Modifier = Modifier, liveSongs: LiveData<List<TabWithPlaylistEntry>>, navigateByPlaylistEntryId: Boolean = false, navigateToTabById: (id: Int) -> Unit, verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp)){
     val songs = liveSongs.observeAsState(listOf())
     LazyColumn (
         verticalArrangement = verticalArrangement,
         modifier = modifier
     ) {
         items(songs.value) { song ->
-            SongListItem(song = song, onClick = {navigateToTabById(song.tabId)})
+            SongListItem(song = song, onClick = { navigateToTabById(if (navigateByPlaylistEntryId) song.entryId else song.tabId) })
         }
     }
 }
 
 @Composable @Preview
 fun SongListPreview(){
-    val tabForTest1 = TabFullWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, 1, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
-    val tabForTest2 = TabFullWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, 1, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
+    val tabForTest1 = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
+    val tabForTest2 = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
     val tabListForTest = MutableLiveData(listOf(tabForTest1, tabForTest2))
 
     SongList(liveSongs = tabListForTest, navigateToTabById = {})

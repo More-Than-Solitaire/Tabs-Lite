@@ -52,19 +52,19 @@ interface PlaylistEntryDao {
     /**
      * Move an entry to before another entry
      */
-    fun moveEntryBefore(entry: IntPlaylistEntry, beforeEntry: IntPlaylistEntry) {
+    fun moveEntryBefore(entry: IPlaylistEntry, beforeEntry: IPlaylistEntry) {
         moveEntry(entry.prevEntryId, entry.nextEntryId, entry.entryId, beforeEntry.prevEntryId, beforeEntry.entryId)
     }
 
     /**
      * Move an entry to after another entry
      */
-    fun moveEntryAfter(entry: IntPlaylistEntry, afterEntry: IntPlaylistEntry) {
+    fun moveEntryAfter(entry: IPlaylistEntry, afterEntry: IPlaylistEntry) {
         moveEntry(entry.prevEntryId, entry.nextEntryId, entry.entryId, afterEntry.entryId, afterEntry.nextEntryId)
     }
 
     @Transaction
-    fun removeEntryFromPlaylist(entry: IntPlaylistEntry) {
+    fun removeEntryFromPlaylist(entry: IPlaylistEntry) {
         if (entry.prevEntryId != null) {
             // Update the next entry ID of the previous entry to skip the removed entry
             setNextEntryId(entry.prevEntryId, entry.nextEntryId)

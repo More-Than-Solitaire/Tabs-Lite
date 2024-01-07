@@ -1,7 +1,7 @@
 package com.gbros.tabslite.data
 
-import android.os.Parcel
 import android.util.Log
+import com.gbros.tabslite.data.tab.ITab
 import io.mockk.every
 import io.mockk.mockkStatic
 import org.junit.Assert
@@ -9,13 +9,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-class IntTabFullTest {
+class ITabTest {
     //region setup / teardown
 
-    private lateinit var tabFullForTest: IntTabFull
+    private lateinit var tabFullForTest: ITab
 
     @Before fun setup() {
-        tabFullForTest = IntTabFullTestClass(1, "Chords", "", 2, 4, 3.7, 12334, "status", 1, "", 1, "D", "version description", 123, "Song Title", "Artist Name", false, 5, false, "", "", arrayListOf(), arrayListOf(), 1, "", "E G A B E", 2, "", arrayListOf(), 0, 0, 0, "contributor", "content" )
+        tabFullForTest = ITabTestClass(1, "Chords", "", 2, 4, 3.7, 12334, "status", 1, "", 1, "D", "version description", 123, "Song Title", "Artist Name", false, 5, false, "", "", arrayListOf(), arrayListOf(), 1, "", "E G A B E", 2, "", arrayListOf(), 0, 0, 0, "contributor", "content", 0 )
 
         // ignore logging
         mockkStatic(Log::class)
@@ -132,77 +132,6 @@ class IntTabFullTest {
 
     //endregion
 
-    //region tests for transposeChord
-
-    @Test
-    fun testTransposeChord_Up() {
-        assertEquals("Cm", tabFullForTest.transposeChord("Abm", 4))
-        assertEquals("F", tabFullForTest.transposeChord("C", 5))
-        assertEquals("A#", tabFullForTest.transposeChord("G", 3))
-        assertEquals("Bm/D", tabFullForTest.transposeChord("Am/C", 2))
-    }
-
-    @Test
-    fun testTransposeChord_Down() {
-        assertEquals("Gm", tabFullForTest.transposeChord("Am", -2))
-        assertEquals("A", tabFullForTest.transposeChord("C", -3))
-        assertEquals("G", tabFullForTest.transposeChord("G#", -1))
-        assertEquals("Cm/D#", tabFullForTest.transposeChord("Dm/F", -2))
-    }
-
-    @Test
-    fun testTransposeChord_WithBaseNote() {
-        assertEquals("D/F", tabFullForTest.transposeChord("C/Eb", 2))
-        assertEquals("F#/A#", tabFullForTest.transposeChord("A/C#", -3))
-        assertEquals("A/E", tabFullForTest.transposeChord("F/C", 4))
-    }
-
-    @Test
-    fun testTransposeChord_WeirdChord() {
-        assertEquals("X", tabFullForTest.transposeChord("X", 3))
-        assertEquals("X", tabFullForTest.transposeChord("X", -5))
-    }
-
-    @Test
-    fun testTransposeChord_Quality() {
-        assertEquals("G#maj7", tabFullForTest.transposeChord("Amaj7", -1))
-        assertEquals("Dmaj7", tabFullForTest.transposeChord("Emaj7", -2))
-        assertEquals("AMaj", tabFullForTest.transposeChord("BbMaj", -1))
-    }
-
-    @Test
-    fun testTransposeChord_HowMuchGreaterThan12() {
-        assertEquals("C#", tabFullForTest.transposeChord("C", 13))
-        assertEquals("Cm", tabFullForTest.transposeChord("Am", 15))
-        assertEquals("F", tabFullForTest.transposeChord("C", 17))
-        assertEquals("Bmaj7", tabFullForTest.transposeChord("Amaj7", 14))
-    }
-
-
-    @Test
-    fun testTransposeChord_UppercaseConversion() {
-        assertEquals("C#m", tabFullForTest.transposeChord("am", 4))
-        assertEquals("F", tabFullForTest.transposeChord("c", 5))
-        assertEquals("A#", tabFullForTest.transposeChord("g", 3))
-        assertEquals("Bm/D", tabFullForTest.transposeChord("am/c", 2))
-        assertEquals("Fm", tabFullForTest.transposeChord("gm", -2))
-        assertEquals("A", tabFullForTest.transposeChord("c", -3))
-        assertEquals("G", tabFullForTest.transposeChord("g#", -1))
-        assertEquals("Cm/D#", tabFullForTest.transposeChord("dm/f", -2))
-        assertEquals("D/F#", tabFullForTest.transposeChord("c/e", 2))
-        assertEquals("F#/A#", tabFullForTest.transposeChord("a/c#", -3))
-        assertEquals("A/E", tabFullForTest.transposeChord("f/c", 4))
-        assertEquals("G#maj7", tabFullForTest.transposeChord("amaj7", -1))
-        assertEquals("Dmaj7", tabFullForTest.transposeChord("emaj7", -2))
-        assertEquals("AMaj", tabFullForTest.transposeChord("bbMaj", -1))
-        assertEquals("C#", tabFullForTest.transposeChord("c", 13))
-        assertEquals("Cm", tabFullForTest.transposeChord("am", 15))
-        assertEquals("F", tabFullForTest.transposeChord("c", 17))
-        assertEquals("Bmaj7", tabFullForTest.transposeChord("amaj7", 14))
-    }
-
-    //endregion
-
     //region tests for transpose
 
     @Test
@@ -311,7 +240,7 @@ class IntTabFullTest {
 
     //region classes for test
 
-    private class IntTabFullTestClass(
+    private class ITabTestClass(
         override val tabId: Int,
         override val type: String,
         override val part: String,
@@ -345,15 +274,8 @@ class IntTabFullTest {
         override var proBrother: Int,
         override var contributorUserId: Int,
         override var contributorUserName: String,
-        override var content: String
-    ) : IntTabFull {
-        override fun describeContents(): Int {
-            TODO("Not yet implemented")
-        }
-
-        override fun writeToParcel(p0: Parcel, p1: Int) {
-            TODO("Not yet implemented")
-        }
+        override var content: String, override val transpose: Int
+    ) : ITab {
     }
 
     //endregion

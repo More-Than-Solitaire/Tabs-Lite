@@ -3,7 +3,6 @@ package com.gbros.tabslite.compose.tabview
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,19 +17,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.gbros.tabslite.compose.addtoplaylistdialog.AddToPlaylistDialog
 import com.gbros.tabslite.compose.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.TabFullWithPlaylistEntry
 import com.gbros.tabslite.data.chord.CompleteChord
+import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 private const val LOG_NAME = "tabslite.TabView    "
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TabView(tab: TabFullWithPlaylistEntry) {
-    var transposedContent by remember{mutableStateOf(tab.content)}
-    var transposeLevel by remember { mutableIntStateOf(tab.transpose) }
+fun TabView(tab: ITab, navigateBack: () -> Unit) {
+    var transposedContent by remember(key1 = tab.content) {mutableStateOf(tab.content)}
+    var transposeLevel by remember(key1 = tab.content) { mutableIntStateOf(tab.transpose) }
 
     // handle chord clicks
     var chordToShow by remember { mutableStateOf("") }
@@ -48,16 +47,15 @@ fun TabView(tab: TabFullWithPlaylistEntry) {
         .verticalScroll(scrollState)
     ) {
 
-        TabTopAppBar(tab = tab)
-        if (tab.playlistId > 0) {
+        TabTopAppBar(tab = tab, navigateBack = navigateBack)
+        if (tab is TabWithPlaylistEntry && tab.playlistId > 0) {
             TabPlaylistNavigation(tab = tab)
         }
         TabSummary(tab = tab)
         TabTransposeSection(currentTransposition = transposeLevel) {
             tab.transpose(it)
-            transposeLevel += it
+//            transposeLevel += it
             transposedContent = tab.content
-//            Log.d(LOG_NAME, "transposed by $it - current transpose: $transposeLevel")
         }
 
         // content
@@ -120,7 +118,7 @@ fun TabView(tab: TabFullWithPlaylistEntry) {
 
     // update transpose in database
     LaunchedEffect(key1 = transposeLevel) {
-        if (tab.entryId > 0) {
+        if (tab is TabWithPlaylistEntry) {
             db.playlistEntryDao().updateEntryTransposition(tab.entryId, tab.transpose)
         }
     }
@@ -157,8 +155,8 @@ private fun TabViewPreview() {
         [tab]            [ch]G[/ch]
         I’m by your side.[/tab]    """.trimIndent()
 
-    val tabForTest = TabFullWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, 1, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
+    val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
     AppTheme {
-        TabView(tabForTest)
+        TabView(tab = tabForTest, navigateBack = {})
     }
 }

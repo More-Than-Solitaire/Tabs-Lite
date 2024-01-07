@@ -1,20 +1,15 @@
-package com.gbros.tabslite.data
+package com.gbros.tabslite.data.tab
 
-import android.util.Log
 import androidx.room.ColumnInfo
-import kotlinx.parcelize.Parcelize
+import com.gbros.tabslite.data.IPlaylistEntry
 
-private const val LOG_NAME = "tabslite.TabFullWith"
-
-@Parcelize
-data class TabFullWithPlaylistEntry(
+data class TabWithPlaylistEntry(
     @ColumnInfo(name = "entry_id") override val entryId: Int,
     @ColumnInfo(name = "playlist_id") override val playlistId: Int,
     @ColumnInfo(name = "id") override val tabId: Int,
     @ColumnInfo(name = "next_entry_id") override val nextEntryId: Int?,
     @ColumnInfo(name = "prev_entry_id") override val prevEntryId: Int?,
     @ColumnInfo(name = "date_added") override val dateAdded: Long,
-    @ColumnInfo(name = "transpose") override var transpose: Int,
     @ColumnInfo(name = "song_id") override val songId: Int,
     @ColumnInfo(name = "song_name") override val songName: String,
     @ColumnInfo(name = "artist_name") override val artistName: String,
@@ -56,14 +51,11 @@ data class TabFullWithPlaylistEntry(
     @ColumnInfo(name = "date_created") val playlistDateCreated: Long,
     @ColumnInfo(name = "date_modified") val playlistDateModified: Long,
     @ColumnInfo(name = "description") val playlistDescription: String
-) : IntTabFull, IntPlaylistEntry {
-    override fun getCapoText(): String {
-        return super.getCapoText()
-    }
-
+) : ITab, IPlaylistEntry {
+    @ColumnInfo(name = "transpose") override var transpose: Int = 0
+        private set;
     override fun transpose(halfSteps: Int) {
-        Log.d(LOG_NAME, "transposing $halfSteps")
-        super<IntTabFull>.transpose(halfSteps)  // this'll update the text and tonality name (key)
-        super<IntPlaylistEntry>.transpose(halfSteps)  // update the settings from Playlist (transpose).  Still need to update database if we want to save this
+        super.transpose(halfSteps)
+        transpose += halfSteps
     }
 }

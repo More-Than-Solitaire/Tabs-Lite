@@ -1,16 +1,8 @@
-package com.gbros.tabslite.data
+package com.gbros.tabslite.data.tab
 
 import androidx.room.ColumnInfo
-import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.parcelize.Parcelize
 
-// todo: implement bpm or switch entirely over to TabRequestType
-@Entity(
-        tableName = "tabs"
-)
-
-@Parcelize
 data class Tab(
     @PrimaryKey @ColumnInfo(name = "id") override var tabId: Int,
     @ColumnInfo(name = "song_id") override var songId: Int = -1,
@@ -49,7 +41,34 @@ data class Tab(
     @ColumnInfo(name = "contributor_user_id") override var contributorUserId: Int = -1,
     @ColumnInfo(name = "contributor_user_name") override var contributorUserName: String = "",
     @ColumnInfo(name = "content") override var content: String = "",
-    ) : IntTabFull {
+): ITab {
+    @ColumnInfo(name = "transpose") override var transpose: Int = 0
+        private set;
+
+    companion object {
+        fun fromTabDataType(dataTabs: List<TabDataType>): List<Tab> {
+            return dataTabs.map { Tab(it) }
+        }
+    }
+
+    constructor() : this(tabId = 0, songId = 0, songName = "", artistName = "", isVerified = false, numVersions = 0,
+        type = "", part = "", version = 0, votes = 0, rating = 0.0, date = 0, status = "", presetId = 0, tabAccessType = "",
+        tpVersion = 0, tonalityName = "", versionDescription = "", recordingIsAcoustic = false, recordingTonalityName = "",
+        recordingPerformance = "", recordingArtists = arrayListOf(), recommended = arrayListOf(), userRating = 0, difficulty = "", tuning = "",
+        capo = 0, urlWeb = "", strumming = arrayListOf(), videosCount = 0, proBrother = 0, contributorUserId = 0, contributorUserName = "",
+        content = "")
+
+    constructor(tabFromDatabase: TabDataType) : this(tabId = tabFromDatabase.tabId, songId = tabFromDatabase.songId, songName = tabFromDatabase.songName, artistName = tabFromDatabase.artistName, isVerified = tabFromDatabase.isVerified, numVersions = tabFromDatabase.numVersions,
+        type = tabFromDatabase.type, part = tabFromDatabase.part, version = tabFromDatabase.version, votes = tabFromDatabase.votes, rating = tabFromDatabase.rating, date = tabFromDatabase.date, status = tabFromDatabase.status, presetId = tabFromDatabase.presetId, tabAccessType = tabFromDatabase.tabAccessType,
+        tpVersion = tabFromDatabase.tpVersion, tonalityName = tabFromDatabase.tonalityName, versionDescription = tabFromDatabase.versionDescription, recordingIsAcoustic = tabFromDatabase.recordingIsAcoustic, recordingTonalityName = tabFromDatabase.recordingTonalityName,
+        recordingPerformance = tabFromDatabase.recordingPerformance, recordingArtists = tabFromDatabase.recordingArtists, recommended = tabFromDatabase.recommended, userRating = tabFromDatabase.userRating, difficulty = tabFromDatabase.difficulty, tuning = tabFromDatabase.tuning,
+        capo = tabFromDatabase.capo, urlWeb = tabFromDatabase.urlWeb, strumming = tabFromDatabase.strumming, videosCount = tabFromDatabase.videosCount, proBrother = tabFromDatabase.proBrother, contributorUserId = tabFromDatabase.contributorUserId, contributorUserName = tabFromDatabase.contributorUserName,
+        content = tabFromDatabase.content)
+
+    override fun transpose(halfSteps: Int) {
+        super.transpose(halfSteps)
+        transpose += halfSteps
+    }
 
     override fun toString() = "$songName by $artistName"
 }

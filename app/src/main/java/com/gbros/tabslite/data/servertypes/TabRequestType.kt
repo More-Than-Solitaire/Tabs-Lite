@@ -1,4 +1,4 @@
-package com.gbros.tabslite.data.tabcontent
+package com.gbros.tabslite.data.servertypes
 
 import android.util.Log
 import com.chrynan.chords.model.ChordMarker
@@ -6,7 +6,7 @@ import com.chrynan.chords.model.Finger
 import com.chrynan.chords.model.FretNumber
 import com.chrynan.chords.model.StringNumber
 import com.gbros.tabslite.data.chord.ChordVariation
-import com.gbros.tabslite.data.Tab
+import com.gbros.tabslite.data.tab.TabDataType
 
 class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var artist_id: Int, var artist_name: String,
                      var type: String, var part: String, var version: Int, var votes: Int,
@@ -119,8 +119,8 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
         class MeasureInfo(var measure: Int)
     }
 
-    fun getTabFull(): Tab {
-        val tab = Tab(tabId = id, songId = song_id, songName = song_name, artistName = artist_name,
+    fun getTabFull(): TabDataType {
+        val tab = TabDataType(tabId = id, songId = song_id, songName = song_name, artistName = artist_name,
                 type = type, part = part, version = version, votes = votes, rating = rating.toDouble(),
                 date = date.toInt(), status = status, presetId = preset_id, tabAccessType = tab_access_type,
                 tpVersion = tp_version, tonalityName = tonality_name,

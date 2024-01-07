@@ -3,18 +3,16 @@ package com.gbros.tabslite.compose.songversionlist
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import com.gbros.tabslite.data.TabFullWithPlaylistEntry
+import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 
 @Composable
-fun SongVersionList(songVersions: List<TabFullWithPlaylistEntry>){
-    val sortedVersions = remember { songVersions.sortedByDescending { v -> v.votes } }
-
+fun SongVersionList(songVersions: List<ITab>, navigateToTabByTabId: (id: Int) -> Unit){
     LazyColumn{
-        items(sortedVersions) { version ->
+        items(songVersions) { version ->
             SongVersionListItem(song = version) {
-                //todo: navigate to tab view for this version
+                navigateToTabByTabId(version.tabId)
             }
         }
     }
@@ -22,9 +20,9 @@ fun SongVersionList(songVersions: List<TabFullWithPlaylistEntry>){
 
 @Composable @Preview
 private fun SongVersionListPreview() {
-    val tabForTest1 = TabFullWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, 1, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
-    val tabForTest2 = TabFullWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, 1, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 2, 8, 4.1, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
+    val tabForTest1 = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
+    val tabForTest2 = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 2, 8, 4.1, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
     val tabListForTest = listOf(tabForTest1, tabForTest2)
 
-    SongVersionList(tabListForTest)
+    SongVersionList(tabListForTest, {})
 }

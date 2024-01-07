@@ -10,8 +10,7 @@ import kotlinx.android.parcel.RawValue
 import kotlinx.parcelize.Parcelize
 
 /**
- * [ChordVariation] represents all the chords the user has come across so far.  The chords here are
- * used for offline access.
+ * [ChordVariation] is how to play an instance of this particular chord ([chordId]).
  */
 @Entity(
         tableName = "chord_variation"

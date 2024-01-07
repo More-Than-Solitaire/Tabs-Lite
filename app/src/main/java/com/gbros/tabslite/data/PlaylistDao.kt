@@ -27,7 +27,7 @@ interface PlaylistDao {
     suspend fun getCurrentPlaylists(): List<Playlist>
 
     @Query("SELECT * FROM playlist WHERE id = :playlistId")
-    suspend fun getPlaylist(playlistId: Int): Playlist
+    fun getPlaylist(playlistId: Int): LiveData<Playlist>
 
     @Query("SELECT * FROM playlist WHERE id = :playlistId")
     fun getPlaylistLive(playlistId: Int): LiveData<Playlist>
