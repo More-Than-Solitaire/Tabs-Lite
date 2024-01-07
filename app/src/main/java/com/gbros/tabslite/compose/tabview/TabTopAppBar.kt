@@ -43,7 +43,7 @@ import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit) {
+fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
     val isFavorite by db.playlistEntryDao().tabExistsInFavorites(tab.tabId).observeAsState(initial = false)
@@ -129,7 +129,7 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit) {
                     },
                     onClick = {
                         showMenu = false
-                        // todo: reload tab from internet
+                        reload()
                     }
                 )
             }
@@ -163,6 +163,6 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit) {
 private fun TabTopAppBarPreview() {
     val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = "hallelujahTabForTest")
     AppTheme {
-        TabTopAppBar(tab = tabForTest, navigateBack = {})
+        TabTopAppBar(tab = tabForTest, navigateBack = {}, reload = {})
     }
 }

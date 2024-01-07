@@ -1,8 +1,6 @@
 package com.gbros.tabslite.compose
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,20 +10,13 @@ import com.gbros.tabslite.compose.playlists.PlaylistScreen
 import com.gbros.tabslite.compose.searchresultsonglist.SearchScreen
 import com.gbros.tabslite.compose.songversionlist.SongVersionScreen
 import com.gbros.tabslite.compose.tabview.TabScreen
-import com.gbros.tabslite.data.AppDatabase
 
 @Composable
 fun TabsLiteNavGraph() {
-    val currentContext = LocalContext.current
-    val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
-
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             HomeScreen(
-                liveFavoriteTabs = db.tabFullDao().getFavoriteTabs(),
-                livePopularTabs = db.tabFullDao().getPopularTabs(),
-                livePlaylists = db.playlistDao().getPlaylists(),
                 onSearch = {q -> navController.navigate("search/$q") },
                 navigateToTabByPlaylistEntryId = {id -> navController.navigate("tab/true/$id")},
                 navigateToPlaylistById = {id -> navController.navigate("playlist/$id")}

@@ -18,7 +18,7 @@ import com.gbros.tabslite.R
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 
 @Composable
-fun TabPlaylistNavigation(tab: TabWithPlaylistEntry) {
+fun TabPlaylistNavigation(tab: TabWithPlaylistEntry, navigateToTabByPlaylistEntryId: (id: Int) -> Unit) {
     Row {
         Card(
             modifier = Modifier
@@ -33,13 +33,17 @@ fun TabPlaylistNavigation(tab: TabWithPlaylistEntry) {
                         .padding(all = 6.dp)
                         .weight(1f)
                 )
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(enabled = tab.prevEntryId != null, onClick = {
+                    tab.prevEntryId?.let { navigateToTabByPlaylistEntryId(it) }
+                }) {
                     Icon(
                         imageVector = ImageVector.vectorResource(R.drawable.ic_skip_back) ,
                         contentDescription = "Previous"
                     )
                 }
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(enabled = tab.nextEntryId != null, onClick = {
+                    tab.nextEntryId?.let { navigateToTabByPlaylistEntryId(it) }
+                }) {
                     Icon(
                         imageVector = ImageVector.vectorResource(R.drawable.ic_skip_forward),
                         contentDescription = "Next"
@@ -53,5 +57,5 @@ fun TabPlaylistNavigation(tab: TabWithPlaylistEntry) {
 @Composable @Preview
 private fun TabPlaylistNavigationPreview() {
     val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = "[tab]     [ch]C[/ch]                   [ch]Am[/ch] \nThat David played and it pleased the Lord[/tab]")
-    TabPlaylistNavigation(tabForTest)
+    TabPlaylistNavigation(tabForTest, {})
 }

@@ -2,6 +2,7 @@ package com.gbros.tabslite.compose.playlists
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -72,7 +73,10 @@ private fun PlaylistView(
     val playlist by livePlaylist.observeAsState(Playlist(0, true, "", 0, 0, ""))
     val songs by liveSongs.observeAsState(listOf())
 
-    Column {
+    Column(
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.background)
+    ) {
         TopAppBar(
             title = {
                 TextField(
@@ -97,6 +101,7 @@ private fun PlaylistView(
             placeholder = { Text("Playlist Description") },
             colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.background),
             modifier = Modifier
+                .fillMaxWidth()
         )
 
         DragDropColumn(

@@ -31,6 +31,7 @@ fun TabTransposeSection(currentTransposition: Int, transpose: (halfSteps: Int) -
         Text(
             text = stringResource(id = R.string.tab_transpose, currentTransposition),
             style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier
                 .padding(vertical = 12.dp)
         )

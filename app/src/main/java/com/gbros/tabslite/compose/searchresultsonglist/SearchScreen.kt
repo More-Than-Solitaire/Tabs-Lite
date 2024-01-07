@@ -1,6 +1,7 @@
 package com.gbros.tabslite.compose.searchresultsonglist
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,7 +70,10 @@ private fun SearchView(
     var needMoreSearchResults by remember { mutableStateOf(false) }
     needMoreSearchResults = needMoreSearchResults || !lazyColumnState.canScrollForward  // remember that we bumped into the end until we get more results
 
-    Column {
+    Column(
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.background)
+    ) {
         TabsSearchBar(
             modifier = Modifier
                 .fillMaxWidth()

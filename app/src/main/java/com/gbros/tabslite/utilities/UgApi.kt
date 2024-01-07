@@ -77,6 +77,14 @@ object UgApi {
         result
     }
 
+    /**
+     * Perform a search for the given query, and get the tabs that match that search query.
+     *
+     * @param [query] The search term to find
+     * @param [page] The page of the search results to fetch
+     *
+     * @return A [SearchRequestType] with the search results, or an empty [SearchRequestType] if there are no search results on that page
+     */
     suspend fun search(query: String, page: Int): SearchRequestType {
         val url =
             "https://api.ultimate-guitar.com/api/v1/tab/search?title=$query&page=$page&type[]=300&official[]=0"
@@ -149,8 +157,8 @@ object UgApi {
             val uInstrument = URLEncoder.encode(instrument, "utf-8")
             val url =
                 "https://api.ultimate-guitar.com/api/v1/tab/applicature?instrument=$uInstrument&tuning=$uTuning$chordParam"
-            val inputStream = authenticatedStream(url)
-            if (inputStream != null) {
+            try {
+                val inputStream = authenticatedStream(url)
                 val jsonReader = JsonReader(inputStream.reader())
                 val chordRequestTypeToken =
                     object : TypeToken<List<TabRequestType.ChordInfo>>() {}.type
@@ -160,25 +168,21 @@ object UgApi {
                     database.chordVariationDao().insertAll(result.getChordVariations())
                 }
                 inputStream.close()
-            } else {
+            } catch (ex: Exception) {
                 val chordCount = chordIds.size
-                Log.i(
-                    LOG_NAME,
-                    "Error fetching chords.  chordParam is empty.  That means all the chords are already in the database.  Chord count that we're looking for: $chordCount."
-                )
+                Log.i(LOG_NAME, "Error fetching chords.  chordParam is empty.  That means all the chords are already in the database.  Chord count that we're looking for: $chordCount.")
                 cancel("Error fetching chord(s).")
             }
         }
     }
 
     suspend fun fetchTopTabs(appDatabase: AppDatabase) = coroutineScope {
-        // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
-        // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
-        val inputStream =
-            authenticatedStream("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0")
-        val playlistEntryDao = appDatabase.playlistEntryDao()
-        val tabFullDao = appDatabase.tabFullDao()
-        if (inputStream != null) {
+        try {
+            // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
+            // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
+            val inputStream: InputStream = authenticatedStream("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0")
+            val playlistEntryDao = appDatabase.playlistEntryDao()
+            val tabFullDao = appDatabase.tabFullDao()
             val jsonReader = JsonReader(inputStream.reader())
             val typeToken = object : TypeToken<List<SearchRequestType.SearchResultTab>>() {}.type
             val topTabs: List<TabDataType> = (gson.fromJson(
@@ -198,7 +202,7 @@ object UgApi {
                 nextId = tab.tabId
                 if (currentId != null) {
                     playlistEntryDao.insert(
-                        -2,
+                        TOP_TABS_PLAYLIST_ID,
                         currentId,
                         nextId,
                         prevId,
@@ -209,19 +213,15 @@ object UgApi {
                 tabFullDao.insert(tab)
             }
             playlistEntryDao.insert(
-                -2,
+                TOP_TABS_PLAYLIST_ID,
                 nextId!!,
                 null,
                 currentId,
                 System.currentTimeMillis(),
                 0
             )  // save the last one
-        } else {
-            Log.w(
-                LOG_NAME,
-                "Error fetching top tabs.  AuthenticatedStream returned null.  Could be due to no internet access."
-            )
-            cancel("Error fetching top tabs.  AuthenticatedStream returned null.  Could be due to no internet access.")
+        } catch (ex: Exception) {
+            Log.w(LOG_NAME, "Couldn't fetch top tabs.", ex)
         }
     }
 

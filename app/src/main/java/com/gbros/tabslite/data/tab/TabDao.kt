@@ -26,9 +26,13 @@ interface TabDao {
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id INNER JOIN playlist ON playlist_entry.playlist_id = playlist.id WHERE playlist_entry.entry_id = :playlistEntryId")
     fun getTabFromPlaylistEntryId(playlistEntryId: Int): LiveData<TabWithPlaylistEntry>
 
-    fun getFavoriteTabs(): LiveData<List<TabWithPlaylistEntry>> = getPlaylistTabs(FAVORITES_PLAYLIST_ID)
+    @RewriteQueriesToDropUnusedColumns
+    @Query("SELECT *, 1 as user_created, 'Favorites' as title, 0 as date_created, 0 as date_modified, 'Tabs you have favorited in the app' as description FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = $FAVORITES_PLAYLIST_ID")
+    fun getFavoriteTabs(): LiveData<List<TabWithPlaylistEntry>>
 
-    fun getPopularTabs(): LiveData<List<TabWithPlaylistEntry>> = getPlaylistTabs(TOP_TABS_PLAYLIST_ID)
+    @RewriteQueriesToDropUnusedColumns
+    @Query("SELECT *, 0 as user_created, 'Popular Tabs' as title, 0 as date_created, 0 as date_modified, 'Top tabs of today' as description FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = $TOP_TABS_PLAYLIST_ID")
+    fun getPopularTabs(): LiveData<List<TabWithPlaylistEntry>>
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id INNER JOIN playlist ON playlist_entry.playlist_id = playlist.id WHERE playlist_entry.playlist_id = :playlistId")

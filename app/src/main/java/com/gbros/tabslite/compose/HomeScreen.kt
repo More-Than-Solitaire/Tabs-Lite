@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
@@ -30,32 +29,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.gbros.tabslite.R
 import com.gbros.tabslite.compose.playlists.PlaylistList
 import com.gbros.tabslite.compose.songlist.SongList
-import com.gbros.tabslite.data.Playlist
-import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
+import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.ui.theme.AppTheme
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
-    liveFavoriteTabs: LiveData<List<TabWithPlaylistEntry>>,
-    livePopularTabs: LiveData<List<TabWithPlaylistEntry>>,
-    livePlaylists: LiveData<List<Playlist>>,
     onSearch: (query: String) -> Unit,
     navigateToTabByPlaylistEntryId: (id: Int) -> Unit,
     navigateToPlaylistById: (id: Int) -> Unit
 ) {
+    val currentContext = LocalContext.current
+    val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
     val pagerState = rememberPagerState {3}
     var pagerNav by remember { mutableIntStateOf(0) }
 
-    Column {
+    Column(
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.background)
+    ) {
         Column(
             modifier = Modifier
                 .background(color = MaterialTheme.colorScheme.background)
@@ -110,9 +109,9 @@ fun HomeScreen(
                 .fillMaxHeight()
         ) { page ->
             when (page) {
-                0 -> SongList(liveSongs = liveFavoriteTabs, navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true)
-                1 -> SongList(liveSongs = livePopularTabs, navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true)
-                2 -> PlaylistList(livePlaylists = livePlaylists, navigateToPlaylistById = navigateToPlaylistById )  //todo: add create-playlist FAB
+                0 -> SongList(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true)
+                1 -> SongList(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true)
+                2 -> PlaylistList(livePlaylists = db.playlistDao().getPlaylists(), navigateToPlaylistById = navigateToPlaylistById )  //todo: add create-playlist FAB
             }
         }
     }
@@ -142,14 +141,8 @@ fun TabRowItem(selected: Boolean, inactiveIcon: ImageVector, activeIcon: ImageVe
 
 @Composable @Preview
 private fun HomeScreenPreview() {
-    val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
-    val tabListForTest1 = MutableLiveData(listOf(tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest))
-    val tabListForTest2 = MutableLiveData(listOf(tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest))
-    val playlistForTest = Playlist(1, true, "My amazing playlist 1.0.1", 12345, 12345, "The playlist that I'm going to use to test this playlist entry item thing with lots of text.")
-    val playlistListForTest = MutableLiveData(listOf(playlistForTest, playlistForTest, playlistForTest ,playlistForTest, playlistForTest))
-
     AppTheme {
-        HomeScreen(tabListForTest1, tabListForTest2, playlistListForTest, {}, {}, {})
+        HomeScreen({}, {}, {})
     }
 }
 

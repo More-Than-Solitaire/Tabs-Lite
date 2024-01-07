@@ -1,7 +1,6 @@
 package com.gbros.tabslite.compose.tabview
 
 import android.util.Log
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,7 +54,7 @@ private const val ROBOTO_ASPECT_RATIO = 0.60009765625  // the width-to-height ra
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
-fun TabText(text: String, onChordClick: (String) -> Unit){
+fun TabText(modifier: Modifier = Modifier, text: String, onChordClick: (String) -> Unit){
     // default the font size to whatever the user default font size is.  This respects system font settings.
     val defaultFontSize = MaterialTheme.typography.bodyMedium.fontSize
     val defaultFontSizeInSp = if (defaultFontSize.isSp) {
@@ -88,7 +87,7 @@ fun TabText(text: String, onChordClick: (String) -> Unit){
             fontSize = TextUnit(fontSize, TextUnitType.Sp),
             color = MaterialTheme.colorScheme.onBackground
         ),
-        modifier = Modifier
+        modifier = modifier
             .pointerInput(Unit) {
                 detectTransformGestures(consume = false, onGesture = { _, _, zoom, _, _, _ ->
                     if (zoom != 1.0f) {
@@ -103,7 +102,6 @@ fun TabText(text: String, onChordClick: (String) -> Unit){
             .onGloballyPositioned { layoutResult ->
                 measuredWidth = layoutResult.size.width
             }
-            .fillMaxWidth()
     ) { clickLocation ->
         // handle chord clicks
         dynamicText.value.getStringAnnotations(tag = "chord", start = clickLocation, end = clickLocation)
@@ -206,7 +204,7 @@ private fun processTabContent(content: String, availableWidthInChars: UInt, colo
         }
         // append anything after the last tab block
         if (indexOfEndOfTabBlock < content.length) {
-            append(content.subSequence(indexOfEndOfTabBlock, content.length))
+            appendChordLine(content.subSequence(indexOfEndOfTabBlock, content.length), this, colorScheme)
         }
 
         // add active hyperlinks

@@ -2,6 +2,7 @@ package com.gbros.tabslite.compose.tabview
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -16,18 +17,23 @@ fun TabSummary(tab: ITab) {
         Column {
             Text(
                 text = stringResource(id = R.string.tab_difficulty, tab.difficulty),
+                color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = stringResource(id = R.string.tab_tuning, tab.tuning)
+                text = stringResource(id = R.string.tab_tuning, tab.tuning),
+                color = MaterialTheme.colorScheme.onBackground
             )
             Text(
                 text = stringResource(
                     id = R.string.tab_capo,
                     tab.getCapoText()
-                )
+                ),
+                color = MaterialTheme.colorScheme.onBackground
             )
-            Text(text = stringResource(id = R.string.tab_key, tab.tonalityName))
-            Text(text = stringResource(id = R.string.tab_author, tab.contributorUserName))
+            Text(text = stringResource(id = R.string.tab_key, tab.tonalityName),
+                color = MaterialTheme.colorScheme.onBackground)
+            Text(text = stringResource(id = R.string.tab_author, tab.contributorUserName),
+                color = MaterialTheme.colorScheme.onBackground)
         }
     }
 }
