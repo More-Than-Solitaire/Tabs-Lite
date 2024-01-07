@@ -14,7 +14,8 @@ import java.net.URL
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
+import java.util.TimeZone
 import kotlin.random.Random
 
 object ApiHelper {
@@ -57,7 +58,7 @@ object ApiHelper {
         conn.setRequestProperty("x-ug-client-id", devId)                // stays constant over time; api key and client id are related to each other.
 
         try {
-            val inputStream = conn.getInputStream()
+            val inputStream = conn.inputStream
             val jsonReader = JsonReader(inputStream.reader())
             val serverTimestampTypeToken = object : TypeToken<ServerTimestampType>() {}.type
             lastResult = Gson().fromJson(jsonReader, serverTimestampTypeToken)
@@ -88,7 +89,7 @@ object ApiHelper {
         }
     }
 
-    // generates a new device id each run.  todo: save the value so it is constant over runs
+    // generates a new device id
     fun getDeviceId(): String {
         if (! this::myDeviceId.isInitialized) {
 

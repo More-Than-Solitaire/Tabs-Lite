@@ -143,7 +143,7 @@ private class SearchForTest(allPagesLoaded: Boolean, override var searchInProgre
 
     override val result = resultListForTest
     override fun searchNextPage() {
-        TODO("Not yet implemented")
+
     }
 
 

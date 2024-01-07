@@ -149,7 +149,7 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
             tab.content = content
         } else {
             tab.content = "NO TAB CONTENT - Official tab?"
-            Log.w(javaClass.simpleName, "Warning: tab content is empty for id $id.  This is strange.  Could be an official tab.")  //todo: implement official tabs (e.g. tabid=2456778)
+            Log.w(javaClass.simpleName, "Warning: tab content is empty for id $id.  This is strange.  Could be an official tab.")
         }
 
         return tab
