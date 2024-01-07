@@ -32,8 +32,6 @@ object UgApi {
     // region private data
 
     private val gson = Gson()
-
-    private var lastSuggestionRequest = ""
     private val cachedSearchSuggestions = HashMap<String, List<String>>()
 
     // endregion

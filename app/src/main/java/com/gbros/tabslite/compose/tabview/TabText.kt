@@ -297,20 +297,20 @@ private fun wrapLinePair(line1: String, line2: String?, availableWidthInChars: U
         while (remainingLine1 != "" || remainingLine2 != "") {
             val wordBreakLocation = findMultipleLineWordBreakIndex(availableWidthInChars, remainingLine1, remainingLine2!!)
 
-            if (wordBreakLocation.first < remainingLine1.length) {
+            remainingLine1 = if (wordBreakLocation.first < remainingLine1.length) {
                 wrappedLines.add(remainingLine1.substring(0, wordBreakLocation.first))
-                remainingLine1 = remainingLine1.substring(wordBreakLocation.first until remainingLine1.length)
+                remainingLine1.substring(wordBreakLocation.first until remainingLine1.length)
             } else {
                 wrappedLines.add(remainingLine1.trimEnd())
-                remainingLine1 = ""
+                ""
             }
 
-            if (wordBreakLocation.second < remainingLine2.length) {
+            remainingLine2 = if (wordBreakLocation.second < remainingLine2.length) {
                 wrappedLines.add(remainingLine2.substring(0, wordBreakLocation.second))
-                remainingLine2 = remainingLine2.substring(wordBreakLocation.second until remainingLine2.length)
+                remainingLine2.substring(wordBreakLocation.second until remainingLine2.length)
             } else {
                 wrappedLines.add(remainingLine2.trimEnd())
-                remainingLine2 = ""
+                ""
             }
         }
     } else {
@@ -385,12 +385,11 @@ private fun findMultipleLineWordBreakIndex(availableWidthInChars: UInt, line1: S
     // if no good word break location exists
     if (sharedWordBreakLocation.first < 1 && sharedWordBreakLocation.second < 1) {
         // try to handle nicely by breaking at the last spot outside of a chord
-        if (fallbackLineBreak.first > 0 && fallbackLineBreak.second > 0){
-            sharedWordBreakLocation = fallbackLineBreak
-        }
-        else{
+        sharedWordBreakLocation = if (fallbackLineBreak.first > 0 && fallbackLineBreak.second > 0){
+            fallbackLineBreak
+        } else{
             // welp we tried.  Just force the line break at the end of the line.  [ch][/ch] artifacts will show up.
-            sharedWordBreakLocation = Pair(availableWidthInChars.toInt(), availableWidthInChars.toInt())
+            Pair(availableWidthInChars.toInt(), availableWidthInChars.toInt())
         }
     }
 
@@ -399,7 +398,7 @@ private fun findMultipleLineWordBreakIndex(availableWidthInChars: UInt, line1: S
 }
 
 private fun getHyperLinks(s: String): Sequence<MatchResult> {
-    val urlPattern: Regex = Regex(
+    val urlPattern = Regex(
         "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"
                 + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
                 + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",

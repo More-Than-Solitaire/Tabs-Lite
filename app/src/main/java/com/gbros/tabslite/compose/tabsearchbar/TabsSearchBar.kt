@@ -45,10 +45,10 @@ fun TabsSearchBar(
     var searchSuggestions: List<String> by remember { mutableStateOf(listOf()) }
 
     LaunchedEffect(key1 = query) {
-        if (query.isNotEmpty()) {
-            searchSuggestions = UgApi.searchSuggest(query)
+        searchSuggestions = if (query.isNotEmpty()) {
+            UgApi.searchSuggest(query)
         } else {
-            searchSuggestions = listOf()
+            listOf()
         }
     }
 
