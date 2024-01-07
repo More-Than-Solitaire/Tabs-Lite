@@ -33,8 +33,6 @@ import com.gbros.tabslite.ui.theme.AppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
-private const val LOG_NAME = "tabslite.TabView    "
-
 @Composable
 fun TabView(tab: ITab, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId: (id: Int) -> Unit) {
     var transposedContent by remember(key1 = tab.content) {mutableStateOf(tab.content)}

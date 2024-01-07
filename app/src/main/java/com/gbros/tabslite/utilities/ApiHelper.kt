@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import java.math.BigInteger
@@ -49,6 +50,7 @@ object ApiHelper {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun updaterJobAsync() = GlobalScope.async(start = CoroutineStart.LAZY) {
         val devId = getDeviceId()
         val lastResult: ServerTimestampType
