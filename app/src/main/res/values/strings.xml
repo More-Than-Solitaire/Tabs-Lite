@@ -17,8 +17,14 @@
     <string name="menu_item_search" translation_description="The label for the Search menu item">Search</string>
     <string name="menu_item_search_hint" translation_description="The hint for the Search menu item">Find a song</string>
     <string name="share_text_plant" translation_description="The default messaged used when sharing a plant on SNS, etc.">Check out %1$s in the Tabs Lite app!  %2$s</string>
+    <string name="tab_title">%1$s by %2$s</string>
+    <string name="tab_difficulty">Difficulty: %s</string>
+    <string name="tab_tuning">Tuning: %s</string>
+    <string name="tab_capo">Capo: %s</string>
+    <string name="tab_key">Key: %s</string>
+    <string name="tab_author">Tab Author: %s</string>
+    <string name="tab_transpose">Transpose: %d</string>
 
-    <string name="tab_author">Tab Author: </string>
     <string name="difficulty">Difficulty: </string>
     <string name="tuning">Tuning: </string>
     <string name="no_search_results">Search completed with no results found. If this is unexpected, check your search query and your internet connection.</string>
@@ -28,6 +34,7 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <string name="version_number">Version %d</string>
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>

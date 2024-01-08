@@ -2,6 +2,7 @@ package com.gbros.tabslite.data
 
 import androidx.room.TypeConverter
 import com.chrynan.chords.model.ChordMarker
+import com.gbros.tabslite.data.chord.ChordVariation
 import com.google.gson.Gson
 import java.util.*
 import kotlin.collections.ArrayList

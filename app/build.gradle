@@ -18,7 +18,12 @@ android {
     compileSdk(rootProject.compileSdkVersion)
 
     buildFeatures {
+        compose true
         dataBinding true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.7"  // dependant on Kotlin version; see https://developer.android.com/jetpack/androidx/releases/compose-kotlin
     }
 
     defaultConfig {
@@ -26,8 +31,8 @@ android {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        versionCode 2310
-        versionName "2.3.1"
+        versionCode 3010
+        versionName "3.0.1"
         vectorDrawables.useSupportLibrary true
     }
     buildTypes {
@@ -60,36 +65,39 @@ repositories {
     mavenCentral()
 
     maven { url "https://repo.repsy.io/mvn/chrynan/public" }
+
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2'
+    implementation 'androidx.activity:activity-compose:1.8.2'  // Compose Integration with activities
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.compose.material3:material3:1.1.2'  // Material Design 3
     implementation 'androidx.compose.material:material-icons-core:1.5.4'
-    implementation 'androidx.recyclerview:recyclerview:1.3.2'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation "androidx.navigation:navigation-fragment-ktx:2.7.6"
-    implementation "androidx.navigation:navigation-ui-ktx:2.7.6"
-    ksp "androidx.room:room-compiler:2.6.1"
-    ksp 'com.github.bumptech.glide:compiler:4.16.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
+    implementation 'androidx.compose.runtime:runtime-livedata:1.5.4'
+    // Compose Integration with LiveData
+    implementation "androidx.compose.ui:ui-tooling-preview"  // Android Studio Preview Support
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "androidx.core:core-ktx:1.12.0"
     implementation "androidx.fragment:fragment-ktx:1.6.2"
-    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.2"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2'  // Compose Integration with ViewModels
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2'
+    implementation 'androidx.navigation:navigation-compose:2.7.6'
     implementation "androidx.navigation:navigation-fragment-ktx:2.7.6"
     implementation "androidx.navigation:navigation-ui-ktx:2.7.6"
-    implementation "androidx.recyclerview:recyclerview:1.3.2"
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    ksp "androidx.room:room-compiler:2.6.1"
     implementation "androidx.room:room-runtime:2.6.1"
     implementation "androidx.room:room-ktx:2.6.1"
     implementation "androidx.viewpager2:viewpager2:1.0.0"
     implementation "androidx.work:work-runtime-ktx:2.9.0"
     implementation 'com.github.bumptech.glide:glide:4.16.0'
+    ksp 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation 'com.github.SmartToolFactory:Compose-Extended-Gestures:3.1'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.21"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
@@ -98,8 +106,13 @@ dependencies {
 
     implementation "com.chrynan.chords:chords-compose:2.4.1"
 
+    // Debug dependencies
+    debugImplementation 'androidx.compose.ui:ui-tooling'  // Android Studio Preview support
+    debugImplementation 'androidx.compose.ui:ui-test-manifest:1.5.4'  // UI tests
+
     // Testing dependencies
     androidTestImplementation "androidx.arch.core:core-testing:2.2.0"
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.5.4'  // UI tests
     androidTestImplementation "androidx.test.espresso:espresso-contrib:3.5.1"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
     androidTestImplementation "androidx.test.espresso:espresso-intents:3.5.1"
@@ -108,4 +121,5 @@ dependencies {
     androidTestImplementation "androidx.work:work-testing:2.9.0"
     androidTestImplementation 'com.google.truth:truth:1.2.0'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation "io.mockk:mockk:1.13.8"
 }

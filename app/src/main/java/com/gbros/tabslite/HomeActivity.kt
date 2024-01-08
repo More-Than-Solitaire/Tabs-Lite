@@ -1,88 +1,42 @@
 package com.gbros.tabslite
 
 import android.os.Bundle
-import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
-import androidx.navigation.findNavController
-import com.gbros.tabslite.workers.SearchHelper
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Modifier
+import com.gbros.tabslite.compose.TabsLiteNavGraph
+import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.utilities.UgApi
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
-private const val LOG_NAME = "tabslite.HomeActivity  "
-// TODO: handle search intent
-
-class HomeActivity : AppCompatActivity() {
-    private lateinit var searchView: SearchView
-    private lateinit var searchMenuItem: MenuItem
-
+class HomeActivity : ComponentActivity() {
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
-    }
+        val db = AppDatabase.getInstance(applicationContext)
+        GlobalScope.launch { UgApi.fetchTopTabs(db) }
+        actionBar?.hide()
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-
-        searchView = menu.findItem(R.id.search).actionView as SearchView
-        searchMenuItem = menu.findItem(R.id.search)
-        SearchHelper.initializeSearchBar("", searchView, this, this) { q ->
-            Log.i(LOG_NAME, "Starting search from Home for '$q'")
-
-            //which navigation direction depends on which is the current fragment
-            val navHost = supportFragmentManager.findFragmentById(R.id.nav_host)
-            navHost?.let { navFragment ->
-                navFragment.childFragmentManager.primaryNavigationFragment?.let { fragment ->
-                    when (fragment.javaClass) {
-                        TabDetailFragment::class.java -> {
-                            val direction =
-                                TabDetailFragmentDirections.actionTabDetailFragment2ToSearchResultFragment(
-                                    q
-                                )
-                            findNavController(R.id.nav_host).navigate(direction)
-                        }
-                        HomeViewPagerFragment::class.java -> {
-                            val direction =
-                                HomeViewPagerFragmentDirections.actionViewPagerFragmentToSearchResultFragment(
-                                    q
-                                )
-                            findNavController(R.id.nav_host).navigate(direction)
-                        }
-                        else -> {
-                            Log.e(
-                                LOG_NAME,
-                                "Search directions not implemented for this class (${fragment.javaClass.canonicalName}}"
-                            )
-                        }
-                    }
+        setContent {
+            AppTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(color = MaterialTheme.colorScheme.background)
+                ) {
+                    TabsLiteNavGraph()
                 }
             }
         }
-
-        return super.onCreateOptionsMenu(menu)
     }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if(item.itemId == R.id.dark_mode_toggle) {
-            (application as DefaultApplication).darkModeDialog(this)  // show dialog asking user which mode they want
-            true
-        }
-        else {
-            false // let someone else take care of this click
-        }
-    }
-
-    fun focusSearch() {
-        if (::searchView.isInitialized && ::searchMenuItem.isInitialized) {
-            searchView.requestFocusFromTouch()
-            searchMenuItem.expandActionView()
-        }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
-    }
-
 }
 
