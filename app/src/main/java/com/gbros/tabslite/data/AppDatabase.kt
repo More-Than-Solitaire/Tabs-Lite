@@ -17,7 +17,7 @@ const val DATABASE_NAME = "local-tabs-db"
 /**
  * The Room database for this app
  */
-@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, PlaylistEntry::class], version = 9, exportSchema = false)
+@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, PlaylistEntry::class], version = 10, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chordVariationDao(): ChordVariationDao
