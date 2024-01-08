@@ -86,7 +86,7 @@ interface PlaylistEntryDao {
     suspend fun insert(playlistId: Int, tabId: Int, nextEntryId: Int?, prevEntryId: Int?, dateAdded: Long, transpose: Int)
 
     suspend fun insertToFavorites(tabId: Int, transpose: Int)
-        = insert(-1, tabId, null, null, System.currentTimeMillis(), transpose)
+        = insert(FAVORITES_PLAYLIST_ID, tabId, null, null, System.currentTimeMillis(), transpose)
 
     @Transaction
     suspend fun addToPlaylist(playlistId: Int, tabId: Int, transpose: Int) {
@@ -116,13 +116,13 @@ interface PlaylistEntryDao {
 
     fun clearTopTabsPlaylist() = clearPlaylist(TOP_TABS_PLAYLIST_ID)
 
-    @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = -1 AND tab_id = :tabId)")
+    @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId)")
     fun tabExistsInFavorites(tabId: Int): LiveData<Boolean>
 
-    @Query("SELECT * FROM playlist_entry WHERE playlist_id = -1 AND tab_id = :tabId")
+    @Query("SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId")
     suspend fun getFavoritesPlaylistEntry(tabId: Int): PlaylistEntry?
 
-    @Query("UPDATE playlist_entry SET transpose = :transpose WHERE playlist_id = -1 AND tab_id = :tabId")
+    @Query("UPDATE playlist_entry SET transpose = :transpose WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId")
     fun updateFavoriteTabTransposition(tabId: Int, transpose: Int)
 
     @Query("UPDATE playlist_entry SET transpose = :transpose WHERE entry_id = :entryId")

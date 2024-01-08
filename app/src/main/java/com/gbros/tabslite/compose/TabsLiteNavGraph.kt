@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.gbros.tabslite.compose.homescreen.HomeScreen
 import com.gbros.tabslite.compose.playlists.PlaylistScreen
 import com.gbros.tabslite.compose.searchresultsonglist.SearchScreen
@@ -43,10 +44,29 @@ fun TabsLiteNavGraph() {
         ) {navBackStackEntry ->
             TabScreen(
                 id = navBackStackEntry.arguments!!.getInt("id"),
-                idIsPlaylistEntryId = navBackStackEntry.arguments!!.getBoolean("idIsPlaylistEntryId"),
+                idIsPlaylistEntryId = navBackStackEntry.arguments!!.getBoolean("idIsPlaylistEntryId", false),
                 navigateBack = { navController.popBackStack() }
             )
         }
+        /**
+         * Navigate to the Tab detail screen
+         *
+         * @param [idIsPlaylistEntryId] (Bool) Whether the provided ID is a playlistEntryId (true) or a tabId (false)
+         * @param [id] (Int) The ID used to find the tab content.  This can either be a tabId or a PlaylistEntry id (depending on the value of the other parameters)
+         */
+        composable("tab/tabId/{id}",
+            deepLinks = listOf(navDeepLink { uriPattern = "https://tabslite.com/tab/{id}" }),
+            arguments = listOf(navArgument("id") { type = NavType.IntType } )
+        ) {navBackStackEntry ->
+            TabScreen(
+                id = navBackStackEntry.arguments!!.getInt("id"),
+                idIsPlaylistEntryId = false,
+                navigateBack = { navController.popBackStack() }
+            )
+        }
+
+
+
 
         composable("search/{query}") {navBackStackEntry ->
             SearchScreen(

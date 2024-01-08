@@ -46,11 +46,11 @@ data class TabWithPlaylistEntry(
     @ColumnInfo(name = "content") override var content: String = "",
 
     // columns from Playlist
-    @ColumnInfo(name = "user_created") val playlistUserCreated: Boolean,
-    @ColumnInfo(name = "title") val playlistTitle: String,
-    @ColumnInfo(name = "date_created") val playlistDateCreated: Long,
-    @ColumnInfo(name = "date_modified") val playlistDateModified: Long,
-    @ColumnInfo(name = "description") val playlistDescription: String
+    @ColumnInfo(name = "user_created") val playlistUserCreated: Boolean?,
+    @ColumnInfo(name = "title") val playlistTitle: String?,
+    @ColumnInfo(name = "date_created") val playlistDateCreated: Long?,
+    @ColumnInfo(name = "date_modified") val playlistDateModified: Long?,
+    @ColumnInfo(name = "description") val playlistDescription: String?
 ) : ITab, IPlaylistEntry {
     @ColumnInfo(name = "transpose") override var transpose: Int = 0
         private set;

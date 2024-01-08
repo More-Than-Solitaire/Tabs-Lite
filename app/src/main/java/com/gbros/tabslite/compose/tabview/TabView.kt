@@ -1,5 +1,6 @@
 package com.gbros.tabslite.compose.tabview
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,14 +29,18 @@ import com.gbros.tabslite.compose.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.chord.CompleteChord
 import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
+private const val LOG_NAME = "tabslite.TabView      "
+
 @Composable
-fun TabView(tab: ITab, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId: (id: Int) -> Unit) {
-    var transposedContent by remember(key1 = tab.content) {mutableStateOf(tab.content)}
+fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId: (id: Int) -> Unit) {
+    val myTab = tab ?: Tab()
+    var transposedContent by remember(key1 = myTab.content) {mutableStateOf(myTab.content)}
 
     // handle chord clicks
     var chordToShow by remember { mutableStateOf("") }
@@ -49,12 +54,16 @@ fun TabView(tab: ITab, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId:
     var showAddToPlaylistDialog by remember { mutableStateOf(false) }
 
     // handle reload
-    var loading by remember { mutableStateOf(tab.content.isBlank()) }
+    var loading by remember(transposedContent) { mutableStateOf(transposedContent.isBlank()) }
     var reloadTab by remember { mutableStateOf(false) }
     LaunchedEffect(key1 = reloadTab) {
         if (reloadTab) {
             loading = true
-            tab.fetchFullTab(db,true)
+            try {
+                myTab.fetchFullTab(db, true)
+            } catch (ex: Exception) {
+                Log.w(LOG_NAME, "Tab reload failed", ex)
+            }
             loading = false
         }
     }
@@ -65,14 +74,14 @@ fun TabView(tab: ITab, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId:
         .background(color = MaterialTheme.colorScheme.background)
     ) {
 
-        TabTopAppBar(tab = tab, navigateBack = navigateBack, reload = {reloadTab = true})
-        if (tab is TabWithPlaylistEntry && tab.playlistId > 0) {
-            TabPlaylistNavigation(tab = tab, navigateToTabByPlaylistEntryId = navigateToTabByPlaylistEntryId)
+        TabTopAppBar(tab = myTab, navigateBack = navigateBack, reload = {reloadTab = true})
+        if (myTab is TabWithPlaylistEntry && myTab.playlistId > 0) {
+            TabPlaylistNavigation(tab = myTab, navigateToTabByPlaylistEntryId = navigateToTabByPlaylistEntryId)
         }
-        TabSummary(tab = tab)
-        TabTransposeSection(currentTransposition = tab.transpose) {
-            tab.transpose(it)
-            transposedContent = tab.content
+        TabSummary(tab = myTab)
+        TabTransposeSection(currentTransposition = myTab.transpose) {
+            myTab.transpose(it)
+            transposedContent = myTab.content
         }
 
         // content
@@ -87,7 +96,7 @@ fun TabView(tab: ITab, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId:
                 bottomSheetTrigger = true
             }
         } else {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+            Box(modifier = Modifier.fillMaxSize().padding(all = 24.dp), contentAlignment = Alignment.Center){
                 if (loading) {
                     CircularProgressIndicator()
                     LaunchedEffect(key1 = Unit) {
@@ -126,8 +135,8 @@ fun TabView(tab: ITab, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId:
 
     if (showAddToPlaylistDialog) {
         AddToPlaylistDialog(
-            tabId = tab.tabId,
-            transpose = tab.transpose,
+            tabId = myTab.tabId,
+            transpose = myTab.transpose,
             onConfirm = { showAddToPlaylistDialog = false },
             onDismiss = { showAddToPlaylistDialog = false }
         )
@@ -153,9 +162,9 @@ fun TabView(tab: ITab, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId:
     }
 
     // update transpose in database
-    LaunchedEffect(key1 = tab.transpose) {
-        if (tab is TabWithPlaylistEntry) {
-            db.playlistEntryDao().updateEntryTransposition(tab.entryId, tab.transpose)
+    LaunchedEffect(key1 = myTab.transpose) {
+        if (myTab is TabWithPlaylistEntry) {
+            db.playlistEntryDao().updateEntryTransposition(myTab.entryId, myTab.transpose)
         }
     }
 }

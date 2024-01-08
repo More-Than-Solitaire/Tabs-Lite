@@ -51,7 +51,7 @@ data class Tab(
         }
     }
 
-    constructor() : this(tabId = 0, songId = 0, songName = "", artistName = "", isVerified = false, numVersions = 0,
+    constructor(tabId: Int? = 0) : this(tabId = tabId ?: 0, songId = 0, songName = "", artistName = "", isVerified = false, numVersions = 0,
         type = "", part = "", version = 0, votes = 0, rating = 0.0, date = 0, status = "", presetId = 0, tabAccessType = "",
         tpVersion = 0, tonalityName = "", versionDescription = "", recordingIsAcoustic = false, recordingTonalityName = "",
         recordingPerformance = "", recordingArtists = arrayListOf(), recommended = arrayListOf(), userRating = 0, difficulty = "", tuning = "",

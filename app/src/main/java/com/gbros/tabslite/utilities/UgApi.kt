@@ -256,7 +256,11 @@ object UgApi {
         )
 
         // save all the chords we come across.  Might as well since we already downloaded them.
-        database.chordVariationDao().insertAll(requestResponse.getChordVariations())
+        try {
+            database.chordVariationDao().insertAll(requestResponse.getChordVariations())
+        } catch (ex: Exception) {
+            Log.w(LOG_NAME, "Couldn't get chord variations from tab $tabId", ex)
+        }
 
         val result = requestResponse.getTabFull()
         database.tabFullDao().insert(result)

@@ -28,29 +28,48 @@ fun TabScreen(id: Int, idIsPlaylistEntryId: Boolean = false, navigateBack: () ->
     // allow internal navigation without adding to the backstack (forward and back within the playlist)
     var currentId by remember(key1 = id) { mutableIntStateOf(id) }
     var currentIdIsPlaylistEntryId by remember(key1 = id) { mutableStateOf(idIsPlaylistEntryId) }
+    var currentTabId: Int? by remember(key1 = id) { mutableStateOf(null) }
 
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
-    val tab by with(db.tabFullDao()) {
+    val tab: ITab? by with(db.tabFullDao()) {
         if(currentIdIsPlaylistEntryId)
-            getTabFromPlaylistEntryId(currentId).observeAsState(Tab())
+            getTabFromPlaylistEntryId(currentId).observeAsState()
         else
-            getTab(currentId).observeAsState(Tab())
+            getTab(currentId).observeAsState()
     }
 
     // ensure tab is stored locally and has content
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = id) {
         try {
-            ITab.fetchFullTab(id, db)
+            if (currentIdIsPlaylistEntryId) {
+                currentTabId = db.playlistEntryDao().getEntryById(id)?.tabId
+                currentTabId?.let { ITab.fetchFullTab(it, db) }
+            } else {
+                currentTabId = id
+                ITab.fetchFullTab(id, db)
+            }
         } catch (ex: Exception) {
             Log.i(LOG_NAME, "Couldn't fetch tab $id.", ex)
         }
     }
 
-    TabView(tab = tab, navigateBack = navigateBack, navigateToTabByPlaylistEntryId = {newPlaylistEntryId ->
-        currentId = newPlaylistEntryId
-        currentIdIsPlaylistEntryId = true
-    })
+    if (tab != null) {
+        TabView(
+            tab = tab,
+            navigateBack = navigateBack,
+            navigateToTabByPlaylistEntryId = { newPlaylistEntryId ->
+                currentId = newPlaylistEntryId
+                currentIdIsPlaylistEntryId = true
+            })
+    } else {
+        // fall back to something with at least an ID if we can
+        TabView(
+            tab = Tab(currentTabId),
+            navigateBack = navigateBack,
+            navigateToTabByPlaylistEntryId = {}
+        )
+    }
 
     BackHandler {
         navigateBack()
