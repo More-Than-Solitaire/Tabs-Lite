@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
 import com.gbros.tabslite.compose.songlist.SongList
+import com.gbros.tabslite.compose.songlist.SortBy
 import com.gbros.tabslite.compose.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.ui.theme.AppTheme
@@ -109,8 +110,24 @@ fun HomeScreen(
                 .fillMaxHeight()
         ) { page ->
             when (page) {
-                0 -> SongList(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true)
-                1 -> SongList(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true)
+                0 -> SongList(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, initialSortBy = SortBy.DateAdded,
+                    sorter = {sortBy, songs ->
+                        when(sortBy) {
+                            SortBy.Name -> songs.sortedBy { it.songName }
+                            SortBy.Popularity -> songs.sortedBy { it.votes }
+                            SortBy.ArtistName -> songs.sortedBy { it.artistName }
+                            SortBy.DateAdded -> songs
+                        }
+                    })
+                1 -> SongList(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, initialSortBy = SortBy.Popularity,
+                    sorter = {sortBy, songs ->
+                        when(sortBy) {
+                            SortBy.Name -> songs.sortedBy { it.songName }
+                            SortBy.Popularity -> songs
+                            SortBy.ArtistName -> songs.sortedBy { it.artistName }
+                            SortBy.DateAdded -> songs.sortedBy { it.dateAdded }
+                        }
+                })
                 2 -> PlaylistPage(livePlaylists = db.playlistDao().getPlaylists(), navigateToPlaylistById = navigateToPlaylistById)
             }
         }
