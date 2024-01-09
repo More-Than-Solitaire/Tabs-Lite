@@ -49,8 +49,8 @@ fun HomeScreen(
 ) {
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
-    val pagerState = rememberPagerState {3}
-    var pagerNav by remember { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
+    var pagerNav by remember { mutableIntStateOf(pagerState.currentPage) }
 
     Column(
         modifier = Modifier
@@ -134,7 +134,7 @@ fun HomeScreen(
     }
 
     LaunchedEffect(pagerNav) {
-        if (pagerNav >= 0) {
+        if (pagerNav >= 0 && pagerNav != pagerState.currentPage) {
             pagerState.animateScrollToPage(pagerNav)
         }
     }
