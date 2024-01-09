@@ -1,9 +1,9 @@
 package com.gbros.tabslite.compose.playlists
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +22,8 @@ import com.gbros.tabslite.data.IPlaylistEntry
 import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
+
+private const val LOG_NAME = "tabslite.PlaylistScreen"
 
 @Composable
 fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Unit, navigateBack: () -> Unit) {
@@ -98,7 +100,6 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PlaylistView(
     livePlaylist: LiveData<Playlist>,
@@ -141,9 +142,9 @@ private fun PlaylistView(
 
                 navigateToTabByPlaylistEntryId(entryId)
             },
-            onReorder = entryMoved
+            onReorder = entryMoved,
+            onRemove = entryRemoved
         )
-
     }
 }
 
@@ -152,9 +153,19 @@ private fun sortLinkedList(entries: List<TabWithPlaylistEntry>): List<TabWithPla
     val sortedEntries = mutableListOf<TabWithPlaylistEntry>()
 
     var currentEntry = entries.firstOrNull { it.prevEntryId == null }
-    while (currentEntry != null) {
-        sortedEntries.add(currentEntry)
-        currentEntry = entryMap[currentEntry.nextEntryId]
+
+    try {
+        while (currentEntry != null) {
+            sortedEntries.add(currentEntry)
+            currentEntry = if (currentEntry.nextEntryId != currentEntry.entryId) {
+                entryMap[currentEntry.nextEntryId]
+            } else {
+                Log.e(LOG_NAME, "Error!  Playlist linked list is broken: circular reference")
+                null // stop list traversal
+            }
+        }
+    } catch (ex: OutOfMemoryError) {
+        Log.e(LOG_NAME, "Error!  Playlist linked list is likely broken: circular reference", ex)
     }
 
     return sortedEntries
