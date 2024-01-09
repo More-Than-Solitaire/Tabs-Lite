@@ -40,17 +40,17 @@ fun TabScreen(id: Int, idIsPlaylistEntryId: Boolean = false, navigateBack: () ->
     }
 
     // ensure tab is stored locally and has content
-    LaunchedEffect(key1 = id) {
+    LaunchedEffect(key1 = currentId) {
         try {
             if (currentIdIsPlaylistEntryId) {
-                currentTabId = db.playlistEntryDao().getEntryById(id)?.tabId
+                currentTabId = db.playlistEntryDao().getEntryById(currentId)?.tabId
                 currentTabId?.let { ITab.fetchFullTab(it, db) }
             } else {
-                currentTabId = id
-                ITab.fetchFullTab(id, db)
+                currentTabId = currentId
+                ITab.fetchFullTab(currentId, db)
             }
         } catch (ex: Exception) {
-            Log.i(LOG_NAME, "Couldn't fetch tab $id.", ex)
+            Log.i(LOG_NAME, "Couldn't fetch tab $currentId.", ex)
         }
     }
 
