@@ -2,19 +2,19 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="HomeScreenPreview">
-        <State />
-      </entry>
       <entry key="PlaylistPagePreview">
         <State />
       </entry>
       <entry key="PlaylistViewPreview">
         <State />
       </entry>
+      <entry key="PlaylistViewPreview (1)">
+        <State />
+      </entry>
       <entry key="TabViewPreview">
         <State />
       </entry>
-      <entry key="TabsScreenPreview">
+      <entry key="VerticalReorderList">
         <State />
       </entry>
       <entry key="app">

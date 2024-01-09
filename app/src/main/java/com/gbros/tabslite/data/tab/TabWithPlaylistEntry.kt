@@ -1,8 +1,11 @@
 package com.gbros.tabslite.data.tab
 
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import com.gbros.tabslite.data.IPlaylistEntry
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class TabWithPlaylistEntry(
     @ColumnInfo(name = "entry_id") override val entryId: Int,
     @ColumnInfo(name = "playlist_id") override val playlistId: Int,
@@ -51,7 +54,7 @@ data class TabWithPlaylistEntry(
     @ColumnInfo(name = "date_created") val playlistDateCreated: Long?,
     @ColumnInfo(name = "date_modified") val playlistDateModified: Long?,
     @ColumnInfo(name = "description") val playlistDescription: String?
-) : ITab, IPlaylistEntry {
+) : ITab, IPlaylistEntry, Parcelable {
     @ColumnInfo(name = "transpose") override var transpose: Int = 0
         private set;
     override fun transpose(halfSteps: Int) {
