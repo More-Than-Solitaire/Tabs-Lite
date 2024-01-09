@@ -126,7 +126,6 @@ private fun PlaylistView(
     var description by remember(playlist) { mutableStateOf(playlist.description) }
     var title by remember(playlist) { mutableStateOf(playlist.title) }
     var deletePlaylistConfirmationDialogShowing by remember { mutableStateOf(false) }
-    var deleteThisPlaylist by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier

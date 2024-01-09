@@ -17,7 +17,7 @@ import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun PlaylistList(livePlaylists: LiveData<List<Playlist>>, navigateToPlaylistById: (Int) -> Unit, verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp), modifier: Modifier = Modifier){
+fun PlaylistList(modifier: Modifier = Modifier, livePlaylists: LiveData<List<Playlist>>, navigateToPlaylistById: (Int) -> Unit, verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp)){
     val playlists by livePlaylists.observeAsState(listOf())
     LazyColumn (
         verticalArrangement = verticalArrangement,

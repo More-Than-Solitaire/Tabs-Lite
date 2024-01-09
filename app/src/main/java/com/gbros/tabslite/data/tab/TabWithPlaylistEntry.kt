@@ -3,9 +3,10 @@ package com.gbros.tabslite.data.tab
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import com.gbros.tabslite.data.IPlaylistEntry
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
-@Parcelize
+@Parcelize  // used for playlist reordering
 data class TabWithPlaylistEntry(
     @ColumnInfo(name = "entry_id") override val entryId: Int,
     @ColumnInfo(name = "playlist_id") override val playlistId: Int,
@@ -55,8 +56,9 @@ data class TabWithPlaylistEntry(
     @ColumnInfo(name = "date_modified") val playlistDateModified: Long?,
     @ColumnInfo(name = "description") val playlistDescription: String?
 ) : ITab, IPlaylistEntry, Parcelable {
+    @IgnoredOnParcel  // we only need parallelization for playlist reordering
     @ColumnInfo(name = "transpose") override var transpose: Int = 0
-        private set;
+        private set
     override fun transpose(halfSteps: Int) {
         super.transpose(halfSteps)
         transpose += halfSteps

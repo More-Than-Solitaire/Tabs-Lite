@@ -18,9 +18,6 @@ interface PlaylistEntryDao {
     @Query("SELECT * FROM playlist_entry WHERE playlist_id = :playlistId")
     fun getLivePlaylistItems(playlistId: Int): LiveData<List<PlaylistEntry>>
 
-    @Query("SELECT playlist_id FROM playlist_entry WHERE tab_id = :tabId")
-    suspend fun getPlaylistsForTab(tabId: Int): List<Int>
-
     @Query("SELECT * FROM playlist_entry WHERE playlist_id = :playlistId AND next_entry_id IS NULL")
     suspend fun getLastEntryInPlaylist(playlistId: Int): PlaylistEntry?
 

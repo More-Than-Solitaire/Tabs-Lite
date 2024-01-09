@@ -21,8 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.MutableLiveData
-import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,8 +88,6 @@ fun PlaylistHeader(
 
 @Composable @Preview
 private fun PlaylistHeaderPreview() {
-    val playlistForTest = MutableLiveData(Playlist(1, true, "My amazing playlist 1.0.1", 12345, 12345, "The playlist that I'm going to use to test this playlist entry item thing with lots of text."))
-
     AppTheme {
         PlaylistHeader("Playlist title", "playlist description", {}, {}, {}, {}, {}, {})
     }

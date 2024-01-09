@@ -23,9 +23,6 @@ interface PlaylistDao {
     @Query("UPDATE playlist SET description = :newDescription WHERE id = :playlistId")
     suspend fun updateDescription(playlistId: Int, newDescription: String)
 
-    @Query("SELECT * FROM playlist")
-    suspend fun getCurrentPlaylists(): List<Playlist>
-
     @Query("SELECT * FROM playlist WHERE id = :playlistId")
     fun getPlaylist(playlistId: Int): LiveData<Playlist>
 
