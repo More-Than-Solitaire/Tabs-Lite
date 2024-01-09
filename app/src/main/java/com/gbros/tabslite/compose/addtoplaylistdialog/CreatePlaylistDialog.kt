@@ -59,7 +59,7 @@ fun CreatePlaylistDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
                 )
             }
         },
-        onDismissRequest = { },
+        onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(
                 onClick = {

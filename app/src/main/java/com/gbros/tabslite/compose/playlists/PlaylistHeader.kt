@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +34,8 @@ fun PlaylistHeader(
     descriptionChanged: (description: String) -> Unit,
     titleFinalize: () -> Unit,
     descriptionFinalize: () -> Unit,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    deletePlaylist: () -> Unit
 ) {
     var titleWasFocused: Boolean by remember { mutableStateOf(false) }
     var descriptionWasFocused: Boolean by remember { mutableStateOf(false) }
@@ -61,6 +63,11 @@ fun PlaylistHeader(
                 IconButton(onClick = navigateBack) {
                     Icon(Icons.Default.ArrowBack, "Back")
                 }
+            },
+            actions = {
+                IconButton(onClick = deletePlaylist) {
+                    Icon(Icons.Default.Delete, "Delete")
+                }
             }
         )
 
@@ -86,6 +93,6 @@ private fun PlaylistHeaderPreview() {
     val playlistForTest = MutableLiveData(Playlist(1, true, "My amazing playlist 1.0.1", 12345, 12345, "The playlist that I'm going to use to test this playlist entry item thing with lots of text."))
 
     AppTheme {
-        PlaylistHeader("Playlist title", "playlist description", {}, {}, {}, {}, {})
+        PlaylistHeader("Playlist title", "playlist description", {}, {}, {}, {}, {}, {})
     }
 }

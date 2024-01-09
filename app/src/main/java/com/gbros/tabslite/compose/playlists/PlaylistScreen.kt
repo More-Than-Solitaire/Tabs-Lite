@@ -46,6 +46,9 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
     // handle entry deletion
     var playlistEntryToRemove: IPlaylistEntry? by remember { mutableStateOf(null) }
 
+    // handle playlist deletion
+    var deletePlaylist by remember { mutableStateOf(false) }
+
     PlaylistView(
         livePlaylist = playlist,
         songs = orderedSongs,
@@ -54,13 +57,20 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
         descriptionChanged = { updatedDescription = it },
         entryMoved = { src, dest, moveAfter -> entryMovedSrc = src; entryMovedDest = dest; entryMovedMoveAfter = moveAfter },
         entryRemoved = { entry -> playlistEntryToRemove = entry },
-        navigateBack = navigateBack
+        navigateBack = navigateBack,
+        deletePlaylist = { deletePlaylist = true }
     )
 
     BackHandler {
         navigateBack()
     }
 
+    // delete playlist
+    LaunchedEffect(key1 = deletePlaylist) {
+        if (deletePlaylist) {
+            db.playlistDao().deletePlaylist(playlistId)
+        }
+    }
 
     // remove playlist entry
     LaunchedEffect(key1 = playlistEntryToRemove) {
@@ -109,11 +119,14 @@ private fun PlaylistView(
     descriptionChanged: (description: String) -> Unit,
     entryMoved: (src: IPlaylistEntry, dest: IPlaylistEntry, moveAfter: Boolean) -> Unit,
     entryRemoved: (entry: IPlaylistEntry) -> Unit,
+    deletePlaylist: () -> Unit,
     navigateBack: () -> Unit
 ) {
     val playlist by livePlaylist.observeAsState(Playlist(0, true, "", 0, 0, ""))
     var description by remember(playlist) { mutableStateOf(playlist.description) }
     var title by remember(playlist) { mutableStateOf(playlist.title) }
+    var deletePlaylistConfirmationDialogShowing by remember { mutableStateOf(false) }
+    var deleteThisPlaylist by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -126,7 +139,10 @@ private fun PlaylistView(
             descriptionChanged = { description = it },
             titleFinalize = { titleChanged(title) },
             descriptionFinalize = { descriptionChanged(description) },
-            navigateBack = navigateBack
+            navigateBack = navigateBack,
+            deletePlaylist = {
+                deletePlaylistConfirmationDialogShowing = true
+            }
         )
 
         PlaylistSongList(
@@ -144,6 +160,13 @@ private fun PlaylistView(
             },
             onReorder = entryMoved,
             onRemove = entryRemoved
+        )
+    }
+
+    if (deletePlaylistConfirmationDialogShowing) {
+        DeletePlaylistConfirmationDialog(
+            onConfirm = { deletePlaylistConfirmationDialogShowing = false; deletePlaylist(); navigateBack() },
+            onDismiss = { deletePlaylistConfirmationDialogShowing = false }
         )
     }
 }
@@ -175,10 +198,6 @@ private fun sortLinkedList(entries: List<TabWithPlaylistEntry>): List<TabWithPla
 private fun PlaylistViewPreview() {
     AppTheme {
         val playlistForTest = MutableLiveData(Playlist(1, true, "My amazing playlist 1.0.1", 12345, 12345, "The playlist that I'm going to use to test this playlist entry item thing with lots of text."))
-        val tabForTest1 = TabWithPlaylistEntry(1, 1, 1, 2, null, 1234, 0, "Long Time Ago 1", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
-        val tabForTest2 = TabWithPlaylistEntry(2, 1, 1, 3, 1, 1234, 0, "Long Time Ago 2", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
-        val tabForTest3 = TabWithPlaylistEntry(3, 1, 1, null, 2, 1234, 0, "Long Time Ago 3", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
-        val tabListForTest1 = listOf(tabForTest1, tabForTest2, tabForTest3)
 
         PlaylistView(
             livePlaylist = playlistForTest,
@@ -188,7 +207,8 @@ private fun PlaylistViewPreview() {
             descriptionChanged = {},
             entryMoved = {_, _, _ -> },
             entryRemoved = {},
-            navigateBack = {}
+            navigateBack = {},
+            deletePlaylist = {}
         )
     }
 }

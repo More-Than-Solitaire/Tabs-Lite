@@ -66,7 +66,7 @@ fun AddToPlaylistDialog(tabId: Int, transpose: Int, onConfirm: () -> Unit, onDis
                 }
             }
         },
-        onDismissRequest = { },
+        onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(
                 onClick = {
