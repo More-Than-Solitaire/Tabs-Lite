@@ -2,19 +2,19 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="AddToPlaylistDialogPreview">
-        <State />
-      </entry>
-      <entry key="CreatePlaylistDialogPreview">
-        <State />
-      </entry>
       <entry key="HomeScreenPreview">
+        <State />
+      </entry>
+      <entry key="PlaylistPagePreview">
         <State />
       </entry>
       <entry key="PlaylistViewPreview">
         <State />
       </entry>
       <entry key="TabViewPreview">
+        <State />
+      </entry>
+      <entry key="TabsScreenPreview">
         <State />
       </entry>
       <entry key="app">
@@ -30,7 +30,7 @@
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2023-12-19T21:00:05.458371900Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-01-09T00:35:11.253010600Z" />
         </State>
       </entry>
     </value>

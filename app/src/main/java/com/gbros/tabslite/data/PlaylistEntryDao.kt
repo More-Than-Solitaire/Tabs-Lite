@@ -28,10 +28,10 @@ interface PlaylistEntryDao {
     suspend fun getEntryById(entryId: Int): PlaylistEntry?
 
     @Query("UPDATE playlist_entry SET next_entry_id = :nextEntryId WHERE entry_id = :thisEntryId")
-    fun setNextEntryId(thisEntryId: Int?, nextEntryId: Int?)
+    suspend fun setNextEntryId(thisEntryId: Int?, nextEntryId: Int?)
 
     @Query("UPDATE playlist_entry SET prev_entry_id = :prevEntryId WHERE entry_id = :thisEntryId")
-    fun setPrevEntryId(thisEntryId: Int?, prevEntryId: Int?)
+    suspend fun setPrevEntryId(thisEntryId: Int?, prevEntryId: Int?)
 
     @Query("""
             UPDATE playlist_entry SET next_entry_id = (CASE entry_id
@@ -47,24 +47,24 @@ interface PlaylistEntryDao {
                     else prev_entry_id
                     END)
             """)
-    fun moveEntry(srcPrv: Int?, srcNxt: Int?, src: Int, destPrv: Int?, destNxt: Int?)
+    suspend fun moveEntry(srcPrv: Int?, srcNxt: Int?, src: Int, destPrv: Int?, destNxt: Int?)
 
     /**
      * Move an entry to before another entry
      */
-    fun moveEntryBefore(entry: IPlaylistEntry, beforeEntry: IPlaylistEntry) {
+    suspend fun moveEntryBefore(entry: IPlaylistEntry, beforeEntry: IPlaylistEntry) {
         moveEntry(entry.prevEntryId, entry.nextEntryId, entry.entryId, beforeEntry.prevEntryId, beforeEntry.entryId)
     }
 
     /**
      * Move an entry to after another entry
      */
-    fun moveEntryAfter(entry: IPlaylistEntry, afterEntry: IPlaylistEntry) {
+    suspend fun moveEntryAfter(entry: IPlaylistEntry, afterEntry: IPlaylistEntry) {
         moveEntry(entry.prevEntryId, entry.nextEntryId, entry.entryId, afterEntry.entryId, afterEntry.nextEntryId)
     }
 
     @Transaction
-    fun removeEntryFromPlaylist(entry: IPlaylistEntry) {
+    suspend fun removeEntryFromPlaylist(entry: IPlaylistEntry) {
         if (entry.prevEntryId != null) {
             // Update the next entry ID of the previous entry to skip the removed entry
             setNextEntryId(entry.prevEntryId, entry.nextEntryId)
@@ -104,7 +104,7 @@ interface PlaylistEntryDao {
     suspend fun insert(entry: PlaylistEntry): Long
 
     @Query("DELETE FROM playlist_entry WHERE entry_id = :entry_id")
-    fun deleteEntry(entry_id: Int)
+    suspend fun deleteEntry(entry_id: Int)
 
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId AND tab_id = :tabId")
     suspend fun deleteTabFromPlaylist(tabId: Int, playlistId: Int)

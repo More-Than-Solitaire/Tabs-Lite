@@ -104,7 +104,7 @@ fun HomeScreen(
             state = pagerState,
             verticalAlignment = Alignment.Top,
             beyondBoundsPageCount = 3,
-            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(top = 8.dp, bottom = 0.dp, start = 8.dp, end = 8.dp),
             pageSpacing = 8.dp,
             modifier = Modifier
                 .fillMaxHeight()

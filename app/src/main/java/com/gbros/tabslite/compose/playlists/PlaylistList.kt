@@ -1,6 +1,8 @@
 package com.gbros.tabslite.compose.playlists
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -25,6 +27,9 @@ fun PlaylistList(livePlaylists: LiveData<List<Playlist>>, navigateToPlaylistById
             PlaylistListItem(playlist = playlist) {
                 navigateToPlaylistById(playlist.playlistId)
             }
+        }
+        item {
+            Spacer(modifier = Modifier.height(height = 24.dp))
         }
     }
 }

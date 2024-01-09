@@ -1,9 +1,11 @@
 package com.gbros.tabslite.utilities
 
+import android.os.Build
 import android.util.Log
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.data.servertypes.SearchSuggestionType
+import com.gbros.tabslite.data.servertypes.ServerTimestampType
 import com.gbros.tabslite.data.servertypes.TabRequestType
 import com.gbros.tabslite.data.tab.TabDataType
 import com.google.gson.Gson
@@ -13,15 +15,21 @@ import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.io.InputStream
+import java.math.BigInteger
 import java.net.ConnectException
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.URLEncoder
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
+import kotlin.random.Random
 
 private const val LOG_NAME = "tabslite.UgApi         "
 
@@ -34,10 +42,28 @@ object UgApi {
     private val gson = Gson()
     private val cachedSearchSuggestions = HashMap<String, List<String>>()
 
+    private var apiKey: String? = null
+
+    // endregion
+
+    // region public data
+
+    private var storeDeviceId: String? = null
+    private val deviceId: String
+        get() = fetchDeviceId()
+
     // endregion
 
     // region public methods
 
+    /**
+     * Get search suggestions for the given query.  Caches search suggestions internally for faster
+     * update second time through.
+     *
+     * @param [q]: The query to fetch search suggestions for
+     *
+     * @return A string list of suggested searches, or an empty list if no suggestions could be found.
+     */
     suspend fun searchSuggest(q: String): List<String> = withContext(Dispatchers.IO) {
         // If we've already cached search suggestions for this query, skip the internet call and return them directly
         if (cachedSearchSuggestions.contains(q)) {
@@ -178,20 +204,28 @@ object UgApi {
         }
     }
 
-    suspend fun fetchTopTabs(appDatabase: AppDatabase) = coroutineScope {
+    suspend fun fetchTopTabs(appDatabase: AppDatabase) = withContext(Dispatchers.IO) {
         try {
-            // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
-            // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
-            val inputStream: InputStream = authenticatedStream("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0")
             val playlistEntryDao = appDatabase.playlistEntryDao()
             val tabFullDao = appDatabase.tabFullDao()
-            val jsonReader = JsonReader(inputStream.reader())
-            val typeToken = object : TypeToken<List<SearchRequestType.SearchResultTab>>() {}.type
-            val topTabs: List<TabDataType> = (gson.fromJson(
-                jsonReader,
-                typeToken
-            ) as List<SearchRequestType.SearchResultTab>).map { t -> t.tabFull() }
-            inputStream.close()
+
+            // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
+            // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
+            val topTabSearchResults = authenticatedStream("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0").use { inputStream ->
+                val jsonReader = JsonReader(inputStream.reader())
+                val typeToken = object : TypeToken<List<SearchRequestType.SearchResultTab>>() {}.type
+
+                 return@use (gson.fromJson(
+                    jsonReader,
+                    typeToken
+                ) as List<SearchRequestType.SearchResultTab>)
+            }
+            val topTabs: List<TabDataType> = topTabSearchResults.map { t -> t.tabFull() }
+
+            if (topTabs.isEmpty()) {
+                // don't overwrite with an empty list
+                throw Exception("Top tabs result was empty: ${topTabSearchResults.size} results")
+            }
 
             // clear top tabs playlist, then add all these to the top tabs playlist
             playlistEntryDao.clearTopTabsPlaylist()
@@ -271,106 +305,210 @@ object UgApi {
 
     // region private methods
 
+    /**
+     * Gets an authenticated input stream for the passed API URL, updating the API key if needed
+     *
+     * @param url: The UG API url to start an authenticated InputStream with
+     *
+     * @return An [InputStream], authenticated with a valid API key
+     */
     private suspend fun authenticatedStream(url: String): InputStream = withContext(Dispatchers.IO) {
         Log.v(LOG_NAME, "Getting authenticated stream for url: $url.")
-        while (ApiHelper.updatingApiKey) {
-            delay(20)
-        }
-        Log.v(LOG_NAME, "API helper finished updating.")
-        var apiKey: String
-        if (!ApiHelper.apiInit) {
-            ApiHelper.updateApiKey()  // try to initialize ourselves
-
-            // if that didn't work, we don't have internet.
-            if (!ApiHelper.apiInit) {
-                throw Exception("API Key initialization failed while fetching $url.  Likely no internet access.")
+        if (apiKey == null) {
+            try {
+                updateApiKey()
+            } catch (ex: Exception) {
+                throw Exception("API Key initialization failed while fetching $url.  Likely no internet access.", ex)
             }
         }
-        apiKey = ApiHelper.apiKey
-        val deviceId = ApiHelper.getDeviceId()
-        Log.v(LOG_NAME, "Got api key $apiKey and device id $deviceId.")
+
+        // api key is not null
+        Log.v(LOG_NAME, "Api key: $apiKey, device id: $deviceId.")
 
         var responseCode = 0
         try {
-            var conn = URL(url).openConnection() as HttpURLConnection
-            conn.setRequestProperty("Accept-Charset", "utf-8")
-            conn.setRequestProperty("Accept", "application/json")
-            conn.setRequestProperty(
-                "User-Agent",
-                "UGT_ANDROID/5.10.12 ("
-            )  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
-            conn.setRequestProperty(
-                "x-ug-client-id",
-                deviceId
-            )             // stays constant over time; api key and client id are related to each other.
-            conn.setRequestProperty(
-                "x-ug-api-key",
-                apiKey
-            )                 // updates periodically.
-            conn.connectTimeout = (5000)  // timeout of 5 seconds
-            conn.readTimeout = 6000
-            responseCode = conn.responseCode
-            Log.v(LOG_NAME, "Retrieved URL with response code $responseCode.")
+            var numTries = 0
+            do {
+                numTries++
+                val conn = URL(url).openConnection() as HttpURLConnection
+                conn.setRequestProperty("Accept-Charset", "utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.setRequestProperty(
+                    "User-Agent",
+                    "UGT_ANDROID/5.10.12 ("
+                )  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
+                conn.setRequestProperty(
+                    "x-ug-client-id",
+                    deviceId
+                )             // stays constant over time; api key and client id are related to each other.
+                conn.setRequestProperty(
+                    "x-ug-api-key",
+                    apiKey
+                )                 // updates periodically.
+                conn.connectTimeout = (5000)  // timeout of 5 seconds
+                conn.readTimeout = 6000
+                responseCode = conn.responseCode
+                Log.v(LOG_NAME, "Retrieved URL with response code $responseCode.")
 
-            // handle when the api key is outdated
-            if (responseCode == 498) {
-                Log.i(
-                    LOG_NAME,
-                    "498 response code for old api key $apiKey and device id $deviceId.  Refreshing api key"
-                )
-                conn.disconnect()
+                if (responseCode == 498 && numTries == 1) {  // don't bother the second time through
+                    Log.i(
+                        LOG_NAME,
+                        "498 response code for old api key $apiKey and device id $deviceId.  Refreshing api key"
+                    )
+                    conn.disconnect()
 
-                apiKey = ApiHelper.updateApiKey() ?: ""
-                while (ApiHelper.updatingApiKey) {
-                    delay(20)
-                }
-                Log.v(LOG_NAME, "Got new api key ($apiKey)")
-
-                if (apiKey != "") {
-                    apiKey = ApiHelper.apiKey
-                    conn = URL(url).openConnection() as HttpURLConnection
-                    conn.setRequestProperty("Accept", "application/json")
-                    conn.setRequestProperty(
-                        "User-Agent",
-                        "UGT_ANDROID/5.10.12 ("
-                    )  // actual value UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)
-                    conn.setRequestProperty(
-                        "x-ug-client-id",
-                        deviceId
-                    )                   // stays constant over time; api key and client id are related to each other.
-                    conn.setRequestProperty("x-ug-api-key", apiKey)     // updates periodically.
-                    conn.connectTimeout = (5000)  // timeout of 5 seconds
-                    conn.readTimeout = 6000
-
-                    responseCode = 0 - conn.responseCode
+                    try {
+                        updateApiKey()
+                        Log.v(LOG_NAME, "Got new api key ($apiKey)")
+                    } catch (ex: Exception) {
+                        // we don't have an internet connection.  Strange, because we shouldn't have gotten a 498 error code if we had no internet.
+                        val msg =
+                            "498 response code, but api key update returned null! Generally this means we don't have an internet connection.  Strange, because we shouldn't have gotten a 498 error code if we had no internet.  Either precisely perfect timing or something's wrong."
+                        throw Exception(msg, ex)
+                    }
+                } else {
                     Log.v(
                         LOG_NAME,
-                        "Retrieved URL with new API key, getting response code $responseCode (negative to signify that it's the second time through)."
+                        "(final try) Retrieved URL $url (${conn.requestMethod}) with response code $responseCode after $numTries try(s)."
                     )
-                } else {
-                    // we don't have an internet connection.  Strange, because we shouldn't have gotten a 498 error code if we had no internet.
-                    val msg =
-                        "498 response code, but api key update returned null! Generally this means we don't have an internet connection.  Strange, because we shouldn't have gotten a 498 error code if we had no internet.  Either precisely perfect timing or something's wrong."
-                    Log.e(LOG_NAME, msg)
-                    throw Exception(msg)
-                }
-            }
 
-            val inputStream = conn.inputStream
-            Log.v(LOG_NAME, "Success fetching url $url")
-            return@withContext inputStream
+                    if (responseCode != 498) {
+                        return@withContext conn.inputStream
+                    } else {
+                        var content = ""
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            try {
+                                content = conn.inputStream.readAllBytes().toString()
+                            } catch (_: Exception) { }
+                        }
+
+                        throw Exception("Couldn't fetch authenticated stream (498: bad token).  Response code: $responseCode, content: \n$content")
+                    }
+                }
+            } while (true)
+
+            throw Exception("Unreachable: Could not create authenticated stream.")  // shouldn't get here
         } catch (ex: FileNotFoundException) {
             throw Exception("Normal: 404 NOT FOUND during fetch of url $url with parameters apiKey: " +
-                    "$apiKey and deviceId: $deviceId.  Response code $responseCode (negative number " +
-                    "means it was set after refreshing api key)", ex)
+                    "$apiKey and deviceId: $deviceId.  Response code $responseCode", ex)
         } catch (ex: ConnectException) {
             throw Exception("Normal: Could not fetch $url. Response code 0 (no internet access).", ex)
         } catch (ex: SocketTimeoutException) {
             throw Exception("Normal: Could not fetch $url. Response code 0 (no internet access).", ex)
         } catch (ex: Exception) {
             throw Exception("Unexpected exception during fetch of url $url with parameters apiKey: " +
-                    "$apiKey and deviceId: $deviceId.  Response code $responseCode (negative number " +
-                    "means it was set after refreshing api key)", ex)
+                    "$apiKey and deviceId: $deviceId.  Response code $responseCode", ex)
+        }
+    }
+
+    /**
+     * Sets an updated [apiKey], based on the most recent server time.  This needs to be called
+     * whenever we get a 498 response code
+     *
+     * @throws Exception if api key could not be updated (e.g. no internet access)
+     */
+    private suspend fun updateApiKey() {
+        apiKey = null
+        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd:H", Locale.US)
+        simpleDateFormat.timeZone = TimeZone.getTimeZone("UTC")
+        val stringBuilder = StringBuilder(deviceId)
+
+        try {
+            val serverTime = fetchServerTime()
+            stringBuilder.append(serverTime)
+            stringBuilder.append("createLog()")
+            apiKey = getMd5(stringBuilder.toString())
+
+            if (apiKey.isNullOrBlank()) {
+                throw Exception("API key update completed without fetching API key.  Server time: $serverTime.  API key: $apiKey")
+            }
+        } catch(ex: Exception) {
+            throw Exception("Unable to update API key", ex)
+        }
+    }
+
+    /**
+     * Gets the current server time, for use in API calls
+     *
+     * @return The current time according to the server
+     *
+     * @throws Exception if time fetch could not be completed (e.g. if no internet access)
+     */
+    private suspend fun fetchServerTime(): String = withContext(Dispatchers.IO) {
+        val devId = deviceId
+        val lastResult: ServerTimestampType
+        val conn = URL("https://api.ultimate-guitar.com/api/v1/common/hello").openConnection() as HttpURLConnection
+        conn.setRequestProperty("Accept", "application/json")
+        conn.setRequestProperty("User-Agent", "UGT_ANDROID/5.10.12 (")  // actual value "UGT_ANDROID/5.10.11 (ONEPLUS A3000; Android 10)". 5.10.11 is the app version.
+        conn.setRequestProperty("x-ug-client-id", devId)                // stays constant over time; api key and client id are related to each other.
+
+        val serverTimestamp = try {
+            conn.inputStream.use {inputStream ->
+                val jsonReader = JsonReader(inputStream.reader())
+                val serverTimestampTypeToken = object : TypeToken<ServerTimestampType>() {}.type
+                lastResult = Gson().fromJson(jsonReader, serverTimestampTypeToken)
+                lastResult
+            }
+        } catch (ex: Exception){
+            throw Exception( "Error getting hello handshake (server time).  We may not be connected to the internet.", ex)
+        }
+
+        // read server time into our date type of choice
+        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd:H", Locale.US)
+        simpleDateFormat.timeZone = TimeZone.getTimeZone("UTC")
+        val formattedDateString = simpleDateFormat.format(serverTimestamp.getServerTime().time)
+
+        Log.i(LOG_NAME, "Fetched server time: $formattedDateString}")
+        return@withContext formattedDateString
+    }
+
+    /**
+     * Hash a string using the MD5 algorithm
+     *
+     * @param [stringToHash]: The string to hash using the MD5 algorithm
+     *
+     * @return The MD5-hashed version of [stringToHash]
+     *
+     * @throws RuntimeException if the MD5 algorithm doesn't exist on this device
+     */
+    private fun getMd5(stringToHash: String): String {
+        var ret = stringToHash
+
+        try {
+            ret = BigInteger(1, MessageDigest.getInstance("MD5").digest(ret.toByteArray())).toString(16)
+            while (ret.length < 32) {
+                val stringBuilder = java.lang.StringBuilder()
+                stringBuilder.append("0")
+                stringBuilder.append(ret)
+                ret = stringBuilder.toString()
+            }
+            return ret
+        } catch (noSuchAlgorithmException: NoSuchAlgorithmException) {
+            val runtimeException = RuntimeException("Could not complete MD5 hash", noSuchAlgorithmException)
+            throw runtimeException
+        }
+    }
+
+    /**
+     * Ensures that we have a current deviceId stored.  Creates new ID if needed.  Shouldn't be called
+     * directly; use [deviceId] instead.
+     *
+     * @return The current deviceId (setting it if need be)
+     */
+    private fun fetchDeviceId(): String {
+        val copyOfCurrentDeviceId = storeDeviceId
+        return if (copyOfCurrentDeviceId != null) {
+            copyOfCurrentDeviceId
+        } else {
+            // generate a new device id
+            var newId = ""
+            val charList = charArrayOf('1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
+            while(newId.length < 16) {
+                newId += charList[Random.nextInt(0, 15)]
+            }
+            storeDeviceId = newId
+            newId
         }
     }
 

@@ -2,6 +2,7 @@ package com.gbros.tabslite.compose.tabview
 
 import android.content.Intent
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -17,9 +18,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -55,13 +58,19 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
     // remember whether the Add To Playlist dialog is shown currently
     var showAddToPlaylistDialog by remember { mutableStateOf(false) }
 
-    MediumTopAppBar(
+    val topAppBarState = rememberTopAppBarState()
+    TopAppBar(
         title = {
             Text(
-                text = stringResource(R.string.tab_title, tab.songName, tab.artistName),
-                style = MaterialTheme.typography.headlineSmall
+                text = if (topAppBarState.overlappedFraction > 0) stringResource(R.string.tab_title, tab.songName, tab.artistName) else "",
+                style = MaterialTheme.typography.headlineSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth()
             )
         },
+        scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(state = topAppBarState,),
         navigationIcon = {
             IconButton(onClick = navigateBack) {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
@@ -133,8 +142,7 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
                     }
                 )
             }
-        },
-        scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        }
     )
 
     if (showAddToPlaylistDialog) {
@@ -161,7 +169,7 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
 
 @Composable @Preview
 private fun TabTopAppBarPreview() {
-    val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = "hallelujahTabForTest")
+    val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago with more more text to make it longer th", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = "hallelujahTabForTest")
     AppTheme {
         TabTopAppBar(tab = tabForTest, navigateBack = {}, reload = {})
     }

@@ -17,10 +17,14 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,21 +44,72 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
     val playlist = db.playlistDao().getPlaylist(playlistId = playlistId)
-    val songs = db.tabFullDao().getPlaylistTabs(playlistId = playlistId)
+    val songs by db.tabFullDao().getTabsFromPlaylistEntryId(playlistId = playlistId).observeAsState(listOf())
+    var updatedDescription: String? by remember { mutableStateOf(null) }
+    var updatedTitle: String? by remember { mutableStateOf(null) }
+
+    // sort songs by internal linked list
+    val orderedSongs: List<TabWithPlaylistEntry> = remember(songs) { sortLinkedList(songs) }
+
+    // handle entry rearrangement
+    var entryMovedSrc: IPlaylistEntry? by remember { mutableStateOf(null) }
+    var entryMovedDest: IPlaylistEntry? by remember { mutableStateOf(null) }
+    var entryMovedMoveAfter: Boolean? by remember { mutableStateOf(null) }
+
+    // handle entry deletion
+    var playlistEntryToRemove: IPlaylistEntry? by remember { mutableStateOf(null) }
 
     PlaylistView(
         livePlaylist = playlist,
-        liveSongs = songs,
+        songs = orderedSongs,
         navigateToTabByPlaylistEntryId = navigateToTabByPlaylistEntryId,
-        titleChanged = { newTitle -> db.playlistDao().updateTitle(playlistId, newTitle) },
-        descriptionChanged = { newDescription -> db.playlistDao().updateDescription(playlistId, newDescription)},
-        entryMoved = { src, dest, moveAfter -> if (moveAfter) db.playlistEntryDao().moveEntryAfter(src, dest) else db.playlistEntryDao().moveEntryBefore(src, dest) },
-        entryRemoved = { entry -> db.playlistEntryDao().removeEntryFromPlaylist(entry) },
+        titleChanged = { updatedTitle = it },
+        descriptionChanged = { updatedDescription = it },
+        entryMoved = { src, dest, moveAfter -> entryMovedSrc = src; entryMovedDest = dest; entryMovedMoveAfter = moveAfter },
+        entryRemoved = { entry -> playlistEntryToRemove = entry },
         navigateBack = navigateBack
     )
 
     BackHandler {
         navigateBack()
+    }
+
+
+    // remove playlist entry
+    LaunchedEffect(key1 = playlistEntryToRemove) {
+        val entryToRemove = playlistEntryToRemove
+        if (entryToRemove != null) {
+            db.playlistEntryDao().removeEntryFromPlaylist(entryToRemove)
+        }
+    }
+
+    // rearrange playlist entries
+    LaunchedEffect(key1 = entryMovedSrc, key2 = entryMovedDest, key3 = entryMovedMoveAfter) {
+        val src = entryMovedSrc
+        val dest = entryMovedDest
+        val moveAfter = entryMovedMoveAfter
+        if (src != null && dest != null && moveAfter != null) {
+            if (moveAfter)
+                db.playlistEntryDao().moveEntryAfter(src, dest)
+            else
+                db.playlistEntryDao().moveEntryBefore(src, dest)
+        }
+    }
+
+    // update playlist description
+    LaunchedEffect(key1 = updatedDescription) {
+        val copyOfUpdatedDescription = updatedDescription
+        if (copyOfUpdatedDescription != null) {
+            db.playlistDao().updateDescription(playlistId, copyOfUpdatedDescription)
+        }
+    }
+
+    // update playlist title
+    LaunchedEffect(key1 = updatedTitle) {
+        val copyOfUpdatedTitle = updatedTitle
+        if (copyOfUpdatedTitle != null) {
+            db.playlistDao().updateTitle(playlistId, copyOfUpdatedTitle)
+        }
     }
 }
 
@@ -62,7 +117,7 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
 @Composable
 private fun PlaylistView(
     livePlaylist: LiveData<Playlist>,
-    liveSongs: LiveData<List<TabWithPlaylistEntry>>,
+    songs: List<TabWithPlaylistEntry>,
     navigateToTabByPlaylistEntryId: (Int) -> Unit,
     titleChanged: (title: String) -> Unit,
     descriptionChanged: (description: String) -> Unit,
@@ -71,7 +126,10 @@ private fun PlaylistView(
     navigateBack: () -> Unit
 ) {
     val playlist by livePlaylist.observeAsState(Playlist(0, true, "", 0, 0, ""))
-    val songs by liveSongs.observeAsState(listOf())
+    var description by remember(playlist) { mutableStateOf(playlist.description) }
+    var title by remember(playlist) { mutableStateOf(playlist.title) }
+    var titleWasFocused: Boolean? by remember { mutableStateOf(null)}
+    var descriptionWasFocused: Boolean? by remember { mutableStateOf(null)}
 
     Column(
         modifier = Modifier
@@ -80,12 +138,19 @@ private fun PlaylistView(
         TopAppBar(
             title = {
                 TextField(
-                    value = playlist.title,
-                    onValueChange = { titleChanged(it) },
+                    value = title,
+                    onValueChange = { title = it },
                     singleLine = true,
                     placeholder = { Text("Playlist Name") },
                     colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.background),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged {
+                            if (titleWasFocused == true && !it.isFocused && title != playlist.title) {
+                                titleChanged(title)
+                            }
+                            titleWasFocused = it.isFocused
+                        }
                 )
             },
             navigationIcon = {
@@ -96,18 +161,26 @@ private fun PlaylistView(
         )
 
         TextField(
-            value = playlist.description,
-            onValueChange = { descriptionChanged(it) },
+            value = description,
+            onValueChange = { description = it },
             placeholder = { Text("Playlist Description") },
             colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.background),
             modifier = Modifier
                 .fillMaxWidth()
+                .onFocusChanged {
+                    if (descriptionWasFocused == true && !it.isFocused && description != playlist.description) {
+                        descriptionChanged(description)
+                    }
+                    descriptionWasFocused = it.isFocused
+                }
         )
 
         DragDropColumn(
             items = songs,
             onSwap = { src: Int, dest: Int ->
-                entryMoved(songs[src], songs[dest], src > dest)
+                if (src != dest && src < songs.size && dest < songs.size) {
+                    entryMoved(songs[src], songs[dest], src < dest)
+                }
             },
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) { isDragging, song ->
@@ -117,10 +190,21 @@ private fun PlaylistView(
                     SongListItem(
                         song = song,
                         border = if (isDragging) BorderStroke(
-                            0.5f.dp,
+                            1f.dp,
                             MaterialTheme.colorScheme.onSecondaryContainer
                         ) else null,
-                        onClick = { navigateToTabByPlaylistEntryId(song.entryId) })
+                        onClick = {
+                            // save title and description updates
+                            if (title != playlist.title) {
+                                titleChanged(title)
+                            }
+                            if (description != playlist.description) {
+                                descriptionChanged(description)
+                            }
+
+                            navigateToTabByPlaylistEntryId(song.entryId)
+                        }
+                    )
                 }
             )
         }
@@ -128,16 +212,29 @@ private fun PlaylistView(
 
 }
 
+private fun sortLinkedList(entries: List<TabWithPlaylistEntry>): List<TabWithPlaylistEntry> {
+    val entryMap = entries.associateBy { it.entryId }
+    val sortedEntries = mutableListOf<TabWithPlaylistEntry>()
+
+    var currentEntry = entries.firstOrNull { it.prevEntryId == null }
+    while (currentEntry != null) {
+        sortedEntries.add(currentEntry)
+        currentEntry = entryMap[currentEntry.nextEntryId]
+    }
+
+    return sortedEntries
+}
+
 @Composable @Preview
 private fun PlaylistViewPreview() {
     AppTheme {
         val playlistForTest = MutableLiveData(Playlist(1, true, "My amazing playlist 1.0.1", 12345, 12345, "The playlist that I'm going to use to test this playlist entry item thing with lots of text."))
         val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
-        val tabListForTest1 = MutableLiveData(listOf(tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest))
+        val tabListForTest1 = listOf(tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest, tabForTest)
 
         PlaylistView(
             livePlaylist = playlistForTest,
-            liveSongs = tabListForTest1,
+            songs = tabListForTest1,
             navigateToTabByPlaylistEntryId = {},
             titleChanged = {},
             descriptionChanged = {},

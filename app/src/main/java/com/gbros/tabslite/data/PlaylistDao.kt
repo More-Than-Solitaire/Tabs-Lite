@@ -18,10 +18,10 @@ interface PlaylistDao {
     fun updateTimestamp(playlistId: Int, dateModified: Long)
 
     @Query("UPDATE playlist SET title = :newTitle WHERE id = :playlistId")
-    fun updateTitle(playlistId: Int, newTitle: String)
+    suspend fun updateTitle(playlistId: Int, newTitle: String)
 
     @Query("UPDATE playlist SET description = :newDescription WHERE id = :playlistId")
-    fun updateDescription(playlistId: Int, newDescription: String)
+    suspend fun updateDescription(playlistId: Int, newDescription: String)
 
     @Query("SELECT * FROM playlist")
     suspend fun getCurrentPlaylists(): List<Playlist>

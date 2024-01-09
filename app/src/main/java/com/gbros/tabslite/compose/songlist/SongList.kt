@@ -2,7 +2,9 @@ package com.gbros.tabslite.compose.songlist
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -71,6 +73,9 @@ fun SongList(modifier: Modifier = Modifier, liveSongs: LiveData<List<TabWithPlay
                 SongListItem(
                     song = song,
                     onClick = { navigateToTabById(if (navigateByPlaylistEntryId) song.entryId else song.tabId) })
+            }
+            item {
+                Spacer(modifier = Modifier.height(height = 24.dp))
             }
         }
     }
