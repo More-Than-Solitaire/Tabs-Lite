@@ -9,8 +9,8 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.ChordVariationDao
-import com.gbros.tabslite.data.tab.TabDataType
 import com.gbros.tabslite.data.tab.TabDao
+import com.gbros.tabslite.data.tab.TabDataType
 
 const val DATABASE_NAME = "local-tabs-db"
 
@@ -146,7 +146,7 @@ abstract class AppDatabase : RoomDatabase() {
                         "recording_is_acoustic, recording_tonality_name, recording_performance, recording_artists, " +
                         "num_versions, recommended, user_rating, difficulty, tuning, capo, url_web, strumming, " +
                         "videos_count, pro_brother, contributor_user_id, contributor_user_name, content " +
-                        "FROM Tab"
+                        "FROM tabs"
                 )
 
                 // Drop the old table
