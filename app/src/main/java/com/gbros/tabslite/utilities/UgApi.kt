@@ -113,7 +113,7 @@ object UgApi {
      *
      * @return A [SearchRequestType] with the search results, or an empty [SearchRequestType] if there are no search results on that page
      */
-    suspend fun search(query: String, page: Int): SearchRequestType {
+    suspend fun search(query: String, page: Int): SearchRequestType = withContext(Dispatchers.IO) {
         val url =
             "https://api.ultimate-guitar.com/api/v1/tab/search?title=$query&page=$page&type[]=300&official[]=0"
 
@@ -122,7 +122,7 @@ object UgApi {
             inputStream = authenticatedStream(url)
         } catch (ex: Exception) {
             // end of search results
-            return SearchRequestType()
+            return@withContext SearchRequestType()
         }
 
         var result: SearchRequestType
@@ -160,7 +160,7 @@ object UgApi {
             inputStream.close()
         }
 
-        return result
+        return@withContext result
     }
 
     /**

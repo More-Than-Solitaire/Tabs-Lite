@@ -3,10 +3,11 @@ package com.gbros.tabslite.compose.chorddisplay
 import android.util.Log
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.compose.tabview.TabText
 import com.gbros.tabslite.data.AppDatabase
@@ -32,8 +34,9 @@ fun ChordModalBottomSheet(chord: String, onDismiss: () -> Unit){
     var chordVariations: List<ChordVariation> by remember { mutableStateOf(listOf()) }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
+        val navHeight = NavigationBarDefaults.windowInsets.getBottom(Density(1f))
         ChordPager(chordVariations = chordVariations, modifier = Modifier.padding(bottom = 8.dp))
-        Spacer(Modifier.navigationBarsPadding())
+        Spacer(modifier = Modifier.height(navHeight.dp))
     }
 
     LaunchedEffect(key1 = Unit) {
