@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -82,14 +83,15 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
                 .padding(horizontal = 2.dp)
         ) {
             Text(
-                text = if (tab != null) stringResource(
+                text = if (tab != null && tab.content != "" ) stringResource(
                     R.string.tab_title,
                     tab.songName,
                     tab.artistName
-                ) else "",
+                ) else "Loading...",
                 style = MaterialTheme.typography.headlineMedium,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 4.dp)
