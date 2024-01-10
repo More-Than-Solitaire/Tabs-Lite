@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
+import com.gbros.tabslite.compose.ratingicon.RatingIcon
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 
