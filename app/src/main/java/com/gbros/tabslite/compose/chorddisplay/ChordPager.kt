@@ -24,9 +24,13 @@ import com.chrynan.chords.model.Finger
 import com.chrynan.chords.model.FretNumber
 import com.chrynan.chords.model.StringLabelState
 import com.chrynan.chords.model.StringNumber
+import com.chrynan.chords.util.maxFret
+import com.chrynan.chords.util.minFret
 import com.chrynan.colors.RgbaColor
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.ui.theme.AppTheme
+import kotlin.math.max
+import kotlin.math.min
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalUnsignedTypes::class)
 @Composable
@@ -46,9 +50,17 @@ fun ChordPager(modifier: Modifier = Modifier, chordVariations: List<ChordVariati
                         .fillMaxWidth(),
                 )
 
+                val chord = chordVariations[page].toChrynanChord()
+                // set which frets are shown for this chord
+                val defaultMaxFret = 3
+                val defaultMinFret = 1
+                val endFret = max(chord.maxFret, defaultMaxFret)                                 // last fret shown
+                val startFret = min(chord.minFret, max(chord.maxFret - 2, defaultMinFret))    // first fret shown
+                val chartLayout = ChordChart.STANDARD_TUNING_GUITAR_CHART.copy(fretStart = FretNumber(startFret), fretEnd = FretNumber(endFret))
+
                 ChordWidget(
-                    chord = chordVariations[page].toChrynanChord(),
-                    chart = ChordChart.STANDARD_TUNING_GUITAR_CHART,
+                    chord = chord,
+                    chart = chartLayout,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(240.dp),
@@ -104,6 +116,64 @@ fun ChordPagerPreview() {
                 ChordMarker.Muted(StringNumber(6))
             ),
             arrayListOf()
+        ),
+        ChordVariation("varid1234", "Am",
+            arrayListOf(
+                ChordMarker.Note(FretNumber(1), Finger.INDEX, StringNumber(4)),
+                ChordMarker.Note(FretNumber(2), Finger.MIDDLE, StringNumber(3)),
+                ChordMarker.Note(FretNumber(2), Finger.RING, StringNumber(2))
+            ),
+            arrayListOf(
+                ChordMarker.Open(StringNumber(1)),
+                ChordMarker.Open(StringNumber(5))
+            ),
+            arrayListOf(
+                ChordMarker.Muted(StringNumber(6))
+            ),
+            arrayListOf()
+        ),
+        ChordVariation("varid1234", "Am",
+            arrayListOf(
+                ChordMarker.Note(FretNumber(1), Finger.INDEX, StringNumber(4)),
+                ChordMarker.Note(FretNumber(2), Finger.MIDDLE, StringNumber(3)),
+                ChordMarker.Note(FretNumber(2), Finger.RING, StringNumber(2))
+            ),
+            arrayListOf(
+                ChordMarker.Open(StringNumber(1)),
+                ChordMarker.Open(StringNumber(5))
+            ),
+            arrayListOf(
+                ChordMarker.Muted(StringNumber(6))
+            ),
+            arrayListOf()
+        )
+    )
+
+    AppTheme {
+        ChordPager(chordVariations = chords)
+    }
+}
+
+
+@Composable @Preview
+fun ChordPagerBarredChordsPreview() {
+    /**
+     * Automatically add these chords to an empty constructor
+     */
+    val chords = listOf(
+        ChordVariation("varid1234", "Am",
+            noteChordMarkers = arrayListOf(
+                ChordMarker.Note(FretNumber(4), Finger.MIDDLE, StringNumber(2)),
+                ChordMarker.Note(FretNumber(5), Finger.RING, StringNumber(3)),
+                ChordMarker.Note(FretNumber(5), Finger.PINKY, StringNumber(4))
+            ),
+            openChordMarkers = arrayListOf(),
+            mutedChordMarkers = arrayListOf(
+                ChordMarker.Muted(StringNumber(6))
+            ),
+            barChordMarkers = arrayListOf(
+                ChordMarker.Bar(FretNumber(3), Finger.INDEX, StringNumber(1), StringNumber(5))
+            )
         ),
         ChordVariation("varid1234", "Am",
             arrayListOf(
