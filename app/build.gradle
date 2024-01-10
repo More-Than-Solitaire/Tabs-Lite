@@ -98,7 +98,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.21"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.22'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2'
@@ -120,5 +120,5 @@ dependencies {
     androidTestImplementation "androidx.work:work-testing:2.9.0"
     androidTestImplementation 'com.google.truth:truth:1.2.0'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation "io.mockk:mockk:1.13.8"
+    testImplementation 'io.mockk:mockk:1.13.9'
 }
