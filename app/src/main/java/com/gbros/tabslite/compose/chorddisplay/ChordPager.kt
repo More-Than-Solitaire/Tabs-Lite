@@ -1,25 +1,16 @@
 package com.gbros.tabslite.compose.chorddisplay
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,71 +29,42 @@ import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalUnsignedTypes::class)
 @Composable
-fun ChordPager(chordVariations: List<ChordVariation>) {
+fun ChordPager(modifier: Modifier = Modifier, chordVariations: List<ChordVariation>) {
     if (chordVariations.isNotEmpty()) {
-        val pagerState = rememberPagerState {
-            chordVariations.size
-        }
-
-        Column {
-            HorizontalPager(
-                pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) { page ->
-                Column {
-                    Text(
-                        text = chordVariations[page].chordId,
-                        fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                    )
-
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .height(240.dp)
-                    ) {
-                        ChordWidget(
-                            chord = chordVariations[page].toChrynanChord(),
-                            chart = ChordChart.STANDARD_TUNING_GUITAR_CHART,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(),
-                            viewData = ChordViewData(
-                                noteColor = MaterialTheme.colorScheme.primary.toChrynanRgba(),
-                                noteLabelTextColor = MaterialTheme.colorScheme.onPrimary.toChrynanRgba(),
-                                fretColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                                fretLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                                stringColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                                stringLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                                stringLabelState = StringLabelState.SHOW_LABEL,
-                                fitToHeight = true
-                            )
-                        )
-                    }
-                }
-            }
-
-            // current page indicator
-            Row(
-                Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .padding(top = 6.dp),
-                horizontalArrangement = Arrangement.Center
+        HorizontalIndicatorPager(modifier = modifier, pageCount = chordVariations.size) { page ->
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                repeat(pagerState.pageCount) {  // draw current page indicator
-                    val color =
-                        if (pagerState.currentPage == it) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                    Box(
+                Text(
+                    text = chordVariations[page].chordId,
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .height(240.dp)
+                ) {
+                    ChordWidget(
+                        chord = chordVariations[page].toChrynanChord(),
+                        chart = ChordChart.STANDARD_TUNING_GUITAR_CHART,
                         modifier = Modifier
-                            .padding(2.dp)
-                            .clip(CircleShape)
-                            .background(color)
-                            .size(10.dp)
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        viewData = ChordViewData(
+                            noteColor = MaterialTheme.colorScheme.primary.toChrynanRgba(),
+                            noteLabelTextColor = MaterialTheme.colorScheme.onPrimary.toChrynanRgba(),
+                            fretColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                            fretLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                            stringColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                            stringLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                            stringLabelState = StringLabelState.SHOW_LABEL,
+                            fitToHeight = true
+                        )
                     )
                 }
             }

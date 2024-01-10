@@ -3,7 +3,6 @@ package com.gbros.tabslite.compose.tabview
 import android.util.Log
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,7 +33,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.sp
 import com.gbros.tabslite.R
-import com.gbros.tabslite.compose.chorddisplay.ChordModalBottomSheetPreview
+import com.gbros.tabslite.compose.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.smarttoolfactory.gesture.detectTransformGestures
 import kotlin.math.floor
@@ -115,7 +114,6 @@ fun TabText(modifier: Modifier = Modifier, text: String, onChordClick: (String) 
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable @Preview
 fun TabTextTestCase1() {
     AppTheme {
@@ -135,12 +133,14 @@ fun TabTextTestCase1() {
         )
 
         if (bottomSheetTrigger) {
-            ChordModalBottomSheetPreview() {
+            ChordModalBottomSheet(chordToShow) {
                 Log.d(LOG_NAME, "bottom sheet dismissed")
                 bottomSheetTrigger = false
             }
         }
-    }}
+    }
+}
+
 @Composable @Preview
 fun TabTextPreview() {
     val hallelujahTabForTest = """

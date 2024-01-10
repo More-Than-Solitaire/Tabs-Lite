@@ -2,16 +2,16 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="PlaylistPagePreview">
+      <entry key="ChordModalBottomSheetPreview">
+        <State />
+      </entry>
+      <entry key="HorizontalIndicatorPagerPreview">
         <State />
       </entry>
       <entry key="PlaylistSongListPreview">
         <State />
       </entry>
       <entry key="PlaylistViewPreview">
-        <State />
-      </entry>
-      <entry key="PlaylistViewPreview (1)">
         <State />
       </entry>
       <entry key="VerticalReorderList">
