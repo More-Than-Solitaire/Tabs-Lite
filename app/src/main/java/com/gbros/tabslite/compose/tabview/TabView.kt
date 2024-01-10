@@ -124,19 +124,19 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
         }
     }
 
-    val scrollSpeed = remember { mutableFloatStateOf(1.0f) }
-    val autoscrollEnabled = remember { mutableStateOf(false)}
+    var autoscrollDelay by remember { mutableFloatStateOf(1.0f) }
+    var autoscrollEnabled by remember { mutableStateOf(false)}
     var forcePauseScroll by remember{mutableStateOf(false)}
     AutoscrollFloatingActionButton(
         onPlay = { initialSpeed ->
-            scrollSpeed.floatValue = initialSpeed
-            autoscrollEnabled.value = true
+            autoscrollDelay = initialSpeed
+            autoscrollEnabled = true
         },
         onPause = {
-            autoscrollEnabled.value = false
+            autoscrollEnabled = false
             forcePauseScroll = false  // ensure we can still manually start autoscroll again
         },
-        onSpeedChange = { newSpeed -> scrollSpeed.floatValue = newSpeed },
+        onValueChange = { newValue -> autoscrollDelay = newValue },
         forcePause = forcePauseScroll
     )
 
@@ -149,11 +149,11 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
         )
     }
 
-    if (autoscrollEnabled.value) {
-        LaunchedEffect(key1 = scrollSpeed.floatValue) {
+    if (autoscrollEnabled) {
+        LaunchedEffect(key1 = autoscrollDelay) {
             val maxScrollValue = scrollState.maxValue
             while (isActive) {
-                delay((100 / scrollSpeed.floatValue).toLong())
+                delay(autoscrollDelay.toLong())
                 if (!scrollState.isScrollInProgress) {  // pause autoscroll while user is manually scrolling
                     val newScrollPosition = scrollState.value + 1
 
