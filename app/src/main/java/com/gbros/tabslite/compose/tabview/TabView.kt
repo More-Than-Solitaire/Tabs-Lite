@@ -105,7 +105,9 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
                 chordToShow = chord
             }
         } else {
-            Box(modifier = Modifier.fillMaxSize().padding(all = 24.dp), contentAlignment = Alignment.Center){
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(all = 24.dp), contentAlignment = Alignment.Center){
                 if (loading) {
                     CircularProgressIndicator()
                     LaunchedEffect(key1 = Unit) {
@@ -150,6 +152,8 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
     }
 
     if (autoscrollEnabled) {
+        KeepScreenOn()
+
         LaunchedEffect(key1 = autoscrollDelay) {
             val maxScrollValue = scrollState.maxValue
             while (isActive) {

@@ -44,9 +44,9 @@ import com.gbros.tabslite.ui.theme.AppTheme
  */
 @Composable
 fun AutoscrollFloatingActionButton(
-    initialDelay: Float = 10f,
-    minDelay: Float = 2f,  // fastest speed
-    maxDelay: Float = 42f, // slowest speed
+    initialDelay: Float = 11f,
+    minDelay: Float = 1f,  // fastest speed
+    maxDelay: Float = 45f, // slowest speed
     onPlay: (initialDelay: Float) -> Unit,
     onPause: () -> Unit,
     onValueChange: (newDelay: Float) -> Unit,
