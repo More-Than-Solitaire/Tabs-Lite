@@ -3,6 +3,7 @@ package com.gbros.tabslite.utilities
 import android.os.Build
 import android.util.Log
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.data.servertypes.SearchSuggestionType
 import com.gbros.tabslite.data.servertypes.ServerTimestampType
@@ -14,7 +15,6 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -163,45 +163,56 @@ object UgApi {
         return result
     }
 
+    /**
+     * Retrieves updated chord charts for the passed list of chords from the internet API, saves them
+     * to the database, and returns a map from each chord name passed to the list of chord charts
+     *
+     * @param chordIds: List of chord names to fetch.  E.g. A#m7, Gsus, A
+     * @param database: Database to save the updated chords to
+     * @param tuning: The instrument tuning for the tabs to fetch
+     * @param instrument: The instrument to fetch chords for.  Default: 'guitar'.
+     *
+     * @return Map from chord ID to the list of [ChordVariation] for that chord
+     */
     suspend fun updateChordVariations(
         chordIds: List<CharSequence>,
         database: AppDatabase,
-        force: Boolean = false,
         tuning: String = "E A D G B E",
         instrument: String = "guitar"
-    ) = coroutineScope {
+    ): Map<String, List<ChordVariation>> = withContext(Dispatchers.IO) {
+        val resultMap: MutableMap<String, List<ChordVariation>> = mutableMapOf()
+
         var chordParam = ""
         for (chord in chordIds) {
-            if (force || !database.chordVariationDao()
-                    .chordExists(chord.toString())
-            ) { // if the chord already exists in the db at all, we can assume we have all variations of it.  Not often a new chord is created
-                val uChord = URLEncoder.encode(chord.toString(), "utf-8")
-                chordParam += "&chords[]=$uChord"
-            }
+            val uChord = URLEncoder.encode(chord.toString(), "utf-8")
+            chordParam += "&chords[]=$uChord"
         }
 
-        if (chordParam.isNotEmpty()) {
-            val uTuning = URLEncoder.encode(tuning, "utf-8")
-            val uInstrument = URLEncoder.encode(instrument, "utf-8")
-            val url =
-                "https://api.ultimate-guitar.com/api/v1/tab/applicature?instrument=$uInstrument&tuning=$uTuning$chordParam"
-            try {
-                val inputStream = authenticatedStream(url)
+        val uTuning = URLEncoder.encode(tuning, "utf-8")
+        val uInstrument = URLEncoder.encode(instrument, "utf-8")
+        val url =
+            "https://api.ultimate-guitar.com/api/v1/tab/applicature?instrument=$uInstrument&tuning=$uTuning$chordParam"
+        try {
+            val results: List<TabRequestType.ChordInfo> = authenticatedStream(url).use { inputStream ->
                 val jsonReader = JsonReader(inputStream.reader())
                 val chordRequestTypeToken =
                     object : TypeToken<List<TabRequestType.ChordInfo>>() {}.type
-                val results: List<TabRequestType.ChordInfo> =
-                    gson.fromJson(jsonReader, chordRequestTypeToken)
-                for (result in results) {
-                    database.chordVariationDao().insertAll(result.getChordVariations())
-                }
-                inputStream.close()
-            } catch (ex: Exception) {
-                val chordCount = chordIds.size
-                Log.i(LOG_NAME, "Error fetching chords.  chordParam is empty.  That means all the chords are already in the database.  Chord count that we're looking for: $chordCount.")
-                cancel("Error fetching chord(s).")
+                gson.fromJson(jsonReader, chordRequestTypeToken)
             }
+            for (result in results) {
+                resultMap[result.chord] = result.getChordVariations()
+                database.chordVariationDao().insertAll(result.getChordVariations())
+            }
+        } catch (ex: Exception) {
+            val chordCount = chordIds.size
+            Log.i(
+                LOG_NAME,
+                "Error fetching chords.  chordParam: $chordParam.  That means all the chords are already in the database.  Chord count that we're looking for: $chordCount."
+            )
+            cancel("Error fetching chord(s).")
         }
+
+        return@withContext resultMap
     }
 
     suspend fun fetchTopTabs(appDatabase: AppDatabase) = withContext(Dispatchers.IO) {

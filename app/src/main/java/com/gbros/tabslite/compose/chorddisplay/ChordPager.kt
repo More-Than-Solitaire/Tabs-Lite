@@ -18,8 +18,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -36,16 +34,14 @@ import com.chrynan.chords.model.StringLabelState
 import com.chrynan.chords.model.StringNumber
 import com.chrynan.colors.RgbaColor
 import com.gbros.tabslite.data.chord.ChordVariation
-import com.gbros.tabslite.data.chord.ICompleteChord
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalUnsignedTypes::class)
 @Composable
-fun ChordPager(chords: ICompleteChord) {
-    val chordItems by chords.observeAsState()
-    if (!chordItems.isNullOrEmpty()) {
+fun ChordPager(chordVariations: List<ChordVariation>) {
+    if (chordVariations.isNotEmpty()) {
         val pagerState = rememberPagerState {
-            chordItems!!.size
+            chordVariations.size
         }
 
         Column {
@@ -56,7 +52,7 @@ fun ChordPager(chords: ICompleteChord) {
             ) { page ->
                 Column {
                     Text(
-                        text = chordItems!![page].chordId,
+                        text = chordVariations[page].chordId,
                         fontSize = MaterialTheme.typography.headlineLarge.fontSize,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onBackground,
@@ -70,7 +66,7 @@ fun ChordPager(chords: ICompleteChord) {
                             .height(240.dp)
                     ) {
                         ChordWidget(
-                            chord = chordItems!![page].toChrynanChord(),
+                            chord = chordVariations[page].toChrynanChord(),
                             chart = ChordChart.STANDARD_TUNING_GUITAR_CHART,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -122,17 +118,10 @@ fun Color.toChrynanRgba() : RgbaColor {
 
 @Composable @Preview
 fun ChordPagerPreview() {
-
-    AppTheme {
-        ChordPager(chords = CompleteChordForTest())
-    }
-}
-
-internal class CompleteChordForTest: ICompleteChord {
     /**
      * Automatically add these chords to an empty constructor
      */
-    constructor(): this(listOf(
+    val chords = listOf(
         ChordVariation("varid1234", "Am",
             arrayListOf(
                 ChordMarker.Note(FretNumber(1), Finger.INDEX, StringNumber(4)),
@@ -178,9 +167,11 @@ internal class CompleteChordForTest: ICompleteChord {
             ),
             arrayListOf()
         )
-    ))
+    )
 
-    constructor(initialValues: List<ChordVariation>) : super("Am", initialValues)
+    AppTheme {
+        ChordPager(chordVariations = chords)
+    }
 }
 
 //endregion

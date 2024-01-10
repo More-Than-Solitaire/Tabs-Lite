@@ -31,7 +31,6 @@ import com.gbros.tabslite.compose.ErrorCard
 import com.gbros.tabslite.compose.addtoplaylistdialog.AddToPlaylistDialog
 import com.gbros.tabslite.compose.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.chord.CompleteChord
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
@@ -48,7 +47,6 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
 
     // handle chord clicks
     var chordToShow by remember { mutableStateOf("") }
-    var bottomSheetTrigger by remember { mutableStateOf(false) }
     val currentContext = LocalContext.current
     val db: AppDatabase = remember {AppDatabase.getInstance(currentContext) }
 
@@ -105,7 +103,6 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
                     .padding(bottom = 64.dp)
             ) { chord ->
                 chordToShow = chord
-                bottomSheetTrigger = true
             }
         } else {
             Box(modifier = Modifier.fillMaxSize().padding(all = 24.dp), contentAlignment = Alignment.Center){
@@ -122,10 +119,8 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
         }
 
         // chord bottom sheet display if a chord was clicked
-        if (bottomSheetTrigger) {
-            ChordModalBottomSheet(chords = CompleteChord(db, chordToShow)) {
-                bottomSheetTrigger = false
-            }
+        if (chordToShow.isNotBlank()) {
+            ChordModalBottomSheet(chord = chordToShow, onDismiss = { chordToShow = "" })
         }
     }
 

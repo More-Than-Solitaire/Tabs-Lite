@@ -1,7 +1,7 @@
 package com.gbros.tabslite.data.tab
 
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.chord.ICompleteChord
+import com.gbros.tabslite.data.chord.Chord
 import com.gbros.tabslite.utilities.UgApi
 
 interface ITab {
@@ -98,11 +98,11 @@ interface ITab {
      * @param halfSteps: The number of half steps to transpose this tab
      */
     fun transpose(halfSteps: Int) {
-        tonalityName = ICompleteChord.transposeChord(tonalityName, halfSteps)
+        tonalityName = Chord.transposeChord(tonalityName, halfSteps)
         val chordPattern = Regex("\\[ch](.*?)\\[/ch]")
         val transposedContent = chordPattern.replace(this.content) {
             val chord = it.groupValues[1]
-            "[ch]" + ICompleteChord.transposeChord(chord, halfSteps) + "[/ch]"
+            "[ch]" + Chord.transposeChord(chord, halfSteps) + "[/ch]"
         }
 
         content = transposedContent
