@@ -29,8 +29,8 @@ android {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        versionCode 3320
-        versionName "3.3.2"
+        versionCode 3330
+        versionName "3.3.3"
         vectorDrawables.useSupportLibrary true
     }
     buildTypes {
