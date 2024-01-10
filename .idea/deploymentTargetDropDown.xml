@@ -5,6 +5,9 @@
       <entry key="ChordModalBottomSheetPreview">
         <State />
       </entry>
+      <entry key="ChordPagerPreview">
+        <State />
+      </entry>
       <entry key="HorizontalIndicatorPagerPreview">
         <State />
       </entry>
@@ -12,9 +15,6 @@
         <State />
       </entry>
       <entry key="PlaylistViewPreview">
-        <State />
-      </entry>
-      <entry key="VerticalReorderList">
         <State />
       </entry>
       <entry key="app">

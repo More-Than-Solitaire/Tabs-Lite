@@ -2,14 +2,15 @@ package com.gbros.tabslite.compose.chorddisplay
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -33,7 +34,8 @@ fun ChordPager(modifier: Modifier = Modifier, chordVariations: List<ChordVariati
     if (chordVariations.isNotEmpty()) {
         HorizontalIndicatorPager(modifier = modifier, pageCount = chordVariations.size) { page ->
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = chordVariations[page].chordId,
@@ -44,30 +46,34 @@ fun ChordPager(modifier: Modifier = Modifier, chordVariations: List<ChordVariati
                         .fillMaxWidth(),
                 )
 
-                Row(
-                    horizontalArrangement = Arrangement.Center,
+                ChordWidget(
+                    chord = chordVariations[page].toChrynanChord(),
+                    chart = ChordChart.STANDARD_TUNING_GUITAR_CHART,
                     modifier = Modifier
-                        .height(240.dp)
-                ) {
-                    ChordWidget(
-                        chord = chordVariations[page].toChrynanChord(),
-                        chart = ChordChart.STANDARD_TUNING_GUITAR_CHART,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(),
-                        viewData = ChordViewData(
-                            noteColor = MaterialTheme.colorScheme.primary.toChrynanRgba(),
-                            noteLabelTextColor = MaterialTheme.colorScheme.onPrimary.toChrynanRgba(),
-                            fretColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                            fretLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                            stringColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                            stringLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                            stringLabelState = StringLabelState.SHOW_LABEL,
-                            fitToHeight = true
-                        )
+                        .fillMaxWidth()
+                        .height(240.dp),
+                    viewData = ChordViewData(
+                        noteColor = MaterialTheme.colorScheme.primary.toChrynanRgba(),
+                        noteLabelTextColor = MaterialTheme.colorScheme.onPrimary.toChrynanRgba(),
+                        fretColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                        fretLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                        stringColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                        stringLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                        stringLabelState = StringLabelState.SHOW_LABEL,
+                        fitToHeight = true
                     )
-                }
+                )
             }
+        }
+    } else {
+        // show loading progress indicator
+        Box(
+            modifier = Modifier
+                .height(312.dp)  // this is the size of the components above added together, minus the text
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
         }
     }
 }

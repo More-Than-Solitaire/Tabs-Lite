@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -43,7 +42,8 @@ import com.gbros.tabslite.ui.theme.AppTheme
 fun HorizontalIndicatorPager(modifier: Modifier = Modifier, pageCount: Int, content: @Composable PagerScope.(page: Int) -> Unit) {
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         val pagerState = rememberPagerState(pageCount = { pageCount })
         val indicatorScrollState = rememberLazyListState()
@@ -74,7 +74,6 @@ fun HorizontalIndicatorPager(modifier: Modifier = Modifier, pageCount: Int, cont
             state = indicatorScrollState,
             userScrollEnabled = false,
             modifier = Modifier
-                .height(50.dp)
                 .width(((6 + 16) * 2 + 3 * (10 + 16)).dp), // I'm hard computing it to simplify
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
@@ -97,9 +96,7 @@ fun HorizontalIndicatorPager(modifier: Modifier = Modifier, pageCount: Int, cont
                         modifier = Modifier
                             .padding(8.dp)
                             .background(color, CircleShape)
-                            .size(
-                                size
-                            )
+                            .size(size)
                     )
                 }
             }
