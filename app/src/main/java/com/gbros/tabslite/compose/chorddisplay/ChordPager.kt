@@ -36,27 +36,41 @@ import kotlin.math.min
 @Composable
 fun ChordPager(modifier: Modifier = Modifier, chordVariations: List<ChordVariation>) {
     if (chordVariations.isNotEmpty()) {
-        HorizontalIndicatorPager(modifier = modifier, pageCount = chordVariations.size) { page ->
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = chordVariations[page].chordId,
-                    fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Text(
+                text = chordVariations[0].chordId,
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier
+                    .fillMaxWidth(),
+            )
+
+            HorizontalIndicatorPager(
+                modifier = modifier,
+                pageCount = chordVariations.size
+            ) { page ->
 
                 val chord = chordVariations[page].toChrynanChord()
                 // set which frets are shown for this chord
                 val defaultMaxFret = 3
                 val defaultMinFret = 1
-                val endFret = max(chord.maxFret, defaultMaxFret)                                 // last fret shown
-                val startFret = min(chord.minFret, max(chord.maxFret - 2, defaultMinFret))    // first fret shown
-                val chartLayout = ChordChart.STANDARD_TUNING_GUITAR_CHART.copy(fretStart = FretNumber(startFret), fretEnd = FretNumber(endFret))
+                val endFret = max(
+                    chord.maxFret,
+                    defaultMaxFret
+                )                                 // last fret shown
+                val startFret = min(
+                    chord.minFret,
+                    max(chord.maxFret - 2, defaultMinFret)
+                )    // first fret shown
+                val chartLayout = ChordChart.STANDARD_TUNING_GUITAR_CHART.copy(
+                    fretStart = FretNumber(startFret),
+                    fretEnd = FretNumber(endFret)
+                )
 
                 ChordWidget(
                     chord = chord,
