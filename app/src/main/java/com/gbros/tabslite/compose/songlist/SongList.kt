@@ -1,8 +1,10 @@
 package com.gbros.tabslite.compose.songlist
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,17 +24,28 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.gbros.tabslite.compose.InfoCard
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SongList(modifier: Modifier = Modifier, liveSongs: LiveData<List<TabWithPlaylistEntry>>, navigateByPlaylistEntryId: Boolean = false, navigateToTabById: (id: Int) -> Unit, verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp), initialSortBy: SortBy, sorter: (SortBy, List<TabWithPlaylistEntry>) -> List<TabWithPlaylistEntry>){
+fun SongList(
+    modifier: Modifier = Modifier,
+    liveSongs: LiveData<List<TabWithPlaylistEntry>>,
+    navigateByPlaylistEntryId: Boolean = false,
+    navigateToTabById: (id: Int) -> Unit,
+    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp),
+    initialSortBy: SortBy,
+    sorter: (SortBy, List<TabWithPlaylistEntry>) -> List<TabWithPlaylistEntry>,
+    emptyListText: String = "Nothing here!"
+){
     var expanded by remember { mutableStateOf(false) }
     val songs by liveSongs.observeAsState(listOf())
     var sortBy: SortBy by remember { mutableStateOf(initialSortBy) }
@@ -65,17 +78,30 @@ fun SongList(modifier: Modifier = Modifier, liveSongs: LiveData<List<TabWithPlay
             }
         }
 
-        LazyColumn(
-            verticalArrangement = verticalArrangement,
-            modifier = modifier
-        ) {
-            items(sortedSongs) { song ->
-                SongListItem(
-                    song = song,
-                    onClick = { navigateToTabById(if (navigateByPlaylistEntryId) song.entryId else song.tabId) })
+        if (sortedSongs.isEmpty()) {
+            // no songs
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(all = 16.dp)
+            ) {
+                InfoCard(text = emptyListText)
             }
-            item {
-                Spacer(modifier = Modifier.height(height = 24.dp))
+        } else {
+
+            LazyColumn(
+                verticalArrangement = verticalArrangement,
+                modifier = modifier
+            ) {
+                items(sortedSongs) { song ->
+                    SongListItem(
+                        song = song,
+                        onClick = { navigateToTabById(if (navigateByPlaylistEntryId) song.entryId else song.tabId) })
+                }
+                item {
+                    Spacer(modifier = Modifier.height(height = 24.dp))
+                }
             }
         }
     }

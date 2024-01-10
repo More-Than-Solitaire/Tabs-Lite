@@ -118,7 +118,8 @@ fun HomeScreen(
                             SortBy.ArtistName -> songs.sortedBy { it.artistName }
                             SortBy.DateAdded -> songs
                         }
-                    })
+                    },
+                    emptyListText = "Select the heart icon on any song to save it offline in this list.")
                 1 -> SongList(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, initialSortBy = SortBy.Popularity,
                     sorter = {sortBy, songs ->
                         when(sortBy) {
@@ -127,7 +128,8 @@ fun HomeScreen(
                             SortBy.ArtistName -> songs.sortedBy { it.artistName }
                             SortBy.DateAdded -> songs.sortedBy { it.dateAdded }
                         }
-                })
+                    },
+                    emptyListText = "Today's popular songs will load when you're connected to the internet.")
                 2 -> PlaylistPage(livePlaylists = db.playlistDao().getPlaylists(), navigateToPlaylistById = navigateToPlaylistById)
             }
         }

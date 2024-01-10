@@ -2,9 +2,11 @@ package com.gbros.tabslite.compose.playlists
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -24,6 +27,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
+import com.gbros.tabslite.compose.InfoCard
 import com.gbros.tabslite.compose.songlist.SongListItem
 import com.gbros.tabslite.compose.swipetodismiss.MaterialSwipeToDismiss
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
@@ -83,43 +87,55 @@ fun PlaylistSongList(
         }
     )
 
-    Column {
-        LazyColumn(
-            state = reorderState.listState,
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+    if (songs.isEmpty()) {
+        // empty playlist
+        Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
-                .reorderable(reorderState)
-                .detectReorderAfterLongPress(reorderState)
-                .padding(top = 8.dp)
-                .fillMaxHeight()
+                .fillMaxSize()
+                .padding(all = 16.dp)
         ) {
-            items(items = reorderedSongsForDisplay, key = { it }) { song ->
-                ReorderableItem(state = reorderState, key = song) { isDragging ->
-                    val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
+            InfoCard(text = "Add songs to your playlist by finding the song you'd like and selecting the three dot menu at the top right of the screen.")
+        }
+    } else {
+        Column {
+            LazyColumn(
+                state = reorderState.listState,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+                    .reorderable(reorderState)
+                    .detectReorderAfterLongPress(reorderState)
+                    .padding(top = 8.dp)
+                    .fillMaxHeight()
+            ) {
+                items(items = reorderedSongsForDisplay, key = { it }) { song ->
+                    ReorderableItem(state = reorderState, key = song) { isDragging ->
+                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
 
-                    MaterialSwipeToDismiss(onRemove = {
-                        onRemove(song)
-                    }) {
-                        SongListItem(
-                            song = song,
-                            modifier = Modifier
-                                .shadow(elevation.value),
-                            prependItem = {
-                                Icon(
-                                    imageVector = ImageVector.vectorResource(R.drawable.ic_drag_handle),
-                                    contentDescription = "Drag to reorder",
-                                    modifier = Modifier
-                                        .detectReorder(reorderState)
-                                        .padding(end = 4.dp)
-                                )
-                            },
-                            onClick = { navigateToTabByPlaylistEntryId(song.entryId) }
-                        )
+                        MaterialSwipeToDismiss(onRemove = {
+                            onRemove(song)
+                        }) {
+                            SongListItem(
+                                song = song,
+                                modifier = Modifier
+                                    .shadow(elevation.value),
+                                prependItem = {
+                                    Icon(
+                                        imageVector = ImageVector.vectorResource(R.drawable.ic_drag_handle),
+                                        contentDescription = "Drag to reorder",
+                                        modifier = Modifier
+                                            .detectReorder(reorderState)
+                                            .padding(end = 4.dp)
+                                    )
+                                },
+                                onClick = { navigateToTabByPlaylistEntryId(song.entryId) }
+                            )
+                        }
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(height = 24.dp))
         }
-        Spacer(modifier = Modifier.height(height = 24.dp))
     }
 }
 
@@ -127,6 +143,18 @@ fun PlaylistSongList(
 private fun PlaylistSongListPreview() {
     AppTheme {
         PlaylistSongList(songs = createListOfTabWithPlaylistEntry(20), navigateToTabByPlaylistEntryId = {}, onReorder = { _, _, _->}, onRemove = {})
+    }
+}
+
+@Composable @Preview
+private fun EmptyPlaylistSongListPreview() {
+    AppTheme {
+        PlaylistSongList(
+            songs = listOf(),
+            navigateToTabByPlaylistEntryId = {},
+            onReorder = { _, _, _ -> },
+            onRemove = {}
+        )
     }
 }
 
