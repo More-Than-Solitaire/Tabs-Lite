@@ -77,45 +77,60 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
     ) {
         TabTopAppBar(tab = myTab, navigateBack = navigateBack, reload = {reloadTab = true})
 
-        Text(
-            text = if (tab != null) stringResource(R.string.tab_title, tab.songName, tab.artistName) else "",
-            style = MaterialTheme.typography.headlineMedium,
-            overflow = TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.onBackground,
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-        )
-        if (myTab is TabWithPlaylistEntry && myTab.playlistId > 0) {
-            TabPlaylistNavigation(tab = myTab, navigateToTabByPlaylistEntryId = navigateToTabByPlaylistEntryId)
-        }
-        TabSummary(tab = myTab)
-        TabTransposeSection(currentTransposition = myTab.transpose) {
-            myTab.transpose(it)
-            transposedContent = myTab.content
-        }
-
-        // content
-        if (!loading && transposedContent.isNotBlank()) {
-            TabText(
-                text = transposedContent,
+                .padding(horizontal = 2.dp)
+        ) {
+            Text(
+                text = if (tab != null) stringResource(
+                    R.string.tab_title,
+                    tab.songName,
+                    tab.artistName
+                ) else "",
+                style = MaterialTheme.typography.headlineMedium,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 64.dp)
-            ) { chord ->
-                chordToShow = chord
+                    .padding(bottom = 4.dp)
+            )
+            if (myTab is TabWithPlaylistEntry && myTab.playlistId > 0) {
+                TabPlaylistNavigation(
+                    tab = myTab,
+                    navigateToTabByPlaylistEntryId = navigateToTabByPlaylistEntryId
+                )
             }
-        } else {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .padding(all = 24.dp), contentAlignment = Alignment.Center){
-                if (loading) {
-                    CircularProgressIndicator()
-                    LaunchedEffect(key1 = Unit) {
-                        delay(5000)
-                        loading = false // loading failed after 5 seconds
+            TabSummary(tab = myTab)
+            TabTransposeSection(currentTransposition = myTab.transpose) {
+                myTab.transpose(it)
+                transposedContent = myTab.content
+            }
+
+            // content
+            if (!loading && transposedContent.isNotBlank()) {
+                TabText(
+                    text = transposedContent,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 64.dp)
+                ) { chord ->
+                    chordToShow = chord
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(all = 24.dp), contentAlignment = Alignment.Center
+                ) {
+                    if (loading) {
+                        CircularProgressIndicator()
+                        LaunchedEffect(key1 = Unit) {
+                            delay(5000)
+                            loading = false // loading failed after 5 seconds
+                        }
+                    } else {
+                        ErrorCard(text = "Couldn't load tab.  Please check your internet connection.")
                     }
-                } else {
-                    ErrorCard(text = "Couldn't load tab.  Please check your internet connection." )
                 }
             }
         }

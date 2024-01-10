@@ -34,7 +34,7 @@ fun PlaylistPage(livePlaylists: LiveData<List<Playlist>>, navigateToPlaylistById
             showCreatePlaylistDialog = true
         },
             modifier = Modifier
-                .padding(8.dp)
+                .padding(16.dp)
                 .align(Alignment.BottomEnd)
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "Create Playlist")

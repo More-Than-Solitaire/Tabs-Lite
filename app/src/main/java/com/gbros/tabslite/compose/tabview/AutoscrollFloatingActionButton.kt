@@ -52,7 +52,7 @@ fun AutoscrollFloatingActionButton(
     onValueChange: (newDelay: Float) -> Unit,
     forcePause: Boolean = false,
     alignment: Alignment = Alignment.BottomEnd,
-    padding: Dp = 8.dp
+    padding: Dp = 16.dp
 ) {
     var paused by remember { mutableStateOf(true) }
 
