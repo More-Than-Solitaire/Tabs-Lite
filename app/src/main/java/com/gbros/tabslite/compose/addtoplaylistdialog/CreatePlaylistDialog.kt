@@ -26,7 +26,7 @@ import com.gbros.tabslite.data.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun CreatePlaylistDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+fun CreatePlaylistDialog(onConfirm: (newPlaylist: Playlist) -> Unit, onDismiss: () -> Unit) {
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
     var title by remember { mutableStateOf("") }
@@ -82,8 +82,9 @@ fun CreatePlaylistDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     LaunchedEffect(key1 = savedPlaylist) {
         val copyOfSavedPlaylist = savedPlaylist
         if (copyOfSavedPlaylist != null) {
-            db.playlistDao().savePlaylist(copyOfSavedPlaylist)
-            onConfirm()
+            val newPlaylistId = db.playlistDao().savePlaylist(copyOfSavedPlaylist)
+            val newPlaylist = db.playlistDao().getPlaylist(newPlaylistId.toInt())
+            onConfirm(newPlaylist)
         }
     }
 }

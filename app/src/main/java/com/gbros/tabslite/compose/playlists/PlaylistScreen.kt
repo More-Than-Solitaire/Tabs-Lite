@@ -29,7 +29,7 @@ private const val LOG_NAME = "tabslite.PlaylistScreen"
 fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Unit, navigateBack: () -> Unit) {
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
-    val playlist = remember { db.playlistDao().getPlaylist(playlistId = playlistId) }
+    val playlist = remember { db.playlistDao().getLivePlaylist(playlistId = playlistId) }
     val liveSongs = remember { db.tabFullDao().getTabsFromPlaylistEntryId(playlistId = playlistId) }
     val songs by liveSongs.observeAsState(listOf())
     var updatedDescription: String? by remember { mutableStateOf(null) }

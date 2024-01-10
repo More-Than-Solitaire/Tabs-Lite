@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -21,8 +19,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 import com.gbros.tabslite.compose.songlist.SongListItem
 import com.gbros.tabslite.compose.swipetodismiss.MaterialSwipeToDismiss
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
@@ -105,10 +106,11 @@ fun PlaylistSongList(
                                 .shadow(elevation.value),
                             prependItem = {
                                 Icon(
-                                    imageVector = Icons.Default.Menu,
+                                    imageVector = ImageVector.vectorResource(R.drawable.ic_drag_handle),
                                     contentDescription = "Drag to reorder",
                                     modifier = Modifier
                                         .detectReorder(reorderState)
+                                        .padding(end = 4.dp)
                                 )
                             },
                             onClick = { navigateToTabByPlaylistEntryId(song.entryId) }

@@ -24,10 +24,10 @@ interface PlaylistDao {
     suspend fun updateDescription(playlistId: Int, newDescription: String)
 
     @Query("SELECT * FROM playlist WHERE id = :playlistId")
-    fun getPlaylist(playlistId: Int): LiveData<Playlist>
+    fun getLivePlaylist(playlistId: Int): LiveData<Playlist>
 
     @Query("SELECT * FROM playlist WHERE id = :playlistId")
-    fun getPlaylistLive(playlistId: Int): LiveData<Playlist>
+    suspend fun getPlaylist(playlistId: Int): Playlist
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun savePlaylist(playlist: Playlist): Long

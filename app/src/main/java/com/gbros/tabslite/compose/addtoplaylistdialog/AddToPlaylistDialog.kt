@@ -37,6 +37,10 @@ fun AddToPlaylistDialog(tabId: Int, transpose: Int, onConfirm: () -> Unit, onDis
     var confirmedPlaylist: Playlist? by remember { mutableStateOf(null) }
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }
 
+    if (selectedPlaylist == null && playlists.isNotEmpty()) {
+        selectedPlaylist = playlists[0]
+    }
+
     AlertDialog(
         icon = {
             Icon(ImageVector.vectorResource(R.drawable.ic_playlist_add), contentDescription = "Add to playlist")
@@ -87,7 +91,7 @@ fun AddToPlaylistDialog(tabId: Int, transpose: Int, onConfirm: () -> Unit, onDis
     )
 
     if (showCreatePlaylistDialog) {
-        CreatePlaylistDialog(onConfirm = { showCreatePlaylistDialog = false }, onDismiss = { showCreatePlaylistDialog = false })
+        CreatePlaylistDialog(onConfirm = { newPlaylist -> selectedPlaylist = newPlaylist; showCreatePlaylistDialog = false }, onDismiss = { showCreatePlaylistDialog = false })
     }
 
     LaunchedEffect(key1 = confirmedPlaylist) {
