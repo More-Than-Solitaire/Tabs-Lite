@@ -75,7 +75,6 @@ fun TabText(modifier: Modifier = Modifier, text: String, onChordClick: (String) 
     val characterWidthInPixels = characterHeightInPixels * ROBOTO_ASPECT_RATIO
     val charsPerLine = floor(measuredWidth / characterWidthInPixels).toUInt()
     dynamicText.value = processTabContent(text, charsPerLine, MaterialTheme.colorScheme)
-//    Log.d(LOG_NAME, "Width: $measuredWidth. Font size: $fontSize. Px/ch: $characterWidthInPixels. Chars per line: $charsPerLine.")
 
     val font = remember { FontFamily(Font(R.font.roboto_mono_variable_weight)) }
     val uriHandler = LocalUriHandler.current
@@ -101,9 +100,14 @@ fun TabText(modifier: Modifier = Modifier, text: String, onChordClick: (String) 
             .onGloballyPositioned { layoutResult ->
                 measuredWidth = layoutResult.size.width
             }
-    ) { clickLocation ->
-        // handle chord clicks
-        dynamicText.value.getStringAnnotations(tag = "chord", start = clickLocation, end = clickLocation)
+    ) { clickLocation ->  // handle chord clicks
+        val lineEndChars = "\r\n\t"
+        val clickedChar = dynamicText.value.getOrNull(clickLocation)
+        val clickedOnNewline = clickedChar == null || lineEndChars.contains(clickedChar, true)
+        if (clickedOnNewline)
+            return@ClickableText  // if user clicked on newline char, don't go searching for a tab nearby
+
+        dynamicText.value.getStringAnnotations(tag = "chord", start = clickLocation-1, end = clickLocation)
             .firstOrNull()?.item?.let { chord -> onChordClick(chord) }
 
         // handle link clicks
