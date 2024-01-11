@@ -104,10 +104,12 @@ fun TabText(modifier: Modifier = Modifier, text: String, onChordClick: (String) 
         val lineEndChars = "\r\n\t"
         val clickedChar = dynamicText.value.getOrNull(clickLocation)
         val clickedOnNewline = clickedChar == null || lineEndChars.contains(clickedChar, true)
-        if (clickedOnNewline)
-            return@ClickableText  // if user clicked on newline char, don't go searching for a tab nearby
+        var start = clickLocation
+        var end = clickLocation
+        if (!clickedOnNewline)
+            start--; end++
 
-        dynamicText.value.getStringAnnotations(tag = "chord", start = clickLocation-1, end = clickLocation)
+        dynamicText.value.getStringAnnotations(tag = "chord", start = start, end = end)
             .firstOrNull()?.item?.let { chord -> onChordClick(chord) }
 
         // handle link clicks
