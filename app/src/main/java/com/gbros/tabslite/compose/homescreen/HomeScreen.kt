@@ -45,6 +45,7 @@ import com.gbros.tabslite.ui.theme.AppTheme
 fun HomeScreen(
     onSearch: (query: String) -> Unit,
     navigateToTabByPlaylistEntryId: (id: Int) -> Unit,
+    navigateToTabByTabId: (id: Int) -> Unit,
     navigateToPlaylistById: (id: Int) -> Unit
 ) {
     val currentContext = LocalContext.current
@@ -110,7 +111,8 @@ fun HomeScreen(
                 .fillMaxHeight()
         ) { page ->
             when (page) {
-                0 -> SongList(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, initialSortBy = SortBy.DateAdded,
+                // Favorites page
+                0 -> SongList(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, initialSortBy = SortBy.DateAdded,
                     sorter = {sortBy, songs ->
                         when(sortBy) {
                             SortBy.Name -> songs.sortedBy { it.songName }
@@ -120,6 +122,8 @@ fun HomeScreen(
                         }
                     },
                     emptyListText = "Select the heart icon on any song to save it offline in this list.")
+
+                // Popular page
                 1 -> SongList(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, initialSortBy = SortBy.Popularity,
                     sorter = {sortBy, songs ->
                         when(sortBy) {
@@ -130,6 +134,8 @@ fun HomeScreen(
                         }
                     },
                     emptyListText = "Today's popular songs will load when you're connected to the internet.")
+
+                // Playlists page
                 2 -> PlaylistPage(livePlaylists = db.playlistDao().getPlaylists(), navigateToPlaylistById = navigateToPlaylistById)
             }
         }
@@ -161,7 +167,7 @@ fun TabRowItem(selected: Boolean, inactiveIcon: ImageVector, activeIcon: ImageVe
 @Composable @Preview
 private fun HomeScreenPreview() {
     AppTheme {
-        HomeScreen({}, {}, {})
+        HomeScreen({}, {}, {}, {})
     }
 }
 

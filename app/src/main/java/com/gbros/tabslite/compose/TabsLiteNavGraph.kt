@@ -21,7 +21,8 @@ fun TabsLiteNavGraph() {
             HomeScreen(
                 onSearch = {q -> navController.navigate("search/$q") },
                 navigateToTabByPlaylistEntryId = {id -> navController.navigate("tab/true/$id")},
-                navigateToPlaylistById = {id -> navController.navigate("playlist/$id")}
+                navigateToPlaylistById = {id -> navController.navigate("playlist/$id")},
+                navigateToTabByTabId = {id -> navController.navigate("tab/false/$id")}
             )
         }
 
