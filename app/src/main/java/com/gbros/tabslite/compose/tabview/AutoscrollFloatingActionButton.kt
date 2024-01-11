@@ -86,7 +86,7 @@ fun AutoscrollFloatingActionButton(
                     onValueChange = { newValue ->
                         sliderIsTouched = true
                         sliderValue = newValue
-                        val newDelay = maxDelay - valueMapperFunction(newValue)
+                        val newDelay = valueMapperFunction(newValue)
 
                         onValueChange( newDelay )
                     },
@@ -121,7 +121,7 @@ fun AutoscrollFloatingActionButton(
                 onClick = {
                     if (paused) {
                         paused = false
-                        val newDelay = maxDelay - valueMapperFunction(sliderValue)
+                        val newDelay = valueMapperFunction(sliderValue)
                         onPlay(newDelay)
                     } else {
                         paused = true
@@ -153,7 +153,7 @@ fun getValueMapperFunction(minOutput: Float, middleOutput: Float, maxOutput: Flo
     return {
         x: Float ->
         val returnVal = (a * (x * x)) + (b * x) + c
-        returnVal
+        (maxOutput - returnVal).coerceIn(minimumValue = minOutput, maximumValue = maxOutput)
     }
 }
 fun findQuadraticCoefficients(y1: Float, y2: Float, y3: Float): Triple<Float, Float, Float> {
