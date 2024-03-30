@@ -34,7 +34,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
-import com.gbros.tabslite.compose.songlist.SongList
+import com.gbros.tabslite.compose.songlist.SongListView
 import com.gbros.tabslite.compose.songlist.SortBy
 import com.gbros.tabslite.compose.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.AppDatabase
@@ -112,7 +112,7 @@ fun HomeScreen(
         ) { page ->
             when (page) {
                 // Favorites page
-                0 -> SongList(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, initialSortBy = SortBy.DateAdded,
+                0 -> SongListView(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, initialSortBy = SortBy.DateAdded,
                     sorter = {sortBy, songs ->
                         when(sortBy) {
                             SortBy.Name -> songs.sortedBy { it.songName }
@@ -124,7 +124,7 @@ fun HomeScreen(
                     emptyListText = "Select the heart icon on any song to save it offline in this list.")
 
                 // Popular page
-                1 -> SongList(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, initialSortBy = SortBy.Popularity,
+                1 -> SongListView(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, initialSortBy = SortBy.Popularity,
                     sorter = {sortBy, songs ->
                         when(sortBy) {
                             SortBy.Name -> songs.sortedBy { it.songName }
