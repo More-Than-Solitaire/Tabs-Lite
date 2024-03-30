@@ -17,7 +17,7 @@ const val DATABASE_NAME = "local-tabs-db"
 /**
  * The Room database for this app
  */
-@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, PlaylistEntry::class], version = 10, exportSchema = false)
+@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, PlaylistEntry::class], version = 11)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chordVariationDao(): ChordVariationDao
@@ -94,7 +94,6 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE playlist_entry_new RENAME TO playlist_entry")
             }
         }
-
         private val MIGRATION_9_10 = object : Migration(9, 10) {
             // rename playlist_entry.id to playlist_entry.entry_id
             // remove unused columns from tabs table
@@ -156,6 +155,15 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE tabs_new RENAME TO tabs")
             }
         }
+        private val MIGRATION_10_11 = object : Migration(10, 11) {
+            // add empty user preferences table
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE preference (" +
+                        "name TEXT PRIMARY KEY NOT NULL," +
+                        "value TEXT NOT NULL" +
+                        ")")
+            }
+        }
 
 
         // Create and pre-populate the database. See this article for more details:
@@ -164,7 +172,7 @@ abstract class AppDatabase : RoomDatabase() {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
                     .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
                             MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
-                            MIGRATION_9_10)
+                            MIGRATION_9_10, MIGRATION_10_11)
                     .build()
         }
     }
