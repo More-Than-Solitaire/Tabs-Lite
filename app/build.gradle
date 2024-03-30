@@ -29,8 +29,8 @@ android {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        versionCode 3390
-        versionName "3.3.9"
+        versionCode 3400
+        versionName "3.4.0"
     }
     buildTypes {
         release {
