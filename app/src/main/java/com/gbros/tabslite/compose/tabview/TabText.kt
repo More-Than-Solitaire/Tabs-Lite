@@ -1,5 +1,6 @@
 package com.gbros.tabslite.compose.tabview
 
+import android.content.ActivityNotFoundException
 import android.util.Log
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.ColorScheme
@@ -14,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
@@ -39,6 +41,7 @@ import com.smarttoolfactory.gesture.detectTransformGestures
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+
 
 private const val LOG_NAME = "tabslite.TabText    "
 
@@ -78,6 +81,7 @@ fun TabText(modifier: Modifier = Modifier, text: String, onChordClick: (String) 
 
     val font = remember { FontFamily(Font(R.font.roboto_mono_variable_weight)) }
     val uriHandler = LocalUriHandler.current
+    val clipboardManager = LocalClipboardManager.current
     ClickableText(
         text = dynamicText.value,
         style = TextStyle(
@@ -115,7 +119,12 @@ fun TabText(modifier: Modifier = Modifier, text: String, onChordClick: (String) 
         // handle link clicks
         dynamicText.value.getUrlAnnotations(clickLocation, clickLocation).firstOrNull()?.item?.let {
                 urlAnnotation ->
-            uriHandler.openUri(urlAnnotation.url)
+            try {
+                uriHandler.openUri(urlAnnotation.url)
+            } catch (ex: ActivityNotFoundException) {
+                Log.i(LOG_NAME, "Couldn't launch URL, copying to clipboard instead")
+                clipboardManager.setText(AnnotatedString(urlAnnotation.url))
+            }
         }
     }
 }
