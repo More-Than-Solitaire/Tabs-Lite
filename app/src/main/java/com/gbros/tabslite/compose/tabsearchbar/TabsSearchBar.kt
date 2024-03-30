@@ -55,7 +55,7 @@ fun TabsSearchBar(
     SearchBar(
         query = query,
         onQueryChange = {query = it},
-        onSearch = onSearch,
+        onSearch = {q -> if(q.isNotBlank()) {onSearch(q)}},
         active = active,
         onActiveChange = {active = it},
         leadingIcon = leadingIcon,
@@ -73,11 +73,16 @@ fun TabsSearchBar(
         LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp), state = lazyColumnState) {
             items(items = searchSuggestions) {searchSuggestion ->
                 SearchSuggestion(suggestionText = searchSuggestion, modifier = Modifier.fillMaxWidth()) {
-                    onSearch(searchSuggestion)
+                    if (searchSuggestion.isNotBlank())
+                        onSearch(searchSuggestion)
                 }
             }
         }
     }
+}
+
+private fun isValidQuery(query: String): Boolean {
+    return query.isNotBlank()
 }
 
 @Composable @Preview
