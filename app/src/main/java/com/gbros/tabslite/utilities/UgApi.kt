@@ -88,20 +88,18 @@ object UgApi {
                 gson.fromJson<SearchSuggestionType?>(jsonReader, searchSuggestionTypeToken).suggestions
             }
 
-            cachedSearchSuggestions[query] = suggestions
+            if (suggestions.isNotEmpty()) {
+                cachedSearchSuggestions[query] = suggestions
+            }
 
             if (q.length > 5) {
                 return@withContext suggestions.filter { s -> s.contains(q) }
             } else {
                 return@withContext suggestions
             }
-        } catch (ex: FileNotFoundException) {
-            // no suggestions for this query
-            Log.i(LOG_NAME, "Search suggestions 404 file not found for query $q.", ex)
-            return@withContext listOf()
         } catch (ex: Exception) {
-            Log.e(LOG_NAME, "SearchSuggest error while finding search suggestions.", ex)
-            throw Exception("SearchSuggest error while finding search suggestions.", ex)
+            Log.e(LOG_NAME, "SearchSuggest ${ex.javaClass.canonicalName} while finding search suggestions. Probably no internet; returning empty search suggestion list", ex)
+            return@withContext listOf()
         }
     }
 
