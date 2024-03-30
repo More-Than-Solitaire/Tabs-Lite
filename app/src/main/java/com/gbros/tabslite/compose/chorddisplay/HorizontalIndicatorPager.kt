@@ -49,16 +49,19 @@ fun HorizontalIndicatorPager(modifier: Modifier = Modifier, pageCount: Int, cont
         val indicatorScrollState = rememberLazyListState()
 
         LaunchedEffect(key1 = pagerState.currentPage, block = {
-            val currentPage = pagerState.currentPage
+            // Make sure the page indicator representing this page is visible
             val size = indicatorScrollState.layoutInfo.visibleItemsInfo.size
-            val lastVisibleIndex =
-                indicatorScrollState.layoutInfo.visibleItemsInfo.last().index
-            val firstVisibleItemIndex = indicatorScrollState.firstVisibleItemIndex
+            if (size > 1) {
+                val currentPage = pagerState.currentPage
+                val lastVisibleIndex =
+                    indicatorScrollState.layoutInfo.visibleItemsInfo.last().index // don't run with empty lists to prevent crashes
+                val firstVisibleItemIndex = indicatorScrollState.firstVisibleItemIndex
 
-            if (currentPage > lastVisibleIndex - 1) {
-                indicatorScrollState.animateScrollToItem(currentPage - size + 2)
-            } else if (currentPage <= firstVisibleItemIndex + 1) {
-                indicatorScrollState.animateScrollToItem((currentPage - 1).coerceAtLeast(0))
+                if (currentPage > lastVisibleIndex - 1) {
+                    indicatorScrollState.animateScrollToItem(currentPage - size + 2)
+                } else if (currentPage <= firstVisibleItemIndex + 1) {
+                    indicatorScrollState.animateScrollToItem((currentPage - 1).coerceAtLeast(0))
+                }
             }
         })
         HorizontalPager(
