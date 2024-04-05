@@ -116,28 +116,12 @@ fun HomeScreen(
                 // Favorites page
                 0 -> SongListView(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, defaultSortValue = SortBy.DateAdded,
                     liveSortByPreference = db.preferenceDao().getLivePreference(Preference.FAVORITES_SORT),
-                    sorter = {sortBy, songs ->
-                        when(sortBy) {
-                            SortBy.Name -> songs.sortedBy { it.songName }
-                            SortBy.Popularity -> songs.sortedBy { it.votes }
-                            SortBy.ArtistName -> songs.sortedBy { it.artistName }
-                            SortBy.DateAdded -> songs
-                        }
-                    },
                     onSortPreferenceChange = { launch { db.preferenceDao().upsertPreference(it) } },
                     emptyListText = "Select the heart icon on any song to save it offline in this list.")
 
                 // Popular page
                 1 -> SongListView(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, defaultSortValue = SortBy.Popularity,
                     liveSortByPreference = db.preferenceDao().getLivePreference(Preference.POPULAR_SORT),
-                    sorter = {sortBy, songs ->
-                        when(sortBy) {
-                            SortBy.Name -> songs.sortedBy { it.songName }
-                            SortBy.Popularity -> songs
-                            SortBy.ArtistName -> songs.sortedBy { it.artistName }
-                            SortBy.DateAdded -> songs.sortedBy { it.dateAdded }
-                        }
-                    },
                     onSortPreferenceChange = { launch { db.preferenceDao().upsertPreference(it) } },
                     emptyListText = "Today's popular songs will load when you're connected to the internet.")
 

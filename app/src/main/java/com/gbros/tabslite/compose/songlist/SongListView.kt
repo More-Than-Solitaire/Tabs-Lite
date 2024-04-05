@@ -33,14 +33,20 @@ fun SongListView(
     defaultSortValue: SortBy,
     liveSortByPreference: LiveData<Preference>,
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp),
-    sorter: (SortBy, List<TabWithPlaylistEntry>) -> List<TabWithPlaylistEntry>,
     emptyListText: String = "Nothing here!",
     onSortPreferenceChange: CoroutineScope.(Preference) -> Unit
 ){
     val songs by liveSongs.observeAsState(listOf())
     val sortByPreference by liveSortByPreference.observeAsState(Preference("", defaultSortValue.name))
     val sortedSongs by remember(key1 = songs, key2 = sortByPreference) {
-        mutableStateOf(sorter(SortBy.valueOf(sortByPreference.value), songs))
+        mutableStateOf(
+            when(SortBy.valueOf(sortByPreference.value)) {
+                SortBy.Name -> songs.sortedBy { it.songName }
+                SortBy.Popularity -> songs.sortedByDescending { it.votes }
+                SortBy.ArtistName -> songs.sortedBy { it.artistName }
+                SortBy.DateAdded -> songs.sortedByDescending { it.dateAdded }
+            }
+        )
     }
 
     var sortBySelection: SortBy? by remember { mutableStateOf(SortBy.valueOf(sortByPreference.value)) }  // for storing updated value between when the selection is updated and the database is updated
@@ -67,6 +73,6 @@ fun SongListViewPreview(){
 
     AppTheme {
         val liveSortByPreference = MutableLiveData(Preference("prefName", SortBy.Name.name))
-        SongListView(liveSongs = tabListForTest, navigateToTabById = {}, defaultSortValue = SortBy.DateAdded, liveSortByPreference = liveSortByPreference, sorter = { sortBy, songs -> songs}, onSortPreferenceChange = { })
+        SongListView(liveSongs = tabListForTest, navigateToTabById = {}, defaultSortValue = SortBy.DateAdded, liveSortByPreference = liveSortByPreference, onSortPreferenceChange = { })
     }
 }
