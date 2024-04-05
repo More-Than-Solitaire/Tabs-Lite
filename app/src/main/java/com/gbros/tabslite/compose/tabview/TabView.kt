@@ -71,6 +71,8 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
         }
     }
 
+    KeepScreenOn()
+
     Column(
     modifier = Modifier
         .verticalScroll(scrollState)
@@ -169,8 +171,6 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
     }
 
     if (autoscrollEnabled) {
-        KeepScreenOn()
-
         LaunchedEffect(key1 = autoscrollDelay) {
             val maxScrollValue = scrollState.maxValue
             while (isActive) {
