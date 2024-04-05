@@ -113,13 +113,16 @@ interface PlaylistEntryDao {
     fun clearTopTabsPlaylist() = clearPlaylist(Playlist.TOP_TABS_PLAYLIST_ID)
 
     @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId)")
-    fun tabExistsInFavorites(tabId: Int): LiveData<Boolean>
+    fun tabExistsInFavoritesLive(tabId: Int): LiveData<Boolean>
+
+    @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId)")
+    suspend fun tabExistsInFavorites(tabId: Int): Boolean
 
     @Query("SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId")
     suspend fun getFavoritesPlaylistEntry(tabId: Int): PlaylistEntry?
 
     @Query("UPDATE playlist_entry SET transpose = :transpose WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId")
-    fun updateFavoriteTabTransposition(tabId: Int, transpose: Int)
+    suspend fun updateFavoriteTabTransposition(tabId: Int, transpose: Int)
 
     @Query("UPDATE playlist_entry SET transpose = :transpose WHERE entry_id = :entryId")
     suspend fun updateEntryTransposition(entryId: Int, transpose: Int)

@@ -14,7 +14,7 @@ import com.gbros.tabslite.data.Playlist.Companion.TOP_TABS_PLAYLIST_ID
  */
 @Dao
 interface TabDao {
-    @Query("SELECT *, 0 as transpose FROM tabs WHERE id = :tabId")
+    @Query("SELECT * FROM tabs LEFT JOIN (SELECT IFNULL(transpose, 0) as transpose, tab_id FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID) ON tab_id = id WHERE id = :tabId")
     fun getTab(tabId: Int): LiveData<Tab>
 
     @Query("SELECT * FROM tabs WHERE id = :tabId")

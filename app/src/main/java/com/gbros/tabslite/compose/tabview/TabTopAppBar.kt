@@ -49,7 +49,7 @@ import com.gbros.tabslite.ui.theme.AppTheme
 fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
-    val isFavorite by db.playlistEntryDao().tabExistsInFavorites(tab.tabId).observeAsState(initial = false)
+    val isFavorite by db.playlistEntryDao().tabExistsInFavoritesLive(tab.tabId).observeAsState(initial = false)
     var newFavoriteValue: Boolean? by remember { mutableStateOf(null) }
 
     // remember whether three-dot menu is shown currently

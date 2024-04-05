@@ -212,6 +212,8 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
     LaunchedEffect(key1 = myTab.transpose) {
         if (myTab is TabWithPlaylistEntry) {
             db.playlistEntryDao().updateEntryTransposition(myTab.entryId, myTab.transpose)
+        } else if (db.playlistEntryDao().tabExistsInFavorites(myTab.tabId)) {
+            db.playlistEntryDao().updateFavoriteTabTransposition(myTab.tabId, myTab.transpose)
         }
     }
 
