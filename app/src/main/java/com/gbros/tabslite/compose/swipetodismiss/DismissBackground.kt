@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.DismissDirection
-import androidx.compose.material3.DismissState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,15 +27,15 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DismissBackground(
-    dismissState: DismissState,
+    dismissState: SwipeToDismissBoxState,
     colors: DismissBackgroundColors = DismissBackgroundColors(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError, MaterialTheme.colorScheme.onError),
     icons: DismissBackgroundIcons = DismissBackgroundIcons(Icons.Default.Delete, Icons.Default.Delete),
     contentDescriptions: DismissBackgroundContentDescriptions = DismissBackgroundContentDescriptions("Delete", "Delete")
 ) {
     val color = when (dismissState.dismissDirection) {
-        DismissDirection.StartToEnd -> colors.startToEndBackgroundColor
-        DismissDirection.EndToStart -> colors.endToStartBackgroundColor
-        null -> Color.Transparent
+        SwipeToDismissBoxValue.StartToEnd -> colors.startToEndBackgroundColor
+        SwipeToDismissBoxValue.EndToStart -> colors.endToStartBackgroundColor
+        SwipeToDismissBoxValue.Settled -> Color.Transparent
     }
     val direction = dismissState.dismissDirection
 
@@ -47,13 +47,13 @@ fun DismissBackground(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        if (direction == DismissDirection.StartToEnd) Icon(
+        if (direction == SwipeToDismissBoxValue.StartToEnd) Icon(
             icons.startToEndIcon,
             tint = colors.startToEndIconColor,
             contentDescription = contentDescriptions.startToEndContentDescription
         )
         Spacer(modifier = Modifier)
-        if (direction == DismissDirection.EndToStart) Icon(
+        if (direction == SwipeToDismissBoxValue.EndToStart) Icon(
             icons.endToStartIcon,
             tint = colors.endToStartIconColor,
             contentDescription = contentDescriptions.endToStartContentDescription

@@ -69,9 +69,9 @@ repositories {
 dependencies {
     implementation 'androidx.activity:activity-compose:1.8.2'  // Compose Integration with activities
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.compose.material3:material3:1.1.2'  // Material Design 3
-    implementation 'androidx.compose.material:material-icons-core:1.5.4'
-    implementation 'androidx.compose.runtime:runtime-livedata:1.5.4'
+    implementation 'androidx.compose.material3:material3:1.2.1'  // Material Design 3
+    implementation 'androidx.compose.material:material-icons-core:1.6.4'
+    implementation 'androidx.compose.runtime:runtime-livedata:1.6.4'
     // Compose Integration with LiveData
     implementation "androidx.compose.ui:ui-tooling-preview"  // Android Studio Preview Support
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -79,12 +79,12 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:1.6.2"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.2"
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2'  // Compose Integration with ViewModels
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2'
-    implementation 'androidx.navigation:navigation-compose:2.7.6'
-    implementation "androidx.navigation:navigation-fragment-ktx:2.7.6"
-    implementation "androidx.navigation:navigation-ui-ktx:2.7.6"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.7.0"
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0'  // Compose Integration with ViewModels
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+    implementation 'androidx.navigation:navigation-compose:2.7.7'
+    implementation "androidx.navigation:navigation-fragment-ktx:2.7.7"
+    implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
     ksp "androidx.room:room-compiler:2.6.1"
     implementation "androidx.room:room-runtime:2.6.1"
@@ -106,16 +106,16 @@ dependencies {
 
     // Debug dependencies
     debugImplementation 'androidx.compose.ui:ui-tooling'  // Android Studio Preview support
-    debugImplementation 'androidx.compose.ui:ui-test-manifest:1.5.4'  // UI tests
+    debugImplementation 'androidx.compose.ui:ui-test-manifest:1.6.4'  // UI tests
 
     // Testing dependencies
     androidTestImplementation "androidx.arch.core:core-testing:2.2.0"
-    androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.5.4'  // UI tests
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.6.4'  // UI tests
     androidTestImplementation "androidx.test.espresso:espresso-contrib:3.5.1"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
     androidTestImplementation "androidx.test.espresso:espresso-intents:3.5.1"
     androidTestImplementation "androidx.test.ext:junit:1.1.5"
-    androidTestImplementation "androidx.test.uiautomator:uiautomator:2.2.0"
+    androidTestImplementation "androidx.test.uiautomator:uiautomator:2.3.0"
     androidTestImplementation "androidx.work:work-testing:2.9.0"
     androidTestImplementation 'com.google.truth:truth:1.2.0'
     testImplementation 'junit:junit:4.13.2'
