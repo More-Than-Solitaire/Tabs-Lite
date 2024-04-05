@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "preference"
+    tableName = "preferences"
 )
 
 /**
@@ -25,5 +25,7 @@ data class Preference(
 
     companion object {
         const val FAVORITES_SORT: String = "FAVORITES_SORT"
+        const val POPULAR_SORT: String = "POPULAR_SORT"
+        const val PLAYLIST_SORT: String = "PLAYLIST_SORT"
     }
 }

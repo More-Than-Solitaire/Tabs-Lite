@@ -38,7 +38,9 @@ import com.gbros.tabslite.compose.songlist.SongListView
 import com.gbros.tabslite.compose.songlist.SortBy
 import com.gbros.tabslite.compose.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.ui.theme.AppTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -112,7 +114,8 @@ fun HomeScreen(
         ) { page ->
             when (page) {
                 // Favorites page
-                0 -> SongListView(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, initialSortBy = SortBy.DateAdded,
+                0 -> SongListView(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, defaultSortValue = SortBy.DateAdded,
+                    liveSortByPreference = db.preferenceDao().getLivePreference(Preference.FAVORITES_SORT),
                     sorter = {sortBy, songs ->
                         when(sortBy) {
                             SortBy.Name -> songs.sortedBy { it.songName }
@@ -121,10 +124,12 @@ fun HomeScreen(
                             SortBy.DateAdded -> songs
                         }
                     },
+                    onSortPreferenceChange = { launch { db.preferenceDao().upsertPreference(it) } },
                     emptyListText = "Select the heart icon on any song to save it offline in this list.")
 
                 // Popular page
-                1 -> SongListView(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, initialSortBy = SortBy.Popularity,
+                1 -> SongListView(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, defaultSortValue = SortBy.Popularity,
+                    liveSortByPreference = db.preferenceDao().getLivePreference(Preference.POPULAR_SORT),
                     sorter = {sortBy, songs ->
                         when(sortBy) {
                             SortBy.Name -> songs.sortedBy { it.songName }
@@ -133,6 +138,7 @@ fun HomeScreen(
                             SortBy.DateAdded -> songs.sortedBy { it.dateAdded }
                         }
                     },
+                    onSortPreferenceChange = { launch { db.preferenceDao().upsertPreference(it) } },
                     emptyListText = "Today's popular songs will load when you're connected to the internet.")
 
                 // Playlists page

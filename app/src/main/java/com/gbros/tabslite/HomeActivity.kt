@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.gbros.tabslite.compose.TabsLiteNavGraph
+import com.gbros.tabslite.compose.songlist.SortBy
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.utilities.UgApi
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -24,6 +26,12 @@ class HomeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val db = AppDatabase.getInstance(applicationContext)
         GlobalScope.launch { UgApi.fetchTopTabs(db) }
+        GlobalScope.launch {
+            db.preferenceDao().insert(Preference(Preference.FAVORITES_SORT, SortBy.DateAdded.name))
+            db.preferenceDao().insert(Preference(Preference.POPULAR_SORT, SortBy.Popularity.name))
+            db.preferenceDao().insert(Preference(Preference.PLAYLIST_SORT, SortBy.Name.name))
+        }
+
         actionBar?.hide()
 
         setContent {

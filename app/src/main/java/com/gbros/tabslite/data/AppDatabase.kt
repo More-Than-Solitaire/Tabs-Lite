@@ -17,13 +17,14 @@ const val DATABASE_NAME = "local-tabs-db"
 /**
  * The Room database for this app
  */
-@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, PlaylistEntry::class], version = 11)
+@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, PlaylistEntry::class, Preference::class], version = 11)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chordVariationDao(): ChordVariationDao
     abstract fun tabFullDao(): TabDao
     abstract fun playlistDao(): PlaylistDao
     abstract fun playlistEntryDao(): PlaylistEntryDao
+    abstract fun preferenceDao(): PreferenceDao
 
     companion object {
 
@@ -158,10 +159,7 @@ abstract class AppDatabase : RoomDatabase() {
         private val MIGRATION_10_11 = object : Migration(10, 11) {
             // add empty user preferences table
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("CREATE TABLE preference (" +
-                        "name TEXT PRIMARY KEY NOT NULL," +
-                        "value TEXT NOT NULL" +
-                        ")")
+                db.execSQL("CREATE TABLE preferences (name TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)")
             }
         }
 
