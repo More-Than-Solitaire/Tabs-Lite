@@ -2,6 +2,7 @@ package com.gbros.tabslite.compose.chorddisplay
 
 import android.util.Log
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,9 +34,11 @@ fun ChordModalBottomSheet(chord: String, onDismiss: () -> Unit){
     val currentContext = LocalContext.current
     var chordVariations: List<ChordVariation> by remember { mutableStateOf(listOf()) }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        val navHeight = NavigationBarDefaults.windowInsets.getBottom(Density(1f))
+    ModalBottomSheet(onDismissRequest = onDismiss, windowInsets = WindowInsets(0,0,0,0)) {
         ChordPager(chordVariations = chordVariations, modifier = Modifier.padding(bottom = 8.dp))
+
+        // leave space for the nav bar on top of the bottom sheet
+        val navHeight = NavigationBarDefaults.windowInsets.getBottom(Density(1f))
         Spacer(modifier = Modifier.height(navHeight.dp))
     }
 
@@ -53,7 +56,7 @@ private fun ChordModalBottomSheetPreview () {
         [tab]     [ch]C[/ch]                   [ch]Am[/ch] 
         That David played and it pleased the Lord[/tab]
     """.trimIndent()
-        var bottomSheetTrigger by remember { mutableStateOf(false) }
+        var bottomSheetTrigger by remember { mutableStateOf(true) }
         var chordToShow by remember { mutableStateOf("Am") }
 
         TabText(
