@@ -7,8 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.gbros.tabslite.utilities.FAVORITES_PLAYLIST_ID
-import com.gbros.tabslite.utilities.TOP_TABS_PLAYLIST_ID
+import com.gbros.tabslite.data.Playlist.Companion.FAVORITES_PLAYLIST_ID
 
 /**
  * The Data Access Object for the Chord Variation class.
@@ -111,7 +110,7 @@ interface PlaylistEntryDao {
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId")
     fun clearPlaylist(playlistId: Int)
 
-    fun clearTopTabsPlaylist() = clearPlaylist(TOP_TABS_PLAYLIST_ID)
+    fun clearTopTabsPlaylist() = clearPlaylist(Playlist.TOP_TABS_PLAYLIST_ID)
 
     @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId)")
     fun tabExistsInFavorites(tabId: Int): LiveData<Boolean>

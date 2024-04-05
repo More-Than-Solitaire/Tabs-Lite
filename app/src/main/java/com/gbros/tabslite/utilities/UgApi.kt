@@ -3,6 +3,7 @@ package com.gbros.tabslite.utilities
 import android.os.Build
 import android.util.Log
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.Playlist.Companion.TOP_TABS_PLAYLIST_ID
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.data.servertypes.SearchSuggestionType

@@ -12,12 +12,17 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "playlist")
 
 data class Playlist(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val playlistId: Int,
-        @ColumnInfo(name = "user_created") val userCreated: Boolean,
-        @ColumnInfo(name = "title") val title: String,
-        @ColumnInfo(name = "date_created") val dateCreated: Long,
-        @ColumnInfo(name = "date_modified") val dateModified: Long,
-        @ColumnInfo(name = "description") val description: String
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val playlistId: Int,
+    @ColumnInfo(name = "user_created") val userCreated: Boolean,
+    @ColumnInfo(name = "title") val title: String,
+    @ColumnInfo(name = "date_created") val dateCreated: Long,
+    @ColumnInfo(name = "date_modified") val dateModified: Long,
+    @ColumnInfo(name = "description") val description: String
 ) {
     override fun toString() = title
+
+    companion object {
+        const val FAVORITES_PLAYLIST_ID = -1
+        const val TOP_TABS_PLAYLIST_ID = -2
+    }
 }
