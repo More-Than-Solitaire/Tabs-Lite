@@ -4,18 +4,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.compose.playlists.RemovePlaylistEntryConfirmationDialog
 
 /**
  * Composable representing swipe-to-dismiss functionality.  Thanks https://www.geeksforgeeks.org/android-jetpack-compose-swipe-to-dismiss-with-material-3/
@@ -26,15 +27,16 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaterialSwipeToDismiss(
-    onRemove: (DismissDirection) -> Unit,
+    onRemove: () -> Unit,
     content: @Composable RowScope.() -> Unit
 ) {
-    var show by remember { mutableStateOf(true) }
+    var show by remember { mutableStateOf(true) }  // whether to show the row at all
+    var resetEntryRemoval by remember { mutableStateOf(false) }  // trigger a reset of the removal state
+    var showEntryConfirmationDialog by remember { mutableStateOf(false) }  // trigger the entry removal confirmation dialog
     val dismissState = rememberDismissState(
-        confirmValueChange = {
-            if (it == DismissValue.DismissedToStart || it == DismissValue.DismissedToEnd) {
-                show = false
-                onRemove(if (it == DismissValue.DismissedToStart) DismissDirection.EndToStart else DismissDirection.StartToEnd)
+        confirmValueChange = {dismissValue ->
+            if (dismissValue == DismissValue.DismissedToStart || dismissValue == DismissValue.DismissedToEnd) {
+                showEntryConfirmationDialog = true  // trigger entry removal confirmation dialog
                 true
             } else false
         }, positionalThreshold = { 150.dp.toPx() }
@@ -50,5 +52,21 @@ fun MaterialSwipeToDismiss(
             },
             dismissContent = content
         )
+    }
+
+    // confirm entry removal
+    if (showEntryConfirmationDialog) {
+        RemovePlaylistEntryConfirmationDialog(
+            onConfirm = { onRemove(); showEntryConfirmationDialog = false; show = false },
+            onDismiss = { showEntryConfirmationDialog = false; resetEntryRemoval = true }
+        )
+    }
+
+    // handle removal cancelled
+    LaunchedEffect(key1 = resetEntryRemoval) {
+        if(resetEntryRemoval) {
+            dismissState.reset()  // undo a removal
+            resetEntryRemoval = false;
+        }
     }
 }

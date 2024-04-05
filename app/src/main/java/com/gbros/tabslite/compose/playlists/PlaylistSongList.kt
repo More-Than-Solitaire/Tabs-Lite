@@ -57,7 +57,8 @@ fun PlaylistSongList(
     DisposableEffect(songs) {
         reorderedSongsForDisplay = songs.toMutableList()
         currentSongs = songs.toMutableList()
-        onDispose { }    }
+        onDispose { }
+    }
 
     // handle reorder state
     val reorderState = rememberReorderableLazyListState(
@@ -137,6 +138,7 @@ fun PlaylistSongList(
             Spacer(modifier = Modifier.height(height = 24.dp))
         }
     }
+
 }
 
 @Composable @Preview
