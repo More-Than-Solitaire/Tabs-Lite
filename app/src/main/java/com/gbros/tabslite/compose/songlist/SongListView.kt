@@ -1,6 +1,5 @@
 package com.gbros.tabslite.compose.songlist
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -54,7 +53,6 @@ fun SongListView(
     LaunchedEffect(key1 = sortBySelection) {
         val currentSelection = sortBySelection
         if (currentSelection != null) {
-            Log.d(LOG_NAME, "Updating sort by preference to $currentSelection")
             onSortPreferenceChange(sortByPreference.copy(value = currentSelection.name))
             sortBySelection = null
         }

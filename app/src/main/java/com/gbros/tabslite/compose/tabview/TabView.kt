@@ -32,6 +32,7 @@ import com.gbros.tabslite.compose.ErrorCard
 import com.gbros.tabslite.compose.addtoplaylistdialog.AddToPlaylistDialog
 import com.gbros.tabslite.compose.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
@@ -53,6 +54,17 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
 
     // handle autoscroll
     val scrollState = rememberScrollState()
+    val middleDelay: Float = 11f
+    val minDelay: Float = 1f  // fastest speed
+    val maxDelay: Float = 45f // slowest speed
+    val valueMapperFunction = remember { getValueMapperFunction(minOutput = minDelay, middleOutput = maxDelay - middleDelay, maxOutput = maxDelay, ) }
+
+    // load initial autoscroll speed from preferences
+    var sliderPosition: Float? by remember { mutableStateOf(null) }
+    LaunchedEffect(key1 = Unit) {
+        sliderPosition = db.preferenceDao().getPreferenceValue(Preference.AUTOSCROLL_DELAY).toFloat()
+        Log.d(LOG_NAME, "Found slider position $sliderPosition")
+    }
 
     var showAddToPlaylistDialog by remember { mutableStateOf(false) }
 
@@ -145,21 +157,29 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
         }
     }
 
-    var autoscrollDelay by remember { mutableFloatStateOf(1.0f) }
+    var autoscrollDelay: Float by remember { mutableFloatStateOf(-1f) }
     var autoscrollEnabled by remember { mutableStateOf(false)}
     var forcePauseScroll by remember{mutableStateOf(false)}
-    AutoscrollFloatingActionButton(
-        onPlay = { initialSpeed ->
-            autoscrollDelay = initialSpeed
-            autoscrollEnabled = true
-        },
-        onPause = {
-            autoscrollEnabled = false
-            forcePauseScroll = false  // ensure we can still manually start autoscroll again
-        },
-        onValueChange = { newValue -> autoscrollDelay = newValue },
-        forcePause = forcePauseScroll
-    )
+
+    if (sliderPosition != null) {
+        AutoscrollFloatingActionButton(
+            initialSliderPosition = sliderPosition!!,
+            onPlay = { newSliderPosition ->
+                autoscrollDelay = valueMapperFunction(newSliderPosition)
+                sliderPosition = newSliderPosition
+                autoscrollEnabled = true
+            },
+            onPause = {
+                autoscrollEnabled = false
+                forcePauseScroll = false  // ensure we can still manually start autoscroll again
+            },
+            onValueChange = { newSliderPosition ->
+                autoscrollDelay = valueMapperFunction(newSliderPosition); sliderPosition =
+                newSliderPosition
+            },
+            forcePause = forcePauseScroll
+        )
+    }
 
     if (showAddToPlaylistDialog) {
         AddToPlaylistDialog(
@@ -192,6 +212,14 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
     LaunchedEffect(key1 = myTab.transpose) {
         if (myTab is TabWithPlaylistEntry) {
             db.playlistEntryDao().updateEntryTransposition(myTab.entryId, myTab.transpose)
+        }
+    }
+
+    // handle autoscroll speed updates to user preferences
+    LaunchedEffect(key1 = sliderPosition) {
+        if (sliderPosition != null && sliderPosition!! >= 0f) {
+            db.preferenceDao().upsertPreference(Preference(Preference.AUTOSCROLL_DELAY, sliderPosition.toString()))
+            Log.d(LOG_NAME, "Setting slider position $sliderPosition")
         }
     }
 }
@@ -231,4 +259,25 @@ private fun TabViewPreview() {
     AppTheme {
         TabView(tab = tabForTest, navigateBack = {}, navigateToTabByPlaylistEntryId = {})
     }
+}
+
+/**
+ * Creates a quadratic function that maps 0f..1f to [minOutput]..[maxOutput] where 0.5f maps to [middleOutput]
+ */
+fun getValueMapperFunction(minOutput: Float, middleOutput: Float, maxOutput: Float): (x: Float) -> Float {
+    val coefficients = findQuadraticCoefficients(y1 = minOutput, y2 = middleOutput, y3 = maxOutput)
+
+    val (a, b, c) = coefficients
+    return {
+            x: Float ->
+        val returnVal = (a * (x * x)) + (b * x) + c
+        (maxOutput - returnVal).coerceIn(minimumValue = minOutput, maximumValue = maxOutput)
+    }
+}
+fun findQuadraticCoefficients(y1: Float, y2: Float, y3: Float): Triple<Float, Float, Float> {
+    val b = 4 * (y2 - y1) - y3
+    val a = (2*y3) - (4 * (y2 - y1)) - (2*y1)
+    val c = y1
+
+    return Triple(a, b, c)
 }

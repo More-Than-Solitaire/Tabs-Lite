@@ -15,6 +15,9 @@ interface PreferenceDao {
     @Query("SELECT * FROM preferences WHERE name = :name")
     fun getLivePreference(name: String): LiveData<Preference>
 
+    @Query("SELECT value FROM preferences WHERE name = :name")
+    suspend fun getPreferenceValue(name: String): String
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(pref: Preference)
 

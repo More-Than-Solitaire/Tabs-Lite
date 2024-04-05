@@ -30,6 +30,7 @@ class HomeActivity : ComponentActivity() {
             db.preferenceDao().insert(Preference(Preference.FAVORITES_SORT, SortBy.DateAdded.name))
             db.preferenceDao().insert(Preference(Preference.POPULAR_SORT, SortBy.Popularity.name))
             db.preferenceDao().insert(Preference(Preference.PLAYLIST_SORT, SortBy.Name.name))
+            db.preferenceDao().insert(Preference(Preference.AUTOSCROLL_DELAY, .5f.toString()))
         }
 
         actionBar?.hide()

@@ -44,12 +44,10 @@ import com.gbros.tabslite.ui.theme.AppTheme
  */
 @Composable
 fun AutoscrollFloatingActionButton(
-    initialDelay: Float = 11f,
-    minDelay: Float = 1f,  // fastest speed
-    maxDelay: Float = 45f, // slowest speed
-    onPlay: (initialDelay: Float) -> Unit,
+    initialSliderPosition: Float = .5f,
+    onPlay: (sliderPosition: Float) -> Unit,
     onPause: () -> Unit,
-    onValueChange: (newDelay: Float) -> Unit,
+    onValueChange: (sliderPosition: Float) -> Unit,
     forcePause: Boolean = false,
     alignment: Alignment = Alignment.BottomEnd,
     padding: Dp = 16.dp
@@ -61,11 +59,10 @@ fun AutoscrollFloatingActionButton(
         onPause()
     }
 
-    var sliderValue by remember { mutableFloatStateOf(0.5f) }
+    var sliderValue by remember { mutableFloatStateOf(initialSliderPosition.coerceIn(0f,1f)) }
     val interactionSource = remember { MutableInteractionSource() }
     val buttonIsTouched by interactionSource.collectIsPressedAsState()
     var sliderIsTouched by remember { mutableStateOf(false) }
-    val valueMapperFunction = remember { getValueMapperFunction(minOutput = minDelay, middleOutput = maxDelay - initialDelay, maxOutput = maxDelay, ) }
 
     Box(
         modifier = Modifier
@@ -86,9 +83,8 @@ fun AutoscrollFloatingActionButton(
                     onValueChange = { newValue ->
                         sliderIsTouched = true
                         sliderValue = newValue
-                        val newDelay = valueMapperFunction(newValue)
 
-                        onValueChange( newDelay )
+                        onValueChange(sliderValue)
                     },
                     onValueChangeFinished = {
                         sliderIsTouched = false
@@ -121,8 +117,7 @@ fun AutoscrollFloatingActionButton(
                 onClick = {
                     if (paused) {
                         paused = false
-                        val newDelay = valueMapperFunction(sliderValue)
-                        onPlay(newDelay)
+                        onPlay(sliderValue)
                     } else {
                         paused = true
                         onPause()
@@ -143,26 +138,6 @@ fun AutoscrollFloatingActionButton(
     }
 }
 
-/**
- * Creates a quadratic function that maps 0f..1f to [minOutput]..[maxOutput] where 0.5f maps to [middleOutput]
- */
-fun getValueMapperFunction(minOutput: Float, middleOutput: Float, maxOutput: Float): (x: Float) -> Float {
-    val coefficients = findQuadraticCoefficients(y1 = minOutput, y2 = middleOutput, y3 = maxOutput)
-
-    val (a, b, c) = coefficients
-    return {
-        x: Float ->
-        val returnVal = (a * (x * x)) + (b * x) + c
-        (maxOutput - returnVal).coerceIn(minimumValue = minOutput, maximumValue = maxOutput)
-    }
-}
-fun findQuadraticCoefficients(y1: Float, y2: Float, y3: Float): Triple<Float, Float, Float> {
-    val b = 4 * (y2 - y1) - y3
-    val a = (2*y3) - (4 * (y2 - y1)) - (2*y1)
-    val c = y1
-
-    return Triple(a, b, c)
-}
 
 @Composable @Preview
 private fun AutoscrollFloatingActionButtonPreview() {
