@@ -179,9 +179,8 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
                     val newScrollPosition = scrollState.value + 1
 
                     if (newScrollPosition > maxScrollValue) {
-                        // we got to the end of the song; pause autoscroll
-                        forcePauseScroll = true
-                        break
+                        // we got to the end of the song; skip scrolling to minimize jitters
+                        continue
                     }
                     scrollState.scrollTo(newScrollPosition)
                 }
