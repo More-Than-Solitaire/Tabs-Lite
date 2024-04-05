@@ -2,11 +2,9 @@ package com.gbros.tabslite.compose.chorddisplay
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,71 +33,59 @@ import kotlin.math.min
 @OptIn(ExperimentalFoundationApi::class, ExperimentalUnsignedTypes::class)
 @Composable
 fun ChordPager(modifier: Modifier = Modifier, chordVariations: List<ChordVariation>) {
-    if (chordVariations.isNotEmpty()) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-            Text(
-                text = chordVariations[0].chordId,
-                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier
-                    .fillMaxWidth(),
+        Text(
+            text = chordVariations[0].chordId,
+            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier
+                .fillMaxWidth(),
+        )
+
+        HorizontalIndicatorPager(
+            modifier = modifier,
+            pageCount = chordVariations.size
+        ) { page ->
+
+            val chord = chordVariations[page].toChrynanChord()
+            // set which frets are shown for this chord
+            val defaultMaxFret = 3
+            val defaultMinFret = 1
+            val endFret = max(
+                chord.maxFret,
+                defaultMaxFret
+            )                                 // last fret shown
+            val startFret = min(
+                chord.minFret,
+                max(chord.maxFret - 2, defaultMinFret)
+            )    // first fret shown
+            val chartLayout = ChordChart.STANDARD_TUNING_GUITAR_CHART.copy(
+                fretStart = FretNumber(startFret),
+                fretEnd = FretNumber(endFret)
             )
 
-            HorizontalIndicatorPager(
-                modifier = modifier,
-                pageCount = chordVariations.size
-            ) { page ->
-
-                val chord = chordVariations[page].toChrynanChord()
-                // set which frets are shown for this chord
-                val defaultMaxFret = 3
-                val defaultMinFret = 1
-                val endFret = max(
-                    chord.maxFret,
-                    defaultMaxFret
-                )                                 // last fret shown
-                val startFret = min(
-                    chord.minFret,
-                    max(chord.maxFret - 2, defaultMinFret)
-                )    // first fret shown
-                val chartLayout = ChordChart.STANDARD_TUNING_GUITAR_CHART.copy(
-                    fretStart = FretNumber(startFret),
-                    fretEnd = FretNumber(endFret)
+            ChordWidget(
+                chord = chord,
+                chart = chartLayout,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp),
+                viewData = ChordViewData(
+                    noteColor = MaterialTheme.colorScheme.primary.toChrynanRgba(),
+                    noteLabelTextColor = MaterialTheme.colorScheme.onPrimary.toChrynanRgba(),
+                    fretColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                    fretLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                    stringColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                    stringLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                    stringLabelState = StringLabelState.SHOW_LABEL,
+                    fitToHeight = true
                 )
-
-                ChordWidget(
-                    chord = chord,
-                    chart = chartLayout,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(240.dp),
-                    viewData = ChordViewData(
-                        noteColor = MaterialTheme.colorScheme.primary.toChrynanRgba(),
-                        noteLabelTextColor = MaterialTheme.colorScheme.onPrimary.toChrynanRgba(),
-                        fretColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                        fretLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                        stringColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                        stringLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                        stringLabelState = StringLabelState.SHOW_LABEL,
-                        fitToHeight = true
-                    )
-                )
-            }
-        }
-    } else {
-        // show loading progress indicator
-        Box(
-            modifier = Modifier
-                .height(312.dp)  // this is the size of the components above added together, minus the text
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
+            )
         }
     }
 }

@@ -12,16 +12,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun DeletePlaylistConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+fun RemovePlaylistEntryConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         icon = {
             Icon(Icons.Default.Delete, contentDescription = null)
         },
         title = {
-            Text(text = "Delete playlist?")
+            Text(text = "Remove from playlist?")
         },
         text = {
-            Text(text = "Deleting a playlist cannot be undone.")
+            Text(text = "You'll have to go find the song again if you want to add it back to the playlist.")
         },
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -42,7 +42,7 @@ fun DeletePlaylistConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Uni
 }
 
 @Composable @Preview
-private fun DeletePlaylistConfirmationDialogPreview() {
+private fun RemovePlaylistEntryConfirmationDialogPreview() {
     AppTheme {
         RemovePlaylistEntryConfirmationDialog({}, {})
     }
