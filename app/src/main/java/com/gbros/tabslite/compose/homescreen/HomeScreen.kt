@@ -53,7 +53,7 @@ fun HomeScreen(
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
-    var pagerNav by remember { mutableIntStateOf(pagerState.currentPage) }
+    var pagerNav by remember { mutableIntStateOf(-1) }
 
     Column(
         modifier = Modifier
@@ -79,8 +79,7 @@ fun HomeScreen(
                     activeIcon = Icons.Filled.Favorite,
                     title = "Favorites"
                 ) {
-                    pagerNav = -1
-                    pagerNav = 0
+                    pagerNav = if (pagerNav != 0) 0 else -1
                 }
                 TabRowItem(
                     selected = pagerState.currentPage == 1,
@@ -88,8 +87,7 @@ fun HomeScreen(
                     activeIcon = Icons.Filled.Person,
                     title = "Popular"
                 ) {
-                    pagerNav = -1
-                    pagerNav = 1
+                    pagerNav = if (pagerNav != 1) 1 else -1
                 }
                 TabRowItem(
                     selected = pagerState.currentPage == 2,
@@ -97,8 +95,7 @@ fun HomeScreen(
                     activeIcon = ImageVector.vectorResource(R.drawable.ic_playlist_play),
                     title = "Playlists"
                 ) {
-                    pagerNav = -1
-                    pagerNav = 2
+                    pagerNav = if (pagerNav != 2) 2 else -1
                 }
             }
         }
@@ -135,6 +132,7 @@ fun HomeScreen(
         if (pagerNav >= 0 && pagerNav != pagerState.currentPage) {
             pagerState.animateScrollToPage(pagerNav)
         }
+        pagerNav = -1
     }
 }
 
