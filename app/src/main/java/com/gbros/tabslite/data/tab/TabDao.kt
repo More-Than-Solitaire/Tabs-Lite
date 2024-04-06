@@ -58,5 +58,8 @@ interface TabDao {
     fun getTabsByArtist(artist: String): LiveData<List<TabDataType>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun forceInsert(tab: TabDataType)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(tab: TabDataType)
 }
