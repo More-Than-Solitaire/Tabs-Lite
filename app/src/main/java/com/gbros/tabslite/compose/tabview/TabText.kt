@@ -120,10 +120,10 @@ fun TabText(modifier: Modifier = Modifier, text: String, onChordClick: (String) 
         dynamicText.value.getUrlAnnotations(clickLocation, clickLocation).firstOrNull()?.item?.let {
                 urlAnnotation ->
             try {
-                uriHandler.openUri(urlAnnotation.url)
+                uriHandler.openUri(urlAnnotation.url.trim())
             } catch (ex: ActivityNotFoundException) {
                 Log.i(LOG_NAME, "Couldn't launch URL, copying to clipboard instead")
-                clipboardManager.setText(AnnotatedString(urlAnnotation.url))
+                clipboardManager.setText(AnnotatedString(urlAnnotation.url.trim()))
             }
         }
     }
