@@ -44,13 +44,14 @@ class HomeActivity : ComponentActivity() {
         GlobalScope.launch {
             try {
                 val emptyTabs = db.tabFullDao().getEmptyPlaylistTabIds()
+                Log.i(LOG_NAME, "Found ${emptyTabs.size} empty playlist tabs to fetch")
                 emptyTabs.forEach { tabId ->
-                    Log.d(LOG_NAME, "empty tab: $tabId")
                     UgApi.fetchTabFromInternet(tabId, db)
                 }
             } catch (ex: Exception) {
                 Log.i(LOG_NAME, "Fetching empty tabs failed: ${ex.message}", ex)
             }
+            Log.i(LOG_NAME, "Done fetching empty tabs")
         }
 
         actionBar?.hide()

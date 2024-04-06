@@ -10,6 +10,17 @@ private const val LOG_NAME = "tabslite.ICompleteChord"
 object Chord {
     // region public methods
 
+    suspend fun ensureAllChordsDownloaded(chords: List<String>, db: AppDatabase) {
+        // find chords that aren't in the database
+        val alreadyDownloadedChords = db.chordVariationDao().findAll(chords)
+        val chordsToDownload = chords.filter { usedChord -> !alreadyDownloadedChords.contains(usedChord) }
+
+        // download
+        if (chordsToDownload.isNotEmpty()) {
+            UgApi.updateChordVariations(chordsToDownload, db)
+        }
+    }
+
     fun transposeChord(chord: CharSequence, halfSteps: Int): String {
         val numSteps = abs(halfSteps)
         val up = halfSteps > 0
@@ -35,9 +46,8 @@ object Chord {
     }
 
     open suspend fun getChord(chord: String, db: AppDatabase): List<ChordVariation> {
-        return if (db.chordVariationDao().chordExists(chord)) {
-            db.chordVariationDao().getChordVariations(chord)
-        } else {
+        val downloadedChords = db.chordVariationDao().getChordVariations(chord)
+        return downloadedChords.ifEmpty {
             UgApi.updateChordVariations(listOf(chord), db).getOrDefault(chord, listOf())
         }
     }

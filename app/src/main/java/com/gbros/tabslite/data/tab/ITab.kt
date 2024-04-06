@@ -113,6 +113,17 @@ interface ITab {
     }
 
     /**
+     * Get all the chords used in this tab.  Can be used to download all the chords.
+     */
+    fun getAllChordNames(): List<String> {
+        val chordPattern = Regex("\\[ch](.*?)\\[/ch]")
+        val allMatches = chordPattern.findAll(content)
+        val allChords = allMatches.map { matchResult -> matchResult.groupValues[1] }
+        val uniqueChords = allChords.distinct()
+        return uniqueChords.toList()
+    }
+
+    /**
      * Ensures that the full tab (not just the partial tab loaded in the search results) is stored
      * in the local database.  Checks if [content] is empty, and if so triggers an API call to download
      * the tab content from the internet and load it into the database.

@@ -207,10 +207,7 @@ object UgApi {
             }
         } catch (ex: Exception) {
             val chordCount = chordIds.size
-            Log.i(
-                LOG_NAME,
-                "Error fetching chords.  chordParam: $chordParam.  That means all the chords are already in the database.  Chord count that we're looking for: $chordCount."
-            )
+            Log.i(LOG_NAME, "Couldn't fetch chords: '$chordParam'. Chord count that we're looking for: $chordCount. ${ex.message}", ex)
             cancel("Error fetching chord(s).")
         }
 

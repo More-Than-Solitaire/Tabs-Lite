@@ -33,6 +33,7 @@ import com.gbros.tabslite.compose.addtoplaylistdialog.AddToPlaylistDialog
 import com.gbros.tabslite.compose.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Preference
+import com.gbros.tabslite.data.chord.Chord
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
@@ -51,6 +52,14 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
     var chordToShow by remember { mutableStateOf("") }
     val currentContext = LocalContext.current
     val db: AppDatabase = remember {AppDatabase.getInstance(currentContext) }
+
+    // ensure all chords are downloaded for this tab
+    LaunchedEffect(key1 = tab?.transpose) {
+        if (tab != null && tab.content != "") {
+            val allChords = tab.getAllChordNames()
+            Chord.ensureAllChordsDownloaded(allChords, db)
+        }
+    }
 
     // handle autoscroll
     val scrollState = rememberScrollState()
