@@ -80,6 +80,7 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
                 Log.w(LOG_NAME, "Tab reload failed", ex)
             }
             loading = false
+            reloadTab = false
         }
     }
 

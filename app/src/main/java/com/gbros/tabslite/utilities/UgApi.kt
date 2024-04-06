@@ -16,6 +16,7 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -44,6 +45,8 @@ object UgApi {
     private val cachedSearchSuggestions = HashMap<String, List<String>>()
 
     private var apiKey: String? = null
+
+    private val apiKeyFetchLock: Mutex = Mutex(locked = false)
 
     // endregion
 
@@ -324,13 +327,16 @@ object UgApi {
      */
     private suspend fun authenticatedStream(url: String): InputStream = withContext(Dispatchers.IO) {
         Log.v(LOG_NAME, "Getting authenticated stream for url: $url.")
+        apiKeyFetchLock.lock()
         if (apiKey == null) {
             try {
                 updateApiKey()
             } catch (ex: Exception) {
+                apiKeyFetchLock.unlock()
                 throw Exception("API Key initialization failed while fetching $url.  Likely no internet access.", ex)
             }
         }
+        apiKeyFetchLock.unlock()
 
         // api key is not null
         Log.v(LOG_NAME, "Api key: $apiKey, device id: $deviceId.")

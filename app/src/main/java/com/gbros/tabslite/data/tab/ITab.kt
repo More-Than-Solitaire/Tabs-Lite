@@ -1,8 +1,11 @@
 package com.gbros.tabslite.data.tab
 
+import android.util.Log
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.chord.Chord
 import com.gbros.tabslite.utilities.UgApi
+
+private const val LOG_NAME = "tabslite.ITab          "
 
 interface ITab {
     companion object {
@@ -19,6 +22,7 @@ interface ITab {
          */
         suspend fun fetchFullTab(tabId: Int, database: AppDatabase, force: Boolean = false): Tab {
             return if (force || !database.tabFullDao().existsWithContent(tabId)) {
+                Log.d(LOG_NAME, "Fetching tab $tabId from internet (force = $force)")
                 Tab(UgApi.fetchTabFromInternet(tabId = tabId, database = database))
             } else {
                 // Cache hit for tab.  Not fetching from internet.

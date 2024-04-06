@@ -50,7 +50,7 @@ fun TabScreen(id: Int, idIsPlaylistEntryId: Boolean = false, navigateBack: () ->
                 ITab.fetchFullTab(currentId, db)
             }
         } catch (ex: Exception) {
-            Log.i(LOG_NAME, "Couldn't fetch tab $currentId.", ex)
+            Log.w(LOG_NAME, "Couldn't fetch tab $currentId: ${ex.message}", ex)
         }
     }
 

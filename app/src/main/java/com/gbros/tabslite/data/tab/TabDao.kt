@@ -33,6 +33,10 @@ interface TabDao {
     @Query("SELECT *, 1 as user_created, 'Favorites' as title, 0 as date_created, 0 as date_modified, 'Tabs you have favorited in the app' as description FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = $FAVORITES_PLAYLIST_ID")
     fun getFavoriteTabs(): LiveData<List<TabWithPlaylistEntry>>
 
+    @Query("SELECT id FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE tabs.content = ''")
+
+    suspend fun getEmptyPlaylistTabIds(): List<Int>
+
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT *, 0 as user_created, 'Popular Tabs' as title, 0 as date_created, 0 as date_modified, 'Top tabs of today' as description FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = $TOP_TABS_PLAYLIST_ID")
     fun getPopularTabs(): LiveData<List<TabWithPlaylistEntry>>
