@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import com.gbros.tabslite.compose.ErrorCard
+import com.gbros.tabslite.compose.card.ErrorCard
 import com.gbros.tabslite.compose.tabview.TabText
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.chord.Chord

@@ -27,7 +27,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
-import com.gbros.tabslite.compose.InfoCard
+import com.gbros.tabslite.compose.card.InfoCard
 import com.gbros.tabslite.compose.songlist.SongListItem
 import com.gbros.tabslite.compose.swipetodismiss.MaterialSwipeToDismiss
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry

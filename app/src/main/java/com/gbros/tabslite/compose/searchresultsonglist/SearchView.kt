@@ -2,16 +2,18 @@ package com.gbros.tabslite.compose.searchresultsonglist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.compose.card.InfoCard
 import com.gbros.tabslite.compose.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.ISearch
 import com.gbros.tabslite.data.SearchDidYouMeanException
@@ -67,32 +70,42 @@ fun SearchView(
             initialQueryText = query,
             leadingIcon = {
                 IconButton(onClick = navigateBack) {
-                    Icon(Icons.Default.ArrowBack, "Back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                 }
             },
             onSearch = onSearch
         )
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp), state = lazyColumnState) {
-            items(items = searchResults) { song ->
-                SearchResultCard(song) {
-                    navigateToSongVersionsBySongId(
-                        song.songId
-                    )
-                }
+        if (endOfSearchResults && searchResults.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(all = 24.dp), contentAlignment = Alignment.Center
+            ) {
+                InfoCard(text = "No search results. Revise your query or check your internet connection.")
             }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp), state = lazyColumnState) {
+                items(items = searchResults) { song ->
+                    SearchResultCard(song) {
+                        navigateToSongVersionsBySongId(
+                            song.songId
+                        )
+                    }
+                }
 
-            item {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier
-                        .defaultMinSize(minHeight = 48.dp)
-                        .fillMaxWidth()
-                        .padding(top = 4.dp)
-                ) {
-                    if (showProgressIndicator) {
-                        CircularProgressIndicator()
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.Top,
+                        modifier = Modifier
+                            .defaultMinSize(minHeight = 48.dp)
+                            .fillMaxWidth()
+                            .padding(top = 4.dp)
+                    ) {
+                        if (showProgressIndicator) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
             }
