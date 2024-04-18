@@ -468,8 +468,10 @@ object UgApi {
                 lastResult = Gson().fromJson(jsonReader, serverTimestampTypeToken)
                 lastResult
             }
-        } catch (ex: Exception){
-            throw Exception( "Error getting hello handshake (server time).  We may not be connected to the internet.", ex)
+        } catch (ex: IllegalStateException) {
+            throw IllegalStateException("Error converting types while performing hello handshake. Check proguard rules.", ex)
+        } catch (ex: Exception) {
+            throw Exception( "Error getting hello handshake (server time). We may not be connected to the internet.", ex)
         }
 
         // read server time into our date type of choice

@@ -18,7 +18,7 @@
 
 # SourceFile,LineNumberTable preserve the line number information for
 # debugging stack traces. Signature helps with types for UgApi server handshake
--keepattributes SourceFile,LineNumberTable,Signature
+-keepattributes Exceptions, Signature, InnerClasses, SourceFile, LineNumberTable
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
@@ -35,11 +35,10 @@
 
 -keep class androidx.navigation.fragment.NavHostFragment { *; }
 
+# classes that will be serialized or deserialized must be kept for TypeToken use
 -keep class com.gbros.tabslite.data.servertypes.** { *; }
--keepattributes Exceptions, Signature, InnerClasses, SourceFile, LineNumberTable
-
--keep class com.chrynan.chords.** { *; }
--keepattributes Exceptions, Signature, InnerClasses, SourceFile, LineNumberTable
+-keep public class com.chrynan.chords.** { *; }
+-keep public class * extends com.chrynan.chords.model.ChordMarker { *; }
 
 # For UgApi.kt, to allow handshake response auto-typing, thanks https://stackoverflow.com/a/76224937/3437608
 # This is also needed for R8 in compat mode since multiple

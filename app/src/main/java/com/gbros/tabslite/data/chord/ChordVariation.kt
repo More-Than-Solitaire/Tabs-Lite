@@ -25,8 +25,6 @@ data class ChordVariation(
         @ColumnInfo(name = "muted_chord_markers") val mutedChordMarkers: @RawValue ArrayList<ChordMarker.Muted>,
         @ColumnInfo(name = "bar_chord_markers") val barChordMarkers: @RawValue ArrayList<ChordMarker.Bar>
 ) : Parcelable {
-    @Parcelize
-    class CapoInfo(var fret: Int, var startString: Int, var lastString: Int, var finger: Int) : Parcelable
 
     override fun toString() = varId
 
