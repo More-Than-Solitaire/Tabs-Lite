@@ -58,7 +58,7 @@ fun SongListView(
     // update sort by preference when selection changes
     LaunchedEffect(key1 = sortBySelection) {
         val currentSelection = sortBySelection
-        if (currentSelection != null) {
+        if (currentSelection != null && sortByPreference.name != "") {
             onSortPreferenceChange(sortByPreference.copy(value = currentSelection.name))
             sortBySelection = null
         }
