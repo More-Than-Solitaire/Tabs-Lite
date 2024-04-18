@@ -50,7 +50,7 @@ android {
 
     dynamicFeatures = []
     dependenciesInfo {
-        includeInApk true
+        includeInApk false // don't include Google signed dependency tree in APK to allow the app to be compatible with FDroid
         includeInBundle true
     }
     namespace 'com.gbros.tabslite'
