@@ -26,75 +26,77 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.gbros.tabslite.R
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun AboutDialog(onCloseClicked: () -> Unit, onExportPlaylistsClicked: () -> Unit, onImportPlaylistsClicked: () -> Unit) {
-    Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(all = 8.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Absolute.Left
-        ) {
-            IconButton(onClick = onCloseClicked ) {
-                Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(id = R.string.generic_action_close))
-            }
-        }
-
-        Card (
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth(),
-            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-            shape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp))
-        ) {
-            Text(modifier = Modifier.padding(all = 16.dp), text = stringResource(id = R.string.app_about))
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Card (
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth(),
-            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-            shape = MaterialTheme.shapes.large.copy(topStart = CornerSize(0.dp), topEnd = CornerSize(0.dp))
+fun AboutDialog(modifier: Modifier = Modifier, onDismissRequest: () -> Unit, onExportPlaylistsClicked: () -> Unit, onImportPlaylistsClicked: () -> Unit) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            modifier = modifier,
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clickable { onExportPlaylistsClicked() }
-            ) {
-                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), contentDescription = "")
-                Text(modifier = Modifier.padding(all = 16.dp), text = stringResource(id = R.string.app_action_export_playlists))
-            }
-            Row(
+                    .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clickable { onImportPlaylistsClicked() }
+                horizontalArrangement = Arrangement.Absolute.Left
             ) {
-                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_upload), contentDescription = "")
-                Text(modifier = Modifier.padding(all = 16.dp), text = stringResource(id = R.string.app_action_import_playlists))
+                IconButton(onClick = onDismissRequest) {
+                    Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(id = R.string.generic_action_close))
+                }
             }
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly) {
-            val uriHandler = LocalUriHandler.current
-            TextButton(onClick = { uriHandler.openUri("https://play.google.com/store/apps/details?id=com.gbros.tabslite") }) {
-                Text(text = stringResource(id = R.string.app_action_leave_review))
+            Card(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth(),
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                shape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp))
+            ) {
+                Text(modifier = Modifier.padding(all = 16.dp), text = stringResource(id = R.string.app_about))
             }
-            TextButton(onClick = { uriHandler.openUri("https://github.com/sponsors/More-Than-Solitaire") }) {
-                Text(text = stringResource(id = R.string.app_action_donate))
+            Spacer(modifier = Modifier.height(4.dp))
+            Card(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth(),
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                shape = MaterialTheme.shapes.large.copy(topStart = CornerSize(0.dp), topEnd = CornerSize(0.dp))
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onExportPlaylistsClicked() }
+                ) {
+                    Icon(modifier = Modifier.padding(start = 16.dp), imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), contentDescription = "")
+                    Text(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), text = stringResource(id = R.string.app_action_export_playlists))
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onImportPlaylistsClicked() }
+                ) {
+                    Icon(modifier = Modifier.padding(start = 16.dp), imageVector = ImageVector.vectorResource(id = R.drawable.ic_upload), contentDescription = "")
+                    Text(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), text = stringResource(id = R.string.app_action_import_playlists))
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                val uriHandler = LocalUriHandler.current
+                TextButton(onClick = { uriHandler.openUri("https://play.google.com/store/apps/details?id=com.gbros.tabslite") }) {
+                    Text(text = stringResource(id = R.string.app_action_leave_review))
+                }
+                TextButton(onClick = { uriHandler.openUri("https://github.com/sponsors/More-Than-Solitaire") }) {
+                    Text(text = stringResource(id = R.string.app_action_donate))
+                }
             }
         }
     }
@@ -103,6 +105,6 @@ fun AboutDialog(onCloseClicked: () -> Unit, onExportPlaylistsClicked: () -> Unit
 @Composable @Preview
 private fun AboutDialogPreview() {
     AppTheme {
-        AboutDialog({}, {}) {}
+        AboutDialog(Modifier, {}, {}) {}
     }
 }

@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,6 +56,11 @@ fun HomeScreen(
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     var pagerNav by remember { mutableIntStateOf(-1) }
+    var showAboutDialog by remember { mutableStateOf(false) }
+
+    if (showAboutDialog) {
+        AboutDialog(onDismissRequest = { showAboutDialog = false }, onExportPlaylistsClicked = { showAboutDialog = false }, onImportPlaylistsClicked = { showAboutDialog = false })
+    }
 
     Column(
         modifier = Modifier
@@ -70,7 +76,7 @@ fun HomeScreen(
                     .padding(horizontal = 2.dp),
                 onSearch = onSearch,
                 leadingIcon = {
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = { showAboutDialog = true }) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
                             contentDescription = null,
