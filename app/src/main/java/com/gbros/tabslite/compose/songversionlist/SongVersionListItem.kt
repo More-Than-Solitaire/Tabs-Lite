@@ -35,7 +35,7 @@ fun SongVersionListItem(song: ITab, onClick: () -> Unit){
                 .padding(all = 5.dp)
         ){
             Text(
-                text = stringResource(R.string.version_number, song.version),
+                text = stringResource(R.string.tab_version_number, song.version),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .weight(1f)

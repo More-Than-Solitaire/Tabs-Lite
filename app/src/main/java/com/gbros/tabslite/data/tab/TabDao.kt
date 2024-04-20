@@ -34,7 +34,6 @@ interface TabDao {
     fun getFavoriteTabs(): LiveData<List<TabWithPlaylistEntry>>
 
     @Query("SELECT id FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE tabs.content = ''")
-
     suspend fun getEmptyPlaylistTabIds(): List<Int>
 
     @RewriteQueriesToDropUnusedColumns

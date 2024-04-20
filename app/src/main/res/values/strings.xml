@@ -1,22 +1,16 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Resources that do not require translation -->
     <string name="app_name" translatable="false">Tabs Lite</string>
 
     <!-- Translatable resources -->
-    <string name="fav_tabs_title" translation_description="Title for the 'Favorite Tabs' screen where the user can see the list of tabs that they've favorited.">Favorites</string>
-    <string name="suggested_tabs_title" translation_description="Title for the screen where the user sees a list of automatically found suggested tabs.">Popular</string>
-    <string name="playlists_section_title" translation_description="Title for the screen where the user sees a list of playlists that they've created.">Playlists</string>
-    <string name="available" translation_description="Text for the header of the plant list page indicating the available plants for users to choose from.">Available Plants</string>
-    <string name="find_song" translation_description="Button text that prompts user to search for tabs to add to their (empty) favorites.">Find a song</string>
-    <string name="find_songs" translation_description="Button text that prompts user to search for tabs to add to their (empty) playlist.">Find some songs</string>
-    <string name="create_playlist" translation_description="Button text that prompts user to new playlist.">Create New Playlist</string>
-    <string name="favorites_empty" translation_description="Text that is shown on the 'Favorite Tabs' and 'Popular' screens when no tabs are there">There are no tabs here</string>
-    <string name="playlist_empty" translation_description="If there's a playlist with no tabs">There\'s nothing here!</string>
-    <string name="playlists_empty" translation_description="Text that is shown on the 'Playlists' screen when no playlists are there">You don\'t have any playlists yet</string>
-    <string name="menu_item_share_tab" translation_description="The label for the Share menu item">Share</string>
-    <string name="menu_item_search" translation_description="The label for the Search menu item">Search</string>
-    <string name="menu_item_search_hint" translation_description="The hint for the Search menu item">Find a song</string>
-    <string name="share_text_plant" translation_description="The default messaged used when sharing a plant on SNS, etc.">Check out %1$s in the Tabs Lite app!  %2$s</string>
+    <string name="app_about" translation_description="A brief description of the app, for use in the About dialog." tools:ignore="TypographyOther">TabsLite is a free, open source guitar tablature app with over a million songs available using existing popular tabs databases. It\'s built for speed and simplicity, 100% free with no ads. Managed by More Than Solitaire, Inc, a 501(c)(3) nonprofit dedicated to software learning.</string>
+    <string name="app_action_export_playlists" translation_description="The button text to export playlists">Export favorites and playlists</string>
+    <string name="app_action_import_playlists" translation_description="The button text to export playlists">Import favorites and playlists</string>
+    <string name="app_action_leave_review" translation_description="The button text to leave a review">Leave review</string>
+    <string name="app_action_donate" translation_description="The button text to donate to TabsLite">Donate</string>
+
+    <string name="generic_action_close">Close</string>
+
     <string name="tab_title">%1$s by %2$s</string>
     <string name="tab_difficulty">Difficulty: %s</string>
     <string name="tab_tuning">Tuning: %s</string>
@@ -24,51 +18,6 @@
     <string name="tab_key">Key: %s</string>
     <string name="tab_author">Tab Author: %s</string>
     <string name="tab_transpose">Transpose: %d</string>
-
-    <string name="difficulty">Difficulty: </string>
-    <string name="tuning">Tuning: </string>
-    <string name="no_search_results">Search completed with no results found. If this is unexpected, check your search query and your internet connection.</string>
-    <string name="title_activity_tab_detail">TabDetailActivity</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-    <string name="version_number">Version %d</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <string name="toggle_dark_mode">Dark Mode...</string>
-    <string name="edit_playlist">Edit Playlist</string>
-    <string name="delete_playlist">Delete Playlist</string>
-    <string name="get_app">Download app permanently</string>
-    <string name="save_tab_favorite">Save</string>
-    <string name="reload_tab">Reload Tab</string>
-    <string name="add_to_playlist">Add To Playlist</string>
-    <string name="sort_by">Sort By</string>
-    <string name="middleDot">·</string>
-    <string name="auto_scroll_speed_control">Auto scroll speed control</string>
-    <string name="auto_scroll_toggle_button">Auto scroll toggle button</string>
-    <string name="remove_from_playlist">Remove from playlist</string>
-    <string name="drag_handle_description">Drag handle</string>
-    <string name="no_results_available_tabs_coming_soon">Whoops! There are no supported versions of this song available. We hope to add support for tab-style songs in the future.</string>
-    <string name="tabs_lite_icon_description">Tabs Lite icon</string>
-    <string name="how_to_add_to_playlist">Add songs to a playlist by opening the song you\'d like to add and clicking Add to Playlist in the menu.</string>
-    <string name="playlist_title">Playlist title</string>
-    <string name="description_optional">Description (optional)</string>
-    <string name="previous_tab_in_playlist">Previous tab in playlist</string>
-    <string name="next_tab_in_playlist">Next tab in playlist</string>
-
-    <string-array name="tab_sort_options">
-        <item>Date Added</item>
-        <item>Name</item>
-        <item>Artist Name</item>
-        <item>Popularity</item>
-    </string-array>
-    <string-array name="playlist_sort_options">
-        <item>Recently Modified</item>
-        <item>Title</item>
-        <item>Date Created</item>
-    </string-array>
+    <string name="tab_version_number">Version %d</string>
 
 </resources>
