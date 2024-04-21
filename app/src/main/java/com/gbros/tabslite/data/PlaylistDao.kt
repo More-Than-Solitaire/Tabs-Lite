@@ -12,7 +12,10 @@ import androidx.room.Query
 @Dao
 interface PlaylistDao {
     @Query("SELECT * FROM playlist")
-    fun getPlaylists(): LiveData<List<Playlist>>
+    fun getLivePlaylists(): LiveData<List<Playlist>>
+
+    @Query("SELECT * FROM playlist")
+    suspend fun getPlaylists(): List<Playlist>
 
     @Query("UPDATE playlist SET date_modified = :dateModified WHERE id = :playlistId")
     fun updateTimestamp(playlistId: Int, dateModified: Long)

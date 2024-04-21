@@ -1,5 +1,11 @@
 package com.gbros.tabslite.compose.homescreen
 
+import android.app.Activity.RESULT_OK
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -40,11 +46,19 @@ import com.gbros.tabslite.compose.songlist.SongListView
 import com.gbros.tabslite.compose.songlist.SortBy
 import com.gbros.tabslite.compose.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.Playlist
+import com.gbros.tabslite.data.PlaylistEntry
+import com.gbros.tabslite.data.PlaylistFileExportType
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-@OptIn(ExperimentalFoundationApi::class)
+private const val LOG_NAME = "tabslite.HomeScreen    "
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     onSearch: (query: String) -> Unit,
@@ -57,9 +71,45 @@ fun HomeScreen(
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     var pagerNav by remember { mutableIntStateOf(-1) }
     var showAboutDialog by remember { mutableStateOf(false) }
+    val contentResolver = currentContext.contentResolver
+
+    // handle playlist data export
+    var destinationForPlaylistExport: Uri? by remember { mutableStateOf(null) }
+    val exportDataFilePickerActivityLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            destinationForPlaylistExport = result.data!!.data
+        } else {
+            Log.w(LOG_NAME, "Import playlists clicked, but no file chosen.")
+        }
+    }
+
+    // handle playlist data import
+    var fileToImportPlaylistData: Uri? by remember { mutableStateOf(null) }
+    val importPlaylistsPickerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {fileToImport ->
+        fileToImportPlaylistData = fileToImport
+    }
 
     if (showAboutDialog) {
-        AboutDialog(onDismissRequest = { showAboutDialog = false }, onExportPlaylistsClicked = { showAboutDialog = false }, onImportPlaylistsClicked = { showAboutDialog = false })
+        AboutDialog(
+            onDismissRequest = { showAboutDialog = false },
+            onExportPlaylistsClicked = {
+                showAboutDialog = false
+
+                // launch a file picker to find where to export the playlist data to
+                val filePickerEvent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "application/json"
+                    putExtra(Intent.EXTRA_TITLE, "tabslite_backup.json")
+                }
+                exportDataFilePickerActivityLauncher.launch(filePickerEvent)
+            },
+            onImportPlaylistsClicked = {
+                showAboutDialog = false
+
+                // launch a file picker to choose the file to import
+                importPlaylistsPickerLauncher.launch("application/json")
+            }
+        )
     }
 
     Column(
@@ -139,33 +189,110 @@ fun HomeScreen(
                     emptyListText = "Today's popular songs will load when you're connected to the internet.")
 
                 // Playlists page
-                2 -> PlaylistPage(livePlaylists = db.playlistDao().getPlaylists(), navigateToPlaylistById = navigateToPlaylistById)
+                2 -> PlaylistPage(livePlaylists = db.playlistDao().getLivePlaylists(), navigateToPlaylistById = navigateToPlaylistById)
             }
         }
     }
 
+    // scroll to page when that page's tab is clicked
     LaunchedEffect(pagerNav) {
         if (pagerNav >= 0 && pagerNav != pagerState.currentPage) {
             pagerState.animateScrollToPage(pagerNav)
         }
         pagerNav = -1
     }
+
+    // export playlists if a filename is chosen to export playlists to
+    LaunchedEffect(key1 = destinationForPlaylistExport) {
+        if (destinationForPlaylistExport?.path != null) {
+            val allPlaylists = db.playlistDao().getPlaylists().filter { playlist -> playlist.playlistId != Playlist.TOP_TABS_PLAYLIST_ID }
+            val allPlaylistEntries = db.playlistEntryDao().getAllPlaylistEntries().filter { entry -> entry.playlistId != Playlist.TOP_TABS_PLAYLIST_ID }
+            val playlistsAndEntries = Json.encodeToString(PlaylistFileExportType(playlists = allPlaylists, entries = allPlaylistEntries))
+
+            contentResolver.openOutputStream(destinationForPlaylistExport!!).use { outputStream ->
+                outputStream?.write(playlistsAndEntries.toByteArray())
+                outputStream?.flush()
+            }
+        }
+
+        // reset for next export
+        destinationForPlaylistExport = null
+    }
+
+    // import playlists when a file is chosen to import playlists from
+    LaunchedEffect(key1 = fileToImportPlaylistData) {
+        val fileToImport = fileToImportPlaylistData
+        var dataToImport: String? = null
+        if (fileToImport != null && fileToImport.path != null) {
+            // read file
+            contentResolver.openInputStream(fileToImport).use {
+                dataToImport = it?.reader()?.readText()
+            }
+        }
+
+        if (!dataToImport.isNullOrBlank()) {
+            val importedData = Json.decodeFromString<PlaylistFileExportType>(dataToImport!!)
+
+            // import all playlists (except Favorites and Top Tabs)
+            val playlistIdMap = HashMap<Int, Int>(importedData.playlists.size)  // importing the playlists will give them new IDs; track these new IDs so they can be mapped for playlist entries
+            playlistIdMap[Playlist.FAVORITES_PLAYLIST_ID] = Playlist.FAVORITES_PLAYLIST_ID  // include the favorites playlist so that favorite tabs are imported
+            for (playlist in importedData.playlists) {
+                if (playlist.playlistId == Playlist.FAVORITES_PLAYLIST_ID || playlist.playlistId == Playlist.TOP_TABS_PLAYLIST_ID)
+                    continue
+
+                val newPlaylistID = db.playlistDao().savePlaylist(
+                    Playlist(userCreated = playlist.userCreated, title = playlist.title, dateCreated = playlist.dateCreated, dateModified = playlist.dateModified, description = playlist.description)
+                )
+                playlistIdMap[playlist.playlistId] = newPlaylistID.toInt()
+            }
+
+            // get current favorite tabs (to not reimport tabs that are already favorite tabs)
+            val currentFavorites = db.playlistEntryDao().getAllEntriesInPlaylist(Playlist.FAVORITES_PLAYLIST_ID)
+
+            // update playlist IDs to the new playlist IDs mapped above
+            val playlistEntriesWithUpdatedPlaylistIds = importedData.entries.mapNotNull { entry ->
+                if (playlistIdMap.containsKey(entry.playlistId) && (entry.playlistId != Playlist.FAVORITES_PLAYLIST_ID || currentFavorites.all { fav -> fav.tabId != entry.tabId }))  // don't reimport existing favorites or orphaned playlist entries
+                    playlistIdMap[entry.playlistId]?.let { PlaylistEntry(playlistId = it, tabId = entry.tabId, next_entry_id = entry.nextEntryId, prev_entry_id = entry.prevEntryId, dateAdded = entry.dateAdded, transpose = entry.transpose) }
+                else
+                    null
+            }
+
+            // import all playlist entries
+            val entryIdMap = HashMap<Int, Int>(importedData.entries.size)  // importing the playlist entries will give them new IDs; track these to be able to update the linked list ordering for playlists
+            for (entry in playlistEntriesWithUpdatedPlaylistIds) {
+                entryIdMap[entry.entryId] = db.playlistEntryDao().insert(entry = entry).toInt()  // insert and save the new entry ID
+            }
+
+            // now that we have all our updated entry IDs, loop through and fix all the prev and next mappings
+            for (entry in playlistEntriesWithUpdatedPlaylistIds) {
+                if (entry.nextEntryId != null) {
+                    if (!entryIdMap.containsKey(entry.nextEntryId)) {
+                        Log.e(LOG_NAME, "Playlist entry ${entryIdMap[entry.entryId]}'s next entry ID couldn't be found. There will be unreferenced playlist entries in this playlist. Playlist ${entry.playlistId} linked list is now broken.")
+                    }
+                    db.playlistEntryDao().setNextEntryId(entryIdMap[entry.entryId], entryIdMap[entry.nextEntryId])
+                }
+
+                if (entry.prevEntryId != null) {
+                    if (!entryIdMap.containsKey(entry.prevEntryId)) {
+                        Log.e(LOG_NAME, "Playlist entry ${entryIdMap[entry.entryId]}'s previous entry ID couldn't be found. There will be unreferenced playlist entries in this playlist. Playlist ${entry.playlistId} linked list is now broken.")
+                    }
+                    db.playlistEntryDao().setPrevEntryId(entryIdMap[entry.entryId], entryIdMap[entry.prevEntryId])
+                }
+            }
+        }
+
+        fileToImportPlaylistData = null
+    }
 }
 
 @Composable
 fun TabRowItem(selected: Boolean, inactiveIcon: ImageVector, activeIcon: ImageVector, title: String, onClick: () -> Unit) {
     Tab(
-        icon = {
-            Icon(
-                imageVector =  if(selected) activeIcon else inactiveIcon,
-                null
-            )
-        },
+        icon = { Icon(imageVector =  if(selected) activeIcon else inactiveIcon, null) },
         text = { Text(title) },
         selected = selected,
         onClick = onClick
     )
-
 }
 
 @Composable @Preview

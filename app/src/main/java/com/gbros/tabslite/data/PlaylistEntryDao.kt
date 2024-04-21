@@ -14,6 +14,9 @@ import com.gbros.tabslite.data.Playlist.Companion.FAVORITES_PLAYLIST_ID
  */
 @Dao
 interface PlaylistEntryDao {
+    @Query("SELECT * FROM playlist_entry")
+    suspend fun getAllPlaylistEntries(): List<PlaylistEntry>
+
     @Query("SELECT * FROM playlist_entry WHERE playlist_id = :playlistId")
     fun getLivePlaylistItems(playlistId: Int): LiveData<List<PlaylistEntry>>
 
@@ -99,6 +102,9 @@ interface PlaylistEntryDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: PlaylistEntry): Long
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(entries: List<PlaylistEntry>)
+
     @Query("DELETE FROM playlist_entry WHERE entry_id = :entry_id")
     suspend fun deleteEntry(entry_id: Int)
 
@@ -111,6 +117,14 @@ interface PlaylistEntryDao {
     fun clearPlaylist(playlistId: Int)
 
     fun clearTopTabsPlaylist() = clearPlaylist(Playlist.TOP_TABS_PLAYLIST_ID)
+
+    @Query("SELECT * FROM playlist_entry WHERE playlist_id = :playlistId")
+    suspend fun getAllEntriesInPlaylist(playlistId: Int): List<PlaylistEntry>
+
+    suspend fun getSortedEntriesInPlaylist(playlistId: Int): List<PlaylistEntry> {
+        val allEntries = getAllEntriesInPlaylist(playlistId = playlistId)
+        return PlaylistEntry.sortLinkedList(allEntries)
+    }
 
     @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId)")
     fun tabExistsInFavoritesLive(tabId: Int): LiveData<Boolean>

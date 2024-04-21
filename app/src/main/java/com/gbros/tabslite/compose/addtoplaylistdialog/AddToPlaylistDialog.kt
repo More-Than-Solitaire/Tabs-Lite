@@ -32,7 +32,7 @@ import com.gbros.tabslite.ui.theme.AppTheme
 fun AddToPlaylistDialog(tabId: Int, transpose: Int, onConfirm: () -> Unit, onDismiss: () -> Unit) {
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
-    val playlists by db.playlistDao().getPlaylists().observeAsState(initial = listOf())
+    val playlists by db.playlistDao().getLivePlaylists().observeAsState(initial = listOf())
     var selectedPlaylist: Playlist? by remember { mutableStateOf(null) }
     var confirmedPlaylist: Playlist? by remember { mutableStateOf(null) }
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }

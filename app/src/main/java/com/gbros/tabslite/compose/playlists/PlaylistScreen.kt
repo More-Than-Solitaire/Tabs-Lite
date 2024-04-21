@@ -12,9 +12,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.IPlaylistEntry
+import com.gbros.tabslite.data.PlaylistEntry
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
-
-private const val LOG_NAME = "tabslite.PlaylistScreen"
 
 @Composable
 fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Unit, navigateBack: () -> Unit) {
@@ -27,7 +26,7 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
     var updatedTitle: String? by remember { mutableStateOf(null) }
 
     // sort songs by internal linked list
-    val orderedSongs: List<TabWithPlaylistEntry> = remember(songs) { sortLinkedList(songs) }
+    val orderedSongs: List<TabWithPlaylistEntry> = remember(songs) { PlaylistEntry.sortLinkedList(songs) }
 
     // handle entry rearrangement
     var entryMovedSrc: IPlaylistEntry? by remember { mutableStateOf(null) }
@@ -99,28 +98,4 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
             db.playlistDao().updateTitle(playlistId, copyOfUpdatedTitle)
         }
     }
-}
-
-
-private fun sortLinkedList(entries: List<TabWithPlaylistEntry>): List<TabWithPlaylistEntry> {
-    val entryMap = entries.associateBy { it.entryId }
-    val sortedEntries = mutableListOf<TabWithPlaylistEntry>()
-
-    var currentEntry = entries.firstOrNull { it.prevEntryId == null }
-
-    try {
-        while (currentEntry != null) {
-            sortedEntries.add(currentEntry)
-            currentEntry = if (currentEntry.nextEntryId != currentEntry.entryId) {
-                entryMap[currentEntry.nextEntryId]
-            } else {
-                Log.e(LOG_NAME, "Error!  Playlist linked list is broken: circular reference")
-                null // stop list traversal
-            }
-        }
-    } catch (ex: OutOfMemoryError) {
-        Log.e(LOG_NAME, "Error!  Playlist linked list is likely broken: circular reference", ex)
-    }
-
-    return sortedEntries
 }
