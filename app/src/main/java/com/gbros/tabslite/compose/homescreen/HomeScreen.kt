@@ -46,9 +46,9 @@ import com.gbros.tabslite.compose.songlist.SongListView
 import com.gbros.tabslite.compose.songlist.SortBy
 import com.gbros.tabslite.compose.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.Playlist
-import com.gbros.tabslite.data.PlaylistEntry
-import com.gbros.tabslite.data.PlaylistFileExportType
+import com.gbros.tabslite.data.playlist.Playlist
+import com.gbros.tabslite.data.playlist.PlaylistEntry
+import com.gbros.tabslite.data.playlist.PlaylistFileExportType
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi

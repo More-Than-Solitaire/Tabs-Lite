@@ -20,7 +20,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.gbros.tabslite.compose.addtoplaylistdialog.CreatePlaylistDialog
 import com.gbros.tabslite.compose.playlists.PlaylistList
-import com.gbros.tabslite.data.Playlist
+import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable

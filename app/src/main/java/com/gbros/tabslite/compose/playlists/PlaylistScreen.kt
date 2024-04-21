@@ -1,6 +1,5 @@
 package com.gbros.tabslite.compose.playlists
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,7 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.IPlaylistEntry
-import com.gbros.tabslite.data.PlaylistEntry
+import com.gbros.tabslite.data.playlist.PlaylistEntry
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 
 @Composable

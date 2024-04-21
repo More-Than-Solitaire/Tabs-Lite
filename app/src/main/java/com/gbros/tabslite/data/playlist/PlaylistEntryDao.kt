@@ -1,4 +1,4 @@
-package com.gbros.tabslite.data
+package com.gbros.tabslite.data.playlist
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
@@ -7,7 +7,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.gbros.tabslite.data.Playlist.Companion.FAVORITES_PLAYLIST_ID
+import com.gbros.tabslite.data.IPlaylistEntry
+import com.gbros.tabslite.data.playlist.Playlist.Companion.FAVORITES_PLAYLIST_ID
 
 /**
  * The Data Access Object for the Chord Variation class.

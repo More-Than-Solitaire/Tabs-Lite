@@ -1,9 +1,10 @@
-package com.gbros.tabslite.data
+package com.gbros.tabslite.data.playlist
 
 import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.gbros.tabslite.data.IPlaylistEntry
 import kotlinx.serialization.Serializable
 
 private const val LOG_NAME = "tabslite.PlaylistEntry "
@@ -28,7 +29,7 @@ data class PlaylistEntry(
     constructor(playlistEntry: IPlaylistEntry) : this(playlistEntry.entryId, playlistEntry.playlistId, playlistEntry.tabId, playlistEntry.nextEntryId, playlistEntry.prevEntryId, playlistEntry.dateAdded, playlistEntry.transpose)
 
     companion object {
-        fun <T:IPlaylistEntry> sortLinkedList(entries: List<T>): List<T> {
+        fun <T: IPlaylistEntry> sortLinkedList(entries: List<T>): List<T> {
             val entryMap = entries.associateBy { it.entryId }
             val sortedEntries = mutableListOf<T>()
 

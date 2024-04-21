@@ -6,8 +6,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
-import com.gbros.tabslite.data.Playlist.Companion.FAVORITES_PLAYLIST_ID
-import com.gbros.tabslite.data.Playlist.Companion.TOP_TABS_PLAYLIST_ID
+import com.gbros.tabslite.data.playlist.Playlist.Companion.FAVORITES_PLAYLIST_ID
+import com.gbros.tabslite.data.playlist.Playlist.Companion.TOP_TABS_PLAYLIST_ID
 
 /**
  * The Data Access Object for the Tab Full class.

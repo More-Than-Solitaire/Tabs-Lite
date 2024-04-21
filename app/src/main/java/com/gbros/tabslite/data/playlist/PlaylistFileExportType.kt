@@ -1,4 +1,4 @@
-package com.gbros.tabslite.data
+package com.gbros.tabslite.data.playlist
 
 import kotlinx.serialization.Serializable
 
