@@ -8,6 +8,9 @@
     <string name="app_action_import_playlists" translation_description="The button text to export playlists">Import favorites and playlists</string>
     <string name="app_action_leave_review" translation_description="The button text to leave a review">Leave review</string>
     <string name="app_action_donate" translation_description="The button text to donate to TabsLite">Donate</string>
+    <string name="app_action_search" translation_description="The placeholder text for the search bar">Search TabsLite</string>
+
+    <string name="app_action_description_search" translation_description="The accessibility text for the Search action">Search</string>
 
     <string name="title_favorites_playlist" translation_description="The title of the Favorites playlist/home tab">Favorites</string>
     <string name="title_popular_playlist" translation_description="The title of the Popular playlist/home tab">Popular</string>
