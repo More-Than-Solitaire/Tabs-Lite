@@ -10,7 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.IPlaylistEntry
+import com.gbros.tabslite.data.playlist.IPlaylistEntry
 import com.gbros.tabslite.data.playlist.PlaylistEntry
 import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
 

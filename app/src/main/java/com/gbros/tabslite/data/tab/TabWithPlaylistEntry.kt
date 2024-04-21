@@ -2,7 +2,7 @@ package com.gbros.tabslite.data.tab
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo
-import com.gbros.tabslite.data.IPlaylistEntry
+import com.gbros.tabslite.data.playlist.IPlaylistEntry
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 

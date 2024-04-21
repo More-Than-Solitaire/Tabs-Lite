@@ -13,13 +13,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Entity(tableName = "playlist")
 data class Playlist(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val playlistId: Int = 0,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") override val playlistId: Int = 0,
     @ColumnInfo(name = "user_created") val userCreated: Boolean,
-    @ColumnInfo(name = "title") val title: String,
+    @ColumnInfo(name = "title") override val title: String,
     @ColumnInfo(name = "date_created") val dateCreated: Long,
     @ColumnInfo(name = "date_modified") val dateModified: Long,
-    @ColumnInfo(name = "description") val description: String
-) {
+    @ColumnInfo(name = "description") override val description: String
+): IPlaylist {
     override fun toString() = title
 
     companion object {

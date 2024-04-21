@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.gbros.tabslite.data.IPlaylistEntry
 import kotlinx.serialization.Serializable
 
 private const val LOG_NAME = "tabslite.PlaylistEntry "
