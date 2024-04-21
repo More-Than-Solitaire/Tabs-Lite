@@ -9,9 +9,9 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.ChordVariationDao
+import com.gbros.tabslite.data.playlist.DataPlaylistEntry
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.playlist.PlaylistDao
-import com.gbros.tabslite.data.playlist.PlaylistEntry
 import com.gbros.tabslite.data.playlist.PlaylistEntryDao
 import com.gbros.tabslite.data.tab.TabDao
 import com.gbros.tabslite.data.tab.TabDataType
@@ -21,7 +21,7 @@ const val DATABASE_NAME = "local-tabs-db"
 /**
  * The Room database for this app
  */
-@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, PlaylistEntry::class, Preference::class], version = 11)
+@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, DataPlaylistEntry::class, Preference::class], version = 11)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chordVariationDao(): ChordVariationDao

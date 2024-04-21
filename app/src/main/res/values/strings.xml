@@ -9,6 +9,10 @@
     <string name="app_action_leave_review" translation_description="The button text to leave a review">Leave review</string>
     <string name="app_action_donate" translation_description="The button text to donate to TabsLite">Donate</string>
 
+    <string name="title_favorites_playlist" translation_description="The title of the Favorites playlist/home tab">Favorites</string>
+    <string name="title_popular_playlist" translation_description="The title of the Popular playlist/home tab">Popular</string>
+    <string name="title_playlists_page" translation_description="The title of the Playlists home tab">Playlists</string>
+
     <string name="generic_action_close">Close</string>
 
     <string name="tab_title">%1$s by %2$s</string>

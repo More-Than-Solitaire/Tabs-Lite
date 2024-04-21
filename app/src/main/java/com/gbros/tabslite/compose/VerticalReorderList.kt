@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
+import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -67,10 +67,10 @@ fun VerticalReorderList() {
     }
 }
 
-private fun createListOfTabWithPlaylistEntry(size: Int): List<TabWithPlaylistEntry> {
-    val listOfEntries = mutableListOf<TabWithPlaylistEntry>()
+private fun createListOfTabWithPlaylistEntry(size: Int): List<TabWithDataPlaylistEntry> {
+    val listOfEntries = mutableListOf<TabWithDataPlaylistEntry>()
     for (id in 0..size) {
-        listOfEntries.add(TabWithPlaylistEntry(entryId = id, playlistId = 1, tabId = id * 20, nextEntryId = if(id<size) id+1 else null,
+        listOfEntries.add(TabWithDataPlaylistEntry(entryId = id, playlistId = 1, tabId = id * 20, nextEntryId = if(id<size) id+1 else null,
             prevEntryId = if(id>0) id-1 else null, dateAdded = 0, songId = 12, songName = "Song $id", artistName ="Artist name",
             isVerified = false, numVersions = 4, type = "Chords", part = "part", version = 2, votes = 0,
             rating = 0.0, date = 0, status = "", presetId = 0, tabAccessType = "public", tpVersion = 0,

@@ -14,7 +14,7 @@ import kotlinx.serialization.Serializable
 @Entity(tableName = "playlist")
 data class Playlist(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") override val playlistId: Int = 0,
-    @ColumnInfo(name = "user_created") val userCreated: Boolean,
+    @ColumnInfo(name = "user_created") override val userCreated: Boolean,
     @ColumnInfo(name = "title") override val title: String,
     @ColumnInfo(name = "date_created") val dateCreated: Long,
     @ColumnInfo(name = "date_modified") val dateModified: Long,

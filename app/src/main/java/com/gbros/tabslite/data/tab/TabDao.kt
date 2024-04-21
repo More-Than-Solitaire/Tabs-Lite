@@ -24,25 +24,25 @@ interface TabDao {
     fun getTabs(tabIds: List<Int>): LiveData<List<TabDataType>>
 
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id LEFT JOIN (SELECT id AS playlist_id, user_created, title, date_created, date_modified, description FROM playlist ) AS playlist ON playlist_entry.playlist_id = playlist.playlist_id WHERE playlist_entry.entry_id = :playlistEntryId")
-    fun getTabFromPlaylistEntryId(playlistEntryId: Int): LiveData<TabWithPlaylistEntry?>
+    fun getTabFromPlaylistEntryId(playlistEntryId: Int): LiveData<TabWithDataPlaylistEntry?>
 
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id LEFT JOIN (SELECT id AS playlist_id, user_created, title, date_created, date_modified, description FROM playlist ) AS playlist ON playlist_entry.playlist_id = playlist.playlist_id WHERE playlist_entry.playlist_id = :playlistId")
-    fun getTabsFromPlaylistEntryId(playlistId: Int): LiveData<List<TabWithPlaylistEntry>>
+    fun getTabsFromPlaylistEntryId(playlistId: Int): LiveData<List<TabWithDataPlaylistEntry>>
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT *, 1 as user_created, 'Favorites' as title, 0 as date_created, 0 as date_modified, 'Tabs you have favorited in the app' as description FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = $FAVORITES_PLAYLIST_ID")
-    fun getFavoriteTabs(): LiveData<List<TabWithPlaylistEntry>>
+    fun getFavoriteTabs(): LiveData<List<TabWithDataPlaylistEntry>>
 
     @Query("SELECT id FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE tabs.content = ''")
     suspend fun getEmptyPlaylistTabIds(): List<Int>
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT *, 0 as user_created, 'Popular Tabs' as title, 0 as date_created, 0 as date_modified, 'Top tabs of today' as description FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = $TOP_TABS_PLAYLIST_ID")
-    fun getPopularTabs(): LiveData<List<TabWithPlaylistEntry>>
+    fun getPopularTabs(): LiveData<List<TabWithDataPlaylistEntry>>
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id INNER JOIN playlist ON playlist_entry.playlist_id = playlist.id WHERE playlist_entry.playlist_id = :playlistId")
-    fun getPlaylistTabs(playlistId: Int): LiveData<List<TabWithPlaylistEntry>>
+    fun getPlaylistTabs(playlistId: Int): LiveData<List<TabWithDataPlaylistEntry>>
 
     @Query("SELECT EXISTS(SELECT 1 FROM tabs WHERE id = :tabId AND content != '' LIMIT 1)")
     suspend fun existsWithContent(tabId: Int): Boolean

@@ -41,7 +41,7 @@ import com.gbros.tabslite.R
 import com.gbros.tabslite.compose.addtoplaylistdialog.AddToPlaylistDialog
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.tab.ITab
-import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
+import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -169,7 +169,7 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
 
 @Composable @Preview
 private fun TabTopAppBarPreview() {
-    val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago with more more text to make it longer th", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = "hallelujahTabForTest")
+    val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago with more more text to make it longer th", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = "hallelujahTabForTest")
     AppTheme {
         TabTopAppBar(tab = tabForTest, navigateBack = {}, reload = {})
     }

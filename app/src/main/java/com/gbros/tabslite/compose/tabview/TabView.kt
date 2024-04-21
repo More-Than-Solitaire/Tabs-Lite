@@ -36,7 +36,7 @@ import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.chord.Chord
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
-import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
+import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -120,7 +120,7 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
                     .fillMaxWidth()
                     .padding(bottom = 4.dp)
             )
-            if (myTab is TabWithPlaylistEntry && myTab.playlistId > 0) {
+            if (myTab is TabWithDataPlaylistEntry && myTab.playlistId > 0) {
                 TabPlaylistNavigation(
                     tab = myTab,
                     navigateToTabByPlaylistEntryId = navigateToTabByPlaylistEntryId
@@ -220,7 +220,7 @@ fun TabView(tab: ITab?, navigateBack: () -> Unit, navigateToTabByPlaylistEntryId
 
     // update transpose in database
     LaunchedEffect(key1 = myTab.transpose) {
-        if (myTab is TabWithPlaylistEntry) {
+        if (myTab is TabWithDataPlaylistEntry) {
             db.playlistEntryDao().updateEntryTransposition(myTab.entryId, myTab.transpose)
         } else if (db.playlistEntryDao().tabExistsInFavorites(myTab.tabId)) {
             db.playlistEntryDao().updateFavoriteTabTransposition(myTab.tabId, myTab.transpose)
@@ -267,7 +267,7 @@ private fun TabViewPreview() {
         [tab]            [ch]G[/ch]
         I’m by your side.[/tab]    """.trimIndent()
 
-    val tabForTest = TabWithPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
+    val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
     AppTheme {
         TabView(tab = tabForTest, navigateBack = {}, navigateToTabByPlaylistEntryId = {})
     }

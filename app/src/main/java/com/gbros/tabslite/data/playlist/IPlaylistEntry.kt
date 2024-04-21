@@ -1,11 +1,9 @@
 package com.gbros.tabslite.data.playlist
 
-interface IPlaylistEntry {
-    val entryId: Int
-    val playlistId: Int
-    val tabId: Int
-    val nextEntryId: Int?
-    val prevEntryId: Int?
-    val dateAdded: Long
-    val transpose: Int
-}
+import kotlinx.serialization.Serializable
+
+/**
+ * A playlist entry with enough information to reference the tab, but no ordering information. Used for data import and export.
+ */
+@Serializable
+open class IPlaylistEntry(open val tabId: Int, open val transpose: Int)

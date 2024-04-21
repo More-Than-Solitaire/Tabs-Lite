@@ -10,9 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.playlist.IPlaylistEntry
-import com.gbros.tabslite.data.playlist.PlaylistEntry
-import com.gbros.tabslite.data.tab.TabWithPlaylistEntry
+import com.gbros.tabslite.data.playlist.IDataPlaylistEntry
+import com.gbros.tabslite.data.playlist.DataPlaylistEntry
+import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 
 @Composable
 fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Unit, navigateBack: () -> Unit) {
@@ -25,15 +25,15 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
     var updatedTitle: String? by remember { mutableStateOf(null) }
 
     // sort songs by internal linked list
-    val orderedSongs: List<TabWithPlaylistEntry> = remember(songs) { PlaylistEntry.sortLinkedList(songs) }
+    val orderedSongs: List<TabWithDataPlaylistEntry> = remember(songs) { DataPlaylistEntry.sortLinkedList(songs) }
 
     // handle entry rearrangement
-    var entryMovedSrc: IPlaylistEntry? by remember { mutableStateOf(null) }
-    var entryMovedDest: IPlaylistEntry? by remember { mutableStateOf(null) }
+    var entryMovedSrc: IDataPlaylistEntry? by remember { mutableStateOf(null) }
+    var entryMovedDest: IDataPlaylistEntry? by remember { mutableStateOf(null) }
     var entryMovedMoveAfter: Boolean? by remember { mutableStateOf(null) }
 
     // handle entry deletion
-    var playlistEntryToRemove: IPlaylistEntry? by remember { mutableStateOf(null) }
+    var playlistEntryToRemove: IDataPlaylistEntry? by remember { mutableStateOf(null) }
 
     // handle playlist deletion
     var deletePlaylist by remember { mutableStateOf(false) }
