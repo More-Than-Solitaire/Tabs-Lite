@@ -9,8 +9,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 import com.gbros.tabslite.ui.theme.AppTheme
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -34,7 +36,7 @@ fun RatingIcon(rating: Double){
             .padding(horizontal = 4.dp)
     ){
         repeat(filledStars) {
-            Icon(imageVector = Icons.Default.Star, contentDescription = "Filled star", tint = MaterialTheme.colorScheme.primary)
+            Icon(imageVector = Icons.Default.Star, contentDescription = stringResource(id = R.string.app_icon_description_filled_star), tint = MaterialTheme.colorScheme.primary)
         }
 
         if (halfStar) {

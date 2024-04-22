@@ -12,6 +12,8 @@
 
     <string name="app_action_description_search" translation_description="The accessibility text for the Search action">Search</string>
     <string name="app_action_description_create_playlist" translation_description="Accessibility text for Create Playlist button">New playlist</string>
+    <string name="app_icon_description_half_star" translation_description="Accessibility text for a half star icon">Half star</string>
+    <string name="app_icon_description_filled_star" translation_description="Accessibility text for a full star icon">Filled star</string>
 
     <string name="title_favorites_playlist" translation_description="The title of the Favorites playlist/home tab">Favorites</string>
     <string name="title_popular_playlist" translation_description="The title of the Popular playlist/home tab">Popular</string>

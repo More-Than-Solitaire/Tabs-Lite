@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.gbros.tabslite.R
@@ -19,7 +20,7 @@ fun HalfStarIcon(filledColor: Color = MaterialTheme.colorScheme.primary, emptyCo
     ) {
         Icon(
             imageVector = ImageVector.vectorResource(id = R.drawable.ic_rating_star_left_half),
-            contentDescription = "Half star",
+            contentDescription = stringResource(id = R.string.app_icon_description_half_star),
             tint = filledColor,
         )
         Icon(
