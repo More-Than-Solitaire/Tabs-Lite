@@ -21,9 +21,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 import com.gbros.tabslite.compose.card.ErrorCard
 import com.gbros.tabslite.compose.tabview.TabText
 import com.gbros.tabslite.data.AppDatabase
@@ -64,7 +66,7 @@ fun ChordModalBottomSheet(chord: String, onDismiss: () -> Unit){
                         loading = false // loading failed after 5 seconds
                     }
                 } else {
-                    ErrorCard(text = "Couldn't load chord '$chord'. Please check your internet connection.")
+                    ErrorCard(text = String.format(stringResource(id = R.string.message_chord_load_failed), chord))
                 }
             }
         }
