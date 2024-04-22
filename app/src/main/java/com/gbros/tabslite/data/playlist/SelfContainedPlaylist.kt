@@ -17,21 +17,28 @@ data class SelfContainedPlaylist(
     /**
      * Imports this instance of [SelfContainedPlaylist] to the database. If this [playlistId] is equal to [Playlist.FAVORITES_PLAYLIST_ID], skips any duplicate entries
      */
-    suspend fun importToDatabase(db: AppDatabase) {
+    suspend fun importToDatabase(db: AppDatabase, onProgressChange: (progress: Float) -> Unit = {}) {
+        var currentlyImportedEntries = 0f
         if (playlistId == Playlist.FAVORITES_PLAYLIST_ID) {
             // get current favorite tabs (to not reimport tabs that are already favorite tabs)
             val currentFavorites = db.playlistEntryDao().getAllEntriesInPlaylist(Playlist.FAVORITES_PLAYLIST_ID)
-            for (entry in entries.filter { e -> currentFavorites.all { currentFav -> e.tabId != currentFav.tabId } }) {  // don't double-import favorites
+            val entriesToImport = entries.filter { e -> currentFavorites.all { currentFav -> e.tabId != currentFav.tabId } }
+            for (entry in entriesToImport) {  // don't double-import favorites
+                currentlyImportedEntries++
+                onProgressChange((currentlyImportedEntries / entriesToImport.size.toFloat()) * 0.4f) // the 0.4f constant makes the import from file part take 40% of the progress, leaving 60% for the fetch from internet below
                 db.playlistEntryDao().addToPlaylist(playlistId, entry.tabId, entry.transpose)
             }
         } else {
             val newPlaylistID = db.playlistDao().savePlaylist(
                 Playlist(userCreated = userCreated, title = title, dateCreated = System.currentTimeMillis(), dateModified = System.currentTimeMillis(), description = description))
             for (entry in entries) {
+                currentlyImportedEntries++
+                onProgressChange((currentlyImportedEntries / entries.size.toFloat()) * 0.4f) // the 0.4f constant makes the import from file part take 40% of the progress, leaving 60% for the fetch from internet below
                 db.playlistEntryDao().addToPlaylist(newPlaylistID.toInt(), entry.tabId, entry.transpose)
             }
         }
 
-        Tab.fetchAllEmptyPlaylistTabsFromInternet(db)  // ensure all entries are downloaded locally
+        // ensure all entries are downloaded locally
+        Tab.fetchAllEmptyPlaylistTabsFromInternet(db, playlistId) { progress -> onProgressChange(0.4f + (progress * 0.6f)) } // 0.4f is the progress already taken above, 0.6f makes this step take 60% of the progress
     }
 }

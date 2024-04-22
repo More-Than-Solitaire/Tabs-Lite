@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +54,7 @@ import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.playlist.PlaylistFileExportType
 import com.gbros.tabslite.ui.theme.AppTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -72,6 +76,7 @@ fun HomeScreen(
     var showAboutDialog by remember { mutableStateOf(false) }
     val contentResolver = currentContext.contentResolver
 
+    var playlistImportExportProgress by remember { mutableFloatStateOf(0f) }
     // handle playlist data export
     var destinationForPlaylistExport: Uri? by remember { mutableStateOf(null) }
     val exportDataFilePickerActivityLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
@@ -126,6 +131,9 @@ fun HomeScreen(
                 onSearch = onSearch,
                 leadingIcon = {
                     IconButton(onClick = { showAboutDialog = true }) {
+                        Box(modifier = Modifier){
+                            CircularProgressIndicator(progress = { playlistImportExportProgress })
+                        }
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
                             contentDescription = null,
@@ -158,7 +166,7 @@ fun HomeScreen(
                     selected = pagerState.currentPage == 2,
                     inactiveIcon = ImageVector.vectorResource(R.drawable.ic_playlist_play_light),
                     activeIcon = ImageVector.vectorResource(R.drawable.ic_playlist_play),
-                    title = stringResource(id = R.string.title_favorites_playlist)
+                    title = stringResource(id = R.string.title_playlists_page)
                 ) {
                     pagerNav = if (pagerNav != 2) 2 else -1
                 }
@@ -204,19 +212,26 @@ fun HomeScreen(
     // export playlists if a filename is chosen to export playlists to
     LaunchedEffect(key1 = destinationForPlaylistExport) {
         if (destinationForPlaylistExport != null) {
+            playlistImportExportProgress = 0.2f
             val allUserPlaylists = db.playlistDao().getPlaylists().filter { playlist -> playlist.playlistId != Playlist.TOP_TABS_PLAYLIST_ID }
             val allPlaylists = mutableListOf(Playlist(-1, false, currentContext.getString(R.string.title_favorites_playlist), 0, 0, "")) // add the Favorites playlist
             allPlaylists.addAll(allUserPlaylists)
+            playlistImportExportProgress = 0.6f
             val allSelfContainedPlaylists = db.playlistEntryDao().getSelfContainedPlaylists(allPlaylists)
             val playlistsAndEntries = Json.encodeToString(PlaylistFileExportType(playlists = allSelfContainedPlaylists))
+            playlistImportExportProgress = 0.8f
 
             contentResolver.openOutputStream(destinationForPlaylistExport!!).use { outputStream ->
                 outputStream?.write(playlistsAndEntries.toByteArray())
                 outputStream?.flush()
             }
+
+            playlistImportExportProgress = 1f
+            delay(700)
         }
 
         // reset for next export
+        playlistImportExportProgress = 0f
         destinationForPlaylistExport = null
     }
 
@@ -225,6 +240,7 @@ fun HomeScreen(
         val fileToImport = fileToImportPlaylistData
         var dataToImport: String? = null
         if (fileToImport != null) {
+            playlistImportExportProgress = .05f
             // read file
             contentResolver.openInputStream(fileToImport).use {
                 dataToImport = it?.reader()?.readText()
@@ -234,11 +250,23 @@ fun HomeScreen(
         if (!dataToImport.isNullOrBlank()) {
             val importedData = Json.decodeFromString<PlaylistFileExportType>(dataToImport!!)
             // import all playlists (except Favorites and Top Tabs)
+            val totalEntriesToImport = importedData.playlists.sumOf { pl -> pl.entries.size }.toFloat()
+            var progressFromPreviouslyImportedPlaylists = 0f  // track the amount of progress used by previous playlists, used to add current progress to
             for (playlist in importedData.playlists.filter { pl -> pl.playlistId != Playlist.TOP_TABS_PLAYLIST_ID }) {
-                playlist.importToDatabase(db)
+                val progressForThisPlaylist = playlist.entries.size.toFloat() / totalEntriesToImport  // available portion of 100% to use for this playlist
+                playlist.importToDatabase(db = db, onProgressChange = { progress ->
+                    playlistImportExportProgress = progressFromPreviouslyImportedPlaylists + (progress * progressForThisPlaylist)
+                })
+                progressFromPreviouslyImportedPlaylists += progressForThisPlaylist
             }
+
+            // pause at 100% progress for a second before setting progress to 0
+            playlistImportExportProgress = 1f
+            delay(700)
         }
 
+        // reset for next import
+        playlistImportExportProgress = 0f
         fileToImportPlaylistData = null
     }
 }

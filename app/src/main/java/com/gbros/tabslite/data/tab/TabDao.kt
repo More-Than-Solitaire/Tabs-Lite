@@ -36,6 +36,9 @@ interface TabDao {
     @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE tabs.content is NULL OR tabs.content is ''")
     suspend fun getEmptyPlaylistTabIds(): List<Int>
 
+    @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = :playlistId AND (tabs.content is NULL OR tabs.content is '')")
+    suspend fun getEmptyPlaylistTabIds(playlistId: Int): List<Int>
+
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT *, 0 as user_created, 'Popular Tabs' as title, 0 as date_created, 0 as date_modified, 'Top tabs of today' as description FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = $TOP_TABS_PLAYLIST_ID")
     fun getPopularTabs(): LiveData<List<TabWithDataPlaylistEntry>>

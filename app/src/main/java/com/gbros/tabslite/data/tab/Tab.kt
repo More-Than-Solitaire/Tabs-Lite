@@ -55,16 +55,19 @@ data class Tab(
             return dataTabs.map { Tab(it) }
         }
 
-        suspend fun fetchAllEmptyPlaylistTabsFromInternet(db: AppDatabase) {
+        suspend fun fetchAllEmptyPlaylistTabsFromInternet(db: AppDatabase, playlistId: Int? = null, onProgressChange: (progress: Float) -> Unit = {}) {
             try {
-                val emptyTabs = db.tabFullDao().getEmptyPlaylistTabIds()
+                val emptyTabs: List<Int> = if (playlistId == null) db.tabFullDao().getEmptyPlaylistTabIds() else db.tabFullDao().getEmptyPlaylistTabIds(playlistId)
                 Log.i(LOG_NAME, "Found ${emptyTabs.size} empty playlist tabs to fetch")
+                var numFetchedTabs = 0f
                 emptyTabs.forEach { tabId ->
+                    onProgressChange(++numFetchedTabs / emptyTabs.size.toFloat())
                     UgApi.fetchTabFromInternet(tabId, db)
                 }
             } catch (ex: Exception) {
                 Log.i(LOG_NAME, "Fetching empty tabs failed: ${ex.message}", ex)
             }
+            onProgressChange(1f)
             Log.i(LOG_NAME, "Done fetching empty tabs")
         }
     }
