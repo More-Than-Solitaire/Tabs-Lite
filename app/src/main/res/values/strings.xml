@@ -17,8 +17,14 @@
     <string name="title_popular_playlist" translation_description="The title of the Popular playlist/home tab">Popular</string>
     <string name="title_playlists_page" translation_description="The title of the Playlists home tab">Playlists</string>
     <string name="title_add_to_playlist_dialog" translation_description="The title of the Add To Playlist dialog">Add to playlist</string>
+    <string name="title_create_playlist_dialog" translation_description="Title for the Create Playlist dialog">Create playlist</string>
+
+    <string name="placeholder_playlist_title" translation_description="Placeholder text for Playlist Title entry field">Playlist Title</string>
+    <string name="placeholder_playlist_description" translation_description="Placeholder text for Playlist Description entry field">Playlist Description</string>
 
     <string name="generic_action_close">Close</string>
+    <string name="generic_action_confirm">Confirm</string>
+    <string name="generic_action_dismiss">Dismiss</string>
 
     <string name="tab_title">%1$s by %2$s</string>
     <string name="tab_difficulty">Difficulty: %s</string>

@@ -18,9 +18,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
@@ -35,10 +37,10 @@ fun CreatePlaylistDialog(onConfirm: (newPlaylist: Playlist) -> Unit, onDismiss: 
 
     AlertDialog(
         icon = {
-            Icon(Icons.Default.Create, contentDescription = "Create playlist")
+            Icon(Icons.Default.Create, contentDescription = null)
         },
         title = {
-            Text(text = "Create playlist")
+            Text(text = stringResource(id = R.string.title_create_playlist_dialog))
         },
         text = {
             Column(
@@ -47,14 +49,14 @@ fun CreatePlaylistDialog(onConfirm: (newPlaylist: Playlist) -> Unit, onDismiss: 
                 TextField(
                     value = title,
                     onValueChange = {title = it },
-                    placeholder = { Text("Playlist Title") },
+                    placeholder = { Text(stringResource(id = R.string.placeholder_playlist_title)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                 )
                 TextField(
                     value = description,
                     onValueChange = {description = it},
-                    placeholder = { Text("Playlist Description") },
+                    placeholder = { Text(stringResource(id = R.string.placeholder_playlist_description)) },
                     modifier = Modifier
                 )
             }
@@ -67,14 +69,14 @@ fun CreatePlaylistDialog(onConfirm: (newPlaylist: Playlist) -> Unit, onDismiss: 
                 },
                 enabled = title.isNotBlank()
             ) {
-                Text("Confirm")
+                Text(stringResource(id = R.string.generic_action_confirm))
             }
         },
         dismissButton = {
             TextButton(
                 onClick = onDismiss
             ) {
-                Text("Dismiss")
+                Text(stringResource(id = R.string.generic_action_dismiss))
             }
         }
     )
