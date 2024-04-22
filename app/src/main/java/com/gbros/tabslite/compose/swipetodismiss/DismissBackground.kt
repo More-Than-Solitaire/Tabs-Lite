@@ -18,7 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 
 
 /**
@@ -30,7 +32,7 @@ fun DismissBackground(
     dismissState: SwipeToDismissBoxState,
     colors: DismissBackgroundColors = DismissBackgroundColors(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError, MaterialTheme.colorScheme.onError),
     icons: DismissBackgroundIcons = DismissBackgroundIcons(Icons.Default.Delete, Icons.Default.Delete),
-    contentDescriptions: DismissBackgroundContentDescriptions = DismissBackgroundContentDescriptions("Delete", "Delete")
+    contentDescriptions: DismissBackgroundContentDescriptions = DismissBackgroundContentDescriptions(stringResource(id = R.string.generic_action_delete), stringResource(id = R.string.generic_action_delete))
 ) {
     val color = when (dismissState.dismissDirection) {
         SwipeToDismissBoxValue.StartToEnd -> colors.startToEndBackgroundColor

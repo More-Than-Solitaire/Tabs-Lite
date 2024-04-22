@@ -19,8 +19,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
@@ -43,7 +45,7 @@ fun VerticalReorderList() {
     ) {
         items(items = data, key = { it }) { item ->
             ReorderableItem(reorderState, key = item) { isDragging ->
-                val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
+                val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp, label = "Reorderable card elevation animation")
                 Card(
                     modifier = Modifier
                         .shadow(elevation.value)
@@ -55,7 +57,7 @@ fun VerticalReorderList() {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
-                            contentDescription = "Drag to reorder",
+                            contentDescription = stringResource(id = R.string.generic_action_drag_to_reorder),
                             modifier = Modifier
                                 .detectReorder(reorderState)
                         )

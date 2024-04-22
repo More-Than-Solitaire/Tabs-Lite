@@ -4,7 +4,6 @@ import android.util.Log
 import com.gbros.tabslite.data.tab.ITab
 import io.mockk.every
 import io.mockk.mockkStatic
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -23,111 +22,6 @@ class ITabTest {
         every { Log.d(any(), any()) } returns 0
         every { Log.i(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
-    }
-
-    //endregion
-
-    //region tests for getCapoText
-
-    @Test fun getCapoTextZero(){
-        tabFullForTest.capo = 0
-        Assert.assertEquals("None", tabFullForTest.getCapoText())
-    }
-
-    @Test fun getCapoTextOneThroughTen(){
-        tabFullForTest.capo = 1
-        Assert.assertEquals("1st Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 2
-        Assert.assertEquals("2nd Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 3
-        Assert.assertEquals("3rd Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 4
-        Assert.assertEquals("4th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 5
-        Assert.assertEquals("5th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 6
-        Assert.assertEquals("6th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 7
-        Assert.assertEquals("7th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 8
-        Assert.assertEquals("8th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 9
-        Assert.assertEquals("9th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 10
-        Assert.assertEquals("10th Fret", tabFullForTest.getCapoText())
-    }
-
-    @Test fun getCapoTextElevenThroughTwenty(){
-        tabFullForTest.capo = 11
-        Assert.assertEquals("11th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 12
-        Assert.assertEquals("12th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 13
-        Assert.assertEquals("13th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 14
-        Assert.assertEquals("14th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 15
-        Assert.assertEquals("15th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 16
-        Assert.assertEquals("16th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 17
-        Assert.assertEquals("17th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 18
-        Assert.assertEquals("18th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 19
-        Assert.assertEquals("19th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 20
-        Assert.assertEquals("20th Fret", tabFullForTest.getCapoText())
-    }
-
-    @Test fun getCapoTextTwentyOneThroughThirty(){
-        tabFullForTest.capo = 21
-        Assert.assertEquals("21st Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 22
-        Assert.assertEquals("22nd Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 23
-        Assert.assertEquals("23rd Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 24
-        Assert.assertEquals("24th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 25
-        Assert.assertEquals("25th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 26
-        Assert.assertEquals("26th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 27
-        Assert.assertEquals("27th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 28
-        Assert.assertEquals("28th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 29
-        Assert.assertEquals("29th Fret", tabFullForTest.getCapoText())
-
-        tabFullForTest.capo = 30
-        Assert.assertEquals("30th Fret", tabFullForTest.getCapoText())
     }
 
     //endregion

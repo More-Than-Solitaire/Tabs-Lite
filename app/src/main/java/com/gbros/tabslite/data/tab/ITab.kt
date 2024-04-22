@@ -1,6 +1,9 @@
 package com.gbros.tabslite.data.tab
 
 import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.chord.Chord
 import com.gbros.tabslite.utilities.UgApi
@@ -75,14 +78,17 @@ interface ITab {
     /**
      * Get the human-readable capo number (ordinal numbers, i.e. 2nd Fret)
      */
+    @Composable
     fun getCapoText(): String {
         return when {
             capo == 0 -> "None"
-            capo in 11..13 -> "${capo}th Fret" // 11th, 12th, 13th are exceptions
-            capo % 10 == 1 -> "${capo}st Fret"
-            capo % 10 == 2 -> "${capo}nd Fret"
-            capo % 10 == 3 -> "${capo}rd Fret"
-            else -> "${capo}th Fret"
+            capo == 11 -> String.format(stringResource(id = R.string.capo_11), capo) // 11th, 12th, 13th are exceptions
+            capo == 12 -> String.format(stringResource(id = R.string.capo_12), capo) // 11th, 12th, 13th are exceptions
+            capo == 13 -> String.format(stringResource(id = R.string.capo_13), capo) // 11th, 12th, 13th are exceptions
+            capo % 10 == 1 -> String.format(stringResource(id = R.string.capo_number_ending_in_1), capo)
+            capo % 10 == 2 -> String.format(stringResource(id = R.string.capo_number_ending_in_1), capo)
+            capo % 10 == 3 -> String.format(stringResource(id = R.string.capo_number_ending_in_1), capo)
+            else -> String.format(stringResource(id = R.string.capo_generic), capo)
         }
     }
 

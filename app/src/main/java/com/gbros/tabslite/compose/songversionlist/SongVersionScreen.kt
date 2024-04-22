@@ -17,7 +17,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 import com.gbros.tabslite.compose.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.AppDatabase
 
@@ -43,7 +45,7 @@ fun SongVersionScreen(
                 .padding(bottom = 8.dp),
             leadingIcon = {
                 IconButton(onClick = navigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
                 }
             },
             onSearch = onSearch

@@ -28,8 +28,19 @@
     <string name="generic_action_confirm">Confirm</string>
     <string name="generic_action_dismiss">Dismiss</string>
     <string name="generic_action_back">Back</string>
+    <string name="generic_action_delete">Delete</string>
+    <string name="generic_action_drag_to_reorder">Drag to reorder</string>
     <string name="error">Error</string>
     <string name="info">Info</string>
+
+    <string name="capo_zero" translation_description="The capo text used when the capo is not used">None</string>
+    <string name="capo_11" translation_description="The capo text used when the capo is 11">%sth Fret</string>
+    <string name="capo_12" translation_description="The capo text used when the capo is 12">%sth Fret</string>
+    <string name="capo_13" translation_description="The capo text used when the capo is 13">%sth Fret</string>
+    <string name="capo_number_ending_in_1" translation_description="The capo text when the capo is a number ending in 1 (except for 11)">%sst Fret</string>
+    <string name="capo_number_ending_in_2" translation_description="The capo text when the capo is a number ending in 2 (except for 12)">%snd Fret</string>
+    <string name="capo_number_ending_in_3" translation_description="The capo text when the capo is a number ending in 3 (except for 13)">%srd Fret</string>
+    <string name="capo_generic" translation_description="The capo text when the capo doesn't meet any of the other criteria">%sth Fret</string>
 
     <string name="sort_by" translation_description="Formatted string used in conjunction with the following options to display a button to choose what order songs should be sorted by. %s represents one of the options below (e.g. Date Added)">Sort by: %s</string>
     <string name="sort_by_date_added" translation_description="Used to pick what order to show songs in - most recent first">Date Added</string>
