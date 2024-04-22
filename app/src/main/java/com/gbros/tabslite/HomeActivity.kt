@@ -1,7 +1,6 @@
 package com.gbros.tabslite
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,6 +13,7 @@ import com.gbros.tabslite.compose.TabsLiteNavGraph
 import com.gbros.tabslite.compose.songlist.SortBy
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Preference
+import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.utilities.UgApi
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -41,18 +41,7 @@ class HomeActivity : ComponentActivity() {
         }
 
         // load any tabs that were added without internet connection
-        GlobalScope.launch {
-            try {
-                val emptyTabs = db.tabFullDao().getEmptyPlaylistTabIds()
-                Log.i(LOG_NAME, "Found ${emptyTabs.size} empty playlist tabs to fetch")
-                emptyTabs.forEach { tabId ->
-                    UgApi.fetchTabFromInternet(tabId, db)
-                }
-            } catch (ex: Exception) {
-                Log.i(LOG_NAME, "Fetching empty tabs failed: ${ex.message}", ex)
-            }
-            Log.i(LOG_NAME, "Done fetching empty tabs")
-        }
+        GlobalScope.launch { Tab.fetchAllEmptyPlaylistTabsFromInternet(db) }
 
         actionBar?.hide()
 

@@ -1,7 +1,12 @@
 package com.gbros.tabslite.data.tab
 
+import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
+import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.utilities.UgApi
+
+private const val LOG_NAME = "tabslite.Tab           "
 
 data class Tab(
     @PrimaryKey @ColumnInfo(name = "id") override var tabId: Int,
@@ -48,6 +53,19 @@ data class Tab(
     companion object {
         fun fromTabDataType(dataTabs: List<TabDataType>): List<Tab> {
             return dataTabs.map { Tab(it) }
+        }
+
+        suspend fun fetchAllEmptyPlaylistTabsFromInternet(db: AppDatabase) {
+            try {
+                val emptyTabs = db.tabFullDao().getEmptyPlaylistTabIds()
+                Log.i(LOG_NAME, "Found ${emptyTabs.size} empty playlist tabs to fetch")
+                emptyTabs.forEach { tabId ->
+                    UgApi.fetchTabFromInternet(tabId, db)
+                }
+            } catch (ex: Exception) {
+                Log.i(LOG_NAME, "Fetching empty tabs failed: ${ex.message}", ex)
+            }
+            Log.i(LOG_NAME, "Done fetching empty tabs")
         }
     }
 
