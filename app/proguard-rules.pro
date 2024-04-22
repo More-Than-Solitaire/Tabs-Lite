@@ -37,6 +37,7 @@
 
 # classes that will be serialized or deserialized must be kept for TypeToken use
 -keep class com.gbros.tabslite.data.servertypes.** { *; }
+-keep class com.gbros.tabslite.data.playlist.** { *; }
 -keep public class com.chrynan.chords.** { *; }
 -keep public class * extends com.chrynan.chords.model.ChordMarker { *; }
 
