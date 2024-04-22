@@ -25,6 +25,9 @@
     <string name="generic_action_close">Close</string>
     <string name="generic_action_confirm">Confirm</string>
     <string name="generic_action_dismiss">Dismiss</string>
+    <string name="error">Error</string>
+    <string name="info">Info</string>
+
 
     <string name="tab_title">%1$s by %2$s</string>
     <string name="tab_difficulty">Difficulty: %s</string>

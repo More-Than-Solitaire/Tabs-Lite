@@ -5,7 +5,9 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.gbros.tabslite.R
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
@@ -14,7 +16,7 @@ fun InfoCard(text: String) {
         text = text,
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
         icon = Icons.Default.Info,
-        iconContentDescription = "Info"
+        iconContentDescription = stringResource(id = R.string.info)
     )
 }
 
