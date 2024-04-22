@@ -27,8 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 import com.gbros.tabslite.compose.card.InfoCard
 import com.gbros.tabslite.compose.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.ISearch
@@ -70,7 +72,7 @@ fun SearchView(
             initialQueryText = query,
             leadingIcon = {
                 IconButton(onClick = navigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
                 }
             },
             onSearch = onSearch
@@ -82,7 +84,7 @@ fun SearchView(
                     .fillMaxSize()
                     .padding(all = 24.dp), contentAlignment = Alignment.Center
             ) {
-                InfoCard(text = "No search results. Revise your query or check your internet connection.")
+                InfoCard(text = stringResource(id = R.string.message_no_search_results))
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp), state = lazyColumnState) {
