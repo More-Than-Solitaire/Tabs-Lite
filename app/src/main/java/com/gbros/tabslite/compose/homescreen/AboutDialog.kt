@@ -2,12 +2,12 @@ package com.gbros.tabslite.compose.homescreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
@@ -35,16 +35,27 @@ fun AboutDialog(modifier: Modifier = Modifier, onDismissRequest: () -> Unit, onE
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
             modifier = modifier,
-            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant)
+            shape = MaterialTheme.shapes.extraLarge
         ) {
-            Row(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Absolute.Left
+                    .fillMaxWidth()
             ) {
-                IconButton(onClick = onDismissRequest) {
-                    Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(id = R.string.generic_action_close))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    IconButton(modifier = Modifier.padding(all = 4.dp), onClick = onDismissRequest) {
+                        Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(id = R.string.generic_action_close))
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .matchParentSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(text = stringResource(id = R.string.app_name), style = MaterialTheme.typography.titleLarge)
                 }
             }
 
@@ -53,7 +64,7 @@ fun AboutDialog(modifier: Modifier = Modifier, onDismissRequest: () -> Unit, onE
                     .padding(horizontal = 8.dp)
                     .fillMaxWidth(),
                 colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                shape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp))
+                shape = MaterialTheme.shapes.extraLarge.copy(bottomStart = MaterialTheme.shapes.extraSmall.bottomStart, bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd)
             ) {
                 Text(modifier = Modifier.padding(all = 16.dp), text = stringResource(id = R.string.app_about))
             }
@@ -63,25 +74,27 @@ fun AboutDialog(modifier: Modifier = Modifier, onDismissRequest: () -> Unit, onE
                     .padding(horizontal = 8.dp)
                     .fillMaxWidth(),
                 colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                shape = MaterialTheme.shapes.large.copy(topStart = CornerSize(0.dp), topEnd = CornerSize(0.dp))
+                shape = MaterialTheme.shapes.extraLarge.copy(topStart = MaterialTheme.shapes.extraSmall.topStart, topEnd = MaterialTheme.shapes.extraSmall.topEnd)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
+                        .padding(all = 8.dp)
                         .fillMaxWidth()
-                        .clickable { onExportPlaylistsClicked() }
+                        .clickable { onImportPlaylistsClicked() }
                 ) {
-                    Icon(modifier = Modifier.padding(start = 16.dp), imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), contentDescription = "")
-                    Text(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), text = stringResource(id = R.string.app_action_export_playlists))
+                    Icon(modifier = Modifier.padding(all = 8.dp), imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), contentDescription = "")
+                    Text(modifier = Modifier.padding(all = 8.dp), text = stringResource(id = R.string.app_action_import_playlists))
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
+                        .padding(all = 8.dp)
                         .fillMaxWidth()
-                        .clickable { onImportPlaylistsClicked() }
+                        .clickable { onExportPlaylistsClicked() }
                 ) {
-                    Icon(modifier = Modifier.padding(start = 16.dp), imageVector = ImageVector.vectorResource(id = R.drawable.ic_upload), contentDescription = "")
-                    Text(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), text = stringResource(id = R.string.app_action_import_playlists))
+                    Icon(modifier = Modifier.padding(all = 8.dp), imageVector = ImageVector.vectorResource(id = R.drawable.ic_upload), contentDescription = "")
+                    Text(modifier = Modifier.padding(all = 8.dp), text = stringResource(id = R.string.app_action_export_playlists))
                 }
             }
 
