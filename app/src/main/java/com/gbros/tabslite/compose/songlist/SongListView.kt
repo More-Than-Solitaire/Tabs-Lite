@@ -10,10 +10,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
@@ -33,7 +35,7 @@ fun SongListView(
     defaultSortValue: SortBy,
     liveSortByPreference: LiveData<Preference>,
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp),
-    emptyListText: String = "Nothing here!",
+    emptyListText: String = stringResource(id = R.string.message_empty_list),
     onSortPreferenceChange: CoroutineScope.(Preference) -> Unit
 ){
     val songs by liveSongs.observeAsState(listOf())

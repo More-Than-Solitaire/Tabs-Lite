@@ -11,8 +11,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 import com.gbros.tabslite.compose.card.InfoCard
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
@@ -21,7 +23,7 @@ import com.gbros.tabslite.ui.theme.AppTheme
 fun SongList(
     modifier: Modifier = Modifier,
     songs: List<TabWithDataPlaylistEntry>,
-    emptyListText: String = "Nothing here!",
+    emptyListText: String = stringResource(id = R.string.message_empty_list),
     navigateByPlaylistEntryId: Boolean = false,
     navigateToTabById: (id: Int) -> Unit,
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp)

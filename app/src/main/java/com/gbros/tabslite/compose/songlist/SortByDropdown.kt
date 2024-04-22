@@ -16,7 +16,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +34,7 @@ fun SortByDropdown(selectedSort: SortBy, onOptionSelected: (SortBy) -> Unit) {
                 .fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
         ) {
-            Text("Sort by: " + SortBy.getString(selectedSort))
+            Text(String.format(stringResource(id = R.string.sort_by), SortBy.getString(selectedSort)))
             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
         }
 

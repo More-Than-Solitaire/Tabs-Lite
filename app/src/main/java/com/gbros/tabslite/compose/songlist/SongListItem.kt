@@ -15,8 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
@@ -65,7 +67,7 @@ fun SongListItem(
             }
             Column {
                 Text(text = song.type)
-                Text(text = "ver. " + song.version)
+                Text(text = String.format(stringResource(id = R.string.tab_version_abbreviation), song.version))
             }
         }
     }
