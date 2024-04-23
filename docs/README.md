@@ -1,4 +1,4 @@
-An [open source](https://github.com/cullub/Tabs-Lite) guitar tablature application built for Android.  Over a million songs available using an existing popular tabs database. Built for speed and simplicity, 100% free with no ads!
+An [open source](https://github.com/More-Than-Solitaire/Tabs-Lite) guitar tablature application built for Android.  Over a million songs available using an existing popular tabs database. Built for speed and simplicity, 100% free with no ads!
 
 ## Download
 
@@ -8,16 +8,11 @@ Our main download site is directly from Google Play here:
 
 ## About
 
-Find your favorites out of over a million available chords and tabs! Play along at your own speed with built-in auto scroll and speed adjustment, and save to your favorites to enable offline access.
+Find your favorites out of over a million available chords and tabs! Play along at your own speed with built-in auto scroll and speed adjustment, and save to your favorites or a playlist to enable offline access.
 
 ![Tabs Lite](img/screenshot/Tabs-Lite-Feature-Graphic.png "Tabs Lite Featured Image")
 
-Tabs Lite supports three Dark Mode options:
- - System Mode (Default)
- - Force Dark Mode
- - Force Light Mode
- 
- System mode automatically follows the dark mode setting of your device, Android 9.0+.  On earlier versions, it behaves the same as Force Light Mode.  (Developer's note: if you have experience with color schemes, [maybe you can help improve ours](https://github.com/cullub/Tabs-Lite/issues/48)!)
+Jam day or night with system Dark Mode support. When your device is set to Light Mode, you'll see all your tabs against a bright, easy-to-see background.  But when you switch your device to Dark Mode, TabsLite will follow along.
 
 Tap the heart on the top of any tab to add it to your favorites.  This enables offline access for this tab, and pins it to your home page for easy access.  You can sort your favorite tabs by date added, name, artist, or popularity.
 
