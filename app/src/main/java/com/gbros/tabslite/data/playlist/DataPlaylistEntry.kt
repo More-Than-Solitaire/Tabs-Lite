@@ -31,23 +31,26 @@ data class DataPlaylistEntry(
             val sortedEntries = mutableListOf<T>()
 
             var currentEntry = entries.firstOrNull { it.prevEntryId == null }
-
             try {
                 while (currentEntry != null) {
                     sortedEntries.add(currentEntry)
-                    currentEntry = if (currentEntry.nextEntryId != currentEntry.entryId) {
-                        entryMap[currentEntry.nextEntryId]
+
+                    if (sortedEntries.all { usedEntry -> usedEntry.entryId != currentEntry!!.nextEntryId }) { // next entry hasn't been used yet; no circular reference
+                        currentEntry = entryMap[currentEntry.nextEntryId]  // set up for next iteration
                     } else {
-                        Log.e(LOG_NAME, "Error!  Playlist linked list is broken: circular reference")
-                        null // stop list traversal
+                        Log.e(LOG_NAME, "Error!  Playlist ${currentEntry.playlistId} linked list is broken: circular reference")
+                        break  // stop list traversal
                     }
                 }
             } catch (ex: OutOfMemoryError) {
                 Log.e(LOG_NAME, "Error!  Playlist linked list is likely broken: circular reference", ex)
             }
 
+            // add any remaining elements
+            if (sortedEntries.size < entries.size)
+                sortedEntries.addAll(entries.filter { entry -> sortedEntries.all { usedEntry -> usedEntry.entryId != entry.entryId } })
+
             return sortedEntries
         }
-
     }
 }
