@@ -1,0 +1,4 @@
+- Add About dialog with Import/Export functionality
+- Make app translatable
+- Remove Google dependency blob from .apk build
+- Bugfixes
