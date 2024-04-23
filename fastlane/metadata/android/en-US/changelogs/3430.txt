@@ -1,1 +1,15 @@
 signing key was changed, so to update from a previous version you will need to uninstall the app, the reinstall it freshly.
+
+New in this release:
+
+- Favorite tabs autoload on launch if not loaded
+- Chords preload on tab open
+- Many offline access and search related crashes fixed
+- Autoscroll stays enabled at the end of a song
+- Chord view bottom sheet dims status bar too now
+- Deleting songs from playlists is now less easy to do on accident
+- Screen stays on anytime a tab is visible
+- Sort order for Favorites is now saved as a user preference
+- Scroll speed is saved as a user preference
+- Transposition remembered for Favorite songs
+- Home page tab switching bugs fixed
