@@ -1,2 +1,8 @@
-bundles:
-  - 2
+files:
+  - source: /app/src/main/res/values/*.xml
+    ignore:
+      - /app/src/main/res/values/ic_*
+    translation: /app/src/main/res/values-%two_letters_code%/%original_file_name%
+    translatable_elements:
+      - /resources/string
+      - resources/plurals/item
