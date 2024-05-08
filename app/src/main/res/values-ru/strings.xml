@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Resources that do not require translation -->
+    <!-- Translatable resources -->
+    <string name="app_about" translation_description="A brief description of the app, for use in the About dialog." tools:ignore="TypographyOther">TabsLite is a free, open source guitar tablature app with over a million songs available using existing popular tabs databases. It\'s built for speed and simplicity, 100% free with no ads. Managed by More Than Solitaire, Inc, a 501(c)(3) nonprofit dedicated to software learning.</string>
+    <string name="app_action_export_playlists" translation_description="The button text to export playlists">Export favorites and playlists</string>
+    <string name="app_action_import_playlists" translation_description="The button text to export playlists">Import favorites and playlists</string>
+    <string name="app_action_leave_review" translation_description="The button text to leave a review">Leave review</string>
+    <string name="app_action_donate" translation_description="The button text to donate to TabsLite">Donate</string>
+    <string name="app_action_search" translation_description="The placeholder text for the search bar">Search TabsLite</string>
+    <string name="app_action_description_search" translation_description="The accessibility text for the Search action">Search</string>
+    <string name="app_action_description_create_playlist" translation_description="Accessibility text for Create Playlist button">New playlist</string>
+    <string name="app_icon_description_half_star" translation_description="Accessibility text for a half star icon">Half star</string>
+    <string name="app_icon_description_filled_star" translation_description="Accessibility text for a full star icon">Filled star</string>
+    <string name="title_favorites_playlist" translation_description="The title of the Favorites playlist/home tab">Favorites</string>
+    <string name="title_popular_playlist" translation_description="The title of the Popular playlist/home tab">Popular</string>
+    <string name="title_playlists_page" translation_description="The title of the Playlists home tab">Playlists</string>
+    <string name="title_add_to_playlist_dialog" translation_description="The title of the Add To Playlist dialog">Add to playlist</string>
+    <string name="title_create_playlist_dialog" translation_description="Title for the Create Playlist dialog">Create playlist</string>
+    <string name="placeholder_playlist_title" translation_description="Placeholder text for Playlist Title entry field">Playlist Title</string>
+    <string name="placeholder_playlist_description" translation_description="Placeholder text for Playlist Description entry field">Playlist Description</string>
+    <string name="generic_action_close">Close</string>
+    <string name="generic_action_confirm">Confirm</string>
+    <string name="generic_action_dismiss">Dismiss</string>
+    <string name="generic_action_back">Back</string>
+    <string name="generic_action_delete">Delete</string>
+    <string name="generic_action_drag_to_reorder">Drag to reorder</string>
+    <string name="error">Error</string>
+    <string name="info">Info</string>
+    <string name="capo_zero" translation_description="The capo text used when the capo is not used">None</string>
+    <string name="capo_11" translation_description="The capo text used when the capo is 11">%sth Fret</string>
+    <string name="capo_12" translation_description="The capo text used when the capo is 12">%sth Fret</string>
+    <string name="capo_13" translation_description="The capo text used when the capo is 13">%sth Fret</string>
+    <string name="capo_number_ending_in_1" translation_description="The capo text when the capo is a number ending in 1 (except for 11)">%sst Fret</string>
+    <string name="capo_number_ending_in_2" translation_description="The capo text when the capo is a number ending in 2 (except for 12)">%snd Fret</string>
+    <string name="capo_number_ending_in_3" translation_description="The capo text when the capo is a number ending in 3 (except for 13)">%srd Fret</string>
+    <string name="capo_generic" translation_description="The capo text when the capo doesn't meet any of the other criteria">%sth Fret</string>
+    <string name="sort_by" translation_description="Formatted string used in conjunction with the following options to display a button to choose what order songs should be sorted by. %s represents one of the options below (e.g. Date Added)">Sort by: %s</string>
+    <string name="sort_by_date_added" translation_description="Used to pick what order to show songs in - most recent first">Date Added</string>
+    <string name="sort_by_popularity" translation_description="Used to pick what order to show songs in - most popular first">Popularity</string>
+    <string name="sort_by_artist_name" translation_description="Used to pick what order to show songs in - artist name, a to z">Artist Name</string>
+    <string name="sort_by_title" translation_description="Used to pick what order to show songs in - song title, a to z">Title</string>
+    <string name="message_chord_load_failed" translation_description="Error message shown when chord could not be loaded. %s represents the name of the chord that couldn't be loaded">Couldn\'t load chord \'%s\'. Please check your internet connection.</string>
+    <string name="message_no_search_results" translation_description="Info message shown when there are no results to a search query. This could be due to an internet connection issue.">No search results. Revise your query or check your internet connection.</string>
+    <string name="message_empty_list" translation_description="Default info message when there are no items in a list">Nothing here!</string>
+    <string name="tab_title">%1$s by %2$s</string>
+    <string name="tab_difficulty">Difficulty: %s</string>
+    <string name="tab_tuning">Tuning: %s</string>
+    <string name="tab_capo">Capo: %s</string>
+    <string name="tab_key">Key: %s</string>
+    <string name="tab_author">Tab Author: %s</string>
+    <string name="tab_transpose">Transpose: %d</string>
+    <string name="tab_version_number">Version %d</string>
+    <string name="tab_version_abbreviation" translation_description="Shortened version number for display in places where space is limited (like in search results)">ver. %s</string>
+</resources>
