@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="num_song_versions">
+        <item quantity="one">%d version</item>
+        <item quantity="other">%d versions</item>
+    </plurals>
+</resources>
