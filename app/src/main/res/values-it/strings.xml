@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Resources that do not require translation -->
+    <!-- Translatable resources -->
+    <string name="app_about" translation_description="A brief description of the app, for use in the About dialog." tools:ignore="TypographyOther">TabsLite è un\'app gratuita ed open source per accordi di chitarra con oltre un milione di canzoni disponibili, che utilizza i popolari database di accordi esistenti. È costruita per essere veloce e semplice, 100% gratis e senza pubblicità. Gestito da More Than Solitaire, Inc, a 501(c)(3), un ente senza scopo di lucro dedicato all\'apprendimento del software.</string>
+    <string name="app_action_export_playlists" translation_description="The button text to export playlists">Esporta preferiti e playlist</string>
+    <string name="app_action_import_playlists" translation_description="The button text to export playlists">Importa preferiti e playlist</string>
+    <string name="app_action_leave_review" translation_description="The button text to leave a review">Lascia una recensione</string>
+    <string name="app_action_donate" translation_description="The button text to donate to TabsLite">Dona</string>
+    <string name="app_action_search" translation_description="The placeholder text for the search bar">Cerca su TabsLite</string>
+    <string name="app_action_description_search" translation_description="The accessibility text for the Search action">Cerca</string>
+    <string name="app_action_description_create_playlist" translation_description="Accessibility text for Create Playlist button">Nuova playlist</string>
+    <string name="app_icon_description_half_star" translation_description="Accessibility text for a half star icon">Mezza stella</string>
+    <string name="app_icon_description_filled_star" translation_description="Accessibility text for a full star icon">Stella piena</string>
+    <string name="title_favorites_playlist" translation_description="The title of the Favorites playlist/home tab">Preferiti</string>
+    <string name="title_popular_playlist" translation_description="The title of the Popular playlist/home tab">Popolari</string>
+    <string name="title_playlists_page" translation_description="The title of the Playlists home tab">Playlist</string>
+    <string name="title_add_to_playlist_dialog" translation_description="The title of the Add To Playlist dialog">Aggiungi alla playlist</string>
+    <string name="title_create_playlist_dialog" translation_description="Title for the Create Playlist dialog">Crea playlist</string>
+    <string name="placeholder_playlist_title" translation_description="Placeholder text for Playlist Title entry field">Titolo della Playlist</string>
+    <string name="placeholder_playlist_description" translation_description="Placeholder text for Playlist Description entry field">Descrizione Playlist</string>
+    <string name="generic_action_close">Chiudi</string>
+    <string name="generic_action_confirm">Conferma</string>
+    <string name="generic_action_dismiss">Cancella</string>
+    <string name="generic_action_back">Indietro</string>
+    <string name="generic_action_delete">Elimina</string>
+    <string name="generic_action_drag_to_reorder">Trascina per riordinare</string>
+    <string name="error">Errore</string>
+    <string name="info">Info</string>
+    <string name="capo_zero" translation_description="The capo text used when the capo is not used">Vuoto</string>
+    <string name="capo_11" translation_description="The capo text used when the capo is 11">%s° Tasto</string>
+    <string name="capo_12" translation_description="The capo text used when the capo is 12">%s° Tasto</string>
+    <string name="capo_13" translation_description="The capo text used when the capo is 13">%s° Tasto</string>
+    <string name="capo_number_ending_in_1" translation_description="The capo text when the capo is a number ending in 1 (except for 11)">%s° Tasto</string>
+    <string name="capo_number_ending_in_2" translation_description="The capo text when the capo is a number ending in 2 (except for 12)">%s° Tasto</string>
+    <string name="capo_number_ending_in_3" translation_description="The capo text when the capo is a number ending in 3 (except for 13)">%s° Tasto</string>
+    <string name="capo_generic" translation_description="The capo text when the capo doesn't meet any of the other criteria">%s° Tasto</string>
+    <string name="sort_by" translation_description="Formatted string used in conjunction with the following options to display a button to choose what order songs should be sorted by. %s represents one of the options below (e.g. Date Added)">Ordina per: %s</string>
+    <string name="sort_by_date_added" translation_description="Used to pick what order to show songs in - most recent first">Data inserimento</string>
+    <string name="sort_by_popularity" translation_description="Used to pick what order to show songs in - most popular first">Popolarità</string>
+    <string name="sort_by_artist_name" translation_description="Used to pick what order to show songs in - artist name, a to z">Nome Artista</string>
+    <string name="sort_by_title" translation_description="Used to pick what order to show songs in - song title, a to z">Titolo</string>
+    <string name="message_chord_load_failed" translation_description="Error message shown when chord could not be loaded. %s represents the name of the chord that couldn't be loaded">Impossibile caricare gli accordi \'%s\'. Controlla la tua connessione internet.</string>
+    <string name="message_no_search_results" translation_description="Info message shown when there are no results to a search query. This could be due to an internet connection issue.">Nessun risultato di ricerca. Controlla la tua ricerca o la tua connessione internet.</string>
+    <string name="message_empty_list" translation_description="Default info message when there are no items in a list">Qui non c\'è niente!</string>
+    <string name="tab_title">%1$s di %2$s</string>
+    <string name="tab_difficulty">Difficoltà: %s</string>
+    <string name="tab_tuning">Sintonizzazione: %s</string>
+    <string name="tab_capo">Capo: %s</string>
+    <string name="tab_key">Chiave: %s</string>
+    <string name="tab_author">Autore Accordi: %s</string>
+    <string name="tab_transpose">Trasposizione: %d</string>
+    <string name="tab_version_number">Versione %d</string>
+    <string name="tab_version_abbreviation" translation_description="Shortened version number for display in places where space is limited (like in search results)">vers. %s</string>
+</resources>
