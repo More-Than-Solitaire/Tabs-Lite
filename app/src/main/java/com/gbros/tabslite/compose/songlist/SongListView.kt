@@ -53,7 +53,9 @@ fun SongListView(
 
     var sortBySelection: SortBy? by remember { mutableStateOf(SortBy.valueOf(sortByPreference.value)) }  // for storing updated value between when the selection is updated and the database is updated
     Column {
-        SortByDropdown(selectedSort = SortBy.valueOf(sortByPreference.value), onOptionSelected = {newSortBySelection -> sortBySelection = newSortBySelection})
+        SortByDropdown(selectedSort = SortBy.valueOf(sortByPreference.value), onOptionSelected = {
+            newSortBySelection -> sortBySelection = newSortBySelection
+        })
         SongList(modifier = modifier, songs = sortedSongs, navigateToTabById = navigateToTabById, navigateByPlaylistEntryId = navigateByPlaylistEntryId, verticalArrangement = verticalArrangement, emptyListText = emptyListText)
     }
 
@@ -62,8 +64,8 @@ fun SongListView(
         val currentSelection = sortBySelection
         if (currentSelection != null && sortByPreference.name != "") {
             onSortPreferenceChange(sortByPreference.copy(value = currentSelection.name))
-            sortBySelection = null
         }
+        sortBySelection = null
     }
 }
 
