@@ -20,7 +20,7 @@ data class Preference(
     /**
      * The preference value (e.g. "true" or "a-z")
      */
-    @ColumnInfo(name = "value") var value: String,
+    @ColumnInfo(name = "value") var value: String = "",
 ) {
 
     companion object {
