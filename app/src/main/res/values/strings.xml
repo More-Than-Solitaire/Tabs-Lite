@@ -23,6 +23,7 @@
 
     <string name="placeholder_playlist_title" translation_description="Placeholder text for Playlist Title entry field">Playlist Title</string>
     <string name="placeholder_playlist_description" translation_description="Placeholder text for Playlist Description entry field">Playlist Description</string>
+    <string name="playlist_empty_description" translation_description="The description shown on the playlist screen for an empty playlist with no songs added">Add songs to your playlist by finding the song you\'d like and selecting the three dot menu at the top right of the screen.</string>
 
     <string name="generic_action_close">Close</string>
     <string name="generic_action_confirm">Confirm</string>
