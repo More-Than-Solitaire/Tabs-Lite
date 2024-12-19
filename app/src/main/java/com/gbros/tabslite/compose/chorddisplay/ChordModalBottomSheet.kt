@@ -3,7 +3,6 @@ package com.gbros.tabslite.compose.chorddisplay
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,9 +42,9 @@ fun ChordModalBottomSheet(chord: String, onDismiss: () -> Unit){
     var chordVariations: List<ChordVariation> by remember { mutableStateOf(listOf()) }
     var loading by remember { mutableStateOf(true) }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, windowInsets = WindowInsets(0,0,0,0)) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
         if (chordVariations.isNotEmpty()) {
-            loading = false;
+            loading = false
             ChordPager(
                 chordVariations = chordVariations,
                 modifier = Modifier.padding(bottom = 8.dp)

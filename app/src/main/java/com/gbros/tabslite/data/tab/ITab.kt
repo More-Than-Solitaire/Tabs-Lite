@@ -86,8 +86,8 @@ interface ITab {
             capo == 12 -> String.format(stringResource(id = R.string.capo_12), capo) // 11th, 12th, 13th are exceptions
             capo == 13 -> String.format(stringResource(id = R.string.capo_13), capo) // 11th, 12th, 13th are exceptions
             capo % 10 == 1 -> String.format(stringResource(id = R.string.capo_number_ending_in_1), capo)
-            capo % 10 == 2 -> String.format(stringResource(id = R.string.capo_number_ending_in_1), capo)
-            capo % 10 == 3 -> String.format(stringResource(id = R.string.capo_number_ending_in_1), capo)
+            capo % 10 == 2 -> String.format(stringResource(id = R.string.capo_number_ending_in_2), capo)
+            capo % 10 == 3 -> String.format(stringResource(id = R.string.capo_number_ending_in_3), capo)
             else -> String.format(stringResource(id = R.string.capo_generic), capo)
         }
     }

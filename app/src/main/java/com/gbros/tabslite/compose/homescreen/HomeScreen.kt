@@ -158,7 +158,7 @@ fun HomeScreen(
                     selected = pagerState.currentPage == 1,
                     inactiveIcon = Icons.Outlined.Person,
                     activeIcon = Icons.Filled.Person,
-                    title = stringResource(id = R.string.title_favorites_playlist)
+                    title = stringResource(id = R.string.title_popular_playlist)
                 ) {
                     pagerNav = if (pagerNav != 1) 1 else -1
                 }
@@ -176,7 +176,7 @@ fun HomeScreen(
         HorizontalPager(
             state = pagerState,
             verticalAlignment = Alignment.Top,
-            beyondBoundsPageCount = 3,
+            beyondViewportPageCount = 3,
             contentPadding = PaddingValues(top = 8.dp, bottom = 0.dp, start = 8.dp, end = 8.dp),
             pageSpacing = 8.dp,
             modifier = Modifier
