@@ -95,7 +95,7 @@ fun PlaylistSongList(
                 .fillMaxSize()
                 .padding(all = 16.dp)
         ) {
-            InfoCard(text = stringResource(id = R.string.generic_action_drag_to_reorder))
+            InfoCard(text = stringResource(id = R.string.playlist_empty_description))
         }
     } else {
         Column {
@@ -110,7 +110,9 @@ fun PlaylistSongList(
             ) {
                 items(items = reorderedSongsForDisplay, key = { it }) { song ->
                     ReorderableItem(state = reorderState, key = song) { isDragging ->
-                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
+                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp,
+                            label = "playlist item elevation"
+                        )
 
                         MaterialSwipeToDismiss(onRemove = {
                             onRemove(song)
@@ -122,7 +124,7 @@ fun PlaylistSongList(
                                 prependItem = {
                                     Icon(
                                         imageVector = ImageVector.vectorResource(R.drawable.ic_drag_handle),
-                                        contentDescription = "Drag to reorder",
+                                        contentDescription = stringResource(R.string.generic_action_drag_to_reorder),
                                         modifier = Modifier
                                             .detectReorder(reorderState)
                                             .padding(end = 4.dp)
@@ -133,8 +135,10 @@ fun PlaylistSongList(
                         }
                     }
                 }
+                item {
+                    Spacer(modifier = Modifier.height(height = 24.dp))
+                }
             }
-            Spacer(modifier = Modifier.height(height = 24.dp))
         }
     }
 
