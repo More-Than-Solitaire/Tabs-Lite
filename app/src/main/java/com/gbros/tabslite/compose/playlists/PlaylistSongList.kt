@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -23,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,7 +41,6 @@ import org.burnoutcrew.reorderable.reorderable
 /**
  * Represents a playlist of songs.  Handles reordering of songs.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistSongList(
     songs: List<TabWithDataPlaylistEntry>,
@@ -96,7 +95,7 @@ fun PlaylistSongList(
                 .fillMaxSize()
                 .padding(all = 16.dp)
         ) {
-            InfoCard(text = "Add songs to your playlist by finding the song you'd like and selecting the three dot menu at the top right of the screen.")
+            InfoCard(text = stringResource(id = R.string.generic_action_drag_to_reorder))
         }
     } else {
         Column {
