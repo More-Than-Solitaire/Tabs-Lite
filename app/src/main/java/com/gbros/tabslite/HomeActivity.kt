@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
-import com.gbros.tabslite.compose.TabsLiteNavGraph
-import com.gbros.tabslite.compose.songlist.SortBy
+import com.gbros.tabslite.view.TabsLiteNavGraph
+import com.gbros.tabslite.view.songlist.SortBy
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.tab.Tab
