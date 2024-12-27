@@ -8,19 +8,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
-import com.gbros.tabslite.view.TabsLiteNavGraph
 import com.gbros.tabslite.view.songlist.SortBy
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.utilities.UgApi
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 private const val LOG_NAME = "tabslite.HomeActivity  "
 
+@AndroidEntryPoint
 class HomeActivity : ComponentActivity() {
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {

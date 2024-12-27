@@ -19,9 +19,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
+import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.gbros.tabslite.R
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.AppDatabase
+
+private const val SONG_VERSION_NAV_ARG = "songId"
+const val SONG_VERSION_ROUTE_TEMPLATE = "song/%s"
+
+fun NavController.navigateToSongVersion(songId: Int) {
+    navigate(SONG_VERSION_ROUTE_TEMPLATE.format(songId.toString()))
+}
+
+fun NavGraphBuilder.songVersionScreen(
+    onNavigateToTabByTabId: (Int) -> Unit,
+    onNavigateToSearch: (String) -> Unit,
+    onNavigateBack: () -> Unit
+) {
+    composable(
+        SONG_VERSION_ROUTE_TEMPLATE.format("{$SONG_VERSION_NAV_ARG}"),
+        arguments = listOf(navArgument(SONG_VERSION_NAV_ARG) { type = NavType.IntType })) { navBackStackEntry ->
+        SongVersionScreen(
+            songVersionId = navBackStackEntry.arguments!!.getInt(SONG_VERSION_NAV_ARG),
+            navigateToTabByTabId = onNavigateToTabByTabId,
+            navigateBack = onNavigateBack,
+            onSearch = onNavigateToSearch
+        )
+    }
+}
 
 @Composable
 fun SongVersionScreen(

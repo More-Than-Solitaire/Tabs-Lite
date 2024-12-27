@@ -45,6 +45,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import com.gbros.tabslite.R
 import com.gbros.tabslite.view.songlist.SongListView
 import com.gbros.tabslite.view.songlist.SortBy
@@ -61,7 +64,30 @@ import kotlinx.serialization.json.Json
 
 private const val LOG_NAME = "tabslite.HomeScreen    "
 
-@OptIn(ExperimentalFoundationApi::class)
+const val HOME_ROUTE = "home"
+
+fun NavController.navigateToHome() {
+    navigate(HOME_ROUTE) {
+        popUpTo(graph.id) { inclusive = true }
+    }
+}
+
+fun NavGraphBuilder.homeScreen(
+    onNavigateToSearch: (String) -> Unit,
+    onNavigateToPlaylistEntry: (Int) -> Unit,
+    onNavigateToTab: (Int) -> Unit,
+    onNavigateToPlaylist: (Int) -> Unit
+) {
+    composable(HOME_ROUTE) {
+        HomeScreen(
+            onSearch = onNavigateToSearch,
+            navigateToTabByPlaylistEntryId = onNavigateToPlaylistEntry,
+            navigateToPlaylistById = onNavigateToPlaylist,
+            navigateToTabByTabId = onNavigateToTab
+        )
+    }
+}
+
 @Composable
 fun HomeScreen(
     onSearch: (query: String) -> Unit,

@@ -9,10 +9,35 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
+import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.playlist.IDataPlaylistEntry
 import com.gbros.tabslite.data.playlist.DataPlaylistEntry
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
+
+private const val PLAYLIST_NAV_ARG = "playlistId"
+private const val PLAYLIST_DETAIL_ROUTE_TEMPLATE = "playlist/%s"
+
+fun NavController.navigateToPlaylistDetail(playlistId: Int) {
+    navigate(PLAYLIST_DETAIL_ROUTE_TEMPLATE.format(playlistId.toString()))
+}
+
+fun NavGraphBuilder.playlistDetailScreen(
+    onNavigateToTabByPlaylistEntryId: (Int) -> Unit,
+    onNavigateBack: () -> Unit
+) {
+    composable(PLAYLIST_DETAIL_ROUTE_TEMPLATE.format("{$PLAYLIST_NAV_ARG}"), arguments = listOf(navArgument(PLAYLIST_NAV_ARG) { type = NavType.IntType })) { navBackStackEntry ->
+        PlaylistScreen(
+            playlistId = navBackStackEntry.arguments!!.getInt(PLAYLIST_NAV_ARG),
+            navigateToTabByPlaylistEntryId = onNavigateToTabByPlaylistEntryId,
+            navigateBack = onNavigateBack
+        )
+    }
+}
 
 @Composable
 fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Unit, navigateBack: () -> Unit) {

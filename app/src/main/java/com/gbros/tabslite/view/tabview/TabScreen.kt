@@ -11,11 +11,66 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
+import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 
 private const val LOG_NAME = "tabslite.TabScreen     "
+
+//#region use case tab screen
+
+private const val TAB_NAV_ARG = "tabId"
+const val TAB_ROUTE_TEMPLATE = "tab/%s"
+
+fun NavController.navigateToTab(tabId: Int) {
+    navigate(TAB_ROUTE_TEMPLATE.format(tabId.toString()))
+}
+
+fun NavGraphBuilder.tabScreen(
+    onNavigateBack: () -> Unit
+) {
+    composable(
+        TAB_ROUTE_TEMPLATE.format("{$TAB_NAV_ARG}"),
+        arguments = listOf(navArgument(TAB_NAV_ARG) { type = NavType.IntType } )) { navBackStackEntry ->
+        TabScreen(
+            id = navBackStackEntry.arguments!!.getInt(TAB_NAV_ARG),
+            idIsPlaylistEntryId = false,
+            navigateBack = onNavigateBack
+        )
+    }
+}
+
+//#endregion
+
+//#region use case playlist entry
+
+private const val PLAYLIST_ENTRY_NAV_ARG = "playlistEntryId"
+const val PLAYLIST_ENTRY_ROUTE_TEMPLATE = "playlist/entry/%s"
+
+fun NavController.navigateToPlaylistEntry(playlistEntryId: Int) {
+    navigate(PLAYLIST_ENTRY_ROUTE_TEMPLATE.format(playlistEntryId.toString()))
+}
+
+fun NavGraphBuilder.playlistEntryScreen(
+    onNavigateBack: () -> Unit
+) {
+    composable(
+        PLAYLIST_ENTRY_ROUTE_TEMPLATE.format("{$PLAYLIST_ENTRY_NAV_ARG}"),
+        arguments = listOf(navArgument(PLAYLIST_ENTRY_NAV_ARG) { type = NavType.IntType } )) { navBackStackEntry ->
+        TabScreen(
+            id = navBackStackEntry.arguments!!.getInt(PLAYLIST_ENTRY_NAV_ARG),
+            idIsPlaylistEntryId = true,
+            navigateBack = onNavigateBack
+        )
+    }
+}
+
+//#endregion
 
 /**
  * Gets a tab from the database based on the parameters given and displays the tab in a TabView

@@ -1,11 +1,12 @@
 plugins {
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
+    id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.serialization")
     id("com.android.application")
     id("kotlin-android")
     id("kotlin-parcelize")
+    id("com.google.dagger.hilt.android")
     id("androidx.navigation.safeargs.kotlin")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.1.0" // this version matches your Kotlin version
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -95,6 +96,8 @@ dependencies {
     implementation("com.github.SmartToolFactory:Compose-Extended-Gestures:3.1")
     implementation("com.google.android.material:material:1.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    ksp("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.22")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
