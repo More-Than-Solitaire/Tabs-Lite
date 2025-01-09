@@ -30,7 +30,10 @@ fun NavGraphBuilder.playlistDetailScreen(
     onNavigateToTabByPlaylistEntryId: (Int) -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    composable(PLAYLIST_DETAIL_ROUTE_TEMPLATE.format("{$PLAYLIST_NAV_ARG}"), arguments = listOf(navArgument(PLAYLIST_NAV_ARG) { type = NavType.IntType })) { navBackStackEntry ->
+    composable(
+        route = PLAYLIST_DETAIL_ROUTE_TEMPLATE.format("{$PLAYLIST_NAV_ARG}"),
+        arguments = listOf(navArgument(PLAYLIST_NAV_ARG) { type = NavType.IntType })
+    ) { navBackStackEntry ->
         PlaylistScreen(
             playlistId = navBackStackEntry.arguments!!.getInt(PLAYLIST_NAV_ARG),
             navigateToTabByPlaylistEntryId = onNavigateToTabByPlaylistEntryId,
@@ -41,10 +44,9 @@ fun NavGraphBuilder.playlistDetailScreen(
 
 @Composable
 fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Unit, navigateBack: () -> Unit) {
-    val currentContext = LocalContext.current
-    val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
-    val playlist = remember { db.playlistDao().getLivePlaylist(playlistId = playlistId) }
-    val liveSongs = remember { db.tabFullDao().getTabsFromPlaylistEntryId(playlistId = playlistId) }
+    val dataAccess = AppDatabase.getInstance(LocalContext.current).dataAccess()
+    val playlist = remember { dataAccess.getLivePlaylist(playlistId = playlistId) }
+    val liveSongs = remember { dataAccess.getTabsFromPlaylistEntryId(playlistId = playlistId) }
     val songs by liveSongs.observeAsState(listOf())
     var updatedDescription: String? by remember { mutableStateOf(null) }
     var updatedTitle: String? by remember { mutableStateOf(null) }
@@ -82,7 +84,7 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
     // delete playlist
     LaunchedEffect(key1 = deletePlaylist) {
         if (deletePlaylist) {
-            db.playlistDao().deletePlaylist(playlistId)
+            dataAccess.deletePlaylist(playlistId)
         }
     }
 
@@ -90,7 +92,7 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
     LaunchedEffect(key1 = playlistEntryToRemove) {
         val entryToRemove = playlistEntryToRemove
         if (entryToRemove != null) {
-            db.playlistEntryDao().removeEntryFromPlaylist(entryToRemove)
+            dataAccess.removeEntryFromPlaylist(entryToRemove)
         }
     }
 
@@ -101,9 +103,9 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
         val moveAfter = entryMovedMoveAfter
         if (src != null && dest != null && moveAfter != null) {
             if (moveAfter)
-                db.playlistEntryDao().moveEntryAfter(src, dest)
+                dataAccess.moveEntryAfter(src, dest)
             else
-                db.playlistEntryDao().moveEntryBefore(src, dest)
+                dataAccess.moveEntryBefore(src, dest)
         }
     }
 
@@ -111,7 +113,7 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
     LaunchedEffect(key1 = updatedDescription) {
         val copyOfUpdatedDescription = updatedDescription
         if (copyOfUpdatedDescription != null) {
-            db.playlistDao().updateDescription(playlistId, copyOfUpdatedDescription)
+            dataAccess.updateDescription(playlistId, copyOfUpdatedDescription)
         }
     }
 
@@ -119,7 +121,7 @@ fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Uni
     LaunchedEffect(key1 = updatedTitle) {
         val copyOfUpdatedTitle = updatedTitle
         if (copyOfUpdatedTitle != null) {
-            db.playlistDao().updateTitle(playlistId, copyOfUpdatedTitle)
+            dataAccess.updateTitle(playlistId, copyOfUpdatedTitle)
         }
     }
 }

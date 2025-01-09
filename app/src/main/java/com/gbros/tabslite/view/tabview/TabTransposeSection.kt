@@ -23,36 +23,32 @@ import com.gbros.tabslite.R
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun TabTransposeSection(currentTransposition: Int, transpose: (halfSteps: Int) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
+fun TabTransposeSection(currentTransposition: Int, onTransposeResetClick: () -> Unit, onTransposeDownClick: () -> Unit, onTransposeUpClick: () -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = stringResource(id = R.string.tab_transpose, currentTransposition),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier
-                .padding(vertical = 12.dp)
+            modifier = Modifier.padding(vertical = 12.dp)
         )
         IconButton(  // reset transpose
-            onClick = { transpose(-currentTransposition) },
+            onClick = onTransposeResetClick,
             modifier = Modifier
         ) {
-            Icon(imageVector = Icons.Default.Clear, contentDescription = "Reset Transposition", tint = MaterialTheme.colorScheme.primary)
+            Icon(imageVector = Icons.Default.Clear, contentDescription = "Reset Transposition",
+                tint = MaterialTheme.colorScheme.primary)
         }
         Spacer(modifier = Modifier.weight(1f))
         Button(  // transpose down
-            onClick = { transpose(-1) },
+            onClick = onTransposeDownClick,
             Modifier.padding(horizontal = 8.dp)
         ) {
-            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_remove), contentDescription = "Transpose down")
+            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_remove),
+                contentDescription = "Transpose down")
         }
         Button(  // transpose up
-            onClick = { transpose(1) },
-            Modifier
-                .padding(horizontal = 8.dp)
-
+            onClick = onTransposeUpClick,
+            Modifier.padding(horizontal = 8.dp)
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "Transpose up")
         }
@@ -62,6 +58,6 @@ fun TabTransposeSection(currentTransposition: Int, transpose: (halfSteps: Int) -
 @Composable @Preview
 private fun TabTransposeSectionPreview() {
     AppTheme {
-        TabTransposeSection(currentTransposition = 0) { }
+        TabTransposeSection(currentTransposition = 0, {}, {}, {})
     }
 }

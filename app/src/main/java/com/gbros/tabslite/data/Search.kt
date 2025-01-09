@@ -40,7 +40,7 @@ class Search(private val db: AppDatabase): ISearch {
         } else {
             // add this data to the database so we can display the individual song versions without fully loading all of them
             for (tab in searchResult.getAllTabs()) {
-                db.tabFullDao().insert(tab)
+                db.dataAccess().insert(tab)
             }
 
             Log.d(LOG_NAME, "Successful search for $query page $page.  Results: ${searchResult.getSongs().size}")

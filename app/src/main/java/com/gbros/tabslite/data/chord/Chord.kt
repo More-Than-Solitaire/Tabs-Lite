@@ -1,7 +1,7 @@
 package com.gbros.tabslite.data.chord
 
 import android.util.Log
-import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.utilities.UgApi
 import kotlin.math.abs
 
@@ -10,14 +10,14 @@ private const val LOG_NAME = "tabslite.ICompleteChord"
 object Chord {
     // region public methods
 
-    suspend fun ensureAllChordsDownloaded(chords: List<String>, db: AppDatabase) {
+    suspend fun ensureAllChordsDownloaded(chords: List<String>, dataAccess: DataAccess) {
         // find chords that aren't in the database
-        val alreadyDownloadedChords = db.chordVariationDao().findAll(chords)
+        val alreadyDownloadedChords = dataAccess.findAll(chords)
         val chordsToDownload = chords.filter { usedChord -> !alreadyDownloadedChords.contains(usedChord) }
 
         // download
         if (chordsToDownload.isNotEmpty()) {
-            UgApi.updateChordVariations(chordsToDownload, db)
+            UgApi.updateChordVariations(chordsToDownload, dataAccess)
         }
     }
 
@@ -45,10 +45,9 @@ object Chord {
         return chordParts.joinToString("/")
     }
 
-    open suspend fun getChord(chord: String, db: AppDatabase): List<ChordVariation> {
-        val downloadedChords = db.chordVariationDao().getChordVariations(chord)
-        return downloadedChords.ifEmpty {
-            UgApi.updateChordVariations(listOf(chord), db).getOrDefault(chord, listOf())
+    suspend fun getChord(chord: String, dataAccess: DataAccess) {
+        dataAccess.getChordVariations(chord).ifEmpty {
+            UgApi.updateChordVariations(listOf(chord), dataAccess).getOrDefault(chord, listOf())
         }
     }
 

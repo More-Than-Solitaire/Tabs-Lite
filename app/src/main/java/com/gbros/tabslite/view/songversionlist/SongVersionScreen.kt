@@ -61,7 +61,7 @@ fun SongVersionScreen(
 ) {
     val currentContext = LocalContext.current
     val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
-    val songVersions by db.tabFullDao().getTabsBySongId(songVersionId).observeAsState(listOf())
+    val songVersions by db.dataAccess().getTabsBySongId(songVersionId).observeAsState(listOf())
 
     Column(
         modifier = Modifier

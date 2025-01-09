@@ -1,63 +1,93 @@
 package com.gbros.tabslite.view.tabview
 
+import android.content.Context
 import androidx.compose.ui.text.AnnotatedString
+import androidx.lifecycle.LiveData
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.playlist.Playlist
 
 /**
- * The view state for [TabView] to control the state of each UI element in the view
+ * The view state for [TabScreen] to control the state of each UI element in the view
  */
 interface ITabViewState {
-    val title: String
-    val isFavorite: Boolean
+    val title: LiveData<String>
+    val isFavorite: LiveData<Boolean>
 
     /**
      * Whether to display the playlist navigation bar
      */
     val isPlaylistEntry: Boolean
 
-    val playlistTitle: String
+    val playlistTitle: LiveData<String>
 
-    val difficulty: String
+    val playlistNextSongButtonEnabled: LiveData<Boolean>
 
-    val tuning: String
+    val playlistPreviousSongButtonEnabled: LiveData<Boolean>
 
-    val capoText: String
+    val difficulty: LiveData<String>
 
-    val key: String
+    val tuning: LiveData<String>
 
-    val author: String
+    fun getCapoText(context: Context): LiveData<String>
 
-    val currentTranspose: Int
+    val key: LiveData<String>
 
-    val content: AnnotatedString
+    /**
+     * The author of the tab not the song
+     */
+    val author: LiveData<String>
 
-    val state: LoadingState
+    /**
+     * The author of the song, not the tab
+     */
+    val artist: LiveData<String>
+
+    val transpose: LiveData<Int>
+
+    val content: LiveData<AnnotatedString>
+
+    val state: LiveData<LoadingState>
 
     /**
      * Whether we're currently autoscrolling (the Play button has been pressed)
      */
-    val autoscrollEnabled: Boolean
+    val autoscrollPaused: LiveData<Boolean>
 
-    val autoScrollSpeedSliderPosition: Float
+    val autoScrollSpeedSliderPosition: LiveData<Float>
+
+    /**
+     * The delay between 1px scrolls during autoscroll if not [autoscrollPaused]
+     */
+    val autoscrollDelay: LiveData<Float>
 
     /**
      * Whether to display the chord fingerings for the current chord
      */
-    val chordDetailsActive: Boolean
+    val chordDetailsActive: LiveData<Boolean>
 
     /**
      * The title for the chord details section (usually the name of the active chord being displayed)
      */
-    val chordDetailsTitle: String
+    val chordDetailsTitle: LiveData<String>
 
     /**
      * The state of the chord details section (loading until the details have been fetched successfully)
      */
-    val chordDetailsState: LoadingState
+    val chordDetailsState: LiveData<LoadingState>
 
     /**
      * A list of chord fingerings to be displayed in the chord details section
      */
-    val chordDetailsVariations: List<ChordVariation>
+    val chordDetailsVariations: LiveData<List<ChordVariation>>
+
+    val shareUrl: LiveData<String>
+
+    fun getShareTitle(context: Context): LiveData<String>
+
+    val allPlaylists: LiveData<List<Playlist>>
+
+    val addToPlaylistDialogSelectedPlaylistTitle: LiveData<String?>
+
+    val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>
 }

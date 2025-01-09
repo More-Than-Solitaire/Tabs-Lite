@@ -1,39 +1,12 @@
 package com.gbros.tabslite.data.tab
 
-import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
+import android.content.Context
 import com.gbros.tabslite.R
-import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.chord.Chord
-import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.data.DataAccess
 
 private const val LOG_NAME = "tabslite.ITab          "
 
 interface ITab {
-    companion object {
-        /**
-         * Ensures that the full tab (not just the partial tab loaded in the search results) is stored
-         * in the local database.  Checks if [content] is empty, and if so triggers an API call to download
-         * the tab content from the internet and load it into the database.
-         *
-         * @param tabId: The tab ID of the tab to load from the API / database
-         * @param database: The database to load the updated tab into
-         * @param force: If true, load from the internet regardless of whether we already have the tab.  If false return the local copy from the database
-         *
-         * @return The resulting tab, either from the local database or from the internet
-         */
-        suspend fun fetchFullTab(tabId: Int, database: AppDatabase, force: Boolean = false): Tab {
-            return if (force || !database.tabFullDao().existsWithContent(tabId)) {
-                Log.d(LOG_NAME, "Fetching tab $tabId from internet (force = $force)")
-                Tab(UgApi.fetchTabFromInternet(tabId = tabId, database = database))
-            } else {
-                // Cache hit for tab.  Not fetching from internet.
-                Tab(database.tabFullDao().getTabInstance(tabId))
-            }
-        }
-    }
-
     val tabId: Int
     val type: String
     val part: String
@@ -45,11 +18,19 @@ interface ITab {
     val presetId: Int
     val tabAccessType: String
     val tpVersion: Int
+
+    /**
+     * The key of the song (e.g. key of 'Am')
+     */
     var tonalityName: String
     val versionDescription: String
 
     val songId: Int
     val songName: String
+
+    /**
+     * The author of the original song (not the person who wrote up these chords, that's [contributorUserName])
+     */
     val artistName: String
     val isVerified: Boolean
     val numVersions: Int
@@ -70,52 +51,29 @@ interface ITab {
     var videosCount: Int
     var proBrother: Int
     var contributorUserId: Int
+
+    /**
+     * The author of the chord sheet (not the author of the song - that's [artistName])
+     */
     var contributorUserName: String
     var content: String
 
-    val transpose: Int
+    val transpose: Int?
 
     /**
      * Get the human-readable capo number (ordinal numbers, i.e. 2nd Fret)
      */
-    @Composable
-    fun getCapoText(): String {
+    fun getCapoText(context: Context): String {
         return when {
             capo == 0 -> "None"
-            capo == 11 -> String.format(stringResource(id = R.string.capo_11), capo) // 11th, 12th, 13th are exceptions
-            capo == 12 -> String.format(stringResource(id = R.string.capo_12), capo) // 11th, 12th, 13th are exceptions
-            capo == 13 -> String.format(stringResource(id = R.string.capo_13), capo) // 11th, 12th, 13th are exceptions
-            capo % 10 == 1 -> String.format(stringResource(id = R.string.capo_number_ending_in_1), capo)
-            capo % 10 == 2 -> String.format(stringResource(id = R.string.capo_number_ending_in_2), capo)
-            capo % 10 == 3 -> String.format(stringResource(id = R.string.capo_number_ending_in_3), capo)
-            else -> String.format(stringResource(id = R.string.capo_generic), capo)
+            capo == 11 -> String.format(context.getString(R.string.capo_11), capo.toString()) // 11th, 12th, 13th are exceptions
+            capo == 12 -> String.format(context.getString(R.string.capo_12), capo.toString()) // 11th, 12th, 13th are exceptions
+            capo == 13 -> String.format(context.getString(R.string.capo_13), capo.toString()) // 11th, 12th, 13th are exceptions
+            capo % 10 == 1 -> String.format(context.getString(R.string.capo_number_ending_in_1), capo.toString())
+            capo % 10 == 2 -> String.format(context.getString(R.string.capo_number_ending_in_2), capo.toString())
+            capo % 10 == 3 -> String.format(context.getString(R.string.capo_number_ending_in_3), capo.toString())
+            else -> String.format(context.getString(R.string.capo_generic), capo.toString())
         }
-    }
-
-    /**
-     * Get the TabsLite URL for this tab.  This is the URL that the app accepts as an intent to bring
-     * the user directly to this tab.
-     */
-    fun getUrl(): String {
-        // only allowed chars are alphanumeric and dash.
-        return "https://tabslite.com/tab/$tabId"
-    }
-
-    /**
-     * Transpose entire tab by the given number of half steps.  Updates [content] and [tonalityName]
-     * but does not save changes to database.
-     *
-     * @param halfSteps: The number of half steps to transpose this tab
-     */
-    fun transpose(halfSteps: Int) {
-        tonalityName = Chord.transposeChord(tonalityName, halfSteps)
-        val chordPattern = Regex("\\[ch](.*?)\\[/ch]")
-        val transposedContent = chordPattern.replace(this.content) {
-            val chord = it.groupValues[1]
-            "[ch]" + Chord.transposeChord(chord, halfSteps) + "[/ch]"
-        }
-
-        content = transposedContent
     }
 
     /**
@@ -134,29 +92,10 @@ interface ITab {
      * in the local database.  Checks if [content] is empty, and if so triggers an API call to download
      * the tab content from the internet and load it into the database.
      *
-     * @param database: The database to load the updated tab into
-     * @param force: If true, load from the internet regardless of whether we already have the tab.  If false, load only if [content] is empty
+     * @param dataAccess: The database to load the updated tab into
+     * @param forceInternetFetch: If true, load from the internet regardless of whether we already have the tab.  If false, load only if [content] is empty
      *
-     * @return The resulting tab, either from the local database or from the internet
+     * @return The resulting ITab, either from the local database or from the internet
      */
-    suspend fun fetchFullTab(database: AppDatabase, force: Boolean = false) {
-        // fetch new tab
-        val newTab = Companion.fetchFullTab(tabId, database, force || content.isBlank())
-
-        // update this tab
-        tonalityName = newTab.tonalityName
-        content = newTab.content
-
-        recommended = newTab.recommended
-        userRating = newTab.userRating
-        difficulty = newTab.difficulty
-        tuning = newTab.tuning
-        capo = newTab.capo
-        urlWeb = newTab.urlWeb
-        strumming = newTab.strumming
-        videosCount = newTab.videosCount
-        proBrother = newTab.proBrother
-        contributorUserId = newTab.contributorUserId
-        contributorUserName = newTab.contributorUserName
-    }
+    suspend fun load(dataAccess: DataAccess, forceInternetFetch: Boolean = false): ITab
 }

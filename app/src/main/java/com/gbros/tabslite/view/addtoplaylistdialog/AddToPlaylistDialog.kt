@@ -11,36 +11,31 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
-import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun AddToPlaylistDialog(tabId: Int, transpose: Int, onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    val currentContext = LocalContext.current
-    val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
-    val playlists by db.playlistDao().getLivePlaylists().observeAsState(initial = listOf())
-    var selectedPlaylist: Playlist? by remember { mutableStateOf(null) }
-    var confirmedPlaylist: Playlist? by remember { mutableStateOf(null) }
+fun AddToPlaylistDialog(
+    playlists: List<Playlist>, 
+    selectedPlaylistDropdownText: String?,
+    onSelectionChange: (Playlist) -> Unit, 
+    confirmButtonEnabled: Boolean, 
+    onCreatePlaylist: (title: String, description: String) -> Unit, 
+    onConfirm: () -> Unit, 
+    onDismiss: () -> Unit
+) {
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }
-
-    if (selectedPlaylist == null && playlists.isNotEmpty()) {
-        selectedPlaylist = playlists[0]
-    }
 
     AlertDialog(
         icon = {
@@ -54,7 +49,7 @@ fun AddToPlaylistDialog(tabId: Int, transpose: Int, onConfirm: () -> Unit, onDis
                 Column(
                     Modifier.weight(1f)
                 ) {
-                    PlaylistDropdown(playlists = playlists, selectedPlaylist = selectedPlaylist, onSelectionChange = { selectedPlaylist = it })
+                    PlaylistDropdown(playlists = playlists, title = selectedPlaylistDropdownText ?: stringResource(R.string.select_playlist_dialog_no_selection), onSelectionChange = onSelectionChange)
                 }
                 Column(
 
@@ -74,40 +69,44 @@ fun AddToPlaylistDialog(tabId: Int, transpose: Int, onConfirm: () -> Unit, onDis
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(
-                onClick = {
-                    confirmedPlaylist = selectedPlaylist
-                },
-                enabled = selectedPlaylist != null
+                onClick = onConfirm,
+                enabled = confirmButtonEnabled
             ) {
-                Text("Confirm")
+                Text(stringResource(R.string.generic_action_confirm))
             }
         },
         dismissButton = {
             TextButton(
                 onClick = onDismiss
             ) {
-                Text("Dismiss")
+                Text(stringResource(R.string.generic_action_dismiss))
             }
         }
     )
 
     if (showCreatePlaylistDialog) {
-        CreatePlaylistDialog(onConfirm = { newPlaylist -> selectedPlaylist = newPlaylist; showCreatePlaylistDialog = false }, onDismiss = { showCreatePlaylistDialog = false })
+        CreatePlaylistDialog(
+            onConfirm = { title, description ->
+                onCreatePlaylist(title, description)
+                showCreatePlaylistDialog = false
+            },
+            onDismiss = { showCreatePlaylistDialog = false })
     }
-
-    LaunchedEffect(key1 = confirmedPlaylist) {
-        val copyOfConfirmedlaylist = confirmedPlaylist
-        if (copyOfConfirmedlaylist != null) {
-            db.playlistEntryDao().addToPlaylist(playlistId = copyOfConfirmedlaylist.playlistId, tabId = tabId, transpose = transpose)
-            onConfirm()
-        }
-    }
-
 }
 
 @Composable @Preview
 private fun AddToPlaylistDialogPreview() {
+    val playlistForTest = Playlist(1, true, "My amazing playlist 1.0.1", 12345, 12345, "The playlist that I'm going to use to test this playlist entry item thing with lots of text.")
+    val list = listOf(playlistForTest, playlistForTest, playlistForTest ,playlistForTest, playlistForTest)
     AppTheme {
-        AddToPlaylistDialog(1, 0, {}, {})
+        AddToPlaylistDialog(
+            playlists = list,
+            selectedPlaylistDropdownText = "Select a playlist...",
+            confirmButtonEnabled = false,
+            onSelectionChange = { },
+            onCreatePlaylist = { _, _ -> },
+            onConfirm = { },
+            onDismiss = { },
+        )
     }
 }

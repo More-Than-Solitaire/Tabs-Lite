@@ -14,18 +14,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.view.addtoplaylistdialog.CreatePlaylistDialog
 import com.gbros.tabslite.view.playlists.PlaylistList
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlaylistPage(livePlaylists: LiveData<List<Playlist>>, navigateToPlaylistById: (id: Int) -> Unit) {
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }
+    val dataAccess = AppDatabase.getInstance(LocalContext.current).dataAccess()
 
     Box(modifier = Modifier.fillMaxSize()) {
         PlaylistList(livePlaylists = livePlaylists, navigateToPlaylistById = navigateToPlaylistById)
@@ -42,7 +48,16 @@ fun PlaylistPage(livePlaylists: LiveData<List<Playlist>>, navigateToPlaylistById
     }
 
     if (showCreatePlaylistDialog) {
-        CreatePlaylistDialog(onConfirm = { showCreatePlaylistDialog = false }, onDismiss = { showCreatePlaylistDialog = false })
+        CreatePlaylistDialog(
+            onConfirm = { newPlaylistTitle, newPlaylistDescription ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    val newPlaylist = Playlist(userCreated = true, title = newPlaylistTitle, description = newPlaylistDescription, dateCreated = System.currentTimeMillis(), dateModified = System.currentTimeMillis())
+                    dataAccess.savePlaylist(newPlaylist)
+                }
+                showCreatePlaylistDialog = false
+            },
+            onDismiss = { showCreatePlaylistDialog = false }
+        )
     }
 }
 

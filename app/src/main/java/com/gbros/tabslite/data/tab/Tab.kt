@@ -3,7 +3,7 @@ package com.gbros.tabslite.data.tab
 import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
-import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.utilities.UgApi
 
 private const val LOG_NAME = "tabslite.Tab           "
@@ -46,23 +46,22 @@ data class Tab(
     @ColumnInfo(name = "contributor_user_id") override var contributorUserId: Int = -1,
     @ColumnInfo(name = "contributor_user_name") override var contributorUserName: String = "",
     @ColumnInfo(name = "content") override var content: String = "",
+    @ColumnInfo(name = "transpose") override var transpose: Int? = null
 ): ITab {
-    @ColumnInfo(name = "transpose") override var transpose: Int = 0
-        private set;
-
+    //#region "static" functions
     companion object {
         fun fromTabDataType(dataTabs: List<TabDataType>): List<Tab> {
             return dataTabs.map { Tab(it) }
         }
 
-        suspend fun fetchAllEmptyPlaylistTabsFromInternet(db: AppDatabase, playlistId: Int? = null, onProgressChange: (progress: Float) -> Unit = {}) {
+        suspend fun fetchAllEmptyPlaylistTabsFromInternet(dataAccess: DataAccess, playlistId: Int? = null, onProgressChange: (progress: Float) -> Unit = {}) {
             try {
-                val emptyTabs: List<Int> = if (playlistId == null) db.tabFullDao().getEmptyPlaylistTabIds() else db.tabFullDao().getEmptyPlaylistTabIds(playlistId)
+                val emptyTabs: List<Int> = if (playlistId == null) dataAccess.getEmptyPlaylistTabIds() else dataAccess.getEmptyPlaylistTabIds(playlistId)
                 Log.i(LOG_NAME, "Found ${emptyTabs.size} empty playlist tabs to fetch")
                 var numFetchedTabs = 0f
                 emptyTabs.forEach { tabId ->
                     onProgressChange(++numFetchedTabs / emptyTabs.size.toFloat())
-                    UgApi.fetchTabFromInternet(tabId, db)
+                    UgApi.fetchTabFromInternet(tabId, dataAccess)
                 }
             } catch (ex: Exception) {
                 Log.i(LOG_NAME, "Fetching empty tabs failed: ${ex.message}", ex)
@@ -71,6 +70,9 @@ data class Tab(
             Log.i(LOG_NAME, "Done fetching empty tabs")
         }
     }
+    //#endregion
+
+    //#region constructors
 
     constructor(tabId: Int? = 0) : this(tabId = tabId ?: 0, songId = 0, songName = "", artistName = "", isVerified = false, numVersions = 0,
         type = "", part = "", version = 0, votes = 0, rating = 0.0, date = 0, status = "", presetId = 0, tabAccessType = "",
@@ -86,10 +88,78 @@ data class Tab(
         capo = tabFromDatabase.capo, urlWeb = tabFromDatabase.urlWeb, strumming = tabFromDatabase.strumming, videosCount = tabFromDatabase.videosCount, proBrother = tabFromDatabase.proBrother, contributorUserId = tabFromDatabase.contributorUserId, contributorUserName = tabFromDatabase.contributorUserName,
         content = tabFromDatabase.content)
 
-    override fun transpose(halfSteps: Int) {
-        super.transpose(halfSteps)
-        transpose += halfSteps
-    }
+    //#endregion
 
     override fun toString() = "$songName by $artistName"
+
+    /**
+     * Ensures that the full tab (not just the partial tab loaded in the search results) is stored
+     * in the local database.  Checks if [Tab.content] is empty, and if so triggers an API call to download
+     * the tab content from the internet and load it into the database.
+     *
+     * @param dataAccess: The database to load the updated tab into (or fetch the already downloaded tab from)
+     * @param forceInternetFetch: If true, load from the internet regardless of whether we already have the tab.  If false, load only if [content] is empty
+     */
+    override suspend fun load(dataAccess: DataAccess, forceInternetFetch: Boolean): Tab {
+        val loadedTab = if (forceInternetFetch || !dataAccess.existsWithContent(tabId)) {
+            Log.d(LOG_NAME, "Fetching tab $tabId from internet (force = $forceInternetFetch)")
+            Tab(UgApi.fetchTabFromInternet(tabId = tabId, dataAccess = dataAccess))
+        } else {
+            // Cache hit for tab.  Not fetching from internet.
+            Tab(dataAccess.getTabInstance(tabId))
+        }
+
+        // set our content to match the freshly loaded tab
+        set(loadedTab)
+        return this
+    }
+
+    //#region private functions
+
+    /**
+     * Set all variables of this tab to match the provided tab
+     */
+    private fun set(tab: Tab) {
+        // tab metadata
+        tabId = tab.tabId
+        songId = tab.songId
+        songName = tab.songName
+        artistName = tab.artistName
+        isVerified = tab.isVerified
+        numVersions = tab.numVersions
+        type = tab.type
+        part = tab.part
+        version = tab.version
+        versionDescription = tab.versionDescription
+        votes = tab.votes
+        rating = tab.rating
+        date = tab.date
+        status = tab.status
+        presetId = tab.presetId
+        tabAccessType = tab.tabAccessType
+        tpVersion = tab.tpVersion
+        urlWeb = tab.urlWeb
+        userRating = tab.userRating
+        difficulty = tab.difficulty
+        contributorUserId = tab.contributorUserId
+        contributorUserName = tab.contributorUserName
+
+        // tab play data
+        tonalityName = tab.tonalityName
+        tuning = tab.tuning
+        capo = tab.capo
+        content = tab.content
+        strumming = tab.strumming
+
+        // tab recording data
+        recommended = tab.recommended
+        recordingIsAcoustic = tab.recordingIsAcoustic
+        recordingTonalityName = tab.recordingTonalityName
+        recordingPerformance = tab.recordingPerformance
+        recordingArtists = tab.recordingArtists
+        videosCount = tab.videosCount
+        proBrother = tab.proBrother
+    }
+
+    //#endregion
 }

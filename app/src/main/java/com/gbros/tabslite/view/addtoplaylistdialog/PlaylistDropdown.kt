@@ -19,15 +19,13 @@ import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlaylistDropdown(playlists: List<Playlist>, selectedPlaylist: Playlist?, onSelectionChange: (selectedPlaylist: Playlist) -> Unit) {
+fun PlaylistDropdown(playlists: List<Playlist>, title: String, onSelectionChange: (selectedPlaylist: Playlist) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { nowExpanded -> expanded = nowExpanded }
     ) {
-
-        val title = selectedPlaylist?.title ?: ""
         TextField(
             value = title,
             onValueChange = {},
@@ -62,6 +60,9 @@ private fun PlaylistDropdownPreview() {
     val list = listOf(playlistForTest, playlistForTest, playlistForTest ,playlistForTest, playlistForTest)
 
     AppTheme {
-        PlaylistDropdown(list, playlistForTest) {}
+        PlaylistDropdown(
+            list,
+            "Select a playlist...",
+        ) {}
     }
 }

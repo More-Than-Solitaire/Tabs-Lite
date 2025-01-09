@@ -6,7 +6,6 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,7 +95,7 @@ fun HomeScreen(
     navigateToPlaylistById: (id: Int) -> Unit
 ) {
     val currentContext = LocalContext.current
-    val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
+    val dataAccess = AppDatabase.getInstance(LocalContext.current).dataAccess()
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     var pagerNav by remember { mutableIntStateOf(-1) }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -210,19 +209,19 @@ fun HomeScreen(
         ) { page ->
             when (page) {
                 // Favorites page
-                0 -> SongListView(liveSongs = db.tabFullDao().getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, defaultSortValue = SortBy.DateAdded,
-                    liveSortByPreference = db.preferenceDao().getLivePreference(Preference.FAVORITES_SORT),
-                    onSortPreferenceChange = { launch { db.preferenceDao().upsertPreference(it) } },
+                0 -> SongListView(liveSongs = dataAccess.getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, defaultSortValue = SortBy.DateAdded,
+                    liveSortByPreference = dataAccess.getLivePreference(Preference.FAVORITES_SORT),
+                    onSortPreferenceChange = { launch { dataAccess.upsertPreference(it) } },
                     emptyListText = "Select the heart icon on any song to save it offline in this list.")
 
                 // Popular page
-                1 -> SongListView(liveSongs = db.tabFullDao().getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, defaultSortValue = SortBy.Popularity,
-                    liveSortByPreference = db.preferenceDao().getLivePreference(Preference.POPULAR_SORT),
-                    onSortPreferenceChange = { launch { db.preferenceDao().upsertPreference(it) } },
+                1 -> SongListView(liveSongs = dataAccess.getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, defaultSortValue = SortBy.Popularity,
+                    liveSortByPreference = dataAccess.getLivePreference(Preference.POPULAR_SORT),
+                    onSortPreferenceChange = { launch { dataAccess.upsertPreference(it) } },
                     emptyListText = "Today's popular songs will load when you're connected to the internet.")
 
                 // Playlists page
-                2 -> PlaylistPage(livePlaylists = db.playlistDao().getLivePlaylists(), navigateToPlaylistById = navigateToPlaylistById)
+                2 -> PlaylistPage(livePlaylists = dataAccess.getLivePlaylists(), navigateToPlaylistById = navigateToPlaylistById)
             }
         }
     }
@@ -239,11 +238,11 @@ fun HomeScreen(
     LaunchedEffect(key1 = destinationForPlaylistExport) {
         if (destinationForPlaylistExport != null) {
             playlistImportExportProgress = 0.2f
-            val allUserPlaylists = db.playlistDao().getPlaylists().filter { playlist -> playlist.playlistId != Playlist.TOP_TABS_PLAYLIST_ID }
+            val allUserPlaylists = dataAccess.getPlaylists().filter { playlist -> playlist.playlistId != Playlist.TOP_TABS_PLAYLIST_ID }
             val allPlaylists = mutableListOf(Playlist(-1, false, currentContext.getString(R.string.title_favorites_playlist), 0, 0, "")) // add the Favorites playlist
             allPlaylists.addAll(allUserPlaylists)
             playlistImportExportProgress = 0.6f
-            val allSelfContainedPlaylists = db.playlistEntryDao().getSelfContainedPlaylists(allPlaylists)
+            val allSelfContainedPlaylists = dataAccess.getSelfContainedPlaylists(allPlaylists)
             val playlistsAndEntries = Json.encodeToString(PlaylistFileExportType(playlists = allSelfContainedPlaylists))
             playlistImportExportProgress = 0.8f
 
@@ -280,7 +279,7 @@ fun HomeScreen(
             var progressFromPreviouslyImportedPlaylists = 0f  // track the amount of progress used by previous playlists, used to add current progress to
             for (playlist in importedData.playlists.filter { pl -> pl.playlistId != Playlist.TOP_TABS_PLAYLIST_ID }) {
                 val progressForThisPlaylist = playlist.entries.size.toFloat() / totalEntriesToImport  // available portion of 100% to use for this playlist
-                playlist.importToDatabase(db = db, onProgressChange = { progress ->
+                playlist.importToDatabase(dataAccess = dataAccess, onProgressChange = { progress ->
                     playlistImportExportProgress = progressFromPreviouslyImportedPlaylists + (progress * progressForThisPlaylist)
                 })
                 progressFromPreviouslyImportedPlaylists += progressForThisPlaylist

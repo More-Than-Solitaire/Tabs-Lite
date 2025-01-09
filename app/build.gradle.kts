@@ -77,6 +77,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.fragment:fragment-ktx:1.8.5")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")

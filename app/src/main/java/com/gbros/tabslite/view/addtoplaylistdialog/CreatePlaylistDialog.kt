@@ -11,29 +11,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
-import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun CreatePlaylistDialog(onConfirm: (newPlaylist: Playlist) -> Unit, onDismiss: () -> Unit) {
-    val currentContext = LocalContext.current
-    val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
+fun CreatePlaylistDialog(onConfirm: (newPlaylistTitle: String, newPlaylistDescription: String) -> Unit, onDismiss: () -> Unit) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var savedPlaylist: Playlist? by remember { mutableStateOf(null) }
 
     AlertDialog(
         icon = {
@@ -65,7 +58,7 @@ fun CreatePlaylistDialog(onConfirm: (newPlaylist: Playlist) -> Unit, onDismiss: 
         confirmButton = {
             TextButton(
                 onClick = {
-                    savedPlaylist = Playlist(playlistId = 0, userCreated = true, title = title, description = description, dateCreated = System.currentTimeMillis(), dateModified = System.currentTimeMillis())
+                    onConfirm(title, description)
                 },
                 enabled = title.isNotBlank()
             ) {
@@ -80,21 +73,12 @@ fun CreatePlaylistDialog(onConfirm: (newPlaylist: Playlist) -> Unit, onDismiss: 
             }
         }
     )
-
-    LaunchedEffect(key1 = savedPlaylist) {
-        val copyOfSavedPlaylist = savedPlaylist
-        if (copyOfSavedPlaylist != null) {
-            val newPlaylistId = db.playlistDao().savePlaylist(copyOfSavedPlaylist)
-            val newPlaylist = db.playlistDao().getPlaylist(newPlaylistId.toInt())
-            onConfirm(newPlaylist)
-        }
-    }
 }
 
 @Composable
 @Preview
 private fun CreatePlaylistDialogPreview() {
     AppTheme {
-        CreatePlaylistDialog(onConfirm = { }, onDismiss = { })
+        CreatePlaylistDialog(onConfirm = {_, _ -> }, onDismiss = { })
     }
 }

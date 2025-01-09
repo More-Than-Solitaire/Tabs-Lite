@@ -2,7 +2,7 @@ package com.gbros.tabslite.utilities
 
 import android.os.Build
 import android.util.Log
-import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.playlist.Playlist.Companion.TOP_TABS_PLAYLIST_ID
 import com.gbros.tabslite.data.servertypes.SearchRequestType
@@ -170,7 +170,7 @@ object UgApi {
      * to the database, and returns a map from each chord name passed to the list of chord charts
      *
      * @param chordIds: List of chord names to fetch.  E.g. A#m7, Gsus, A
-     * @param database: Database to save the updated chords to
+     * @param dataAccess: Database to save the updated chords to
      * @param tuning: The instrument tuning for the tabs to fetch
      * @param instrument: The instrument to fetch chords for.  Default: 'guitar'.
      *
@@ -178,10 +178,13 @@ object UgApi {
      */
     suspend fun updateChordVariations(
         chordIds: List<CharSequence>,
-        database: AppDatabase,
+        dataAccess: DataAccess,
         tuning: String = "E A D G B E",
         instrument: String = "guitar"
     ): Map<String, List<ChordVariation>> = withContext(Dispatchers.IO) {
+        if (chordIds.isEmpty()) {
+            return@withContext mapOf()
+        }
         val resultMap: MutableMap<String, List<ChordVariation>> = mutableMapOf()
 
         var chordParam = ""
@@ -203,7 +206,7 @@ object UgApi {
             }
             for (result in results) {
                 resultMap[result.chord] = result.getChordVariations()
-                database.chordVariationDao().insertAll(result.getChordVariations())
+                dataAccess.insertAll(result.getChordVariations())
             }
         } catch (ex: Exception) {
             val chordCount = chordIds.size
@@ -214,11 +217,8 @@ object UgApi {
         return@withContext resultMap
     }
 
-    suspend fun fetchTopTabs(appDatabase: AppDatabase) = withContext(Dispatchers.IO) {
+    suspend fun fetchTopTabs(dataAccess: DataAccess) = withContext(Dispatchers.IO) {
         try {
-            val playlistEntryDao = appDatabase.playlistEntryDao()
-            val tabFullDao = appDatabase.tabFullDao()
-
             // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
             // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
             val topTabSearchResults = authenticatedStream("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0").use { inputStream ->
@@ -238,7 +238,7 @@ object UgApi {
             }
 
             // clear top tabs playlist, then add all these to the top tabs playlist
-            playlistEntryDao.clearTopTabsPlaylist()
+            dataAccess.clearTopTabsPlaylist()
             var prevId: Int?
             var currentId: Int? = null
             var nextId: Int? = null
@@ -247,7 +247,7 @@ object UgApi {
                 currentId = nextId
                 nextId = tab.tabId
                 if (currentId != null) {
-                    playlistEntryDao.insert(
+                    dataAccess.insert(
                         TOP_TABS_PLAYLIST_ID,
                         currentId,
                         nextId,
@@ -256,9 +256,9 @@ object UgApi {
                         0
                     )
                 }
-                tabFullDao.insert(tab)
+                dataAccess.insert(tab)
             }
-            playlistEntryDao.insert(
+            dataAccess.insert(
                 TOP_TABS_PLAYLIST_ID,
                 nextId!!,
                 null,
@@ -276,12 +276,12 @@ object UgApi {
      * app database.
      *
      * @param tabId         The ID of the tab to load
-     * @param database      The database instance to load a tab from (or into)
+     * @param dataAccess      The database instance to load a tab from (or into)
      * @param tabAccessType (Optional) string parameter for internet tab load request
      */
     suspend fun fetchTabFromInternet(
         tabId: Int,
-        database: AppDatabase,
+        dataAccess: DataAccess,
         tabAccessType: String = "public"
     ): TabDataType = withContext(Dispatchers.IO) {
         // get the tab and corresponding chords, and put them in the database.  Then return true
@@ -301,14 +301,14 @@ object UgApi {
 
         // save all the chords we come across.  Might as well since we already downloaded them.
         try {
-            database.chordVariationDao().insertAll(requestResponse.getChordVariations())
+            dataAccess.insertAll(requestResponse.getChordVariations())
         } catch (ex: Exception) {
             Log.w(LOG_NAME, "Couldn't get chord variations from tab $tabId", ex)
         }
 
         val result = requestResponse.getTabFull()
         if (result.content.isNotBlank()) {
-            database.tabFullDao().forceInsert(result)
+            dataAccess.forceInsert(result)
             Log.v(LOG_NAME, "Successfully inserted tab ${result.songName} (${result.tabId})")
         } else {
             Log.e(LOG_NAME, "Tab $tabId fetch completed successfully but had no content! This shouldn't happen.")
@@ -408,12 +408,11 @@ object UgApi {
 
             throw Exception("Unreachable: Could not create authenticated stream.")  // shouldn't get here
         } catch (ex: FileNotFoundException) {
-            throw Exception("Normal: 404 NOT FOUND during fetch of url $url with parameters apiKey: " +
-                    "$apiKey and deviceId: $deviceId.  Response code $responseCode", ex)
+            throw Exception("404 NOT FOUND during fetch of url $url. Response code $responseCode.", ex)
         } catch (ex: ConnectException) {
-            throw Exception("Normal: Could not fetch $url. Response code 0 (no internet access).", ex)
+            throw Exception("No internet access. Could not fetch $url. Response code 0 (no internet access).", ex)
         } catch (ex: SocketTimeoutException) {
-            throw Exception("Normal: Could not fetch $url. Response code 0 (no internet access).", ex)
+            throw Exception("No internet access: Could not fetch $url. Response code 0 (no internet access).", ex)
         } catch (ex: Exception) {
             throw Exception("Unexpected exception during fetch of url $url with parameters apiKey: " +
                     "$apiKey and deviceId: $deviceId.  Response code $responseCode", ex)

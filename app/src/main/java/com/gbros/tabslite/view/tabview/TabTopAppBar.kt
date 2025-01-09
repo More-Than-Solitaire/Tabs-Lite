@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
@@ -23,9 +23,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,21 +34,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.gbros.tabslite.R
 import com.gbros.tabslite.view.addtoplaylistdialog.AddToPlaylistDialog
-import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.tab.ITab
-import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
+import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
+fun TabTopAppBar(isFavorite: Boolean,
+                 title: String,
+                 shareUrl: String,
+                 shareTitle: String,
+                 allPlaylists: List<Playlist>,
+                 selectedPlaylistTitle: String?,
+                 selectPlaylistConfirmButtonEnabled: Boolean,
+                 onNavigateBack: () -> Unit,
+                 onReloadClick: () -> Unit,
+                 onAddToPlaylist: () -> Unit,
+                 onCreatePlaylist: (title: String, description: String) -> Unit,
+                 onPlaylistSelectionChange: (Playlist) -> Unit,
+                 onFavoriteButtonClick: () -> Unit
+) {
     val currentContext = LocalContext.current
-    val db: AppDatabase = remember { AppDatabase.getInstance(currentContext) }
-    val isFavorite by db.playlistEntryDao().tabExistsInFavoritesLive(tab.tabId).observeAsState(initial = false)
-    var newFavoriteValue: Boolean? by remember { mutableStateOf(null) }
 
     // remember whether three-dot menu is shown currently
     var showMenu by remember { mutableStateOf(false) }
@@ -62,7 +67,7 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
     TopAppBar(
         title = {
             Text(
-                text = if (topAppBarState.overlappedFraction > 0) stringResource(R.string.tab_title, tab.songName, tab.artistName) else "",
+                text = if (topAppBarState.overlappedFraction > 0) title else "",
                 style = MaterialTheme.typography.headlineSmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -72,17 +77,15 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
         },
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(state = topAppBarState,),
         navigationIcon = {
-            IconButton(onClick = navigateBack) {
-                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+            IconButton(onClick = onNavigateBack) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.generic_action_back))
             }
         },
         actions = {
-            IconButton(onClick = {
-                newFavoriteValue = !isFavorite
-            }) {
+            IconButton(onClick = onFavoriteButtonClick) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "Favorite",
+                    contentDescription = stringResource(R.string.tab_favorite_button_accessibility_text),
                     tint = Color(4294925653)
                 )
             }
@@ -90,8 +93,8 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
             IconButton(onClick = {
                 val sendIntent: Intent = Intent().apply {
                     action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, tab.getUrl())
-                    putExtra(Intent.EXTRA_TITLE, String.format(format = ContextCompat.getString(currentContext, R.string.tab_title), tab.songName, tab.artistName))
+                    putExtra(Intent.EXTRA_TEXT, shareUrl)
+                    putExtra(Intent.EXTRA_TITLE, shareTitle)
                     type = "text/plain"
                 }
                 val shareIntent = Intent.createChooser(sendIntent, null)
@@ -99,12 +102,12 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
             }) {
                 Icon(
                     imageVector = Icons.Default.Share,
-                    contentDescription = "Share",
+                    contentDescription = stringResource(R.string.generic_action_share),
                 )
             }
 
             IconButton(onClick = { showMenu = !showMenu }) {
-                Icon(Icons.Default.MoreVert, "More")
+                Icon(Icons.Default.MoreVert, stringResource(R.string.generic_action_more))
             }
 
             DropdownMenu(
@@ -116,9 +119,9 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
                         Row {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "Add to playlist",
+                                contentDescription = stringResource(R.string.title_add_to_playlist_dialog),
                             )
-                            Text(text = "Add to playlist", modifier = Modifier.padding(top = 2.dp, start = 4.dp))
+                            Text(text = stringResource(R.string.title_add_to_playlist_dialog), modifier = Modifier.padding(top = 2.dp, start = 4.dp))
                         }
                     },
                     onClick = {
@@ -131,14 +134,14 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
                         Row {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
-                                contentDescription = "Reload",
+                                contentDescription = stringResource(R.string.generic_action_reload),
                             )
-                            Text(text = "Reload", modifier = Modifier.padding(top = 2.dp, start = 4.dp))
+                            Text(text = stringResource(R.string.generic_action_reload), modifier = Modifier.padding(top = 2.dp, start = 4.dp))
                         }
                     },
                     onClick = {
                         showMenu = false
-                        reload()
+                        onReloadClick()
                     }
                 )
             }
@@ -147,30 +150,39 @@ fun TabTopAppBar(tab: ITab, navigateBack: () -> Unit, reload: () -> Unit) {
 
     if (showAddToPlaylistDialog) {
         AddToPlaylistDialog(
-            tabId = tab.tabId,
-            transpose = tab.transpose,
-            onConfirm = { showAddToPlaylistDialog = false},
+            playlists = allPlaylists,
+            selectedPlaylistDropdownText = selectedPlaylistTitle,
+            onSelectionChange = onPlaylistSelectionChange,
+            confirmButtonEnabled = selectPlaylistConfirmButtonEnabled,
+            onConfirm = {
+                showAddToPlaylistDialog = false
+                onAddToPlaylist()
+            },
+            onCreatePlaylist = onCreatePlaylist,
             onDismiss = { showAddToPlaylistDialog = false }
         )
-    }
-
-    LaunchedEffect(key1 = newFavoriteValue) {
-        val copyOfNewFavoriteValue = newFavoriteValue
-        if (copyOfNewFavoriteValue != null) {
-            if (copyOfNewFavoriteValue) {
-                db.playlistEntryDao().insertToFavorites(tab.tabId, tab.transpose)
-            } else {
-                db.playlistEntryDao().deleteTabFromFavorites(tab.tabId)
-            }
-
-        }
     }
 }
 
 @Composable @Preview
 private fun TabTopAppBarPreview() {
-    val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago with more more text to make it longer th", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = "hallelujahTabForTest")
+    val playlistForTest = Playlist(1, true, "My amazing playlist 1.0.1", 12345, 12345, "The playlist that I'm going to use to test this playlist entry item thing with lots of text.")
+    val list = listOf(playlistForTest, playlistForTest, playlistForTest ,playlistForTest, playlistForTest)
     AppTheme {
-        TabTopAppBar(tab = tabForTest, navigateBack = {}, reload = {})
+        TabTopAppBar(
+            isFavorite = true,
+            shareUrl = "https://tabslite.com/tab/1234",
+            shareTitle = "asdf",
+            allPlaylists = list,
+            selectedPlaylistTitle = "Test",
+            selectPlaylistConfirmButtonEnabled = false,
+            onAddToPlaylist = {},
+            onCreatePlaylist = {_, _->},
+            onFavoriteButtonClick = {},
+            onPlaylistSelectionChange = {},
+            onNavigateBack = {},
+            onReloadClick = {},
+            title = "Long Time Ago by CoolGuyz",
+        )
     }
 }

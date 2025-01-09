@@ -16,7 +16,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -27,6 +26,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
@@ -44,22 +44,14 @@ import com.gbros.tabslite.ui.theme.AppTheme
  */
 @Composable
 fun AutoscrollFloatingActionButton(
-    initialSliderPosition: Float = .5f,
-    onPlay: (sliderPosition: Float) -> Unit,
-    onPause: () -> Unit,
+    sliderValue: Float,
+    paused: Boolean,
     onValueChange: (sliderPosition: Float) -> Unit,
-    forcePause: Boolean = false,
+    onValueChangeFinished: () -> Unit,
+    onButtonClick: () -> Unit,
     alignment: Alignment = Alignment.BottomEnd,
     padding: Dp = 16.dp
 ) {
-    var paused by remember { mutableStateOf(true) }
-
-    if (forcePause) {
-        paused = true
-        onPause()
-    }
-
-    var sliderValue by remember { mutableFloatStateOf(initialSliderPosition.coerceIn(0f,1f)) }
     val interactionSource = remember { MutableInteractionSource() }
     val buttonIsTouched by interactionSource.collectIsPressedAsState()
     var sliderIsTouched by remember { mutableStateOf(false) }
@@ -74,6 +66,7 @@ fun AutoscrollFloatingActionButton(
                 .alpha(if (buttonIsTouched || sliderIsTouched || paused) 1f else 0.5f)
                 .align(alignment)
                 .padding(all = padding)
+
         ) {
             if (!paused) {
                 // vertical slider thanks https://stackoverflow.com/a/71129399/3437608
@@ -82,12 +75,11 @@ fun AutoscrollFloatingActionButton(
                     valueRange = 0f..1f,
                     onValueChange = { newValue ->
                         sliderIsTouched = true
-                        sliderValue = newValue
-
-                        onValueChange(sliderValue)
+                        onValueChange(newValue)
                     },
                     onValueChangeFinished = {
                         sliderIsTouched = false
+                        onValueChangeFinished()
                     },
                     modifier = Modifier
                         .graphicsLayer {
@@ -114,23 +106,15 @@ fun AutoscrollFloatingActionButton(
             }
 
             FloatingActionButton(
-                onClick = {
-                    if (paused) {
-                        paused = false
-                        onPlay(sliderValue)
-                    } else {
-                        paused = true
-                        onPause()
-                    }
-                },
+                onClick = onButtonClick,
                 interactionSource = interactionSource
             ) {
                 if (paused) {
-                    Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "Play")
+                    Icon(imageVector = Icons.Default.PlayArrow, contentDescription = stringResource(R.string.generic_action_play))
                 } else {
                     Icon(
                         imageVector = ImageVector.vectorResource(R.drawable.ic_pause),
-                        contentDescription = "Pause"
+                        contentDescription = stringResource(R.string.generic_action_pause)
                     )
                 }
             }
@@ -142,8 +126,12 @@ fun AutoscrollFloatingActionButton(
 @Composable @Preview
 private fun AutoscrollFloatingActionButtonPreview() {
     AppTheme {
-        AutoscrollFloatingActionButton(onPause = {}, onPlay = {}, onValueChange = {},
-            alignment = Alignment.BottomEnd
+        AutoscrollFloatingActionButton(
+            sliderValue = 0.5f,
+            paused = false,
+            onValueChange = {},
+            onButtonClick = {},
+            onValueChangeFinished = {}
         )
     }
 }

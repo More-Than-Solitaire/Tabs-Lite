@@ -26,21 +26,21 @@ class HomeActivity : ComponentActivity() {
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val db = AppDatabase.getInstance(applicationContext)
+        val dataAccess = AppDatabase.getInstance(applicationContext).dataAccess()
 
         // fetch the most popular tabs
-        GlobalScope.launch { UgApi.fetchTopTabs(db) }
+        GlobalScope.launch { UgApi.fetchTopTabs(dataAccess) }
 
         // set default preferences if they aren't already set
         GlobalScope.launch {
-            db.preferenceDao().insert(Preference(Preference.FAVORITES_SORT, SortBy.DateAdded.name))
-            db.preferenceDao().insert(Preference(Preference.POPULAR_SORT, SortBy.Popularity.name))
-            db.preferenceDao().insert(Preference(Preference.PLAYLIST_SORT, SortBy.Name.name))
-            db.preferenceDao().insert(Preference(Preference.AUTOSCROLL_DELAY, .5f.toString()))
+            dataAccess.insert(Preference(Preference.FAVORITES_SORT, SortBy.DateAdded.name))
+            dataAccess.insert(Preference(Preference.POPULAR_SORT, SortBy.Popularity.name))
+            dataAccess.insert(Preference(Preference.PLAYLIST_SORT, SortBy.Name.name))
+            dataAccess.insert(Preference(Preference.AUTOSCROLL_DELAY, .5f.toString()))
         }
 
         // load any tabs that were added without internet connection
-        GlobalScope.launch { Tab.fetchAllEmptyPlaylistTabsFromInternet(db) }
+        GlobalScope.launch { Tab.fetchAllEmptyPlaylistTabsFromInternet(dataAccess) }
 
         actionBar?.hide()
 
