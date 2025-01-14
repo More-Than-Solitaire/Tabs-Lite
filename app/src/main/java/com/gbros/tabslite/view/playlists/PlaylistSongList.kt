@@ -27,11 +27,11 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
+import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
+import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.card.InfoCard
 import com.gbros.tabslite.view.songlist.SongListItem
 import com.gbros.tabslite.view.swipetodismiss.MaterialSwipeToDismiss
-import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
-import com.gbros.tabslite.ui.theme.AppTheme
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -98,14 +98,16 @@ fun PlaylistSongList(
             InfoCard(text = stringResource(id = R.string.playlist_empty_description))
         }
     } else {
-        Column {
+        Column(
+            modifier = Modifier
+                .padding(all = 8.dp)
+        ) {
             LazyColumn(
                 state = reorderState.listState,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier
                     .reorderable(reorderState)
                     .detectReorderAfterLongPress(reorderState)
-                    .padding(top = 8.dp)
                     .fillMaxHeight()
             ) {
                 items(items = reorderedSongsForDisplay, key = { it }) { song ->
