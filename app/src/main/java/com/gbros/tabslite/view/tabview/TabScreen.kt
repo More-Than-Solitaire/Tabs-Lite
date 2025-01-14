@@ -178,6 +178,7 @@ fun TabScreen(
         modifier = Modifier
             .verticalScroll(scrollState)
             .background(color = MaterialTheme.colorScheme.background)
+            .padding(horizontal = 2.dp)
     ) {
         val title = String.format(format = stringResource(R.string.tab_title), viewState.songName.observeAsState("...").value, viewState.artist.observeAsState("...").value)
         TabTopAppBar(
