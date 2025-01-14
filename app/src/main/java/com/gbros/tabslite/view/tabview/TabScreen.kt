@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -242,12 +243,27 @@ fun TabScreen(
             if (viewState.state.observeAsState(LoadingState.Loading).value is LoadingState.Success) {
                 TabText(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 64.dp),
+                        .fillMaxWidth(),
                     text = viewState.content.observeAsState(AnnotatedString("")).value,
                     onTextClick = onTextClick,
                     onScreenMeasured = onScreenMeasured
                 )
+                Spacer(modifier = Modifier.padding(vertical = 16.dp))
+
+                if (viewState.isPlaylistEntry) {
+                    TabPlaylistNavigation(
+                        modifier = Modifier.padding(end = 78.dp, start = 6.dp),
+                        title = viewState.playlistTitle.observeAsState("").value,
+                        nextSongButtonEnabled = viewState.playlistNextSongButtonEnabled.observeAsState(false).value,
+                        previousSongButtonEnabled = viewState.playlistPreviousSongButtonEnabled.observeAsState(false).value,
+                        onNextSongClick = onPlaylistNextSongClick,
+                        onPreviousSongClick = onPlaylistPreviousSongClick,
+                    )
+                } else {
+                    Spacer(Modifier.padding(vertical = 16.dp))
+                }
+
+                Spacer(Modifier.padding(vertical = 8.dp))
             } else {
                 Box(
                     modifier = Modifier

@@ -18,8 +18,8 @@ import com.gbros.tabslite.R
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun TabPlaylistNavigation(title: String, nextSongButtonEnabled: Boolean, previousSongButtonEnabled: Boolean, onNextSongClick: () -> Unit, onPreviousSongClick: () -> Unit) {
-    Row {
+fun TabPlaylistNavigation(modifier: Modifier = Modifier, title: String, nextSongButtonEnabled: Boolean, previousSongButtonEnabled: Boolean, onNextSongClick: () -> Unit, onPreviousSongClick: () -> Unit) {
+    Row(modifier = modifier) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -53,6 +53,11 @@ fun TabPlaylistNavigation(title: String, nextSongButtonEnabled: Boolean, previou
 @Composable @Preview
 private fun TabPlaylistNavigationPreview() {
     AppTheme {
-        TabPlaylistNavigation("My Playlist", true, false, {}, {})
+        TabPlaylistNavigation(
+            title = "My Playlist",
+            nextSongButtonEnabled = true,
+            previousSongButtonEnabled = false,
+            onPreviousSongClick = {},
+            onNextSongClick = {})
     }
 }
