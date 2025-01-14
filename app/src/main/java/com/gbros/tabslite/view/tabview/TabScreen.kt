@@ -102,11 +102,12 @@ fun NavGraphBuilder.tabScreen(
 //#region use case playlist entry
 
 private const val PLAYLIST_ENTRY_NAV_ARG = "playlistEntryId"
-const val PLAYLIST_ENTRY_ROUTE_TEMPLATE = "playlist/entry/%s"
+private const val PLAYLIST_ENTRY_ROUTE_TEMPLATE = "playlist/entry/%s"
+private val PLAYLIST_ENTRY_ROUTE = PLAYLIST_ENTRY_ROUTE_TEMPLATE.format("{$PLAYLIST_ENTRY_NAV_ARG}")
 
 fun NavController.navigateToPlaylistEntry(playlistEntryId: Int) {
     navigate(PLAYLIST_ENTRY_ROUTE_TEMPLATE.format(playlistEntryId.toString())) {
-        launchSingleTop = true  // don't include multiple instances of this destination in the back stack
+        popUpTo(route = PLAYLIST_ENTRY_ROUTE) { inclusive = true }
     }
 }
 
@@ -115,7 +116,7 @@ fun NavGraphBuilder.playlistEntryScreen(
     onNavigateBack: () -> Unit
 ) {
     composable(
-        route = PLAYLIST_ENTRY_ROUTE_TEMPLATE.format("{$PLAYLIST_ENTRY_NAV_ARG}"),
+        route = PLAYLIST_ENTRY_ROUTE,
         arguments = listOf(navArgument(PLAYLIST_ENTRY_NAV_ARG) { type = NavType.IntType } )
     ) { navBackStackEntry ->
         val id = navBackStackEntry.arguments!!.getInt(PLAYLIST_ENTRY_NAV_ARG)
@@ -169,7 +170,6 @@ fun TabScreen(
     onAddToPlaylist: () -> Unit,
     onCreatePlaylist: (title: String, description: String) -> Unit
 ) {
-
     // handle autoscroll
     val scrollState = rememberScrollState()
 
@@ -320,7 +320,6 @@ fun TabScreen(
 
 @Composable @Preview
 private fun TabViewPreview() {
-
     data class TabViewStateForTest(
         override val songName: LiveData<String>,
         override val isFavorite: LiveData<Boolean>,
