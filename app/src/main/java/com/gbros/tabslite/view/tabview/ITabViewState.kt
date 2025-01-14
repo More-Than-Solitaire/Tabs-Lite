@@ -11,7 +11,12 @@ import com.gbros.tabslite.data.playlist.Playlist
  * The view state for [TabScreen] to control the state of each UI element in the view
  */
 interface ITabViewState {
-    val title: LiveData<String>
+
+    /**
+     * The name of the song being displayed
+     */
+    val songName: LiveData<String>
+
     val isFavorite: LiveData<Boolean>
 
     /**

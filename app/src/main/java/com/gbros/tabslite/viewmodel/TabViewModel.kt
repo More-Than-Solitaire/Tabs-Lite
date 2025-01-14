@@ -467,8 +467,7 @@ class TabViewModel
 
     //#region view state
 
-    override val title: LiveData<String>
-        get() = tab.map { t -> t?.let { "${t.songName} by ${t.artistName}" } ?: "" }
+    override val songName: LiveData<String> = tab.map { t -> t?.songName ?: "" }
 
     override val isFavorite: LiveData<Boolean> = if (idIsPlaylistEntryId) dataAccess.playlistEntryExistsInFavorites(id) else dataAccess.tabExistsInFavoritesLive(id)
 

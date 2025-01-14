@@ -179,7 +179,7 @@ fun TabScreen(
             .verticalScroll(scrollState)
             .background(color = MaterialTheme.colorScheme.background)
     ) {
-        val title = String.format(format = stringResource(R.string.tab_title), viewState.title.observeAsState("...").value, viewState.artist.observeAsState("...").value)
+        val title = String.format(format = stringResource(R.string.tab_title), viewState.songName.observeAsState("...").value, viewState.artist.observeAsState("...").value)
         TabTopAppBar(
             title = title,
             allPlaylists = viewState.allPlaylists.observeAsState(listOf()).value,
@@ -203,7 +203,7 @@ fun TabScreen(
                 .padding(horizontal = 2.dp)
         ) {
             Text(
-                text = viewState.title.observeAsState("").value,
+                text = title,
                 style = MaterialTheme.typography.headlineMedium,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -305,7 +305,7 @@ fun TabScreen(
 private fun TabViewPreview() {
 
     data class TabViewStateForTest(
-        override val title: LiveData<String>,
+        override val songName: LiveData<String>,
         override val isFavorite: LiveData<Boolean>,
         override val isPlaylistEntry: Boolean,
         override val playlistTitle: LiveData<String>,
@@ -332,7 +332,7 @@ private fun TabViewPreview() {
         override val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>
     ) : ITabViewState {
         constructor(tab: ITab): this(
-            title = MutableLiveData(tab.songName),
+            songName = MutableLiveData(tab.songName),
             isFavorite = MutableLiveData(true),
             isPlaylistEntry = false,
             playlistTitle = MutableLiveData("none"),
