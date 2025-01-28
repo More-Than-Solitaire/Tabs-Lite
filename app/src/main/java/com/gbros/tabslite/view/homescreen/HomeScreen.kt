@@ -48,14 +48,14 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.gbros.tabslite.R
-import com.gbros.tabslite.view.songlist.SongListView
-import com.gbros.tabslite.view.songlist.SortBy
-import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.playlist.PlaylistFileExportType
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.view.songlist.SongListView
+import com.gbros.tabslite.view.songlist.SortBy
+import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
@@ -212,13 +212,13 @@ fun HomeScreen(
                 0 -> SongListView(liveSongs = dataAccess.getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, defaultSortValue = SortBy.DateAdded,
                     liveSortByPreference = dataAccess.getLivePreference(Preference.FAVORITES_SORT),
                     onSortPreferenceChange = { launch { dataAccess.upsertPreference(it) } },
-                    emptyListText = "Select the heart icon on any song to save it offline in this list.")
+                    emptyListText = stringResource(R.string.empty_favorites))
 
                 // Popular page
                 1 -> SongListView(liveSongs = dataAccess.getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, defaultSortValue = SortBy.Popularity,
                     liveSortByPreference = dataAccess.getLivePreference(Preference.POPULAR_SORT),
                     onSortPreferenceChange = { launch { dataAccess.upsertPreference(it) } },
-                    emptyListText = "Today's popular songs will load when you're connected to the internet.")
+                    emptyListText = stringResource(R.string.empty_popular))
 
                 // Playlists page
                 2 -> PlaylistPage(livePlaylists = dataAccess.getLivePlaylists(), navigateToPlaylistById = navigateToPlaylistById)
