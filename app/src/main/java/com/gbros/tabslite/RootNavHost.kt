@@ -5,7 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.gbros.tabslite.view.homescreen.HOME_ROUTE
 import com.gbros.tabslite.view.homescreen.homeScreen
-import com.gbros.tabslite.view.homescreen.navigateToHome
+import com.gbros.tabslite.view.homescreen.popUpToHome
 import com.gbros.tabslite.view.playlists.navigateToPlaylistDetail
 import com.gbros.tabslite.view.playlists.playlistDetailScreen
 import com.gbros.tabslite.view.searchresultsonglist.navigateToSearch
@@ -46,7 +46,7 @@ fun TabsLiteNavGraph() {
         searchScreen(
             onNavigateToSongId = navController::navigateToSongVersion,
             onNavigateToSearch = navController::navigateToSearch,
-            onNavigateBack = navController::navigateToHome
+            onNavigateBack = navController::popUpToHome
         )
 
         songVersionScreen(

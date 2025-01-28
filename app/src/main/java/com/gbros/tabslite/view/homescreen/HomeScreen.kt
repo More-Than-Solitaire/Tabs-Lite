@@ -65,9 +65,10 @@ private const val LOG_NAME = "tabslite.HomeScreen    "
 
 const val HOME_ROUTE = "home"
 
-fun NavController.navigateToHome() {
-    navigate(HOME_ROUTE) {
-        popUpTo(graph.id) { inclusive = true }
+fun NavController.popUpToHome() {
+    if (!popBackStack(route = HOME_ROUTE, inclusive = false)) {
+        // fallback if HOME_ROUTE wasn't on the back stack
+        navigate(HOME_ROUTE)
     }
 }
 
