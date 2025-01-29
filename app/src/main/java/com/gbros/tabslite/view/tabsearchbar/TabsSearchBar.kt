@@ -11,6 +11,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,37 +54,51 @@ fun TabsSearchBar(
         }
     }
 
+    val onActiveChange = {expanded: Boolean -> active = expanded}
+    val colors1 = SearchBarDefaults.colors()
     SearchBar(
-        query = query,
-        onQueryChange = {query = it},
-        onSearch = {q -> if(q.isNotBlank()) {onSearch(q)}},
-        active = active,
-        onActiveChange = {active = it},
-        leadingIcon = leadingIcon,
-        trailingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = stringResource(id = R.string.app_action_description_search)
+        inputField = {
+            SearchBarDefaults.InputField(
+                query = query,
+                onQueryChange = {query = it},
+                onSearch = {q -> if(q.isNotBlank()) {onSearch(q)}},
+                expanded = active,
+                onExpandedChange = onActiveChange,
+                enabled = true,
+                placeholder = {
+                    Text(text = stringResource(id = R.string.app_action_search))
+                },
+                leadingIcon = leadingIcon,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = stringResource(id = R.string.app_action_description_search)
+                    )
+                }
             )
         },
-        placeholder = {
-            Text(text = stringResource(id = R.string.app_action_search))
-        },
-        modifier = modifier
-    ) {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp), state = lazyColumnState) {
-            items(items = searchSuggestions) {searchSuggestion ->
-                SearchSuggestion(suggestionText = searchSuggestion, modifier = Modifier.fillMaxWidth()) {
-                    if (searchSuggestion.isNotBlank())
-                        onSearch(searchSuggestion)
+        expanded = active,
+        onExpandedChange = onActiveChange,
+        modifier = modifier,
+        shape = SearchBarDefaults.inputFieldShape,
+        colors = colors1,
+        tonalElevation = SearchBarDefaults.TonalElevation,
+        shadowElevation = SearchBarDefaults.ShadowElevation,
+        windowInsets = SearchBarDefaults.windowInsets,
+        content = {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp), state = lazyColumnState) {
+                items(items = searchSuggestions) { searchSuggestion ->
+                    SearchSuggestion(
+                        suggestionText = searchSuggestion,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (searchSuggestion.isNotBlank())
+                            onSearch(searchSuggestion)
+                    }
                 }
             }
-        }
-    }
-}
-
-private fun isValidQuery(query: String): Boolean {
-    return query.isNotBlank()
+        },
+    )
 }
 
 @Composable @Preview

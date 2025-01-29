@@ -39,7 +39,6 @@ class SongVersionViewModel
      */
     override val songName: LiveData<String> = songVersions.map { tabList -> tabList.firstOrNull()?.songName ?: "" }
 
-
     //#endregion
 
 }
