@@ -11,9 +11,17 @@ private const val LOG_NAME = "tabslite.Search        "
  * Represents a search session with one search query.  Gets search results and provides a method to
  * retrieve more search results if the first page isn't enough.
  */
-class Search(private val db: AppDatabase): ISearch {
+class Search(private var query: String, private val dataAccess: DataAccess) {
+    //#region private data
 
-    // region private methods
+    /**
+     * The most recently fetched search page
+     */
+    private var currentSearchPage = 0
+
+    //#endregion
+
+    //#region private methods
 
     /**
      * Perform a search using UgApi, and update the class variables with the results.  Always searches
@@ -29,7 +37,7 @@ class Search(private val db: AppDatabase): ISearch {
      *
      * @throws [SearchDidYouMeanException] if no results, but there's a suggested query
      */
-    override suspend fun getSearchResults(page: Int, query: String): List<ITab> {
+    private suspend fun getSearchResults(page: Int, query: String): List<ITab> {
         Log.d(LOG_NAME, "starting search page $page")
         val searchResult = UgApi.search(query, (page))  // always search the next page that hasn't been loaded yet
 
@@ -40,12 +48,43 @@ class Search(private val db: AppDatabase): ISearch {
         } else {
             // add this data to the database so we can display the individual song versions without fully loading all of them
             for (tab in searchResult.getAllTabs()) {
-                db.dataAccess().insert(tab)
+                dataAccess.insert(tab)
             }
 
             Log.d(LOG_NAME, "Successful search for $query page $page.  Results: ${searchResult.getSongs().size}")
             Tab.fromTabDataType(searchResult.getSongs())
         }
+    }
+
+    //#endregion
+
+    //#region public methods
+
+    /**
+     * Get the next page of search results for this query. Automatically follows through to "Did You
+     * Mean" suggested search queries for misspelled, etc. queries.
+     *
+     * @return The next page of results, or an empty list if no further results exist, even in suggested Did You Mean queries.
+     */
+    suspend fun fetchNextSearchResults(): List<ITab> {
+        var retriesLeft = 3
+        while (retriesLeft-- > 0) {
+            try {
+                val results = getSearchResults(page = currentSearchPage, query = query)
+                if (results.isNotEmpty()) {
+                    currentSearchPage++
+                }
+                return results
+            } catch (ex: SearchDidYouMeanException) {
+                // no results, but a suggested alternate query available; automatically try that
+                currentSearchPage = 0
+                query = ex.didYouMean
+            }
+        }
+
+        // fallback to empty result list. Normally we shouldn't get here
+        Log.e(LOG_NAME, "Empty search result fallback after 3 Did You Mean tries. Shouldn't happen normally.")
+        return listOf()
     }
 }
 
