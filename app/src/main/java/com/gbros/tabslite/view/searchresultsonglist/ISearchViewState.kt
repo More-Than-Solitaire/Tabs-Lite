@@ -20,4 +20,10 @@ interface ISearchViewState {
      * being fetched, [LoadingState.Success] if the load process is complete
      */
     val searchState: LiveData<LoadingState>
+
+    /**
+     * Whether the complete set of search results has already been loaded. Used to disable trying to
+     * load more search results
+     */
+    val allResultsLoaded: LiveData<Boolean>
 }

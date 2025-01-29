@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.sync.Mutex
 
 private const val LOG_NAME = "tabslite.UgApi         "
 
@@ -47,6 +48,12 @@ class SearchViewModel
      */
     override val searchState: MutableLiveData<LoadingState> = MutableLiveData(LoadingState.Loading)
 
+    /**
+     * Whether the complete set of search results has already been loaded. Used to disable trying to
+     * load more search results
+     */
+    override val allResultsLoaded: MutableLiveData<Boolean> = MutableLiveData(false)
+
     //#endregion
 
     //#region private data
@@ -56,30 +63,42 @@ class SearchViewModel
      */
     private var searchSession = Search(query, dataAccess)
 
+    private var searchMutex = Mutex(locked = false)
+
     //#endregion
 
     //#region public methods
 
     fun onMoreSearchResultsNeeded() {
-        searchState.postValue(LoadingState.Loading)
-        val fetchSearchResultsJob = CoroutineScope(Dispatchers.IO).async {
-            val newSearchResults = searchSession.fetchNextSearchResults()
-            if (newSearchResults.isNotEmpty()) {
-                val updatedResults = results.value?.toMutableList()
-                updatedResults?.addAll(newSearchResults)
-                results.postValue(updatedResults ?: newSearchResults)
-            }
-        }
-
-        fetchSearchResultsJob.invokeOnCompletion { ex ->
-            if (ex != null) {
-                searchState.postValue(LoadingState.Error("Unexpected error loading search results: ${ex.message}"))
-                Log.e(LOG_NAME, "Unexpected error loading search results: ${ex.message}", ex)
+        if (searchMutex.tryLock()) {  // only fetch one page of search results at a time
+            searchState.postValue(LoadingState.Loading)
+            val fetchSearchResultsJob = CoroutineScope(Dispatchers.IO).async {
+                val newSearchResults = searchSession.fetchNextSearchResults()
+                if (newSearchResults.isNotEmpty()) {
+                    val updatedResults = results.value?.toMutableList()
+                    updatedResults?.addAll(newSearchResults)
+                    results.postValue(updatedResults ?: newSearchResults)
+                } else {
+                    allResultsLoaded.postValue(true)
+                }
             }
 
-            searchState.postValue(LoadingState.Success)
+            fetchSearchResultsJob.invokeOnCompletion { ex ->
+                if (ex != null) {
+                    searchState.postValue(LoadingState.Error("Unexpected error loading search results: ${ex.message}"))
+                    Log.e(LOG_NAME, "Unexpected error loading search results: ${ex.message}", ex)
+                } else {
+                    searchState.postValue(LoadingState.Success)
+                }
+
+                searchMutex.unlock()
+            }
         }
     }
 
     //#endregion
+
+    init {
+        onMoreSearchResultsNeeded()  // preload the first page of search results
+    }
 }

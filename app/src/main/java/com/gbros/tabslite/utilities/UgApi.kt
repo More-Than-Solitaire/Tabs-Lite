@@ -101,6 +101,9 @@ object UgApi {
             } else {
                 return@withContext suggestions
             }
+        } catch (ex: FileNotFoundException) {
+            // no search suggestions for this query
+            return@withContext listOf()
         } catch (ex: Exception) {
             Log.e(LOG_NAME, "SearchSuggest ${ex.javaClass.canonicalName} while finding search suggestions. Probably no internet; returning empty search suggestion list", ex)
             return@withContext listOf()

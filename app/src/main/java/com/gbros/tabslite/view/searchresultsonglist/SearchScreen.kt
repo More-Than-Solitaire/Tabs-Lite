@@ -154,8 +154,8 @@ fun SearchScreen(
 
     }
 
-    LaunchedEffect(key1 = lazyColumnState.canScrollForward, key2 = searchState.value) {
-        if (!lazyColumnState.canScrollForward && searchState.value is LoadingState.Success){
+    LaunchedEffect(key1 = lazyColumnState.canScrollForward, key2 = searchState.value, key3 = searchResults.value) {
+        if (!lazyColumnState.canScrollForward && (viewState.allResultsLoaded.value != true)){
             onMoreSearchResultsNeeded()
         }
     }
@@ -171,7 +171,8 @@ fun SearchScreen(
 class SearchViewStateForTest(
     override val query: String,
     override val results: LiveData<List<ITab>>,
-    override val searchState: LiveData<LoadingState>
+    override val searchState: LiveData<LoadingState>,
+    override val allResultsLoaded: LiveData<Boolean>
 ) : ISearchViewState
 
 @Composable
@@ -206,7 +207,7 @@ private fun SearchScreenPreview() {
         [tab]            [ch]G[/ch]
         I’m by your side.[/tab]    """.trimIndent()
     val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
-    val state = SearchViewStateForTest("my song", MutableLiveData(listOf(tabForTest, tabForTest, tabForTest)), MutableLiveData(LoadingState.Loading))
+    val state = SearchViewStateForTest("my song", MutableLiveData(listOf(tabForTest, tabForTest, tabForTest)), MutableLiveData(LoadingState.Loading), MutableLiveData(false))
 
     AppTheme {
         SearchScreen(
@@ -251,7 +252,7 @@ private fun SearchScreenPreviewError() {
         [tab]            [ch]G[/ch]
         I’m by your side.[/tab]    """.trimIndent()
     val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
-    val state = SearchViewStateForTest("my song", MutableLiveData(listOf(tabForTest, tabForTest, tabForTest)), MutableLiveData(LoadingState.Error("Unexpected error: test error")))
+    val state = SearchViewStateForTest("my song", MutableLiveData(listOf(tabForTest, tabForTest, tabForTest)), MutableLiveData(LoadingState.Error("Unexpected error: test error")), MutableLiveData(false))
 
     AppTheme {
         SearchScreen(

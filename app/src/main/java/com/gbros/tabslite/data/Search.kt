@@ -67,6 +67,7 @@ class Search(private var query: String, private val dataAccess: DataAccess) {
      * @return The next page of results, or an empty list if no further results exist, even in suggested Did You Mean queries.
      */
     suspend fun fetchNextSearchResults(): List<ITab> {
+
         var retriesLeft = 3
         while (retriesLeft-- > 0) {
             try {
