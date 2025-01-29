@@ -77,7 +77,7 @@ class SearchViewModel
                 if (newSearchResults.isNotEmpty()) {
                     val updatedResults = results.value?.toMutableList()
                     updatedResults?.addAll(newSearchResults)
-                    results.postValue(updatedResults ?: newSearchResults)
+                    results.postValue(updatedResults?.distinct() ?: newSearchResults)
                 } else {
                     allResultsLoaded.postValue(true)
                 }

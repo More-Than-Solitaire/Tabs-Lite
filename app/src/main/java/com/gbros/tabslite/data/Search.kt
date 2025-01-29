@@ -71,9 +71,9 @@ class Search(private var query: String, private val dataAccess: DataAccess) {
         var retriesLeft = 3
         while (retriesLeft-- > 0) {
             try {
-                val results = getSearchResults(page = currentSearchPage, query = query)
-                if (results.isNotEmpty()) {
-                    currentSearchPage++
+                val results = getSearchResults(page = ++currentSearchPage, query = query)
+                if (results.isEmpty()) {
+                    currentSearchPage--
                 }
                 return results
             } catch (ex: SearchDidYouMeanException) {
