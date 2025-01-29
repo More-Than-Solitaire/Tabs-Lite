@@ -15,26 +15,30 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistHeader(
-    title: String,
-    description: String,
+    title: LiveData<String>,
+    description: LiveData<String>,
     titleChanged: (title: String) -> Unit,
     descriptionChanged: (description: String) -> Unit,
-    titleFinalize: () -> Unit,
-    descriptionFinalize: () -> Unit,
     navigateBack: () -> Unit,
     deletePlaylist: () -> Unit
 ) {
+    var titleToDisplay: String by remember(key1 = title.observeAsState().value) { mutableStateOf(title.value ?: "") }
+    var descriptionToDisplay: String by remember(key1 = description.observeAsState().value) { mutableStateOf(description.value ?: "") }
+
     var titleWasFocused: Boolean by remember { mutableStateOf(false) }
     var descriptionWasFocused: Boolean by remember { mutableStateOf(false) }
 
@@ -42,16 +46,16 @@ fun PlaylistHeader(
         TopAppBar(
             title = {
                 TextField(
-                    value = title,
-                    onValueChange = titleChanged,
+                    value = titleToDisplay,
+                    onValueChange = {newTitle: String -> titleToDisplay = newTitle},
                     singleLine = true,
                     placeholder = { Text("Playlist Name") },
                     colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.background),
                     modifier = Modifier
                         .fillMaxWidth()
                         .onFocusChanged {
-                            if (titleWasFocused && !it.isFocused) {
-                                titleFinalize()
+                            if (titleWasFocused && !it.isFocused && titleToDisplay != title.value) {
+                                titleChanged(titleToDisplay)
                             }
                             titleWasFocused = it.isFocused
                         }
@@ -70,15 +74,15 @@ fun PlaylistHeader(
         )
 
         TextField(
-            value = description,
-            onValueChange = { descriptionChanged(it) },
+            value = descriptionToDisplay,
+            onValueChange = { newDescription: String -> descriptionToDisplay = newDescription },
             placeholder = { Text("Playlist Description") },
             colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.background),
             modifier = Modifier
                 .fillMaxWidth()
                 .onFocusChanged {
-                    if (descriptionWasFocused && !it.isFocused) {
-                        descriptionFinalize()
+                    if (descriptionWasFocused && !it.isFocused && descriptionToDisplay != description.value) {
+                        descriptionChanged(descriptionToDisplay)
                     }
                     descriptionWasFocused = it.isFocused
                 }
@@ -89,6 +93,6 @@ fun PlaylistHeader(
 @Composable @Preview
 private fun PlaylistHeaderPreview() {
     AppTheme {
-        PlaylistHeader("Playlist title", "playlist description", {}, {}, {}, {}, {}, {})
+        PlaylistHeader(MutableLiveData("Playlist title"), MutableLiveData("playlist description"), {}, {}, {}, {})
     }
 }

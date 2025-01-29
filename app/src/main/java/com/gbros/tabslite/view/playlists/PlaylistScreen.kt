@@ -1,14 +1,22 @@
 package com.gbros.tabslite.view.playlists
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
@@ -16,8 +24,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.playlist.IDataPlaylistEntry
-import com.gbros.tabslite.data.playlist.DataPlaylistEntry
+import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
+import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.viewmodel.PlaylistViewModel
 
 private const val PLAYLIST_NAV_ARG = "playlistId"
 private const val PLAYLIST_DETAIL_ROUTE_TEMPLATE = "playlist/%s"
@@ -34,8 +44,17 @@ fun NavGraphBuilder.playlistDetailScreen(
         route = PLAYLIST_DETAIL_ROUTE_TEMPLATE.format("{$PLAYLIST_NAV_ARG}"),
         arguments = listOf(navArgument(PLAYLIST_NAV_ARG) { type = NavType.IntType })
     ) { navBackStackEntry ->
+        val playlistId = navBackStackEntry.arguments!!.getInt(PLAYLIST_NAV_ARG)
+        val db = AppDatabase.getInstance(LocalContext.current)
+        val viewModel: PlaylistViewModel = hiltViewModel<PlaylistViewModel, PlaylistViewModel.PlaylistViewModelFactory> { factory -> factory.create(playlistId, db.dataAccess()) }
+
         PlaylistScreen(
-            playlistId = navBackStackEntry.arguments!!.getInt(PLAYLIST_NAV_ARG),
+            viewState = viewModel,
+            titleChanged = viewModel::titleChanged,
+            descriptionChanged = viewModel::descriptionChanged,
+            entryMoved = viewModel::entryMoved,
+            entryRemoved = viewModel::entryRemoved,
+            playlistDeleted = viewModel::playlistDeleted,
             navigateToTabByPlaylistEntryId = onNavigateToTabByPlaylistEntryId,
             navigateBack = onNavigateBack
         )
@@ -43,85 +62,101 @@ fun NavGraphBuilder.playlistDetailScreen(
 }
 
 @Composable
-fun PlaylistScreen(playlistId: Int, navigateToTabByPlaylistEntryId: (Int) -> Unit, navigateBack: () -> Unit) {
-    val dataAccess = AppDatabase.getInstance(LocalContext.current).dataAccess()
-    val playlist = remember { dataAccess.getLivePlaylist(playlistId = playlistId) }
-    val liveSongs = remember { dataAccess.getTabsFromPlaylistEntryId(playlistId = playlistId) }
-    val songs by liveSongs.observeAsState(listOf())
-    var updatedDescription: String? by remember { mutableStateOf(null) }
-    var updatedTitle: String? by remember { mutableStateOf(null) }
+fun PlaylistScreen(
+    viewState: IPlaylistViewState,
+    titleChanged: (newTitle: String) -> Unit,
+    descriptionChanged: (newDescription: String) -> Unit,
+    entryMoved: (src: IDataPlaylistEntry, dest: IDataPlaylistEntry, moveAfter: Boolean) -> Unit,
+    entryRemoved: (entry: IDataPlaylistEntry) -> Unit,
+    playlistDeleted: () -> Unit,
+    navigateToTabByPlaylistEntryId: (Int) -> Unit,
+    navigateBack: () -> Unit
+) {
+    var deletePlaylistConfirmationDialogShowing by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
-    // sort songs by internal linked list
-    val orderedSongs: List<TabWithDataPlaylistEntry> = remember(songs) { DataPlaylistEntry.sortLinkedList(songs) }
+    Column(
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.background)
+    ) {
+        PlaylistHeader(
+            title = viewState.title,
+            description = viewState.description,
+            titleChanged = titleChanged,
+            descriptionChanged = descriptionChanged,
+            navigateBack = navigateBack,
+            deletePlaylist = {
+                deletePlaylistConfirmationDialogShowing = true
+            }
+        )
 
-    // handle entry rearrangement
-    var entryMovedSrc: IDataPlaylistEntry? by remember { mutableStateOf(null) }
-    var entryMovedDest: IDataPlaylistEntry? by remember { mutableStateOf(null) }
-    var entryMovedMoveAfter: Boolean? by remember { mutableStateOf(null) }
+        PlaylistSongList(
+            songs = viewState.songs.observeAsState(listOf()).value,
+            navigateToTabByPlaylistEntryId = {entryId ->
+                focusManager.clearFocus()  // this will trigger saving the playlist title and description if changed
+                navigateToTabByPlaylistEntryId(entryId)
+            },
+            onReorder = entryMoved,
+            onRemove = entryRemoved
+        )
+    }
 
-    // handle entry deletion
-    var playlistEntryToRemove: IDataPlaylistEntry? by remember { mutableStateOf(null) }
-
-    // handle playlist deletion
-    var deletePlaylist by remember { mutableStateOf(false) }
-
-    PlaylistView(
-        livePlaylist = playlist,
-        songs = orderedSongs,
-        navigateToTabByPlaylistEntryId = navigateToTabByPlaylistEntryId,
-        titleChanged = { updatedTitle = it },
-        descriptionChanged = { updatedDescription = it },
-        entryMoved = { src, dest, moveAfter -> entryMovedSrc = src; entryMovedDest = dest; entryMovedMoveAfter = moveAfter },
-        entryRemoved = { entry -> playlistEntryToRemove = entry },
-        navigateBack = navigateBack,
-        deletePlaylist = { deletePlaylist = true }
-    )
+    if (deletePlaylistConfirmationDialogShowing) {
+        DeletePlaylistConfirmationDialog(
+            onConfirm = { deletePlaylistConfirmationDialogShowing = false; playlistDeleted(); navigateBack() },
+            onDismiss = { deletePlaylistConfirmationDialogShowing = false }
+        )
+    }
 
     BackHandler {
         navigateBack()
     }
+}
 
-    // delete playlist
-    LaunchedEffect(key1 = deletePlaylist) {
-        if (deletePlaylist) {
-            dataAccess.deletePlaylist(playlistId)
-        }
+@Composable @Preview
+private fun PlaylistViewPreview() {
+    AppTheme {
+        val playlistForTest = MutableLiveData(Playlist(1, true, "My amazing playlist 1.0.1", 12345, 12345, "The playlist that I'm going to use to test this playlist entry item thing with lots of text."))
+
+        val playlistState = PlaylistViewStateForTest(
+            title = MutableLiveData("Playlist title"),
+            description = MutableLiveData("Playlist description"),
+            songs = MutableLiveData(createListOfTabWithPlaylistEntry(3))
+        )
+
+        PlaylistScreen(
+            viewState = playlistState,
+            navigateToTabByPlaylistEntryId = {},
+            titleChanged = {},
+            descriptionChanged = {},
+            entryMoved = {_, _, _ -> },
+            entryRemoved = {},
+            navigateBack = {},
+            playlistDeleted = {}
+        )
+    }
+}
+
+private class PlaylistViewStateForTest(
+    override val title: LiveData<String>,
+    override val description: LiveData<String>,
+    override val songs: LiveData<List<TabWithDataPlaylistEntry>>
+) : IPlaylistViewState
+
+private fun createListOfTabWithPlaylistEntry(size: Int): List<TabWithDataPlaylistEntry> {
+    val listOfEntries = mutableListOf<TabWithDataPlaylistEntry>()
+    for (id in 0..size) {
+        listOfEntries.add(
+            TabWithDataPlaylistEntry(entryId = id, playlistId = 1, tabId = id * 20, nextEntryId = if(id<size) id+1 else null,
+            prevEntryId = if(id>0) id-1 else null, dateAdded = 0, songId = 12, songName = "Song $id", artistName ="Artist name",
+            isVerified = false, numVersions = 4, type = "Chords", part = "part", version = 2, votes = 0,
+            rating = 0.0, date = 0, status = "", presetId = 0, tabAccessType = "public", tpVersion = 0,
+            tonalityName = "D", versionDescription = "version desc", recordingIsAcoustic = false, recordingTonalityName = "",
+            recordingPerformance = "", recordingArtists = arrayListOf(), recommended = arrayListOf(), userRating = 0,
+            playlistUserCreated = false, playlistTitle = "playlist title", playlistDateCreated = 0, playlistDescription = "playlist desc",
+            playlistDateModified = 0)
+        )
     }
 
-    // remove playlist entry
-    LaunchedEffect(key1 = playlistEntryToRemove) {
-        val entryToRemove = playlistEntryToRemove
-        if (entryToRemove != null) {
-            dataAccess.removeEntryFromPlaylist(entryToRemove)
-        }
-    }
-
-    // rearrange playlist entries
-    LaunchedEffect(key1 = entryMovedSrc, key2 = entryMovedDest, key3 = entryMovedMoveAfter) {
-        val src = entryMovedSrc
-        val dest = entryMovedDest
-        val moveAfter = entryMovedMoveAfter
-        if (src != null && dest != null && moveAfter != null) {
-            if (moveAfter)
-                dataAccess.moveEntryAfter(src, dest)
-            else
-                dataAccess.moveEntryBefore(src, dest)
-        }
-    }
-
-    // update playlist description
-    LaunchedEffect(key1 = updatedDescription) {
-        val copyOfUpdatedDescription = updatedDescription
-        if (copyOfUpdatedDescription != null) {
-            dataAccess.updateDescription(playlistId, copyOfUpdatedDescription)
-        }
-    }
-
-    // update playlist title
-    LaunchedEffect(key1 = updatedTitle) {
-        val copyOfUpdatedTitle = updatedTitle
-        if (copyOfUpdatedTitle != null) {
-            dataAccess.updateTitle(playlistId, copyOfUpdatedTitle)
-        }
-    }
+    return listOfEntries
 }

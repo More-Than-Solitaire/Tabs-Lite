@@ -69,8 +69,6 @@ class SongVersionViewModel
         songName.observeForever { name -> tabSearchBarViewModel.onQueryChange(name) }
     }
 
-
-
     //#endregion
 
 }
