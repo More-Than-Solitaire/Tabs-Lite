@@ -67,7 +67,7 @@ repositories {
 }
 
 dependencies {
-    implementation("androidx.activity:activity-compose:1.9.3")  // Compose Integration with activities
+    implementation("androidx.activity:activity-compose:1.10.0")  // Compose Integration with activities
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.compose.material3:material3:1.3.1")  // Material Design 3
     implementation("androidx.compose.material:material-icons-core:1.7.6")
@@ -86,7 +86,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.navigation:navigation-fragment-ktx:2.8.5")
     implementation("androidx.navigation:navigation-ui-ktx:2.8.5")
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
     ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
@@ -96,14 +96,14 @@ dependencies {
     ksp("com.github.bumptech.glide:compiler:4.16.0")
     implementation("com.github.SmartToolFactory:Compose-Extended-Gestures:3.1")
     implementation("com.google.android.material:material:1.12.0")
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    ksp("com.google.dagger:hilt-android-compiler:2.51.1")
+    implementation("com.google.code.gson:gson:2.11.0")
+    implementation("com.google.dagger:hilt-android:2.55")
+    ksp("com.google.dagger:hilt-android-compiler:2.55")
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.22")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.10")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
     implementation("com.chrynan.chords:chords-compose:2.4.1")
 
@@ -120,7 +120,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
     androidTestImplementation("androidx.work:work-testing:2.10.0")
-    androidTestImplementation("com.google.truth:truth:1.2.0")
+    androidTestImplementation("com.google.truth:truth:1.4.4")
     testImplementation("junit:junit:4.13.2")
-    testImplementation("io.mockk:mockk:1.13.9")
+    testImplementation("io.mockk:mockk:1.13.16")
 }
