@@ -3,6 +3,7 @@ package com.gbros.tabslite.data
 import androidx.room.TypeConverter
 import com.chrynan.chords.model.ChordMarker
 import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 import java.util.*
 
 /**
@@ -15,10 +16,10 @@ class Converters {
             Calendar.getInstance().apply { timeInMillis = value }
 
     @TypeConverter
-    fun listToJson(value: ArrayList<String>?): String = gson.toJson(value)
+    fun arrayListToJson(value: ArrayList<String>?): String = gson.toJson(value)
 
     @TypeConverter
-    fun jsonToList(value: String) = ArrayList(gson.fromJson(value, Array<String>::class.java).toList())
+    fun jsonToArrayList(value: String) = ArrayList(gson.fromJson(value, Array<String>::class.java).toList())
     
     // thanks https://stackoverflow.com/a/44634283/3437608
     @TypeConverter
@@ -44,7 +45,13 @@ class Converters {
 
     @TypeConverter
     fun toBarMarkerList(value: String) = ArrayList(gson.fromJson(value, Array<ChordMarker.Bar>::class.java).toList())
-    
+
+    @TypeConverter
+    fun fromList(value : List<String>?) = Json.encodeToString(value)
+
+    @TypeConverter
+    fun toList(value: String) = Json.decodeFromString<List<String>>(value)
+
     companion object {
         private val gson = Gson()
     }

@@ -56,9 +56,9 @@ import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.songlist.SongListView
 import com.gbros.tabslite.view.songlist.SortBy
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
+import com.gbros.tabslite.viewmodel.TabSearchBarViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 private const val LOG_NAME = "tabslite.HomeScreen    "
@@ -118,6 +118,22 @@ fun HomeScreen(
     val importPlaylistsPickerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {fileToImport ->
         fileToImportPlaylistData = fileToImport
     }
+    val tabSearchBarViewModel = TabSearchBarViewModel(
+        initialQuery = "",
+        leadingIcon = {
+            IconButton(onClick = { showAboutDialog = true }) {
+                Box(modifier = Modifier) {
+                    CircularProgressIndicator(progress = { playlistImportExportProgress })
+                }
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        dataAccess = dataAccess
+    )
 
     if (showAboutDialog) {
         AboutDialog(
@@ -155,18 +171,8 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 2.dp),
                 onSearch = onSearch,
-                leadingIcon = {
-                    IconButton(onClick = { showAboutDialog = true }) {
-                        Box(modifier = Modifier){
-                            CircularProgressIndicator(progress = { playlistImportExportProgress })
-                        }
-                        Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+                viewState = tabSearchBarViewModel,
+                onQueryChange = tabSearchBarViewModel::onQueryChange
             )
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
@@ -212,13 +218,13 @@ fun HomeScreen(
                 // Favorites page
                 0 -> SongListView(liveSongs = dataAccess.getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, defaultSortValue = SortBy.DateAdded,
                     liveSortByPreference = dataAccess.getLivePreference(Preference.FAVORITES_SORT),
-                    onSortPreferenceChange = { launch { dataAccess.upsertPreference(it) } },
+                    onSortPreferenceChange = { launch { dataAccess.upsert(it) } },
                     emptyListText = stringResource(R.string.empty_favorites))
 
                 // Popular page
                 1 -> SongListView(liveSongs = dataAccess.getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, defaultSortValue = SortBy.Popularity,
                     liveSortByPreference = dataAccess.getLivePreference(Preference.POPULAR_SORT),
-                    onSortPreferenceChange = { launch { dataAccess.upsertPreference(it) } },
+                    onSortPreferenceChange = { launch { dataAccess.upsert(it) } },
                     emptyListText = stringResource(R.string.empty_popular))
 
                 // Playlists page

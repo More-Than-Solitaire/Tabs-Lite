@@ -1,6 +1,7 @@
 package com.gbros.tabslite.data
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -286,7 +287,26 @@ interface DataAccess {
     suspend fun insert(pref: Preference)
 
     @Upsert
-    suspend fun upsertPreference(preference: Preference)
+    suspend fun upsert(preference: Preference)
+
+    //#endregion
+
+    //#region search suggestions table
+
+    @Upsert
+    suspend fun upsert(searchSuggestions: SearchSuggestions)
+
+    /**
+     * Gets raw search suggestion data from the database. Note that the query string must be 5
+     * characters or fewer - no search suggestions. You should probably use [getSearchSuggestions]
+     * unless you specifically need this function
+     */
+    @Query("SELECT * FROM search_suggestions WHERE `query` = :query")
+    fun getRawSearchSuggestions(query: String): LiveData<SearchSuggestions?>
+
+    fun getSearchSuggestions(query: String): LiveData<List<String>> = getRawSearchSuggestions(query.take(5)).map { s ->
+        s?.suggestedSearches?.filter { suggestion -> suggestion.contains(other = query, ignoreCase = true) } ?: listOf()
+    }
 
     //#endregion
 }

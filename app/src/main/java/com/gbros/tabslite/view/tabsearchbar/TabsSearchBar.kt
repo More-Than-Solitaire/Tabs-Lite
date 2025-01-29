@@ -14,8 +14,8 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,42 +25,31 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.gbros.tabslite.R
 import com.gbros.tabslite.ui.theme.AppTheme
-import com.gbros.tabslite.utilities.UgApi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TabsSearchBar(
     modifier: Modifier = Modifier,
-    initialQueryText: String = "",
-    leadingIcon: @Composable () -> Unit = { Icon(
-        imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.onSurfaceVariant
-    )},
+    viewState: ITabSearchBarViewState,
+    onQueryChange: (newQuery: String) -> Unit,
     onSearch: (query: String) -> Unit
 ) {
-    var query by remember { mutableStateOf(initialQueryText) }
+    val query = viewState.query.observeAsState("")
     var active by remember { mutableStateOf(false) }
     val lazyColumnState = rememberLazyListState()
-    var searchSuggestions: List<String> by remember { mutableStateOf(listOf()) }
-
-    LaunchedEffect(key1 = query) {
-        searchSuggestions = if (query.isNotEmpty()) {
-            UgApi.searchSuggest(query)
-        } else {
-            listOf()
-        }
-    }
+    val searchSuggestions = viewState.searchSuggestions.observeAsState(listOf())
 
     val onActiveChange = {expanded: Boolean -> active = expanded}
     val colors1 = SearchBarDefaults.colors()
     SearchBar(
         inputField = {
             SearchBarDefaults.InputField(
-                query = query,
-                onQueryChange = {query = it},
+                query = query.value,
+                onQueryChange = onQueryChange,
                 onSearch = {q -> if(q.isNotBlank()) {onSearch(q)}},
                 expanded = active,
                 onExpandedChange = onActiveChange,
@@ -68,7 +57,7 @@ fun TabsSearchBar(
                 placeholder = {
                     Text(text = stringResource(id = R.string.app_action_search))
                 },
-                leadingIcon = leadingIcon,
+                leadingIcon = viewState.leadingIcon,
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -87,7 +76,7 @@ fun TabsSearchBar(
         windowInsets = SearchBarDefaults.windowInsets,
         content = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp), state = lazyColumnState) {
-                items(items = searchSuggestions) { searchSuggestion ->
+                items(items = searchSuggestions.value) { searchSuggestion ->
                     SearchSuggestion(
                         suggestionText = searchSuggestion,
                         modifier = Modifier.fillMaxWidth()
@@ -103,7 +92,25 @@ fun TabsSearchBar(
 
 @Composable @Preview
 fun TabsSearchBarPreview() {
+    class TabSearchBarViewStateForTest(
+        override val query: LiveData<String>,
+        override val searchSuggestions: LiveData<List<String>>,
+        override val leadingIcon: @Composable () -> Unit
+    ) : ITabSearchBarViewState
+
     AppTheme {
-        TabsSearchBar {}
+        TabsSearchBar(
+            viewState = TabSearchBarViewStateForTest(
+                query = MutableLiveData("Test query"),
+                searchSuggestions = MutableLiveData(listOf("suggestion1", "suggestion 2")),
+                leadingIcon = { Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )}
+            ),
+            onQueryChange = {},
+            onSearch = {}
+        )
     }
 }

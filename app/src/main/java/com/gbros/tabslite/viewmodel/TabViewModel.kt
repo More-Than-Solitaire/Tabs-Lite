@@ -19,7 +19,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
@@ -34,6 +33,7 @@ import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
+import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.tabview.ITabViewState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -411,21 +411,6 @@ class TabViewModel
         return urlPattern.findAll(s)
     }
 
-    /**
-     * Combine multiple livedata sources into a new livedata source
-     */
-    private fun <T1, T2, R> LiveData<T1>.combine(
-        liveData2: LiveData<T2>,
-        combineFn: (value1: T1?, value2: T2?) -> R
-    ): LiveData<R> = MediatorLiveData<R>().apply {
-        addSource(this@combine) {
-            value = combineFn(it, liveData2.value)
-        }
-        addSource(liveData2) {
-            value = combineFn(this@combine.value, it)
-        }
-    }
-
 //endregion
 
 //#endregion
@@ -695,7 +680,7 @@ class TabViewModel
      */
     fun onAutoscrollSliderValueChangeFinished() {
         CoroutineScope(Dispatchers.IO).launch {
-            dataAccess.upsertPreference(Preference(Preference.AUTOSCROLL_DELAY, autoScrollSpeedSliderPosition.value.toString()))
+            dataAccess.upsert(Preference(Preference.AUTOSCROLL_DELAY, autoScrollSpeedSliderPosition.value.toString()))
         }
     }
 

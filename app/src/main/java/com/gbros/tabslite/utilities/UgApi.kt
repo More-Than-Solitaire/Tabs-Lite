@@ -3,6 +3,7 @@ package com.gbros.tabslite.utilities
 import android.os.Build
 import android.util.Log
 import com.gbros.tabslite.data.DataAccess
+import com.gbros.tabslite.data.SearchSuggestions
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.playlist.Playlist.Companion.TOP_TABS_PLAYLIST_ID
 import com.gbros.tabslite.data.servertypes.SearchRequestType
@@ -61,23 +62,14 @@ object UgApi {
     // region public methods
 
     /**
-     * Get search suggestions for the given query.  Caches search suggestions internally for faster
-     * update second time through.
+     * Get search suggestions for the given query.  Stores search suggestions to the local database,
+     * overwriting any previous search suggestions for the specified query
      *
      * @param [q]: The query to fetch search suggestions for
      *
      * @return A string list of suggested searches, or an empty list if no suggestions could be found.
      */
-    suspend fun searchSuggest(q: String): List<String> = withContext(Dispatchers.IO) {
-        // If we've already cached search suggestions for this query, skip the internet call and return them directly
-        if (cachedSearchSuggestions.contains(q)) {
-            return@withContext cachedSearchSuggestions.getValue(q)
-        } else if (q.length > 5 && cachedSearchSuggestions.contains(q.slice(0 until 5))) {
-            // ug api only allows a max of 5 chars for search suggestion requests.  rest of processing is done in app
-            val cachedSuggestions = cachedSearchSuggestions.getValue(q.slice(0 until 5))
-            return@withContext cachedSuggestions.filter { s -> s.contains(q) }
-        }
-
+    suspend fun searchSuggest(q: String, dataAccess: DataAccess) = withContext(Dispatchers.IO) {
         // fetch search suggestions from the internet
         try {
             var query = q
@@ -93,20 +85,15 @@ object UgApi {
             }
 
             if (suggestions.isNotEmpty()) {
-                cachedSearchSuggestions[query] = suggestions
+                dataAccess.upsert(SearchSuggestions(query = query, suggestions))
             }
-
-            if (q.length > 5) {
-                return@withContext suggestions.filter { s -> s.contains(q) }
-            } else {
-                return@withContext suggestions
-            }
+            return@withContext
         } catch (ex: FileNotFoundException) {
             // no search suggestions for this query
-            return@withContext listOf()
+            return@withContext
         } catch (ex: Exception) {
-            Log.e(LOG_NAME, "SearchSuggest ${ex.javaClass.canonicalName} while finding search suggestions. Probably no internet; returning empty search suggestion list", ex)
-            return@withContext listOf()
+            Log.e(LOG_NAME, "SearchSuggest ${ex.javaClass.canonicalName} while finding search suggestions. Probably no internet; no search suggestions added", ex)
+            return@withContext
         }
     }
 

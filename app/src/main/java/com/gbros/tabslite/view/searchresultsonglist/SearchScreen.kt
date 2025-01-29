@@ -46,6 +46,7 @@ import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.card.ErrorCard
 import com.gbros.tabslite.view.card.InfoCard
+import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.viewmodel.SearchViewModel
 
@@ -66,13 +67,15 @@ fun NavGraphBuilder.searchScreen(
     ) { navBackStackEntry ->
         val query = navBackStackEntry.arguments!!.getString(SEARCH_NAV_ARG, "")
         val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create(query, db.dataAccess()) }
+        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create(query, onNavigateBack, db.dataAccess()) }
         SearchScreen(
             viewState = viewModel,
+            tabSearchBarViewState = viewModel.tabSearchBarViewModel,
             onMoreSearchResultsNeeded = viewModel::onMoreSearchResultsNeeded,
-            navigateToSongVersionsBySongId = onNavigateToSongId,
-            navigateBack = onNavigateBack,
-            onSearch = onNavigateToSearch
+            onTabSearchBarQueryChange = viewModel.tabSearchBarViewModel::onQueryChange,
+            onNavigateToSongVersionsBySongId = onNavigateToSongId,
+            onNavigateBack = onNavigateBack,
+            onNavigateToSearch = onNavigateToSearch
         )
     }
 }
@@ -80,10 +83,12 @@ fun NavGraphBuilder.searchScreen(
 @Composable
 fun SearchScreen(
     viewState: ISearchViewState,
+    tabSearchBarViewState: ITabSearchBarViewState,
     onMoreSearchResultsNeeded: suspend () -> Unit,
-    navigateToSongVersionsBySongId: (songId: Int) -> Unit,
-    navigateBack: () -> Unit,
-    onSearch: (query: String) -> Unit
+    onTabSearchBarQueryChange: (newQuery: String) -> Unit,
+    onNavigateToSongVersionsBySongId: (songId: Int) -> Unit,
+    onNavigateBack: () -> Unit,
+    onNavigateToSearch: (query: String) -> Unit
 ) {
     val lazyColumnState = rememberLazyListState()
     var needMoreSearchResults by remember { mutableStateOf(true) }
@@ -101,13 +106,9 @@ fun SearchScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
-            initialQueryText = viewState.query,
-            leadingIcon = {
-                IconButton(onClick = navigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
-                }
-            },
-            onSearch = onSearch
+            viewState = tabSearchBarViewState,
+            onSearch = onNavigateToSearch,
+            onQueryChange = onTabSearchBarQueryChange
         )
 
         if (searchState.value is LoadingState.Error) {
@@ -130,7 +131,7 @@ fun SearchScreen(
             LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp), state = lazyColumnState) {
                 items(items = searchResults.value) { song ->
                     SearchResultCard(song) {
-                        navigateToSongVersionsBySongId(song.songId)
+                        onNavigateToSongVersionsBySongId(song.songId)
                     }
                 }
 
@@ -161,19 +162,25 @@ fun SearchScreen(
     }
 
     BackHandler {
-        navigateBack()
+        onNavigateBack()
     }
 }
 
 
 //#region test/preview
 
-class SearchViewStateForTest(
+private class SearchViewStateForTest(
     override val query: String,
     override val results: LiveData<List<ITab>>,
     override val searchState: LiveData<LoadingState>,
     override val allResultsLoaded: LiveData<Boolean>
 ) : ISearchViewState
+
+private class TabSearchBarViewStateForTest(
+    override val query: LiveData<String>,
+    override val searchSuggestions: LiveData<List<String>>,
+    override val leadingIcon: @Composable () -> Unit
+): ITabSearchBarViewState
 
 @Composable
 @Preview
@@ -208,14 +215,25 @@ private fun SearchScreenPreview() {
         I’m by your side.[/tab]    """.trimIndent()
     val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
     val state = SearchViewStateForTest("my song", MutableLiveData(listOf(tabForTest, tabForTest, tabForTest)), MutableLiveData(LoadingState.Loading), MutableLiveData(false))
+    val tabSearchBarViewState = TabSearchBarViewStateForTest(
+        query = MutableLiveData("my song"),
+        searchSuggestions = MutableLiveData(listOf()),
+        leadingIcon = {
+            IconButton(onClick = {}) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
+            }
+        }
+    )
 
     AppTheme {
         SearchScreen(
             viewState = state,
+            tabSearchBarViewState = tabSearchBarViewState,
             onMoreSearchResultsNeeded = {},
-            navigateToSongVersionsBySongId = {},
-            navigateBack = {},
-            onSearch = {}
+            onNavigateToSongVersionsBySongId = {},
+            onNavigateBack = {},
+            onNavigateToSearch = {},
+            onTabSearchBarQueryChange = {}
         )
     }
 }
@@ -254,13 +272,25 @@ private fun SearchScreenPreviewError() {
     val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
     val state = SearchViewStateForTest("my song", MutableLiveData(listOf(tabForTest, tabForTest, tabForTest)), MutableLiveData(LoadingState.Error("Unexpected error: test error")), MutableLiveData(false))
 
+    val tabSearchBarViewState = TabSearchBarViewStateForTest(
+        query = MutableLiveData("my song"),
+        searchSuggestions = MutableLiveData(listOf()),
+        leadingIcon = {
+            IconButton(onClick = {}) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
+            }
+        }
+    )
+
     AppTheme {
         SearchScreen(
             viewState = state,
+            tabSearchBarViewState = tabSearchBarViewState,
             onMoreSearchResultsNeeded = {},
-            navigateToSongVersionsBySongId = {},
-            navigateBack = {},
-            onSearch = {}
+            onNavigateToSongVersionsBySongId = {},
+            onNavigateBack = {},
+            onNavigateToSearch = {},
+            onTabSearchBarQueryChange = {}
         )
     }
 }
