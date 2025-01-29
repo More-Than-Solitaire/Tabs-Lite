@@ -38,7 +38,7 @@ class Search(private var query: String, private val dataAccess: DataAccess) {
      * @throws [SearchDidYouMeanException] if no results, but there's a suggested query
      */
     private suspend fun getSearchResults(page: Int, query: String): List<ITab> {
-        Log.d(LOG_NAME, "starting search page $page")
+        Log.d(LOG_NAME, "starting search '$query' page $page")
         val searchResult = UgApi.search(query, (page))  // always search the next page that hasn't been loaded yet
 
         return if (!searchResult.didYouMean.isNullOrBlank()) {
