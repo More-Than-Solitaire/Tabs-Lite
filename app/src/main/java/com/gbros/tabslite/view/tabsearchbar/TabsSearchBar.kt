@@ -76,13 +76,15 @@ fun TabsSearchBar(
         windowInsets = SearchBarDefaults.windowInsets,
         content = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp), state = lazyColumnState) {
-                items(items = searchSuggestions.value) { searchSuggestion ->
-                    SearchSuggestion(
-                        suggestionText = searchSuggestion,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        if (searchSuggestion.isNotBlank())
-                            onSearch(searchSuggestion)
+                if (query.value.isNotBlank()) {
+                    items(items = searchSuggestions.value) { searchSuggestion ->
+                        SearchSuggestion(
+                            suggestionText = searchSuggestion,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (searchSuggestion.isNotBlank())
+                                onSearch(searchSuggestion)
+                        }
                     }
                 }
             }
