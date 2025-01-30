@@ -120,7 +120,7 @@ class TabViewModel
     /**
      * Autoscroll longest delay between 1px scrolls (slowest speed)
      */
-    private val maxDelay: Float = 45f // slowest speed
+    private val maxDelay: Float = 55f // slowest speed
     /**
      * Maps the autoscroll slider value to the delay between 1px scrolls for autoscroll
      */
@@ -159,6 +159,7 @@ class TabViewModel
                     val tabId = dataAccess.getEntryById(id)?.tabId
                     if (tabId == null) {
                         Log.e(LOG_NAME, "Couldn't get tab from playlist entry $id")
+                        _state.postValue(LoadingState.Error("Unexpected error loading tab from playlist entry $id"))
                     } else {
                         currentTab = Tab(tabId)
                     }
@@ -717,7 +718,7 @@ class TabViewModel
 
         if (selectedPlaylist != null && currentTab != null && currentTranspose != null) {
             CoroutineScope(Dispatchers.IO).launch {
-                dataAccess.addToPlaylist(
+                dataAccess.appendToPlaylist(
                     selectedPlaylist.playlistId,
                     currentTab.tabId,
                     currentTranspose
@@ -731,7 +732,7 @@ class TabViewModel
     fun onCreatePlaylist(title: String, description: String) {
         val playlistToSave = Playlist(playlistId = 0, userCreated = true, title = title, description = description, dateCreated = System.currentTimeMillis(), dateModified = System.currentTimeMillis())
         CoroutineScope(Dispatchers.IO).launch {
-            val newPlaylistId = dataAccess.savePlaylist(playlistToSave)
+            val newPlaylistId = dataAccess.upsert(playlistToSave)
             val newPlaylist = dataAccess.getPlaylist(newPlaylistId.toInt())
             _addToPlaylistDialogSelectedPlaylist.postValue(newPlaylist)
         }

@@ -67,7 +67,7 @@ fun NavGraphBuilder.searchScreen(
     ) { navBackStackEntry ->
         val query = navBackStackEntry.arguments!!.getString(SEARCH_NAV_ARG, "")
         val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create(query, onNavigateBack, db.dataAccess()) }
+        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create(query, db.dataAccess()) }
         SearchScreen(
             viewState = viewModel,
             tabSearchBarViewState = viewModel.tabSearchBarViewModel,
@@ -106,6 +106,11 @@ fun SearchScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
+            leadingIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
+                }
+            },
             viewState = tabSearchBarViewState,
             onSearch = onNavigateToSearch,
             onQueryChange = onTabSearchBarQueryChange
@@ -178,8 +183,7 @@ private class SearchViewStateForTest(
 
 private class TabSearchBarViewStateForTest(
     override val query: LiveData<String>,
-    override val searchSuggestions: LiveData<List<String>>,
-    override val leadingIcon: @Composable () -> Unit
+    override val searchSuggestions: LiveData<List<String>>
 ): ITabSearchBarViewState
 
 @Composable
@@ -218,11 +222,6 @@ private fun SearchScreenPreview() {
     val tabSearchBarViewState = TabSearchBarViewStateForTest(
         query = MutableLiveData("my song"),
         searchSuggestions = MutableLiveData(listOf()),
-        leadingIcon = {
-            IconButton(onClick = {}) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
-            }
-        }
     )
 
     AppTheme {
@@ -275,11 +274,6 @@ private fun SearchScreenPreviewError() {
     val tabSearchBarViewState = TabSearchBarViewStateForTest(
         query = MutableLiveData("my song"),
         searchSuggestions = MutableLiveData(listOf()),
-        leadingIcon = {
-            IconButton(onClick = {}) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
-            }
-        }
     )
 
     AppTheme {

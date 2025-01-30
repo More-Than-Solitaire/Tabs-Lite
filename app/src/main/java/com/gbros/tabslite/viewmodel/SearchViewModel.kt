@@ -1,15 +1,9 @@
 package com.gbros.tabslite.viewmodel
 
 import android.util.Log
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gbros.tabslite.LoadingState
-import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Search
 import com.gbros.tabslite.data.tab.ITab
@@ -29,7 +23,6 @@ private const val LOG_NAME = "tabslite.UgApi         "
 class SearchViewModel
 @AssistedInject constructor(
     @Assisted override val query: String,
-    @Assisted onNavigateBack: () -> Unit,
     @Assisted dataAccess: DataAccess
 ) : ViewModel(), ISearchViewState {
 
@@ -37,7 +30,7 @@ class SearchViewModel
 
     @AssistedFactory
     interface SearchViewModelFactory {
-        fun create(query: String, onNavigateBack: () -> Unit, dataAccess: DataAccess): SearchViewModel
+        fun create(query: String, dataAccess: DataAccess): SearchViewModel
     }
 
     //#endregion
@@ -78,11 +71,6 @@ class SearchViewModel
 
     val tabSearchBarViewModel = TabSearchBarViewModel(
         initialQuery = query,
-        leadingIcon = {
-            IconButton(onClick = onNavigateBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
-            }
-        },
         dataAccess = dataAccess
     )
 

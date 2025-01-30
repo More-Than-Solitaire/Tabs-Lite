@@ -36,29 +36,15 @@ interface DataAccess {
     @Query("SELECT * FROM tabs WHERE id = :tabId")
     suspend fun getTabInstance(tabId: Int): TabDataType
 
-    @Query("SELECT * FROM tabs WHERE id IN (:tabIds)")
-    fun getTabs(tabIds: List<Int>): LiveData<List<TabDataType>>
-
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id LEFT JOIN (SELECT id AS playlist_id, user_created, title, date_created, date_modified, description FROM playlist ) AS playlist ON playlist_entry.playlist_id = playlist.playlist_id WHERE playlist_entry.entry_id = :playlistEntryId")
     fun getTabFromPlaylistEntryId(playlistEntryId: Int): LiveData<TabWithDataPlaylistEntry?>
-
-    @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id LEFT JOIN (SELECT id AS playlist_id, user_created, title, date_created, date_modified, description FROM playlist ) AS playlist ON playlist_entry.playlist_id = playlist.playlist_id WHERE playlist_entry.playlist_id = :playlistId")
-    fun getTabsFromPlaylistEntryId(playlistId: Int): LiveData<List<TabWithDataPlaylistEntry>>
-
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT *, 1 as user_created, 'Favorites' as title, 0 as date_created, 0 as date_modified, 'Tabs you have favorited in the app' as description FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = $FAVORITES_PLAYLIST_ID")
-    fun getFavoriteTabs(): LiveData<List<TabWithDataPlaylistEntry>>
 
     @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE tabs.content is NULL OR tabs.content is ''")
     suspend fun getEmptyPlaylistTabIds(): List<Int>
 
     @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = :playlistId AND (tabs.content is NULL OR tabs.content is '')")
     suspend fun getEmptyPlaylistTabIds(playlistId: Int): List<Int>
-
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT *, 0 as user_created, 'Popular Tabs' as title, 0 as date_created, 0 as date_modified, 'Top tabs of today' as description FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = $TOP_TABS_PLAYLIST_ID")
-    fun getPopularTabs(): LiveData<List<TabWithDataPlaylistEntry>>
-
+    
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id INNER JOIN playlist ON playlist_entry.playlist_id = playlist.id WHERE playlist_entry.playlist_id = :playlistId")
     fun getPlaylistTabs(playlistId: Int): LiveData<List<TabWithDataPlaylistEntry>>
@@ -66,14 +52,8 @@ interface DataAccess {
     @Query("SELECT EXISTS(SELECT 1 FROM tabs WHERE id = :tabId AND content != '' LIMIT 1)")
     suspend fun existsWithContent(tabId: Int): Boolean
 
-    @Query("SELECT * FROM tabs WHERE song_name LIKE :songName + '%'")
-    fun getTabsByName(songName: String): LiveData<List<TabDataType>>
-
     @Query("SELECT *, 0 as transpose FROM tabs WHERE song_id = :songId")
     fun getTabsBySongId(songId: Int): LiveData<List<Tab>>
-
-    @Query("SELECT * FROM tabs WHERE artist_name LIKE '%' + :artist + '%'")
-    fun getTabsByArtist(artist: String): LiveData<List<TabDataType>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun forceInsert(tab: TabDataType)
@@ -84,14 +64,11 @@ interface DataAccess {
     //#endregion
 
     //#region playlist table
-    @Query("SELECT * FROM playlist")
+    @Query("SELECT * FROM playlist WHERE id != $FAVORITES_PLAYLIST_ID AND id != $TOP_TABS_PLAYLIST_ID")
     fun getLivePlaylists(): LiveData<List<Playlist>>
 
-    @Query("SELECT * FROM playlist")
+    @Query("SELECT * FROM playlist WHERE id != $FAVORITES_PLAYLIST_ID AND id != $TOP_TABS_PLAYLIST_ID")
     suspend fun getPlaylists(): List<Playlist>
-
-    @Query("UPDATE playlist SET date_modified = :dateModified WHERE id = :playlistId")
-    fun updateTimestamp(playlistId: Int, dateModified: Long)
 
     @Query("UPDATE playlist SET title = :newTitle WHERE id = :playlistId")
     suspend fun updateTitle(playlistId: Int, newTitle: String)
@@ -105,8 +82,11 @@ interface DataAccess {
     @Query("SELECT * FROM playlist WHERE id = :playlistId")
     suspend fun getPlaylist(playlistId: Int): Playlist
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun savePlaylist(playlist: Playlist): Long
+    @Upsert
+    suspend fun upsert(playlist: Playlist): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(playlist: Playlist): Long
 
     @Query("DELETE FROM playlist WHERE id = :playlistId")
     suspend fun deletePlaylist(playlistId: Int)
@@ -114,9 +94,6 @@ interface DataAccess {
     //#endregion
 
     //#region playlist entry table
-
-    @Query("SELECT * FROM playlist_entry WHERE playlist_id = :playlistId")
-    fun getLivePlaylistItems(playlistId: Int): LiveData<List<DataPlaylistEntry>>
 
     @Query("SELECT * FROM playlist_entry WHERE playlist_id = :playlistId AND next_entry_id IS NULL")
     suspend fun getLastEntryInPlaylist(playlistId: Int): DataPlaylistEntry?
@@ -186,7 +163,7 @@ interface DataAccess {
             = insert(FAVORITES_PLAYLIST_ID, tabId, null, null, System.currentTimeMillis(), transpose)
 
     @Transaction
-    suspend fun addToPlaylist(playlistId: Int, tabId: Int, transpose: Int) {
+    suspend fun appendToPlaylist(playlistId: Int, tabId: Int, transpose: Int) {
         val lastEntry = getLastEntryInPlaylist(playlistId = playlistId)
         val newEntry = DataPlaylistEntry(entryId = 0, playlistId = playlistId, tabId = tabId, nextEntryId = null, prevEntryId = lastEntry?.entryId, dateAdded = System.currentTimeMillis(), transpose = transpose )
         val newEntryId = insert(newEntry).toInt()
@@ -200,11 +177,8 @@ interface DataAccess {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: DataPlaylistEntry): Long
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(entries: List<DataPlaylistEntry>)
-
-    @Query("DELETE FROM playlist_entry WHERE entry_id = :entry_id")
-    suspend fun deleteEntry(entry_id: Int)
+    @Query("DELETE FROM playlist_entry WHERE entry_id = :entryId")
+    suspend fun deleteEntry(entryId: Int)
 
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId AND tab_id = :tabId")
     suspend fun deleteTabFromPlaylist(tabId: Int, playlistId: Int)
@@ -242,9 +216,6 @@ interface DataAccess {
     @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId)")
     suspend fun tabExistsInFavorites(tabId: Int): Boolean
 
-    @Query("SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId")
-    suspend fun getFavoritesPlaylistEntry(tabId: Int): DataPlaylistEntry?
-
     @Query("UPDATE playlist_entry SET transpose = :transpose WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId")
     suspend fun updateFavoriteTabTransposition(tabId: Int, transpose: Int)
 
@@ -260,12 +231,6 @@ interface DataAccess {
 
     @Query("SELECT * FROM chord_variation WHERE chord_id = :chordId")
     fun chordVariations(chordId: String): LiveData<List<ChordVariation>>
-
-    @Query("SELECT * FROM chord_variation WHERE id = :variationId")
-    suspend fun getChordVariation(variationId: String): ChordVariation
-
-    @Query("SELECT EXISTS(SELECT 1 FROM chord_variation WHERE id = :chordId LIMIT 1)")
-    suspend fun chordExists(chordId: String): Boolean
 
     @Query("SELECT DISTINCT chord_id FROM chord_variation WHERE chord_id IN (:chordIds)")
     suspend fun findAll(chordIds: List<String>): List<String>

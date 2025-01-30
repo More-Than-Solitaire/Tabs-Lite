@@ -43,7 +43,6 @@ object UgApi {
     // region private data
 
     private val gson = Gson()
-    private val cachedSearchSuggestions = HashMap<String, List<String>>()
 
     private var apiKey: String? = null
 
@@ -229,33 +228,14 @@ object UgApi {
 
             // clear top tabs playlist, then add all these to the top tabs playlist
             dataAccess.clearTopTabsPlaylist()
-            var prevId: Int?
-            var currentId: Int? = null
-            var nextId: Int? = null
             for (tab in topTabs) {
-                prevId = currentId
-                currentId = nextId
-                nextId = tab.tabId
-                if (currentId != null) {
-                    dataAccess.insert(
-                        TOP_TABS_PLAYLIST_ID,
-                        currentId,
-                        nextId,
-                        prevId,
-                        System.currentTimeMillis(),
-                        0
-                    )
-                }
-                dataAccess.insert(tab)
+                dataAccess.appendToPlaylist(
+                    playlistId = TOP_TABS_PLAYLIST_ID,
+                    tabId = tab.tabId,
+                    transpose = 0
+                )
             }
-            dataAccess.insert(
-                TOP_TABS_PLAYLIST_ID,
-                nextId!!,
-                null,
-                currentId,
-                System.currentTimeMillis(),
-                0
-            )  // save the last one
+            return@withContext 
         } catch (ex: Exception) {
             Log.w(LOG_NAME, "Couldn't fetch top tabs.", ex)
         }

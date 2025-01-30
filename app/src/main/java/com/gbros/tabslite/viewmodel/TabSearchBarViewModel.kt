@@ -1,14 +1,8 @@
 package com.gbros.tabslite.viewmodel
 
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.switchMap
-import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
@@ -24,17 +18,7 @@ class TabSearchBarViewModel(
     /**
      * The initial query value to use
      */
-    initialQuery: String,
-
-    /**
-     * The composable element to display at the beginning of the search bar. Defaults to the TabsLite
-     * icon.
-     */
-    override val leadingIcon: @Composable () -> Unit = { Icon(
-        imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.onSurfaceVariant
-    )},
+    initialQuery: String = "",
 
     /**
      * The data access element, for fetching and putting search suggestions

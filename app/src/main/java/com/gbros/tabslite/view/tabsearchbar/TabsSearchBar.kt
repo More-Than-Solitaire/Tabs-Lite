@@ -34,6 +34,11 @@ import com.gbros.tabslite.ui.theme.AppTheme
 @Composable
 fun TabsSearchBar(
     modifier: Modifier = Modifier,
+    leadingIcon: @Composable () -> Unit = { Icon(
+        imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant
+    )},
     viewState: ITabSearchBarViewState,
     onQueryChange: (newQuery: String) -> Unit,
     onSearch: (query: String) -> Unit
@@ -57,7 +62,7 @@ fun TabsSearchBar(
                 placeholder = {
                     Text(text = stringResource(id = R.string.app_action_search))
                 },
-                leadingIcon = viewState.leadingIcon,
+                leadingIcon = leadingIcon,
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -97,7 +102,6 @@ fun TabsSearchBarPreview() {
     class TabSearchBarViewStateForTest(
         override val query: LiveData<String>,
         override val searchSuggestions: LiveData<List<String>>,
-        override val leadingIcon: @Composable () -> Unit
     ) : ITabSearchBarViewState
 
     AppTheme {
@@ -105,12 +109,12 @@ fun TabsSearchBarPreview() {
             viewState = TabSearchBarViewStateForTest(
                 query = MutableLiveData("Test query"),
                 searchSuggestions = MutableLiveData(listOf("suggestion1", "suggestion 2")),
-                leadingIcon = { Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )}
             ),
+            leadingIcon = { Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )},
             onQueryChange = {},
             onSearch = {}
         )

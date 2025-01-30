@@ -39,8 +39,10 @@
     <string name="generic_action_share">Share</string>
     <string name="generic_action_more">More</string>
     <string name="generic_action_reload">Reload</string>
+    <string name="generic_action_menu">Menu</string>
     <string name="error">Error</string>
     <string name="info">Info</string>
+
 
     <string name="capo_zero" translation_description="The capo text used when the capo is not used">None</string>
     <string name="capo_11" translation_description="The capo text used when the capo is 11">%sth Fret</string>
@@ -62,6 +64,7 @@
     <string name="message_no_search_results" translation_description="Info message shown when there are no results to a search query. This could be due to an internet connection issue.">No search results. Revise your query or check your internet connection.</string>
     <string name="message_empty_list" translation_description="Default info message when there are no items in a list">Nothing here!</string>
     <string name="message_tab_load_unexpected_error" translation_description="Error message shown when a tab couldn't be loaded and an unexpected error occurred. %s represents the error message returned by the system.">Unexpected error loading tab: %s</string>
+    <string name="message_playlist_import_export_unexpected_error" translation_description="Error message shown when an import or export operation failed">Unexpected error importing/exporting playlists: %s</string>
 
     <string name="tab_title">%1$s by %2$s</string>
     <string name="tab_difficulty">Difficulty: %s</string>

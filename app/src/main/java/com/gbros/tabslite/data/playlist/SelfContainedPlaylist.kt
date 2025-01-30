@@ -26,15 +26,15 @@ data class SelfContainedPlaylist(
             for (entry in entriesToImport) {  // don't double-import favorites
                 currentlyImportedEntries++
                 onProgressChange((currentlyImportedEntries / entriesToImport.size.toFloat()) * 0.4f) // the 0.4f constant makes the import from file part take 40% of the progress, leaving 60% for the fetch from internet below
-                dataAccess.addToPlaylist(playlistId, entry.tabId, entry.transpose)
+                dataAccess.appendToPlaylist(playlistId, entry.tabId, entry.transpose)
             }
         } else {
-            val newPlaylistID = dataAccess.savePlaylist(
+            val newPlaylistID = dataAccess.upsert(
                 Playlist(userCreated = userCreated, title = title, dateCreated = System.currentTimeMillis(), dateModified = System.currentTimeMillis(), description = description))
             for (entry in entries) {
                 currentlyImportedEntries++
                 onProgressChange((currentlyImportedEntries / entries.size.toFloat()) * 0.4f) // the 0.4f constant makes the import from file part take 40% of the progress, leaving 60% for the fetch from internet below
-                dataAccess.addToPlaylist(newPlaylistID.toInt(), entry.tabId, entry.transpose)
+                dataAccess.appendToPlaylist(newPlaylistID.toInt(), entry.tabId, entry.transpose)
             }
         }
 

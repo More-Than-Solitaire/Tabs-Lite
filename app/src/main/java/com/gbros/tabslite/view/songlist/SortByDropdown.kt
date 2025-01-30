@@ -23,7 +23,7 @@ import com.gbros.tabslite.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SortByDropdown(selectedSort: SortBy, onOptionSelected: (SortBy) -> Unit) {
+fun SortByDropdown(selectedSort: SortBy?, onOptionSelected: (SortBy) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = {  }, modifier = Modifier
         .fillMaxWidth()
@@ -35,7 +35,8 @@ fun SortByDropdown(selectedSort: SortBy, onOptionSelected: (SortBy) -> Unit) {
                 .fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
         ) {
-            Text(String.format(stringResource(id = R.string.sort_by), SortBy.getString(selectedSort)))
+            Text(String.format(stringResource(id = R.string.sort_by),
+                selectedSort?.let { SortBy.getString(it) } ?: ""))
             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
         }
 

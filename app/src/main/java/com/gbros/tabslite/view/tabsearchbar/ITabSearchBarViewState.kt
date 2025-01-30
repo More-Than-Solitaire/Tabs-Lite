@@ -1,6 +1,5 @@
 package com.gbros.tabslite.view.tabsearchbar
 
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.LiveData
 
 interface ITabSearchBarViewState {
@@ -13,9 +12,4 @@ interface ITabSearchBarViewState {
      * The current search suggestions to be displayed
      */
     val searchSuggestions: LiveData<List<String>>
-
-    /**
-     * The composable element to display at the beginning of the search bar
-     */
-    val leadingIcon: @Composable () -> Unit
 }

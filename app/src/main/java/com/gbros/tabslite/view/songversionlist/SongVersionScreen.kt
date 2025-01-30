@@ -6,11 +6,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -18,6 +23,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
@@ -41,7 +47,7 @@ fun NavGraphBuilder.songVersionScreen(
     ) { navBackStackEntry ->
         val songId = navBackStackEntry.arguments!!.getInt(SONG_VERSION_NAV_ARG)
         val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: SongVersionViewModel = hiltViewModel<SongVersionViewModel, SongVersionViewModel.SongVersionViewModelFactory> { factory -> factory.create(songId, db.dataAccess(), onNavigateBack) }
+        val viewModel: SongVersionViewModel = hiltViewModel<SongVersionViewModel, SongVersionViewModel.SongVersionViewModelFactory> { factory -> factory.create(songId, db.dataAccess()) }
 
         SongVersionScreen(
             viewState = viewModel,
@@ -74,6 +80,11 @@ fun SongVersionScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
+            leadingIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
+                }
+            },
             viewState = tabSearchBarViewState,
             onSearch = onNavigateToSearch,
             onQueryChange = onTabSearchBarQueryChange

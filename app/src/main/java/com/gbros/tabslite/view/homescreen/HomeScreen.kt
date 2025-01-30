@@ -1,6 +1,7 @@
 package com.gbros.tabslite.view.homescreen
 
 import android.app.Activity.RESULT_OK
+import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -30,7 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,22 +45,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.playlist.Playlist
-import com.gbros.tabslite.data.playlist.PlaylistFileExportType
+import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.view.songlist.ISongListViewState
 import com.gbros.tabslite.view.songlist.SongListView
 import com.gbros.tabslite.view.songlist.SortBy
+import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
-import com.gbros.tabslite.viewmodel.TabSearchBarViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
+import com.gbros.tabslite.viewmodel.HomeViewModel
 
 private const val LOG_NAME = "tabslite.HomeScreen    "
 
@@ -79,8 +82,20 @@ fun NavGraphBuilder.homeScreen(
     onNavigateToPlaylist: (Int) -> Unit
 ) {
     composable(HOME_ROUTE) {
+        val db = AppDatabase.getInstance(LocalContext.current)
+        val viewModel: HomeViewModel = hiltViewModel<HomeViewModel, HomeViewModel.HomeViewModelFactory> { factory -> factory.create(dataAccess = db.dataAccess()) }
         HomeScreen(
-            onSearch = onNavigateToSearch,
+            viewState = viewModel,
+            favoriteSongListViewState = viewModel.favoriteSongListViewModel,
+            onFavoriteSongListSortByChange = viewModel.favoriteSongListViewModel::onSortSelectionChange,
+            popularSongListViewState = viewModel.popularSongListViewModel,
+            onPopularSongListSortByChange = viewModel.popularSongListViewModel::onSortSelectionChange,
+            tabSearchBarViewState = viewModel.tabSearchBarViewModel,
+            onTabSearchBarQueryChange = viewModel.tabSearchBarViewModel::onQueryChange,
+            onNavigateToSearch = onNavigateToSearch,
+            onExportPlaylists = viewModel::exportPlaylists,
+            onImportPlaylists = viewModel::importPlaylists,
+            onCreatePlaylist = viewModel::createPlaylist,
             navigateToTabByPlaylistEntryId = onNavigateToPlaylistEntry,
             navigateToPlaylistById = onNavigateToPlaylist,
             navigateToTabByTabId = onNavigateToTab
@@ -90,50 +105,43 @@ fun NavGraphBuilder.homeScreen(
 
 @Composable
 fun HomeScreen(
-    onSearch: (query: String) -> Unit,
+    viewState: IHomeViewState,
+    favoriteSongListViewState: ISongListViewState,
+    onFavoriteSongListSortByChange: (SortBy) -> Unit,
+    popularSongListViewState: ISongListViewState,
+    onPopularSongListSortByChange: (SortBy) -> Unit,
+    tabSearchBarViewState: ITabSearchBarViewState,
+    onTabSearchBarQueryChange: (query: String) -> Unit,
+    onNavigateToSearch: (query: String) -> Unit,
+    onExportPlaylists: (destinationFile: Uri, contentResolver: ContentResolver) -> Unit,
+    onImportPlaylists: (sourceFile: Uri, contentResolver: ContentResolver) -> Unit,
+    onCreatePlaylist: (title: String, description: String) -> Unit,
     navigateToTabByPlaylistEntryId: (id: Int) -> Unit,
     navigateToTabByTabId: (id: Int) -> Unit,
     navigateToPlaylistById: (id: Int) -> Unit
 ) {
-    val currentContext = LocalContext.current
-    val dataAccess = AppDatabase.getInstance(LocalContext.current).dataAccess()
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     var pagerNav by remember { mutableIntStateOf(-1) }
     var showAboutDialog by remember { mutableStateOf(false) }
-    val contentResolver = currentContext.contentResolver
+    val contentResolver = LocalContext.current.contentResolver
 
-    var playlistImportExportProgress by remember { mutableFloatStateOf(0f) }
     // handle playlist data export
-    var destinationForPlaylistExport: Uri? by remember { mutableStateOf(null) }
     val exportDataFilePickerActivityLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK && result.data != null) {
-            destinationForPlaylistExport = result.data!!.data
+        if (result.resultCode == RESULT_OK && result.data?.data != null) {
+            onExportPlaylists(result.data!!.data!!, contentResolver)
         } else {
-            Log.w(LOG_NAME, "Import playlists clicked, but no file chosen.")
+            Log.w(LOG_NAME, "Export playlists clicked, but no file chosen.")
         }
     }
 
     // handle playlist data import
-    var fileToImportPlaylistData: Uri? by remember { mutableStateOf(null) }
-    val importPlaylistsPickerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {fileToImport ->
-        fileToImportPlaylistData = fileToImport
+    val importPlaylistsPickerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { fileToImport ->
+        if (fileToImport != null) {
+            onImportPlaylists(fileToImport, contentResolver)
+        } else {
+            Log.w(LOG_NAME, "Import Playlists clicked, but fileToImport is null")
+        }
     }
-    val tabSearchBarViewModel = TabSearchBarViewModel(
-        initialQuery = "",
-        leadingIcon = {
-            IconButton(onClick = { showAboutDialog = true }) {
-                Box(modifier = Modifier) {
-                    CircularProgressIndicator(progress = { playlistImportExportProgress })
-                }
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        },
-        dataAccess = dataAccess
-    )
 
     if (showAboutDialog) {
         AboutDialog(
@@ -170,9 +178,22 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 2.dp),
-                onSearch = onSearch,
-                viewState = tabSearchBarViewModel,
-                onQueryChange = tabSearchBarViewModel::onQueryChange
+                leadingIcon = {
+                    IconButton(onClick = { showAboutDialog = true }) {
+                        Box(modifier = Modifier) {
+                            val importProgress = viewState.playlistImportProgress.observeAsState(0f)
+                            CircularProgressIndicator(progress = { importProgress.value })
+                        }
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                viewState = tabSearchBarViewState,
+                onSearch = onNavigateToSearch,
+                onQueryChange = onTabSearchBarQueryChange
             )
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
@@ -216,19 +237,29 @@ fun HomeScreen(
         ) { page ->
             when (page) {
                 // Favorites page
-                0 -> SongListView(liveSongs = dataAccess.getFavoriteTabs(), navigateToTabById = navigateToTabByTabId, navigateByPlaylistEntryId = false, defaultSortValue = SortBy.DateAdded,
-                    liveSortByPreference = dataAccess.getLivePreference(Preference.FAVORITES_SORT),
-                    onSortPreferenceChange = { launch { dataAccess.upsert(it) } },
-                    emptyListText = stringResource(R.string.empty_favorites))
+                0 -> SongListView(
+                    viewState = favoriteSongListViewState,
+                    emptyListText = stringResource(R.string.empty_favorites),
+                    onSortSelectionChange = onFavoriteSongListSortByChange,
+                    navigateToTabById = navigateToTabByTabId,
+                    navigateByPlaylistEntryId = false,
+                )
 
                 // Popular page
-                1 -> SongListView(liveSongs = dataAccess.getPopularTabs(), navigateToTabById = navigateToTabByPlaylistEntryId, navigateByPlaylistEntryId = true, defaultSortValue = SortBy.Popularity,
-                    liveSortByPreference = dataAccess.getLivePreference(Preference.POPULAR_SORT),
-                    onSortPreferenceChange = { launch { dataAccess.upsert(it) } },
-                    emptyListText = stringResource(R.string.empty_popular))
+                1 -> SongListView(
+                    viewState = popularSongListViewState,
+                    emptyListText = stringResource(R.string.empty_popular),
+                    onSortSelectionChange = onPopularSongListSortByChange,
+                    navigateToTabById = navigateToTabByPlaylistEntryId,
+                    navigateByPlaylistEntryId = true,
+                )
 
                 // Playlists page
-                2 -> PlaylistPage(livePlaylists = dataAccess.getLivePlaylists(), navigateToPlaylistById = navigateToPlaylistById)
+                2 -> PlaylistListView(
+                    livePlaylists = viewState.playlists,
+                    onCreatePlaylist = onCreatePlaylist,
+                    navigateToPlaylistById = navigateToPlaylistById
+                )
             }
         }
     }
@@ -239,67 +270,6 @@ fun HomeScreen(
             pagerState.animateScrollToPage(pagerNav)
         }
         pagerNav = -1
-    }
-
-    // export playlists if a filename is chosen to export playlists to
-    LaunchedEffect(key1 = destinationForPlaylistExport) {
-        if (destinationForPlaylistExport != null) {
-            playlistImportExportProgress = 0.2f
-            val allUserPlaylists = dataAccess.getPlaylists().filter { playlist -> playlist.playlistId != Playlist.TOP_TABS_PLAYLIST_ID }
-            val allPlaylists = mutableListOf(Playlist(-1, false, currentContext.getString(R.string.title_favorites_playlist), 0, 0, "")) // add the Favorites playlist
-            allPlaylists.addAll(allUserPlaylists)
-            playlistImportExportProgress = 0.6f
-            val allSelfContainedPlaylists = dataAccess.getSelfContainedPlaylists(allPlaylists)
-            val playlistsAndEntries = Json.encodeToString(PlaylistFileExportType(playlists = allSelfContainedPlaylists))
-            playlistImportExportProgress = 0.8f
-
-            contentResolver.openOutputStream(destinationForPlaylistExport!!).use { outputStream ->
-                outputStream?.write(playlistsAndEntries.toByteArray())
-                outputStream?.flush()
-            }
-
-            playlistImportExportProgress = 1f
-            delay(700)
-        }
-
-        // reset for next export
-        playlistImportExportProgress = 0f
-        destinationForPlaylistExport = null
-    }
-
-    // import playlists when a file is chosen to import playlists from
-    LaunchedEffect(key1 = fileToImportPlaylistData) {
-        val fileToImport = fileToImportPlaylistData
-        var dataToImport: String? = null
-        if (fileToImport != null) {
-            playlistImportExportProgress = .05f
-            // read file
-            contentResolver.openInputStream(fileToImport).use {
-                dataToImport = it?.reader()?.readText()
-            }
-        }
-
-        if (!dataToImport.isNullOrBlank()) {
-            val importedData = Json.decodeFromString<PlaylistFileExportType>(dataToImport!!)
-            // import all playlists (except Favorites and Top Tabs)
-            val totalEntriesToImport = importedData.playlists.sumOf { pl -> pl.entries.size }.toFloat()
-            var progressFromPreviouslyImportedPlaylists = 0f  // track the amount of progress used by previous playlists, used to add current progress to
-            for (playlist in importedData.playlists.filter { pl -> pl.playlistId != Playlist.TOP_TABS_PLAYLIST_ID }) {
-                val progressForThisPlaylist = playlist.entries.size.toFloat() / totalEntriesToImport  // available portion of 100% to use for this playlist
-                playlist.importToDatabase(dataAccess = dataAccess, onProgressChange = { progress ->
-                    playlistImportExportProgress = progressFromPreviouslyImportedPlaylists + (progress * progressForThisPlaylist)
-                })
-                progressFromPreviouslyImportedPlaylists += progressForThisPlaylist
-            }
-
-            // pause at 100% progress for a second before setting progress to 0
-            playlistImportExportProgress = 1f
-            delay(700)
-        }
-
-        // reset for next import
-        playlistImportExportProgress = 0f
-        fileToImportPlaylistData = null
     }
 }
 
@@ -313,10 +283,60 @@ fun TabRowItem(selected: Boolean, inactiveIcon: ImageVector, activeIcon: ImageVe
     )
 }
 
+//#region preview / classes for test
+
 @Composable @Preview
 private fun HomeScreenPreview() {
+    val viewState = HomeViewStateForTest(
+        playlistImportState = MutableLiveData(LoadingState.Loading),
+        playlistImportProgress = MutableLiveData(0.6f),
+        playlists = MutableLiveData(listOf())
+    )
+
+    val songListState = SongListViewStateForTest(
+        songs = MutableLiveData(listOf()),
+        sortBy = MutableLiveData(SortBy.DateAdded)
+    )
+
+    val tabSearchBarViewState = TabSearchBarViewStateForTest(
+        query = MutableLiveData(""),
+        searchSuggestions = MutableLiveData(listOf())
+    )
+
     AppTheme {
-        HomeScreen({}, {}, {}, {})
+        HomeScreen(
+            viewState = viewState,
+            favoriteSongListViewState = songListState,
+            onFavoriteSongListSortByChange = {},
+            popularSongListViewState = songListState,
+            onPopularSongListSortByChange = {},
+            tabSearchBarViewState = tabSearchBarViewState,
+            onTabSearchBarQueryChange = {},
+            onNavigateToSearch = {},
+            onExportPlaylists = {_,_->},
+            onImportPlaylists = {_,_->},
+            onCreatePlaylist = {_,_->},
+            navigateToTabByPlaylistEntryId = {},
+            navigateToTabByTabId = {},
+            navigateToPlaylistById = {}
+        )
     }
 }
 
+private class HomeViewStateForTest(
+    override val playlistImportProgress: LiveData<Float>,
+    override val playlistImportState: LiveData<LoadingState>,
+    override val playlists: LiveData<List<Playlist>>
+) : IHomeViewState
+
+private class SongListViewStateForTest(
+    override val songs: LiveData<List<TabWithDataPlaylistEntry>>,
+    override val sortBy: LiveData<SortBy>
+) : ISongListViewState
+
+private class TabSearchBarViewStateForTest(
+    override val query: LiveData<String>,
+    override val searchSuggestions: LiveData<List<String>>
+) : ITabSearchBarViewState
+
+//#endregion
