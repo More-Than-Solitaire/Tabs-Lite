@@ -2,8 +2,10 @@ package com.gbros.tabslite.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.gbros.tabslite.data.DataAccess
+import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +35,16 @@ class TabSearchBarViewModel(
      */
     override val query: MutableLiveData<String> = MutableLiveData(initialQuery)
 
+    /**
+     * A couple suggested tabs already loaded in the database
+     */
+    override val tabSuggestions: LiveData<List<ITab>> = query.switchMap { currentQuery ->
+        dataAccess.findMatchingTabs(currentQuery).map { a -> a }
+    }
+
+    /**
+     * The current search suggestions to be displayed
+     */
     override val searchSuggestions: LiveData<List<String>> = query.switchMap { currentQuery ->
         dataAccess.getSearchSuggestions(currentQuery)
     }

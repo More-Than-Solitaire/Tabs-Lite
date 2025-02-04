@@ -61,9 +61,16 @@ interface DataAccess {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(tab: TabDataType)
 
+    /**
+     * Get top 7 downloaded tabs whose id, title, or artist matches the provided query
+     */
+    @Query("SELECT *, 0 as transpose FROM tabs WHERE content != '' AND (id = :query OR song_name LIKE '%' || :query || '%' OR artist_name LIKE '%' || :query || '%') LIMIT 7")
+    fun findMatchingTabs(query: String): LiveData<List<Tab>>
+
     //#endregion
 
     //#region playlist table
+
     @Query("SELECT * FROM playlist WHERE id != $FAVORITES_PLAYLIST_ID AND id != $TOP_TABS_PLAYLIST_ID")
     fun getLivePlaylists(): LiveData<List<Playlist>>
 

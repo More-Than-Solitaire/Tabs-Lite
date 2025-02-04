@@ -87,7 +87,8 @@ fun SongVersionScreen(
             },
             viewState = tabSearchBarViewState,
             onSearch = onNavigateToSearch,
-            onQueryChange = onTabSearchBarQueryChange
+            onQueryChange = onTabSearchBarQueryChange,
+            onNavigateToTabById = onNavigateToTabByTabId
         )
 
         SongVersionList(songVersions = songVersions, navigateToTabByTabId = onNavigateToTabByTabId)

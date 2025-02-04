@@ -45,6 +45,7 @@ fun TabsLiteNavGraph() {
         searchScreen(
             onNavigateToSongId = navController::navigateToSongVersion,
             onNavigateToSearch = navController::navigateToSearch,
+            onNavigateToTabByTabId = navController::navigateToTab,
             onNavigateBack = navController::popUpToHome
         )
 

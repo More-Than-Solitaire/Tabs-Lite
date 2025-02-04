@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.gbros.tabslite.R
+import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,12 +43,14 @@ fun TabsSearchBar(
     )},
     viewState: ITabSearchBarViewState,
     onQueryChange: (newQuery: String) -> Unit,
-    onSearch: (query: String) -> Unit
+    onSearch: (query: String) -> Unit,
+    onNavigateToTabById: (tabId: Int) -> Unit
 ) {
     val query = viewState.query.observeAsState("")
     var active by remember { mutableStateOf(false) }
     val lazyColumnState = rememberLazyListState()
     val searchSuggestions = viewState.searchSuggestions.observeAsState(listOf())
+    val suggestedTabs = viewState.tabSuggestions.observeAsState(listOf())
 
     val onActiveChange = {expanded: Boolean -> active = expanded}
     SearchBar(
@@ -77,6 +81,14 @@ fun TabsSearchBar(
         content = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp), state = lazyColumnState) {
                 if (query.value.isNotBlank()) {
+                    items(items = suggestedTabs.value) { suggestedTab ->
+                        SuggestedTab(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            tab = suggestedTab,
+                            onClick = onNavigateToTabById
+                        )
+                    }
                     items(items = searchSuggestions.value) { searchSuggestion ->
                         SearchSuggestion(
                             suggestionText = searchSuggestion,
@@ -97,6 +109,7 @@ fun TabsSearchBarPreview() {
     class TabSearchBarViewStateForTest(
         override val query: LiveData<String>,
         override val searchSuggestions: LiveData<List<String>>,
+        override val tabSuggestions: LiveData<List<ITab>>,
     ) : ITabSearchBarViewState
 
     AppTheme {
@@ -104,6 +117,7 @@ fun TabsSearchBarPreview() {
             viewState = TabSearchBarViewStateForTest(
                 query = MutableLiveData("Test query"),
                 searchSuggestions = MutableLiveData(listOf("suggestion1", "suggestion 2")),
+                tabSuggestions = MutableLiveData(listOf(Tab(0)))
             ),
             leadingIcon = { Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
@@ -111,7 +125,8 @@ fun TabsSearchBarPreview() {
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )},
             onQueryChange = {},
-            onSearch = {}
+            onSearch = {},
+            onNavigateToTabById = {}
         )
     }
 }

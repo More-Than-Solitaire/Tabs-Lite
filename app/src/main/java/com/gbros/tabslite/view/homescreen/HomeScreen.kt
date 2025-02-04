@@ -60,6 +60,7 @@ import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.playlist.Playlist
+import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.playlists.PlaylistsSortBy
@@ -217,7 +218,8 @@ fun HomeScreen(
                 },
                 viewState = tabSearchBarViewState,
                 onSearch = onNavigateToSearch,
-                onQueryChange = onTabSearchBarQueryChange
+                onQueryChange = onTabSearchBarQueryChange,
+                onNavigateToTabById = navigateToTabByTabId
             )
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
@@ -391,7 +393,8 @@ private fun HomeScreenPreview() {
 
     val tabSearchBarViewState = TabSearchBarViewStateForTest(
         query = MutableLiveData(""),
-        searchSuggestions = MutableLiveData(listOf())
+        searchSuggestions = MutableLiveData(listOf()),
+        tabSuggestions = MutableLiveData(listOf())
     )
 
     AppTheme {
@@ -429,7 +432,8 @@ private class SongListViewStateForTest(
 
 private class TabSearchBarViewStateForTest(
     override val query: LiveData<String>,
-    override val searchSuggestions: LiveData<List<String>>
+    override val searchSuggestions: LiveData<List<String>>,
+    override val tabSuggestions: LiveData<List<ITab>>
 ) : ITabSearchBarViewState
 
 //#endregion
