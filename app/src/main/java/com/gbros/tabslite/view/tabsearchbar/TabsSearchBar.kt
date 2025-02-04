@@ -49,7 +49,6 @@ fun TabsSearchBar(
     val searchSuggestions = viewState.searchSuggestions.observeAsState(listOf())
 
     val onActiveChange = {expanded: Boolean -> active = expanded}
-    val colors1 = SearchBarDefaults.colors()
     SearchBar(
         inputField = {
             SearchBarDefaults.InputField(
@@ -74,10 +73,6 @@ fun TabsSearchBar(
         expanded = active,
         onExpandedChange = onActiveChange,
         modifier = modifier,
-        shape = SearchBarDefaults.inputFieldShape,
-        colors = colors1,
-        tonalElevation = SearchBarDefaults.TonalElevation,
-        shadowElevation = SearchBarDefaults.ShadowElevation,
         windowInsets = SearchBarDefaults.windowInsets,
         content = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp), state = lazyColumnState) {

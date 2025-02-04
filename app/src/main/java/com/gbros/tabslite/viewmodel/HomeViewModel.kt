@@ -6,13 +6,16 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.playlist.PlaylistFileExportType
 import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.homescreen.IHomeViewState
+import com.gbros.tabslite.view.playlists.PlaylistsSortBy
 import com.gbros.tabslite.view.songlist.SortBy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -55,9 +58,24 @@ class HomeViewModel
     override val playlistImportState: MutableLiveData<LoadingState> = MutableLiveData()
 
     /**
-     * The user's saved playlists
+     * How the playlists are currently sorted
      */
-    override val playlists: LiveData<List<Playlist>> = dataAccess.getLivePlaylists()
+    override val playlistsSortBy: LiveData<PlaylistsSortBy> = dataAccess.getLivePreference(Preference.PLAYLIST_SORT).map { sortByPreference ->
+        PlaylistsSortBy.valueOf(sortByPreference.value)
+    }
+
+    /**
+     * The user's saved playlists, sorted by [playlistsSortBy]
+     */
+    override val playlists: LiveData<List<Playlist>> = dataAccess.getLivePlaylists().combine(playlistsSortBy) { playlists, currentSortBy ->
+        when(currentSortBy) {
+            PlaylistsSortBy.Name -> playlists?.sortedBy { it.title } ?: listOf()
+            PlaylistsSortBy.DateAdded -> playlists?.sortedByDescending { it.dateCreated } ?: listOf()
+            PlaylistsSortBy.DateModified -> playlists?.sortedByDescending { it.dateModified } ?: listOf()
+            null -> playlists ?: listOf()
+        }
+    }
+
 
     //#endregion
 
@@ -91,6 +109,15 @@ class HomeViewModel
     //#endregion
 
     //#region public methods
+
+    /**
+     * handle playlist sorting
+     */
+    fun sortPlaylists(sortBy: PlaylistsSortBy){
+        CoroutineScope(Dispatchers.IO).launch {
+            dataAccess.upsert(Preference(Preference.PLAYLIST_SORT, sortBy.name))
+        }
+    }
 
     /**
      * Export all the user's playlists (including Favorites) to the specified file

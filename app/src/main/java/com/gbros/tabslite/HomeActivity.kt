@@ -15,6 +15,7 @@ import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.view.playlists.PlaylistsSortBy
 import com.gbros.tabslite.view.songlist.SortBy
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +46,7 @@ class HomeActivity : ComponentActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             dataAccess.insert(Preference(Preference.FAVORITES_SORT, SortBy.DateAdded.name))
             dataAccess.insert(Preference(Preference.POPULAR_SORT, SortBy.Popularity.name))
-            dataAccess.insert(Preference(Preference.PLAYLIST_SORT, SortBy.Name.name))
+            dataAccess.insert(Preference(Preference.PLAYLIST_SORT, PlaylistsSortBy.Name.name))
             dataAccess.insert(Preference(Preference.AUTOSCROLL_DELAY, .5f.toString()))
         }
 

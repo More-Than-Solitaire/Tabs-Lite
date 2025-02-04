@@ -3,6 +3,7 @@ package com.gbros.tabslite.view.homescreen
 import android.app.Activity.RESULT_OK
 import android.content.ContentResolver
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -11,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,16 +32,19 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -57,9 +62,11 @@ import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.view.playlists.PlaylistsSortBy
 import com.gbros.tabslite.view.songlist.ISongListViewState
 import com.gbros.tabslite.view.songlist.SongListView
 import com.gbros.tabslite.view.songlist.SortBy
+import com.gbros.tabslite.view.songlist.SortByDropdown
 import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.viewmodel.HomeViewModel
@@ -90,6 +97,7 @@ fun NavGraphBuilder.homeScreen(
             onFavoriteSongListSortByChange = viewModel.favoriteSongListViewModel::onSortSelectionChange,
             popularSongListViewState = viewModel.popularSongListViewModel,
             onPopularSongListSortByChange = viewModel.popularSongListViewModel::onSortSelectionChange,
+            onPlaylistsSortByChange = viewModel::sortPlaylists,
             tabSearchBarViewState = viewModel.tabSearchBarViewModel,
             onTabSearchBarQueryChange = viewModel.tabSearchBarViewModel::onQueryChange,
             onNavigateToSearch = onNavigateToSearch,
@@ -110,6 +118,7 @@ fun HomeScreen(
     onFavoriteSongListSortByChange: (SortBy) -> Unit,
     popularSongListViewState: ISongListViewState,
     onPopularSongListSortByChange: (SortBy) -> Unit,
+    onPlaylistsSortByChange: (PlaylistsSortBy) -> Unit,
     tabSearchBarViewState: ITabSearchBarViewState,
     onTabSearchBarQueryChange: (query: String) -> Unit,
     onNavigateToSearch: (query: String) -> Unit,
@@ -121,7 +130,18 @@ fun HomeScreen(
     navigateToPlaylistById: (id: Int) -> Unit
 ) {
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
+    val secondaryPagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
+    val scrollingFollowingPair by remember {  // handle the sort by dropdown being in a separate pager
+        derivedStateOf {
+            if (pagerState.isScrollInProgress) {
+                pagerState to secondaryPagerState
+            } else if (secondaryPagerState.isScrollInProgress) {
+                secondaryPagerState to pagerState
+            } else null
+        }
+    }
     var pagerNav by remember { mutableIntStateOf(-1) }
+    
     var showAboutDialog by remember { mutableStateOf(false) }
     val contentResolver = LocalContext.current.contentResolver
 
@@ -166,12 +186,16 @@ fun HomeScreen(
         )
     }
 
-    Column(
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.background)
-    ) {
+
+    val content = @Composable {
+        val columnModifier = if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Modifier
+                .fillMaxWidth(0.4f)
+        } else {
+            Modifier
+        }
         Column(
-            modifier = Modifier
+            modifier = columnModifier
                 .background(color = MaterialTheme.colorScheme.background)
         ) {
             TabsSearchBar(
@@ -224,13 +248,43 @@ fun HomeScreen(
                     pagerNav = if (pagerNav != 2) 2 else -1
                 }
             }
+
+            // Sort By dropdowns
+            HorizontalPager(
+                state = secondaryPagerState,
+                verticalAlignment = Alignment.Top,
+                beyondViewportPageCount = 3,
+                contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 8.dp),
+                pageSpacing = 8.dp,
+                modifier = Modifier
+            ) { page ->
+                when (page) {
+                    // Favorites page
+                    0 -> SortByDropdown(
+                        selectedSort = favoriteSongListViewState.sortBy.observeAsState().value,
+                        onOptionSelected = onFavoriteSongListSortByChange
+                    )
+
+                    // Popular page
+                    1 -> SortByDropdown(
+                        selectedSort = popularSongListViewState.sortBy.observeAsState().value,
+                        onOptionSelected = onPopularSongListSortByChange
+                    )
+
+                    // Playlists page
+                    2 -> SortByDropdown(
+                        selectedSort = viewState.playlistsSortBy.observeAsState().value,
+                        onOptionSelected = onPlaylistsSortByChange
+                    )
+                }
+            }
         }
 
         HorizontalPager(
             state = pagerState,
             verticalAlignment = Alignment.Top,
             beyondViewportPageCount = 3,
-            contentPadding = PaddingValues(top = 8.dp, bottom = 0.dp, start = 8.dp, end = 8.dp),
+            contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 8.dp),
             pageSpacing = 8.dp,
             modifier = Modifier
                 .fillMaxHeight()
@@ -264,12 +318,43 @@ fun HomeScreen(
         }
     }
 
+    // adjust view based on device orientation
+    if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        Row (
+            modifier = Modifier
+                .background(color = MaterialTheme.colorScheme.background),
+            content = {
+                content()
+            }
+        )
+    } else {
+        Column(
+            modifier = Modifier
+                .background(color = MaterialTheme.colorScheme.background),
+            content = {
+                content()
+            }
+        )
+    }
+
     // scroll to page when that page's tab is clicked
     LaunchedEffect(pagerNav) {
         if (pagerNav >= 0 && pagerNav != pagerState.currentPage) {
             pagerState.animateScrollToPage(pagerNav)
         }
         pagerNav = -1
+    }
+
+    // sync secondary horizontal pager for sort by dropdown to primary (and vice versa)
+    LaunchedEffect(scrollingFollowingPair) {
+        val (scrollingState, followingState) = scrollingFollowingPair ?: return@LaunchedEffect
+        snapshotFlow { Pair(scrollingState.currentPage, scrollingState.currentPageOffsetFraction) }
+            .collect { (currentPage, currentPageOffsetFraction) ->
+                followingState.scrollToPage(
+                    page = currentPage,
+                    pageOffsetFraction = currentPageOffsetFraction
+                )
+            }
     }
 }
 
@@ -285,12 +370,18 @@ fun TabRowItem(selected: Boolean, inactiveIcon: ImageVector, activeIcon: ImageVe
 
 //#region preview / classes for test
 
-@Composable @Preview
+@Preview(
+    showSystemUi = true,
+    device = "spec:width=411dp,height=891dp,dpi=420,isRound=false,chinSize=0dp,orientation=landscape"
+)
+@Preview
+@Composable
 private fun HomeScreenPreview() {
     val viewState = HomeViewStateForTest(
         playlistImportState = MutableLiveData(LoadingState.Loading),
         playlistImportProgress = MutableLiveData(0.6f),
-        playlists = MutableLiveData(listOf())
+        playlists = MutableLiveData(listOf()),
+        playlistsSortBy = MutableLiveData(PlaylistsSortBy.Name)
     )
 
     val songListState = SongListViewStateForTest(
@@ -310,6 +401,7 @@ private fun HomeScreenPreview() {
             onFavoriteSongListSortByChange = {},
             popularSongListViewState = songListState,
             onPopularSongListSortByChange = {},
+            onPlaylistsSortByChange = {},
             tabSearchBarViewState = tabSearchBarViewState,
             onTabSearchBarQueryChange = {},
             onNavigateToSearch = {},
@@ -326,7 +418,8 @@ private fun HomeScreenPreview() {
 private class HomeViewStateForTest(
     override val playlistImportProgress: LiveData<Float>,
     override val playlistImportState: LiveData<LoadingState>,
-    override val playlists: LiveData<List<Playlist>>
+    override val playlists: LiveData<List<Playlist>>,
+    override val playlistsSortBy: LiveData<PlaylistsSortBy>
 ) : IHomeViewState
 
 private class SongListViewStateForTest(

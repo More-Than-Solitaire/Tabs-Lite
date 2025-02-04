@@ -17,9 +17,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.gbros.tabslite.view.card.InfoCard
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.view.card.InfoCard
 
 @Composable
 fun PlaylistList(modifier: Modifier = Modifier, livePlaylists: LiveData<List<Playlist>>, navigateToPlaylistById: (Int) -> Unit, verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp)){
@@ -41,6 +41,9 @@ fun PlaylistList(modifier: Modifier = Modifier, livePlaylists: LiveData<List<Pla
             verticalArrangement = verticalArrangement,
             modifier = modifier
         ) {
+            item {
+                Spacer(modifier = Modifier.height(height = 6.dp))
+            }
             items(playlists) { playlist ->
                 PlaylistListItem(playlist = playlist) {
                     navigateToPlaylistById(playlist.playlistId)

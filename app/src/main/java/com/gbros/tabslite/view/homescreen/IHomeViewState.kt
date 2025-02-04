@@ -3,6 +3,8 @@ package com.gbros.tabslite.view.homescreen
 import androidx.lifecycle.LiveData
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.data.playlist.Playlist
+import com.gbros.tabslite.view.playlists.PlaylistsSortBy
+import com.gbros.tabslite.view.songlist.SortBy
 
 interface IHomeViewState {
     /**
@@ -19,4 +21,9 @@ interface IHomeViewState {
      * The user's saved playlists
      */
     val playlists: LiveData<List<Playlist>>
+
+    /**
+     * The selected sort option for playlists
+     */
+    val playlistsSortBy: LiveData<PlaylistsSortBy>
 }

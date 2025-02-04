@@ -1,7 +1,6 @@
 package com.gbros.tabslite.view.songlist
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -18,8 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
+import com.gbros.tabslite.view.playlists.PlaylistsSortBy
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,7 +26,7 @@ fun SortByDropdown(selectedSort: SortBy?, onOptionSelected: (SortBy) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = {  }, modifier = Modifier
         .fillMaxWidth()
-        .padding(bottom = 8.dp)) {
+    ) {
         Button(
             onClick = { expanded = !expanded},
             modifier = Modifier
@@ -49,5 +48,34 @@ fun SortByDropdown(selectedSort: SortBy?, onOptionSelected: (SortBy) -> Unit) {
             }
         }
     }
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SortByDropdown(selectedSort: PlaylistsSortBy?, onOptionSelected: (PlaylistsSortBy) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = {  }, modifier = Modifier
+        .fillMaxWidth()
+    ) {
+        Button(
+            onClick = { expanded = !expanded},
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
+        ) {
+            Text(String.format(stringResource(id = R.string.sort_by),
+                selectedSort?.let { PlaylistsSortBy.getString(it) } ?: ""))
+            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+        }
+
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            for (sortOption in PlaylistsSortBy.entries) {
+                DropdownMenuItem(
+                    text = { Text(text = PlaylistsSortBy.getString(sortOption)) },
+                    onClick = { expanded = false; onOptionSelected(sortOption) }
+                )
+            }
+        }
+    }
 }
