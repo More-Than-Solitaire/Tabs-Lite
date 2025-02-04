@@ -63,7 +63,6 @@ fun NavController.navigateToTab(tabId: Int) {
 }
 
 fun NavGraphBuilder.tabScreen(
-    onNavigateToPlaylistEntry: (Int) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     composable(
@@ -72,7 +71,7 @@ fun NavGraphBuilder.tabScreen(
     ) { navBackStackEntry ->
         val id = navBackStackEntry.arguments!!.getInt(TAB_NAV_ARG)
         val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(id, false, db.dataAccess(), onNavigateToPlaylistEntry)}
+        val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(id = id, idIsPlaylistEntryId = false, db.dataAccess(), navigateToPlaylistEntryById = { /* ignore playlist navigation */ })}
 
         TabScreen(
             viewState = viewModel,
@@ -121,7 +120,7 @@ fun NavGraphBuilder.playlistEntryScreen(
     ) { navBackStackEntry ->
         val id = navBackStackEntry.arguments!!.getInt(PLAYLIST_ENTRY_NAV_ARG)
         val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(id, true, db.dataAccess(), onNavigateToPlaylistEntry)}
+        val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(id = id, idIsPlaylistEntryId = true, dataAccess = db.dataAccess(), navigateToPlaylistEntryById = onNavigateToPlaylistEntry)}
         TabScreen(
             viewState = viewModel,
             onNavigateBack = onNavigateBack,

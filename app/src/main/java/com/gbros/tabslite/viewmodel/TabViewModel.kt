@@ -3,6 +3,7 @@ package com.gbros.tabslite.viewmodel
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
+import android.content.res.Resources.NotFoundException
 import android.util.Log
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.platform.ClipboardManager
@@ -33,6 +34,7 @@ import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
+import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.tabview.ITabViewState
 import dagger.assisted.Assisted
@@ -170,10 +172,17 @@ class TabViewModel
         }
         reloadJob.invokeOnCompletion { ex ->
             if (ex != null) {
-                Log.e(LOG_NAME, "Unexpected error loading tab $id (playlistEntryId: $idIsPlaylistEntryId): ${ex.message}", ex)
-                _state.postValue(LoadingState.Error("Unexpected error loading tab from the internet: ${ex.message}"))
+                if (ex is UgApi.NoInternetException) {
+                    Log.i(LOG_NAME, "No internet while fetching tab $id (playlistEntryId: $idIsPlaylistEntryId)", ex)
+                    _state.postValue(LoadingState.Error("Can't load this tab from the internet: No internet access."))
+                } else if (ex is NotFoundException) {
+                    Log.e(LOG_NAME, "Tab $id (playlistEntry: $idIsPlaylistEntryId) not found.", ex)
+                    _state.postValue(LoadingState.Error("Tab $id (playlist entry: $idIsPlaylistEntryId) not found. Please report this issue to the developer."))
+                } else {
+                    Log.e(LOG_NAME, "Unexpected error loading tab $id (playlistEntryId: $idIsPlaylistEntryId): ${ex.message}", ex)
+                    _state.postValue(LoadingState.Error("Unexpected error loading tab from the internet: ${ex.message}"))
+                }
             } else {
-                tab
                 _state.postValue(LoadingState.Success)
             }
         }

@@ -32,7 +32,7 @@ private const val LOG_NAME = "tabslite.SongListView  "
 fun SongListView(
     modifier: Modifier = Modifier,
     viewState: ISongListViewState,
-    navigateByPlaylistEntryId: Boolean = false,
+    navigateByPlaylistEntryId: Boolean,
     navigateToTabById: (id: Int) -> Unit,
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp),
     emptyListText: String = stringResource(id = R.string.message_empty_list),
@@ -59,7 +59,10 @@ fun SongListView(
                 items(songs.value) { song ->
                     SongListItem(
                         song = song,
-                        onClick = { navigateToTabById(if (navigateByPlaylistEntryId) song.entryId else song.tabId) })
+                        onClick = {
+                            navigateToTabById(if (navigateByPlaylistEntryId) song.entryId else song.tabId)
+                        }
+                    )
                 }
                 item {
                     Spacer(modifier = Modifier.height(height = 24.dp))
@@ -81,7 +84,12 @@ private fun SongListViewPreview(){
     )
 
     AppTheme {
-        SongListView(viewState = viewState, navigateToTabById = {}, onSortSelectionChange = { })
+        SongListView(
+            viewState = viewState,
+            navigateToTabById = {},
+            onSortSelectionChange = { },
+            navigateByPlaylistEntryId = false
+        )
     }
 }
 

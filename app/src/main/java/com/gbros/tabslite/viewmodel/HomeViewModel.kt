@@ -11,6 +11,7 @@ import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.playlist.PlaylistFileExportType
+import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.view.homescreen.IHomeViewState
 import com.gbros.tabslite.view.songlist.SortBy
 import dagger.assisted.Assisted
@@ -158,19 +159,29 @@ class HomeViewModel
 
             if (!dataToImport.isNullOrBlank()) {
                 val importedData = Json.decodeFromString<PlaylistFileExportType>(dataToImport!!)
+
                 // import all playlists (except Favorites and Top Tabs)
-                val totalEntriesToImport =
-                    importedData.playlists.sumOf { pl -> pl.entries.size }.toFloat()
-                var progressFromPreviouslyImportedPlaylists =
-                    0f  // track the amount of progress used by previous playlists, used to add current progress to
+                val totalEntriesToImport = importedData.playlists.sumOf { pl -> pl.entries.size }.toFloat()
+
+                // track the amount of progress used by previous playlists, used to add current progress to
+                var progressFromPreviouslyImportedPlaylists = 0f
+
                 for (playlist in importedData.playlists.filter { pl -> pl.playlistId != Playlist.TOP_TABS_PLAYLIST_ID }) {
                     val progressForThisPlaylist =
                         playlist.entries.size.toFloat() / totalEntriesToImport  // available portion of 100% to use for this playlist
-                    playlist.importToDatabase(
-                        dataAccess = dataAccess,
-                        onProgressChange = { progress ->
-                            playlistImportProgress.postValue(progressFromPreviouslyImportedPlaylists + (progress * progressForThisPlaylist))
-                        })
+                    try {
+                        playlist.importToDatabase(
+                            dataAccess = dataAccess,
+                            onProgressChange = { progress ->
+                                playlistImportProgress.postValue(progressFromPreviouslyImportedPlaylists + (progress * progressForThisPlaylist))
+                            })
+                    } catch (ex: UgApi.NoInternetException) {
+                        playlistImportState.postValue(LoadingState.Error("No internet connection. Playlist tabs have been added, but won't be downloaded until next time you restart the app with internet access."))
+                        Log.i(LOG_NAME, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) completed without internet access.")
+                    } catch (ex: Exception) {
+                        Log.e(LOG_NAME, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) failed: ${ex.message}", ex)
+                    }
+
                     progressFromPreviouslyImportedPlaylists += progressForThisPlaylist
                 }
             }

@@ -1,5 +1,6 @@
 package com.gbros.tabslite.data.tab
 
+import android.content.res.Resources.NotFoundException
 import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
@@ -55,19 +56,24 @@ data class Tab(
         }
 
         suspend fun fetchAllEmptyPlaylistTabsFromInternet(dataAccess: DataAccess, playlistId: Int? = null, onProgressChange: (progress: Float) -> Unit = {}) {
-            try {
-                val emptyTabs: List<Int> = if (playlistId == null) dataAccess.getEmptyPlaylistTabIds() else dataAccess.getEmptyPlaylistTabIds(playlistId)
-                Log.i(LOG_NAME, "Found ${emptyTabs.size} empty playlist tabs to fetch")
-                var numFetchedTabs = 0f
-                emptyTabs.forEach { tabId ->
+            val emptyTabs: List<Int> = if (playlistId == null) dataAccess.getEmptyPlaylistTabIds() else dataAccess.getEmptyPlaylistTabIds(playlistId)
+            Log.d(LOG_NAME, "Found ${emptyTabs.size} empty playlist tabs to fetch")
+            var numFetchedTabs = 0f
+            emptyTabs.forEach { tabId ->
+                try {
                     onProgressChange(++numFetchedTabs / emptyTabs.size.toFloat())
                     UgApi.fetchTabFromInternet(tabId, dataAccess)
+                } catch (ex: UgApi.NoInternetException) {
+                    Log.i(LOG_NAME, "Not connected to the internet during empty tab fetch for tab $tabId for playlist $playlistId: ${ex.message}. Skipping the rest of the tabs in this playlist.")
+                    throw ex  // exit the fetch if we're not connected to the internet
+                } catch (ex: NotFoundException) {
+                    Log.e(LOG_NAME, "Tab NOT FOUND during fetch of empty tab $tabId for playlist $playlistId")
+                } catch (ex: Exception) {
+                    Log.w(LOG_NAME, "Fetch of empty tab $tabId for playlist $playlistId failed: ${ex.message}", ex)
                 }
-            } catch (ex: Exception) {
-                Log.i(LOG_NAME, "Fetching empty tabs failed: ${ex.message}", ex)
             }
             onProgressChange(1f)
-            Log.i(LOG_NAME, "Done fetching empty tabs")
+            Log.i(LOG_NAME, "Done fetching ${emptyTabs.size} empty tabs")
         }
     }
     //#endregion

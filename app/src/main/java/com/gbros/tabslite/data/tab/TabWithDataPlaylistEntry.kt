@@ -10,10 +10,29 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize  // used for playlist reordering
 data class TabWithDataPlaylistEntry(
+    /**
+     * The ID of the playlist entry that represents this tab/playlist combo
+     */
     @ColumnInfo(name = "entry_id") override var entryId: Int,
+
+    /**
+     * The ID of the playlist that this tab/playlist combo belongs to
+     */
     @ColumnInfo(name = "playlist_id") override var playlistId: Int = 0,
-    @ColumnInfo(name = "id") override var tabId: Int = 0,
+
+    /**
+     * The ID of the tab in this tab/playlist combo
+     */
+    @ColumnInfo(name = "tab_id") override var tabId: Int = 0,
+
+    /**
+     * The next entry in this playlist (if one exists, else null)
+     */
     @ColumnInfo(name = "next_entry_id") override var nextEntryId: Int? = null,
+
+    /**
+     * The previous entry in this playlist (if one exists, else null)
+     */
     @ColumnInfo(name = "prev_entry_id") override var prevEntryId: Int? = null,
     @ColumnInfo(name = "date_added") override var dateAdded: Long = 0,
     @ColumnInfo(name = "song_id") override var songId: Int = 0,

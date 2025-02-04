@@ -29,7 +29,6 @@ fun TabsLiteNavGraph() {
         )
 
         tabScreen (
-            onNavigateToPlaylistEntry = navController::navigateToPlaylistEntry,
             onNavigateBack = navController::popBackStack
         )
 

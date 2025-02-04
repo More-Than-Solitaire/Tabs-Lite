@@ -1,6 +1,7 @@
 package com.gbros.tabslite
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -29,7 +30,16 @@ class HomeActivity : ComponentActivity() {
         val dataAccess = AppDatabase.getInstance(applicationContext).dataAccess()
 
         // fetch the most popular tabs
-        CoroutineScope(Dispatchers.IO).launch { UgApi.fetchTopTabs(dataAccess) }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                UgApi.fetchTopTabs(dataAccess)
+                Log.i(LOG_NAME, "Initial top tabs fetched successfully.")
+            } catch (ex: UgApi.NoInternetException) {
+                Log.i(LOG_NAME, "Initial top tabs fetch failed due to no internet connection.", ex)
+            } catch (ex: Exception) {
+                Log.e(LOG_NAME, "Unexpected exception during initial top tabs fetch: ${ex.message}", ex)
+            }
+        }
 
         // set default preferences if they aren't already set
         CoroutineScope(Dispatchers.IO).launch {
@@ -60,7 +70,15 @@ class HomeActivity : ComponentActivity() {
         }
 
         // load any tabs that were added without internet connection
-        CoroutineScope(Dispatchers.IO).launch { Tab.fetchAllEmptyPlaylistTabsFromInternet(dataAccess) }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Tab.fetchAllEmptyPlaylistTabsFromInternet(dataAccess)
+            } catch (ex: UgApi.NoInternetException) {
+                Log.i(LOG_NAME, "Initial empty-playlist-tab fetch failed: no internet connection", ex)
+            } catch (ex: Exception) {
+                Log.e(LOG_NAME, "Unexpected exception during inital empty-playlist-tab fetch: ${ex.message}", ex)
+            }
+        }
 
         actionBar?.hide()
 

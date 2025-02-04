@@ -1,5 +1,7 @@
 package com.gbros.tabslite.utilities
 
+import android.accounts.AuthenticatorException
+import android.content.res.Resources.NotFoundException
 import android.os.Build
 import android.util.Log
 import com.gbros.tabslite.data.DataAccess
@@ -27,6 +29,7 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.URLEncoder
+import java.net.UnknownHostException
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.text.SimpleDateFormat
@@ -40,7 +43,7 @@ private const val LOG_NAME = "tabslite.UgApi         "
  * The API interface handling all API-specific logic to get data from the server (or send to the server)
  */
 object UgApi {
-    // region private data
+    //#region private data
 
     private val gson = Gson()
 
@@ -48,17 +51,17 @@ object UgApi {
 
     private val apiKeyFetchLock: Mutex = Mutex(locked = false)
 
-    // endregion
+    //#endregion
 
-    // region public data
+    //#region public data
 
     private var storeDeviceId: String? = null
     private val deviceId: String
         get() = fetchDeviceId()
 
-    // endregion
+    //#endregion
 
-    // region public methods
+    //#region public methods
 
     /**
      * Get search suggestions for the given query.  Stores search suggestions to the local database,
@@ -90,6 +93,9 @@ object UgApi {
         } catch (ex: FileNotFoundException) {
             // no search suggestions for this query
             return@withContext
+        } catch (ex: UnknownHostException) {
+            // no internet access
+            throw NoInternetException("No internet access to fetch search suggestions for query $q", ex)
         } catch (ex: Exception) {
             Log.e(LOG_NAME, "SearchSuggest ${ex.javaClass.canonicalName} while finding search suggestions. Probably no internet; no search suggestions added", ex)
             return@withContext
@@ -111,8 +117,11 @@ object UgApi {
         val inputStream: InputStream?
         try {
             inputStream = authenticatedStream(url)
-        } catch (ex: Exception) {
+        } catch (ex: NotFoundException) {
             // end of search results
+            return@withContext SearchRequestType()
+        } catch (ex: Exception) {
+            Log.e(LOG_NAME, "Unexpected exception reading search results for page $page of query '$query': ${ex.message}", ex)
             return@withContext SearchRequestType()
         }
 
@@ -237,7 +246,7 @@ object UgApi {
             }
             return@withContext 
         } catch (ex: Exception) {
-            Log.w(LOG_NAME, "Couldn't fetch top tabs.", ex)
+            throw ex
         }
     }
 
@@ -286,9 +295,9 @@ object UgApi {
         return@withContext result
     }
 
-    // endregion
+    //#endregion
 
-    // region private methods
+    //#region private methods
 
     /**
      * Gets an authenticated input stream for the passed API URL, updating the API key if needed
@@ -296,19 +305,25 @@ object UgApi {
      * @param url: The UG API url to start an authenticated InputStream with
      *
      * @return An [InputStream], authenticated with a valid API key
+     *
+     * @throws NoInternetException if no internet access
+     * @throws Exception if an unknown error occurs (could still be an internet access issue)
      */
     private suspend fun authenticatedStream(url: String): InputStream = withContext(Dispatchers.IO) {
         Log.v(LOG_NAME, "Getting authenticated stream for url: $url.")
-        apiKeyFetchLock.lock()
-        if (apiKey == null) {
-            try {
+        try {
+            apiKeyFetchLock.lock()
+
+            if (apiKey == null) {
                 updateApiKey()
-            } catch (ex: Exception) {
-                apiKeyFetchLock.unlock()
-                throw Exception("API Key initialization failed while fetching $url.  Likely no internet access.", ex)
             }
+        } catch (ex: NoInternetException) {
+            throw NoInternetException("Can't fetch $url. No internet access.", ex)
+        } catch (ex: Exception) {
+            throw Exception("Unexpected API Key initialization failure while fetching $url! Maybe an internet issue?", ex)
+        } finally {
+            apiKeyFetchLock.unlock()
         }
-        apiKeyFetchLock.unlock()
 
         // api key is not null
         Log.v(LOG_NAME, "Api key: $apiKey, device id: $deviceId.")
@@ -355,34 +370,45 @@ object UgApi {
                         throw Exception(msg, ex)
                     }
                 } else {
-                    Log.v(
-                        LOG_NAME,
-                        "(final try) Retrieved URL $url (${conn.requestMethod}) with response code $responseCode after $numTries try(s)."
-                    )
+                    Log.v(LOG_NAME, "Fetch attempt $numTries - valid token or max retries reached.")
+                    Log.v(LOG_NAME, "Response code $responseCode on try $numTries for url $url (${conn.requestMethod}).")
 
-                    if (responseCode != 498) {
-                        return@withContext conn.inputStream
-                    } else {
+                    if (responseCode == 498) {
+                        // read response content if our api level includes the function
                         var content = ""
-
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             try {
                                 content = conn.inputStream.readAllBytes().toString()
                             } catch (_: Exception) { }
                         }
 
-                        throw Exception("Couldn't fetch authenticated stream (498: bad token).  Response code: $responseCode, content: \n$content")
+                        throw AuthenticatorException("Couldn't fetch authenticated stream (498: bad token).  Response code: $responseCode, content: \n$content")
+                    } else if (responseCode == 451) {
+                        // read response content if our api level includes the function
+                        var content = ""
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            try {
+                                content = conn.inputStream.readAllBytes().toString()
+                            } catch (_: Exception) { }
+                        }
+
+                        Log.i(LOG_NAME, "Tab not available for legal reasons (451: unavailable for legal reasons). content: \n$content")
+                        return@withContext conn.inputStream
+                    } else {
+                        return@withContext conn.inputStream
                     }
                 }
             } while (true)
 
             throw Exception("Unreachable: Could not create authenticated stream.")  // shouldn't get here
         } catch (ex: FileNotFoundException) {
-            throw Exception("404 NOT FOUND during fetch of url $url. Response code $responseCode.", ex)
+            throw NotFoundException("NOT FOUND during fetch of url $url. Response code $responseCode.", ex)
         } catch (ex: ConnectException) {
-            throw Exception("No internet access. Could not fetch $url. Response code 0 (no internet access).", ex)
+            throw NoInternetException("Could not fetch $url. ConnectException (no internet access)", ex)
+        } catch (ex: NoInternetException) {
+            throw NoInternetException("Could not fetch $url. No internet.", ex)
         } catch (ex: SocketTimeoutException) {
-            throw Exception("No internet access: Could not fetch $url. Response code 0 (no internet access).", ex)
+            throw NoInternetException("Could not fetch $url. Socket timeout (no internet access).", ex)
         } catch (ex: Exception) {
             throw Exception("Unexpected exception during fetch of url $url with parameters apiKey: " +
                     "$apiKey and deviceId: $deviceId.  Response code $responseCode", ex)
@@ -393,7 +419,8 @@ object UgApi {
      * Sets an updated [apiKey], based on the most recent server time.  This needs to be called
      * whenever we get a 498 response code
      *
-     * @throws Exception if api key could not be updated (e.g. no internet access)
+     * @throws NoInternetException if no internet access
+     * @throws Exception if api key could not be updated for an unknown reason
      */
     private suspend fun updateApiKey() {
         apiKey = null
@@ -401,17 +428,13 @@ object UgApi {
         simpleDateFormat.timeZone = TimeZone.getTimeZone("UTC")
         val stringBuilder = StringBuilder(deviceId)
 
-        try {
-            val serverTime = fetchServerTime()
-            stringBuilder.append(serverTime)
-            stringBuilder.append("createLog()")
-            apiKey = getMd5(stringBuilder.toString())
+        val serverTime = fetchServerTime()
+        stringBuilder.append(serverTime)
+        stringBuilder.append("createLog()")
+        apiKey = getMd5(stringBuilder.toString())
 
-            if (apiKey.isNullOrBlank()) {
-                throw Exception("API key update completed without fetching API key.  Server time: $serverTime.  API key: $apiKey")
-            }
-        } catch(ex: Exception) {
-            throw Exception("Unable to update API key", ex)
+        if (apiKey.isNullOrBlank()) {
+            throw Exception("API key update completed without fetching API key.  Server time: $serverTime.  API key: $apiKey")
         }
     }
 
@@ -420,7 +443,8 @@ object UgApi {
      *
      * @return The current time according to the server
      *
-     * @throws Exception if time fetch could not be completed (e.g. if no internet access)
+     * @throws NoInternetException if not connected to the internet
+     * @throws Exception if time fetch could not be completed for an unknown reason
      */
     private suspend fun fetchServerTime(): String = withContext(Dispatchers.IO) {
         val devId = deviceId
@@ -439,8 +463,10 @@ object UgApi {
             }
         } catch (ex: IllegalStateException) {
             throw IllegalStateException("Error converting types while performing hello handshake. Check proguard rules.", ex)
+        } catch (ex: UnknownHostException) {
+            throw NoInternetException("Unknown host while performing hello handshake. Probably not connected to the internet.", ex)
         } catch (ex: Exception) {
-            throw Exception( "Error getting hello handshake (server time). We may not be connected to the internet.", ex)
+            throw Exception( "Unexpected error getting hello handshake (server time). We may not be connected to the internet.", ex)
         }
 
         // read server time into our date type of choice
@@ -459,24 +485,19 @@ object UgApi {
      *
      * @return The MD5-hashed version of [stringToHash]
      *
-     * @throws RuntimeException if the MD5 algorithm doesn't exist on this device
+     * @throws NoSuchAlgorithmException if the MD5 algorithm doesn't exist on this device
      */
     private fun getMd5(stringToHash: String): String {
         var ret = stringToHash
 
-        try {
-            ret = BigInteger(1, MessageDigest.getInstance("MD5").digest(ret.toByteArray())).toString(16)
-            while (ret.length < 32) {
-                val stringBuilder = java.lang.StringBuilder()
-                stringBuilder.append("0")
-                stringBuilder.append(ret)
-                ret = stringBuilder.toString()
-            }
-            return ret
-        } catch (noSuchAlgorithmException: NoSuchAlgorithmException) {
-            val runtimeException = RuntimeException("Could not complete MD5 hash", noSuchAlgorithmException)
-            throw runtimeException
+        ret = BigInteger(1, MessageDigest.getInstance("MD5").digest(ret.toByteArray())).toString(16)
+        while (ret.length < 32) {
+            val stringBuilder = java.lang.StringBuilder()
+            stringBuilder.append("0")
+            stringBuilder.append(ret)
+            ret = stringBuilder.toString()
         }
+        return ret
     }
 
     /**
@@ -501,5 +522,16 @@ object UgApi {
         }
     }
 
-    // endregion
+    //#endregion
+
+    //#region Custom exceptions
+
+    class NoInternetException : Exception {
+        constructor() : super()
+        constructor(message: String) : super(message)
+        constructor(message: String, cause: Throwable) : super(message, cause)
+        constructor(cause: Throwable) : super(cause)
+    }
+
+    //#endregion
 }

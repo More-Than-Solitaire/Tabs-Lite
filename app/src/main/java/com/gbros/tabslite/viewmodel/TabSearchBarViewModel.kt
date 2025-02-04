@@ -49,7 +49,11 @@ class TabSearchBarViewModel(
         query.postValue(newQuery)
 
         CoroutineScope(Dispatchers.IO).launch {
-            UgApi.searchSuggest(newQuery, dataAccess = dataAccess)
+            try {
+                UgApi.searchSuggest(newQuery, dataAccess = dataAccess)
+            } catch (ex: UgApi.NoInternetException) {
+                // no internet access to fetch search results.
+            }
         }
     }
 
