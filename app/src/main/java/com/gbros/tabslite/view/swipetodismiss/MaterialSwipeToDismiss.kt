@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
@@ -23,7 +22,6 @@ import com.gbros.tabslite.view.playlists.RemovePlaylistEntryConfirmationDialog
  * @param content The content to include in the SwipeToDismiss.
  * @param onRemove Callback invoked when the email item is dismissed.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaterialSwipeToDismiss(
     onRemove: () -> Unit,
@@ -36,8 +34,9 @@ fun MaterialSwipeToDismiss(
         confirmValueChange = {dismissValue ->
             if (dismissValue == SwipeToDismissBoxValue.StartToEnd || dismissValue == SwipeToDismissBoxValue.EndToStart) {
                 showEntryConfirmationDialog = true  // trigger entry removal confirmation dialog
-                true
-            } else false
+            }
+            // since the confirmation isn't synchronous, always confirm the value change, and just reset if the user doesn't confirm
+            true  // this must be outside the if block so that the reset() action gets automatically confirmed if the user doesn't confirm the dismiss
         }
     )
     AnimatedVisibility(

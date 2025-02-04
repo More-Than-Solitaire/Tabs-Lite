@@ -22,6 +22,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.io.InputStream
 import java.math.BigInteger
 import java.net.ConnectException
@@ -215,39 +216,42 @@ object UgApi {
         return@withContext resultMap
     }
 
+    /**
+     * Add today's most popular tabs to the database
+     */
     suspend fun fetchTopTabs(dataAccess: DataAccess) = withContext(Dispatchers.IO) {
-        try {
-            // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
-            // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
-            val topTabSearchResults = authenticatedStream("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0").use { inputStream ->
-                val jsonReader = JsonReader(inputStream.reader())
-                val typeToken = object : TypeToken<List<SearchRequestType.SearchResultTab>>() {}.type
+        // 'type[]=300' means just chords (all instruments? use 300, 400, 700, and 800)
+        // 'order=hits_daily' means get top tabs today not overall.  For overall use 'hits'
+        val topTabSearchResults = authenticatedStream("https://api.ultimate-guitar.com/api/v1/tab/explore?date=0&genre=0&level=0&order=hits_daily&page=1&type=0&official=0").use { inputStream ->
+            val jsonReader = JsonReader(inputStream.reader())
+            val typeToken = object : TypeToken<List<SearchRequestType.SearchResultTab>>() {}.type
 
-                 return@use (gson.fromJson(
-                    jsonReader,
-                    typeToken
-                ) as List<SearchRequestType.SearchResultTab>)
-            }
-            val topTabs: List<TabDataType> = topTabSearchResults.map { t -> t.tabFull() }
-
-            if (topTabs.isEmpty()) {
-                // don't overwrite with an empty list
-                throw Exception("Top tabs result was empty: ${topTabSearchResults.size} results")
-            }
-
-            // clear top tabs playlist, then add all these to the top tabs playlist
-            dataAccess.clearTopTabsPlaylist()
-            for (tab in topTabs) {
-                dataAccess.appendToPlaylist(
-                    playlistId = TOP_TABS_PLAYLIST_ID,
-                    tabId = tab.tabId,
-                    transpose = 0
-                )
-            }
-            return@withContext 
-        } catch (ex: Exception) {
-            throw ex
+             return@use (gson.fromJson(
+                jsonReader,
+                typeToken
+            ) as List<SearchRequestType.SearchResultTab>)
         }
+        val topTabs: List<TabDataType> = topTabSearchResults.map { t -> t.tabFull() }
+
+        if (topTabs.isEmpty()) {
+            // don't overwrite with an empty list
+            throw NotFoundException("Top tabs result was empty: ${topTabSearchResults.size} results")
+        }
+
+        // clear top tabs playlist, then add all these to the top tabs playlist
+        dataAccess.clearTopTabsPlaylist()
+        for (tab in topTabs) {
+            // add playlist entry
+            dataAccess.appendToPlaylist(
+                playlistId = TOP_TABS_PLAYLIST_ID,
+                tabId = tab.tabId,
+                transpose = 0
+            )
+
+            // add empty tab so it'll show up in the Popular list
+            dataAccess.insert(tab)
+        }
+        return@withContext
     }
 
     /**
@@ -381,7 +385,6 @@ object UgApi {
                                 content = conn.inputStream.readAllBytes().toString()
                             } catch (_: Exception) { }
                         }
-
                         throw AuthenticatorException("Couldn't fetch authenticated stream (498: bad token).  Response code: $responseCode, content: \n$content")
                     } else if (responseCode == 451) {
                         // read response content if our api level includes the function
@@ -392,7 +395,7 @@ object UgApi {
                             } catch (_: Exception) { }
                         }
 
-                        Log.i(LOG_NAME, "Tab not available for legal reasons (451: unavailable for legal reasons). content: \n$content")
+                        Log.i(LOG_NAME, "Url not available (451: unavailable for legal reasons). content: \n$content")
                         return@withContext conn.inputStream
                     } else {
                         return@withContext conn.inputStream
@@ -409,6 +412,8 @@ object UgApi {
             throw NoInternetException("Could not fetch $url. No internet.", ex)
         } catch (ex: SocketTimeoutException) {
             throw NoInternetException("Could not fetch $url. Socket timeout (no internet access).", ex)
+        } catch (ex: IOException) {
+            throw NoInternetException("Could not fetch $url. IOException (no internet access). ${ex.message}", ex)
         } catch (ex: Exception) {
             throw Exception("Unexpected exception during fetch of url $url with parameters apiKey: " +
                     "$apiKey and deviceId: $deviceId.  Response code $responseCode", ex)
