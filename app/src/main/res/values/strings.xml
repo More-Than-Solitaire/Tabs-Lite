@@ -54,10 +54,11 @@
     <string name="capo_generic" translation_description="The capo text when the capo doesn't meet any of the other criteria">%sth Fret</string>
 
     <string name="sort_by" translation_description="Formatted string used in conjunction with the following options to display a button to choose what order songs should be sorted by. %s represents one of the options below (e.g. Date Added)">Sort by: %s</string>
-    <string name="sort_by_date_added" translation_description="Used to pick what order to show songs in - most recent first">Date Added</string>
+    <string name="sort_by_date_added" translation_description="Used to pick what order to show songs and playlists in - most recent first">Date Added</string>
     <string name="sort_by_popularity" translation_description="Used to pick what order to show songs in - most popular first">Popularity</string>
+    <string name="sort_by_date_modified" translation_description="Used to pick what order to show playlists in - most recently modified first">Date Modified</string>
     <string name="sort_by_artist_name" translation_description="Used to pick what order to show songs in - artist name, a to z">Artist Name</string>
-    <string name="sort_by_title" translation_description="Used to pick what order to show songs in - song title, a to z">Title</string>
+    <string name="sort_by_title" translation_description="Used to pick what order to show songs and playlists in - song title, a to z">Title</string>
 
 
     <string name="message_chord_load_failed" translation_description="Error message shown when chord could not be loaded. %s represents the name of the chord that couldn't be loaded">Couldn\'t load chord \'%s\'. Please check your internet connection.</string>
