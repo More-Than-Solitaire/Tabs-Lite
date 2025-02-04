@@ -114,7 +114,7 @@ class TabViewModel
     /**
      * Autoscroll slider midpoint (default starting speed). Should be between [minDelay] and [maxDelay]
      */
-    private val middleDelay: Float = 11f
+    private val middleDelay: Float = 15f
     /**
      * Autoscroll shortest delay between 1px scrolls (fastest speed)
      */
@@ -122,7 +122,7 @@ class TabViewModel
     /**
      * Autoscroll longest delay between 1px scrolls (slowest speed)
      */
-    private val maxDelay: Float = 55f // slowest speed
+    private val maxDelay: Float = 75f // slowest speed
     /**
      * Maps the autoscroll slider value to the delay between 1px scrolls for autoscroll
      */
