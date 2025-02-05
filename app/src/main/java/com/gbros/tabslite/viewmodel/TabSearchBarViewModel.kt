@@ -58,7 +58,7 @@ class TabSearchBarViewModel(
      * most recent search suggestions for that query
      */
     fun onQueryChange(newQuery: String) {
-        query.postValue(newQuery)
+        query.value = newQuery
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
