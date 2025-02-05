@@ -31,7 +31,7 @@ android {
         minSdk = 26
         targetSdk = 35
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = 3520
+        versionCode = 3600
         versionName = "3.6.0"
     }
     buildTypes {
@@ -71,7 +71,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.compose.material3:material3:1.3.1")  // Material Design 3
     implementation("androidx.compose.material:material-icons-core:1.7.7")
-    implementation("androidx.compose.runtime:runtime-livedata:1.7.6")
+    implementation("androidx.compose.runtime:runtime-livedata:1.7.7")
     // Compose Integration with LiveData
     implementation("androidx.compose.ui:ui-tooling-preview")  // Android Studio Preview Support
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
