@@ -6,7 +6,6 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,29 +37,17 @@ import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.chorddisplay.ChordModalBottomSheet
 import com.smarttoolfactory.gesture.detectTransformGestures
 
-
 private const val LOG_NAME = "tabslite.TabText    "
 
-// font size constraints, measured in sp
-private const val MIN_FONT_SIZE_SP = 2f
-private const val MAX_FONT_SIZE_SP = 36f
-private const val FALLBACK_FONT_SIZE_SP = 14f  // fall back to a font size of 14.sp if the system font size can't be read
-
 @Composable
-fun TabText(modifier: Modifier = Modifier, text: AnnotatedString, onTextClick: (clickLocation: Int, uriHandler: UriHandler, clipboardManager: ClipboardManager) -> Unit, onScreenMeasured: (screenWidth: Int, localDensity: Density, fontSizeSp: Float, colorScheme: ColorScheme) -> Unit){
-    // default the font size to whatever the user default font size is.  This respects system font settings.
-    val defaultFontSize = MaterialTheme.typography.bodyMedium.fontSize
-    val defaultFontSizeInSp = if (defaultFontSize.isSp) {
-        defaultFontSize.value
-    } else if (defaultFontSize.isEm) {
-        defaultFontSize.value / LocalDensity.current.density
-    } else {
-        FALLBACK_FONT_SIZE_SP
-    }
-    var fontSize by remember {
-        mutableFloatStateOf(defaultFontSizeInSp)
-    }
-
+fun TabText(
+    modifier: Modifier = Modifier,
+    text: AnnotatedString,
+    fontSizeSp: Float,
+    onTextClick: (clickLocation: Int, uriHandler: UriHandler, clipboardManager: ClipboardManager) -> Unit,
+    onScreenMeasured: (screenWidth: Int, localDensity: Density, colorScheme: ColorScheme) -> Unit,
+    onZoom: (zoomFactor: Float) -> Unit
+){
     // dynamic variables
     var measuredWidth by remember { mutableIntStateOf(0) }
 
@@ -69,26 +56,25 @@ fun TabText(modifier: Modifier = Modifier, text: AnnotatedString, onTextClick: (
     val colorScheme = MaterialTheme.colorScheme
     val uriHandler = LocalUriHandler.current
     val clipboardManager = LocalClipboardManager.current
+
     ClickableText(
         text = text,
         style = TextStyle(
             fontFamily = font,
-            fontSize = TextUnit(fontSize, TextUnitType.Sp),
+            fontSize = TextUnit(fontSizeSp, TextUnitType.Sp),
             color = MaterialTheme.colorScheme.onBackground
         ),
         modifier = modifier
             .pointerInput(Unit) {
                 detectTransformGestures(consume = false, onGesture = { _, _, zoom, _, _, _ ->
                     if (zoom != 1.0f) {
-                        // handle zooming by changing font size (within constraints)
-                        fontSize = (fontSize * zoom).coerceIn(MIN_FONT_SIZE_SP, MAX_FONT_SIZE_SP)  // Add checks for maximum and minimum font size
-                        onScreenMeasured(measuredWidth, localDensity, fontSize, colorScheme)
+                        onZoom(zoom)
                     }
                 })
             }
             .onGloballyPositioned { layoutResult ->
                 measuredWidth = layoutResult.size.width
-                onScreenMeasured(layoutResult.size.width, localDensity, fontSize, colorScheme)
+                onScreenMeasured(layoutResult.size.width, localDensity, colorScheme)
             },
         onClick = { clickLocation ->
             onTextClick(clickLocation, uriHandler, clipboardManager)
@@ -107,10 +93,12 @@ fun TabTextTestCase1() {
 
         TabText(
             text = oneLine,
+            fontSizeSp = 14f,
             onTextClick = { _, _, _ ->
                 bottomSheetTrigger = true
             },
-            onScreenMeasured = { _, _, _, _->}
+            onScreenMeasured = { _, _, _->},
+            onZoom = {}
         )
         val chords = listOf(
             ChordVariation("varid1234", "Am",
@@ -207,8 +195,10 @@ fun TabTextPreview() {
     AppTheme {
         TabText(
             text = hallelujahTabForTest,
+            fontSizeSp = 14f,
             onTextClick = {_, _, _ ->},
-            onScreenMeasured = { _, _, _, _->}
+            onScreenMeasured = { _, _, _->},
+            onZoom = {}
         )
     }
 }

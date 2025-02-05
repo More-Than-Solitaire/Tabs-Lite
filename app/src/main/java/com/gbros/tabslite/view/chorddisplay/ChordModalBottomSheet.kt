@@ -147,11 +147,13 @@ private fun ChordModalBottomSheetPreview () {
 
         TabText(
             text = testCase1,
+            fontSizeSp = 14f,
             onTextClick = { _, _, _ ->
                 chordToShow = "Am"
                 bottomSheetTrigger = true
             },
-            onScreenMeasured = {_, _, _, _->},
+            onScreenMeasured = {_, _, _->},
+            onZoom = {},
             modifier = Modifier.fillMaxSize()
         )
 

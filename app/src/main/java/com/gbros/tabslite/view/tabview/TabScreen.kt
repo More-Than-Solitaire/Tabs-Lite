@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -52,6 +53,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 private const val LOG_NAME = "tabslite.TabScreen     "
+private const val FALLBACK_FONT_SIZE_SP = 14f  // fall back to a font size of 14.sp if the system font size can't be read
 
 //#region use case tab screen
 
@@ -71,7 +73,24 @@ fun NavGraphBuilder.tabScreen(
     ) { navBackStackEntry ->
         val id = navBackStackEntry.arguments!!.getInt(TAB_NAV_ARG)
         val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(id = id, idIsPlaylistEntryId = false, db.dataAccess(), navigateToPlaylistEntryById = { /* ignore playlist navigation */ })}
+
+        // default the font size to whatever the user default font size is.  This respects system font settings.
+        val defaultFontSize = MaterialTheme.typography.bodyMedium.fontSize
+        val defaultFontSizeInSp = if (defaultFontSize.isSp) {
+            defaultFontSize.value
+        } else if (defaultFontSize.isEm) {
+            defaultFontSize.value / LocalDensity.current.density
+        } else {
+            FALLBACK_FONT_SIZE_SP
+        }
+
+        val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(
+            id = id,
+            idIsPlaylistEntryId = false,
+            defaultFontSize = defaultFontSizeInSp,
+            dataAccess = db.dataAccess(),
+            navigateToPlaylistEntryById = { /* ignore playlist navigation */ }
+        )}
 
         TabScreen(
             viewState = viewModel,
@@ -83,6 +102,7 @@ fun NavGraphBuilder.tabScreen(
             onTransposeResetClick = viewModel::onTransposeResetClick,
             onTextClick = viewModel::onContentClick,
             onScreenMeasured = viewModel::onScreenMeasured,
+            onZoom = viewModel::onZoom,
             onChordDetailsDismiss = viewModel::onChordDetailsDismiss,
             onAutoscrollButtonClick = viewModel::onAutoscrollButtonClick,
             onAutoscrollSliderValueChange = viewModel::onAutoscrollSliderValueChange,
@@ -120,7 +140,24 @@ fun NavGraphBuilder.playlistEntryScreen(
     ) { navBackStackEntry ->
         val id = navBackStackEntry.arguments!!.getInt(PLAYLIST_ENTRY_NAV_ARG)
         val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(id = id, idIsPlaylistEntryId = true, dataAccess = db.dataAccess(), navigateToPlaylistEntryById = onNavigateToPlaylistEntry)}
+
+        // default the font size to whatever the user default font size is.  This respects system font settings.
+        val defaultFontSize = MaterialTheme.typography.bodyMedium.fontSize
+        val defaultFontSizeInSp = if (defaultFontSize.isSp) {
+            defaultFontSize.value
+        } else if (defaultFontSize.isEm) {
+            defaultFontSize.value / LocalDensity.current.density
+        } else {
+            FALLBACK_FONT_SIZE_SP
+        }
+
+        val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(
+            id = id,
+            idIsPlaylistEntryId = true,
+            defaultFontSize = defaultFontSizeInSp,
+            dataAccess = db.dataAccess(),
+            navigateToPlaylistEntryById = onNavigateToPlaylistEntry
+        )}
         TabScreen(
             viewState = viewModel,
             onNavigateBack = onNavigateBack,
@@ -131,6 +168,7 @@ fun NavGraphBuilder.playlistEntryScreen(
             onTransposeResetClick = viewModel::onTransposeResetClick,
             onTextClick = viewModel::onContentClick,
             onScreenMeasured = viewModel::onScreenMeasured,
+            onZoom = viewModel::onZoom,
             onChordDetailsDismiss = viewModel::onChordDetailsDismiss,
             onAutoscrollButtonClick = viewModel::onAutoscrollButtonClick,
             onAutoscrollSliderValueChange = viewModel::onAutoscrollSliderValueChange,
@@ -158,7 +196,8 @@ fun TabScreen(
     onTransposeDownClick: () -> Unit,
     onTransposeResetClick: () -> Unit,
     onTextClick: (Int, UriHandler, ClipboardManager) -> Unit,
-    onScreenMeasured: (screenWidth: Int, localDensity: Density, fontSizeSp: Float, colorScheme: ColorScheme) -> Unit,
+    onScreenMeasured: (screenWidth: Int, localDensity: Density, colorScheme: ColorScheme) -> Unit,
+    onZoom: (zoomFactor: Float) -> Unit,
     onChordDetailsDismiss: () -> Unit,
     onAutoscrollSliderValueChange: (Float) -> Unit,
     onAutoscrollButtonClick: () -> Unit,
@@ -244,8 +283,10 @@ fun TabScreen(
                     modifier = Modifier
                         .fillMaxWidth(),
                     text = viewState.content.observeAsState(AnnotatedString("")).value,
+                    fontSizeSp = viewState.fontSizeSp.observeAsState(FALLBACK_FONT_SIZE_SP).value,
                     onTextClick = onTextClick,
-                    onScreenMeasured = onScreenMeasured
+                    onScreenMeasured = onScreenMeasured,
+                    onZoom = onZoom
                 )
                 Spacer(modifier = Modifier.padding(vertical = 16.dp))
 
@@ -344,7 +385,8 @@ private fun TabViewPreview() {
         override val allPlaylists: LiveData<List<Playlist>>,
         override val artist: LiveData<String>,
         override val addToPlaylistDialogSelectedPlaylistTitle: LiveData<String?>,
-        override val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>
+        override val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>,
+        override val fontSizeSp: LiveData<Float>
     ) : ITabViewState {
         constructor(tab: ITab): this(
             songName = MutableLiveData(tab.songName),
@@ -361,6 +403,7 @@ private fun TabViewPreview() {
             content = MutableLiveData(AnnotatedString(tab.content)),
             state = MutableLiveData(LoadingState.Success),
             autoscrollPaused = MutableLiveData(true),
+            fontSizeSp = MutableLiveData(FALLBACK_FONT_SIZE_SP),
             autoScrollSpeedSliderPosition = MutableLiveData(0.5f),
             autoscrollDelay = MutableLiveData(Float.POSITIVE_INFINITY),
             chordDetailsActive = MutableLiveData(false),
@@ -425,7 +468,7 @@ private fun TabViewPreview() {
             onTransposeDownClick = {  },
             onTransposeResetClick = {  },
             onTextClick = { _, _, _ -> },
-            onScreenMeasured = { _, _, _, _ -> },
+            onScreenMeasured = { _, _, _ -> },
             onChordDetailsDismiss = {  },
             onAutoscrollSliderValueChange = {  },
             onAutoscrollButtonClick = {  },
@@ -434,7 +477,8 @@ private fun TabViewPreview() {
             onFavoriteButtonClick = {  },
             onAddPlaylistDialogPlaylistSelected = {  },
             onAddToPlaylist = {  },
-            onCreatePlaylist = { _, _ -> }
+            onCreatePlaylist = { _, _ -> },
+            onZoom = { }
         )
     }
 }

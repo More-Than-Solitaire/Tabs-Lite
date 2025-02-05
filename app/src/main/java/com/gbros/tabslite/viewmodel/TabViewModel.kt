@@ -48,12 +48,17 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlin.math.floor
 
+// font size constraints, measured in sp
+private const val MIN_FONT_SIZE_SP = 2f
+private const val MAX_FONT_SIZE_SP = 36f
+
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel(assistedFactory = TabViewModel.TabViewModelFactory::class)
 class TabViewModel
 @AssistedInject constructor(
     @Assisted private val id: Int,
     @Assisted private val idIsPlaylistEntryId: Boolean,
+    @Assisted defaultFontSize: Float,
     @Assisted private val dataAccess: DataAccess,
     @Assisted private val onNavigateToPlaylistEntry: (Int) -> Unit
 ) : ViewModel(), ITabViewState {
@@ -61,7 +66,7 @@ class TabViewModel
 
     @AssistedFactory
     interface TabViewModelFactory {
-        fun create(id: Int, idIsPlaylistEntryId: Boolean, dataAccess: DataAccess, navigateToPlaylistEntryById: (Int) -> Unit): TabViewModel
+        fun create(id: Int, idIsPlaylistEntryId: Boolean, defaultFontSize: Float, dataAccess: DataAccess, navigateToPlaylistEntryById: (Int) -> Unit): TabViewModel
     }
 
     //#endregion
@@ -442,7 +447,24 @@ class TabViewModel
      */
     private val ROBOTO_ASPECT_RATIO = 0.60009765625  // the width-to-height ratio of roboto mono Regular.
 
-    private val availableWidthInChars: MutableLiveData<UInt> = MutableLiveData(0u)
+    private val screenDensity: MutableLiveData<Density> = MutableLiveData()
+
+    /**
+     * The last measured screen width in pixels, used for calculating how many characters can fit in the screen for custom word wrapping
+     */
+    private val screenWidthInPx: MutableLiveData<Int> = MutableLiveData()
+
+    override val fontSizeSp: MutableLiveData<Float> = MutableLiveData(defaultFontSize)
+
+    private val availableWidthInChars: LiveData<UInt> = screenWidthInPx.combine(fontSizeSp, screenDensity) { currentWidthPx, currentFontSizeSp, currentDensity ->
+        if (currentWidthPx == null || currentFontSizeSp == null || currentDensity == null) {
+            return@combine 0u
+        }
+        val characterHeightInPixels = with (currentDensity) { currentFontSizeSp.sp.toPx() }
+        val characterWidthInPixels = characterHeightInPixels * ROBOTO_ASPECT_RATIO
+        val charsPerLine = floor(currentWidthPx / characterWidthInPixels).toUInt()
+        return@combine charsPerLine
+    }
 
     private var currentTheme: ColorScheme? = null
 
@@ -457,6 +479,7 @@ class TabViewModel
                 null  // fallback to a null selection to let the UI handle the nothing-is-selected case
             }
     }
+
 
     //#endregion
 
@@ -747,14 +770,26 @@ class TabViewModel
         }
     }
 
-    fun onScreenMeasured(screenWidth: Int, localDensity: Density, fontSizeSp: Float, colorScheme: ColorScheme) {
-        val characterHeightInPixels = with (localDensity) { fontSizeSp.sp.toPx() }
-        val characterWidthInPixels = characterHeightInPixels * ROBOTO_ASPECT_RATIO
-        val charsPerLine = floor(screenWidth / characterWidthInPixels).toUInt()
-
+    /**
+     * Save the current screen details to enable custom wrapping
+     */
+    fun onScreenMeasured(screenWidth: Int, localDensity: Density, colorScheme: ColorScheme) {
+        screenDensity.value = localDensity
+        screenWidthInPx.value = screenWidth
         currentTheme = colorScheme
-        if (availableWidthInChars.value != charsPerLine) {
-            availableWidthInChars.postValue(charsPerLine)
+    }
+
+    /**
+     * Handle user zooming in and out
+     */
+    fun onZoom(zoomFactor: Float) {
+        val currentFontSize = fontSizeSp.value
+        if (currentFontSize != null) {
+            fontSizeSp.value =
+                currentFontSize.times(zoomFactor).coerceIn(  // Add checks for maximum and minimum font size
+                    MIN_FONT_SIZE_SP,
+                    MAX_FONT_SIZE_SP
+                )
         }
     }
 

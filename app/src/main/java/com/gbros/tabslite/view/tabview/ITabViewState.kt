@@ -48,10 +48,24 @@ interface ITabViewState {
      */
     val artist: LiveData<String>
 
+    /**
+     * How many steps up or down this tab's content is transposed
+     */
     val transpose: LiveData<Int>
 
+    /**
+     * The wrapped, transposed tab content to display
+     */
     val content: LiveData<AnnotatedString>
 
+    /**
+     * The font size that should be used to support the custom wrapping for [content]
+     */
+    val fontSizeSp: LiveData<Float>
+
+    /**
+     * The current status of this tab's load process
+     */
     val state: LiveData<LoadingState>
 
     /**
