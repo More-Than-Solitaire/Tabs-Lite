@@ -306,8 +306,8 @@ fun HomeScreen(
                     viewState = popularSongListViewState,
                     emptyListText = stringResource(R.string.empty_popular),
                     onSortSelectionChange = onPopularSongListSortByChange,
-                    navigateToTabById = navigateToTabByPlaylistEntryId,
-                    navigateByPlaylistEntryId = true,
+                    navigateToTabById = navigateToTabByTabId,
+                    navigateByPlaylistEntryId = false,  // can't navigate by playlisty entry because the playlist entries get cleared and refreshed each time the activity starts (e.g. when device is rotated or dark mode is enabled)
                 )
 
                 // Playlists page
