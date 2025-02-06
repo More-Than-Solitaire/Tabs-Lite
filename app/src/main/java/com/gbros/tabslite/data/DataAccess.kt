@@ -55,8 +55,8 @@ interface DataAccess {
     @Query("SELECT *, 0 as transpose FROM tabs WHERE song_id = :songId")
     fun getTabsBySongId(songId: Int): LiveData<List<Tab>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun forceInsert(tab: TabDataType)
+    @Upsert
+    suspend fun upsert(tab: TabDataType)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(tab: TabDataType)

@@ -291,7 +291,7 @@ object UgApi {
 
         val result = requestResponse.getTabFull()
         if (result.content.isNotBlank()) {
-            dataAccess.forceInsert(result)
+            dataAccess.upsert(result)
             Log.v(LOG_NAME, "Successfully inserted tab ${result.songName} (${result.tabId})")
         } else {
             Log.e(LOG_NAME, "Tab $tabId fetch completed successfully but had no content! This shouldn't happen.")
