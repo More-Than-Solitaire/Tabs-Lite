@@ -5,10 +5,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
@@ -22,10 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
@@ -100,7 +108,12 @@ fun PlaylistSongList(
     } else {
         Column(
             modifier = Modifier
-                .padding(all = 8.dp)
+                .windowInsetsPadding(WindowInsets(
+                    left = max(8.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(
+                        LocalLayoutDirection.current)),
+                    right = max(8.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(
+                        LocalLayoutDirection.current))
+                ))
         ) {
             LazyColumn(
                 state = reorderState.listState,
@@ -110,6 +123,9 @@ fun PlaylistSongList(
                     .detectReorderAfterLongPress(reorderState)
                     .fillMaxHeight()
             ) {
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
                 items(items = reorderedSongsForDisplay, key = { it }) { song ->
                     ReorderableItem(state = reorderState, key = song) { isDragging ->
                         val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp,
@@ -139,6 +155,9 @@ fun PlaylistSongList(
                 }
                 item {
                     Spacer(modifier = Modifier.height(height = 24.dp))
+                    Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets(
+                        bottom = WindowInsets.safeContent.getBottom(LocalDensity.current)
+                    )))
                 }
             }
         }

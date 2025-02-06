@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +29,8 @@ private const val LOG_NAME = "tabslite.HomeActivity  "
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()  // enabled by default on Android 15+ (API 35+), but this is for lower Android versions
+
         val dataAccess = AppDatabase.getInstance(applicationContext).dataAccess()
 
         // fetch the most popular tabs
@@ -80,8 +83,6 @@ class HomeActivity : ComponentActivity() {
                 Log.e(LOG_NAME, "Unexpected exception during inital empty-playlist-tab fetch: ${ex.message}", ex)
             }
         }
-
-        actionBar?.hide()
 
         setContent {
             AppTheme {

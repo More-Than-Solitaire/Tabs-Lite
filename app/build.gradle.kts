@@ -31,15 +31,16 @@ android {
         minSdk = 26
         targetSdk = 35
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = 3600
-        versionName = "3.6.0"
+        versionCode = 3620
+        versionName = "3.6.2"
     }
     buildTypes {
-        getByName("release") {
+        release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("debug")
+            ndk.debugSymbolLevel = "FULL"
         }
     }
 

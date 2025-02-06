@@ -1,9 +1,7 @@
 package com.gbros.tabslite.view.playlists
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -77,7 +75,6 @@ fun PlaylistScreen(
 
     Column(
         modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.background)
     ) {
         PlaylistHeader(
             title = viewState.title,

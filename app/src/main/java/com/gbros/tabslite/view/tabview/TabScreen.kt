@@ -1,13 +1,17 @@
 package com.gbros.tabslite.view.tabview
 
 import android.content.Context
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -22,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -30,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -184,8 +190,6 @@ fun NavGraphBuilder.playlistEntryScreen(
 
 //#endregion
 
-//#region view
-
 @Composable
 fun TabScreen(
     viewState: ITabViewState,
@@ -216,16 +220,16 @@ fun TabScreen(
     Column(
         modifier = Modifier
             .verticalScroll(scrollState)
-            .background(color = MaterialTheme.colorScheme.background)
-            .padding(horizontal = 2.dp)
+            .windowInsetsPadding(WindowInsets(
+                left = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(LocalLayoutDirection.current)),
+                right = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(LocalLayoutDirection.current))
+            ))
     ) {
         val title = String.format(format = stringResource(R.string.tab_title), viewState.songName.observeAsState("...").value, viewState.artist.observeAsState("...").value)
         TabTopAppBar(
             title = title,
             allPlaylists = viewState.allPlaylists.observeAsState(listOf()).value,
-            selectedPlaylistTitle = viewState.addToPlaylistDialogSelectedPlaylistTitle.observeAsState(
-                null
-            ).value,
+            selectedPlaylistTitle = viewState.addToPlaylistDialogSelectedPlaylistTitle.observeAsState(null).value,
             shareTitle = title,
             shareUrl = viewState.shareUrl.observeAsState("https://tabslite.com/").value,
             isFavorite = viewState.isFavorite.observeAsState(false).value,
@@ -238,11 +242,8 @@ fun TabScreen(
             selectPlaylistConfirmButtonEnabled = viewState.addToPlaylistDialogConfirmButtonEnabled.observeAsState(false).value
         )
 
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 2.dp)
-        ) {
-            Text(
+        Column {
+            Text(  // Tab title
                 text = title,
                 style = MaterialTheme.typography.headlineMedium,
                 overflow = TextOverflow.Ellipsis,
@@ -250,7 +251,7 @@ fun TabScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 4.dp)
+                    .padding(bottom = 4.dp,)
             )
             if (viewState.isPlaylistEntry) {
                 TabPlaylistNavigation(
@@ -280,19 +281,18 @@ fun TabScreen(
             // content
             if (viewState.state.observeAsState(LoadingState.Loading).value is LoadingState.Success) {
                 TabText(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     text = viewState.content.observeAsState(AnnotatedString("")).value,
                     fontSizeSp = viewState.fontSizeSp.observeAsState(FALLBACK_FONT_SIZE_SP).value,
                     onTextClick = onTextClick,
                     onScreenMeasured = onScreenMeasured,
                     onZoom = onZoom
                 )
-                Spacer(modifier = Modifier.padding(vertical = 16.dp))
+                Spacer(modifier = Modifier.padding(vertical = 24.dp))
 
                 if (viewState.isPlaylistEntry) {
                     TabPlaylistNavigation(
-                        modifier = Modifier.padding(end = 78.dp, start = 6.dp),
+                        modifier = Modifier.padding(end = 96.dp),  // extra for the autoscroll button
                         title = viewState.playlistTitle.observeAsState("").value,
                         nextSongButtonEnabled = viewState.playlistNextSongButtonEnabled.observeAsState(false).value,
                         previousSongButtonEnabled = viewState.playlistPreviousSongButtonEnabled.observeAsState(false).value,
@@ -303,7 +303,10 @@ fun TabScreen(
                     Spacer(Modifier.padding(vertical = 16.dp))
                 }
 
-                Spacer(Modifier.padding(vertical = 8.dp))
+                Spacer(Modifier.windowInsetsPadding(WindowInsets(
+                    bottom = max(WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding() + 16.dp,  // leave room between the navigation bar
+                        WindowInsets.safeContent.asPaddingValues().calculateBottomPadding())  // if we're just leaving room for gestures, that's fine
+                )))
             } else {
                 Box(
                     modifier = Modifier
@@ -334,7 +337,8 @@ fun TabScreen(
         onButtonClick = onAutoscrollButtonClick,
         onValueChange = onAutoscrollSliderValueChange,
         paused = viewState.autoscrollPaused.observeAsState(false).value,
-        onValueChangeFinished = onAutoscrollSliderValueChangeFinished
+        onValueChangeFinished = onAutoscrollSliderValueChangeFinished,
+
     )
 
     // scroll if autoscroll isn't paused
@@ -357,6 +361,8 @@ fun TabScreen(
         }
     }
 }
+
+//#region previews
 
 @Composable @Preview
 private fun TabViewPreview() {
@@ -482,7 +488,5 @@ private fun TabViewPreview() {
         )
     }
 }
-
-
 
 //#endregion

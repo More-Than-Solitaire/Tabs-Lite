@@ -25,7 +25,6 @@ fun TabsLiteNavGraph() {
             onNavigateToSearch = navController::navigateToSearch,
             onNavigateToTab = navController::navigateToTab,
             onNavigateToPlaylist = navController::navigateToPlaylistDetail,
-            onNavigateToPlaylistEntry = navController::navigateToPlaylistEntry
         )
 
         tabScreen (

@@ -18,7 +18,8 @@
         android:fullBackupOnly="true">
         <activity
             android:name=".HomeActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.Design.NoActionBar">
 
             <!-- Intent filter for opening app normally -->
             <intent-filter>

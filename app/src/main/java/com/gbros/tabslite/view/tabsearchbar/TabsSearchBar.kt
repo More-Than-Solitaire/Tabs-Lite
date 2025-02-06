@@ -1,7 +1,10 @@
 package com.gbros.tabslite.view.tabsearchbar
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -32,7 +35,7 @@ import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.ui.theme.AppTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TabsSearchBar(
     modifier: Modifier = Modifier,
@@ -54,6 +57,10 @@ fun TabsSearchBar(
 
     val onActiveChange = {expanded: Boolean -> active = expanded}
     SearchBar(
+        modifier = modifier,
+        expanded = active,
+        onExpandedChange = onActiveChange,
+        windowInsets = WindowInsets.safeDrawing,
         inputField = {
             SearchBarDefaults.InputField(
                 query = query.value,
@@ -74,10 +81,6 @@ fun TabsSearchBar(
                 }
             )
         },
-        expanded = active,
-        onExpandedChange = onActiveChange,
-        modifier = modifier,
-        windowInsets = SearchBarDefaults.windowInsets,
         content = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp), state = lazyColumnState) {
                 if (query.value.isNotBlank()) {
@@ -100,7 +103,7 @@ fun TabsSearchBar(
                     }
                 }
             }
-        },
+        }
     )
 }
 

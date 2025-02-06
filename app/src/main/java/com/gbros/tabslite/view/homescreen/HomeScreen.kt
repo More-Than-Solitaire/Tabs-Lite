@@ -8,14 +8,16 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -46,6 +48,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -85,7 +89,6 @@ fun NavController.popUpToHome() {
 
 fun NavGraphBuilder.homeScreen(
     onNavigateToSearch: (String) -> Unit,
-    onNavigateToPlaylistEntry: (Int) -> Unit,
     onNavigateToTab: (Int) -> Unit,
     onNavigateToPlaylist: (Int) -> Unit
 ) {
@@ -105,7 +108,6 @@ fun NavGraphBuilder.homeScreen(
             onExportPlaylists = viewModel::exportPlaylists,
             onImportPlaylists = viewModel::importPlaylists,
             onCreatePlaylist = viewModel::createPlaylist,
-            navigateToTabByPlaylistEntryId = onNavigateToPlaylistEntry,
             navigateToPlaylistById = onNavigateToPlaylist,
             navigateToTabByTabId = onNavigateToTab
         )
@@ -126,7 +128,6 @@ fun HomeScreen(
     onExportPlaylists: (destinationFile: Uri, contentResolver: ContentResolver) -> Unit,
     onImportPlaylists: (sourceFile: Uri, contentResolver: ContentResolver) -> Unit,
     onCreatePlaylist: (title: String, description: String) -> Unit,
-    navigateToTabByPlaylistEntryId: (id: Int) -> Unit,
     navigateToTabByTabId: (id: Int) -> Unit,
     navigateToPlaylistById: (id: Int) -> Unit
 ) {
@@ -195,14 +196,13 @@ fun HomeScreen(
         } else {
             Modifier
         }
+
         Column(
             modifier = columnModifier
-                .background(color = MaterialTheme.colorScheme.background)
         ) {
             TabsSearchBar(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 2.dp),
+                    .fillMaxWidth(),
                 leadingIcon = {
                     IconButton(onClick = { showAboutDialog = true }) {
                         Box(modifier = Modifier) {
@@ -286,7 +286,7 @@ fun HomeScreen(
             state = pagerState,
             verticalAlignment = Alignment.Top,
             beyondViewportPageCount = 3,
-            contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 8.dp),
+            contentPadding = PaddingValues(horizontal = 8.dp),
             pageSpacing = 8.dp,
             modifier = Modifier
                 .fillMaxHeight()
@@ -296,7 +296,6 @@ fun HomeScreen(
                 0 -> SongListView(
                     viewState = favoriteSongListViewState,
                     emptyListText = stringResource(R.string.empty_favorites),
-                    onSortSelectionChange = onFavoriteSongListSortByChange,
                     navigateToTabById = navigateToTabByTabId,
                     navigateByPlaylistEntryId = false,
                 )
@@ -305,7 +304,6 @@ fun HomeScreen(
                 1 -> SongListView(
                     viewState = popularSongListViewState,
                     emptyListText = stringResource(R.string.empty_popular),
-                    onSortSelectionChange = onPopularSongListSortByChange,
                     navigateToTabById = navigateToTabByTabId,
                     navigateByPlaylistEntryId = false,  // can't navigate by playlisty entry because the playlist entries get cleared and refreshed each time the activity starts (e.g. when device is rotated or dark mode is enabled)
                 )
@@ -324,7 +322,11 @@ fun HomeScreen(
     if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
         Row (
             modifier = Modifier
-                .background(color = MaterialTheme.colorScheme.background),
+                .windowInsetsPadding(WindowInsets(
+                    left = WindowInsets.safeDrawing.getLeft(LocalDensity.current, LocalLayoutDirection.current),
+                    right = WindowInsets.safeDrawing.getRight(LocalDensity.current, LocalLayoutDirection.current)
+                )),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             content = {
                 content()
             }
@@ -332,7 +334,11 @@ fun HomeScreen(
     } else {
         Column(
             modifier = Modifier
-                .background(color = MaterialTheme.colorScheme.background),
+                .windowInsetsPadding(WindowInsets(
+                    left = WindowInsets.safeDrawing.getLeft(LocalDensity.current, LocalLayoutDirection.current),
+                    right = WindowInsets.safeDrawing.getRight(LocalDensity.current, LocalLayoutDirection.current),
+                    top = WindowInsets.safeDrawing.getTop(LocalDensity.current)
+                )),
             content = {
                 content()
             }
@@ -373,7 +379,6 @@ fun TabRowItem(selected: Boolean, inactiveIcon: ImageVector, activeIcon: ImageVe
 //#region preview / classes for test
 
 @Preview(
-    showSystemUi = true,
     device = "spec:width=411dp,height=891dp,dpi=420,isRound=false,chinSize=0dp,orientation=landscape"
 )
 @Preview
@@ -411,7 +416,6 @@ private fun HomeScreenPreview() {
             onExportPlaylists = {_,_->},
             onImportPlaylists = {_,_->},
             onCreatePlaylist = {_,_->},
-            navigateToTabByPlaylistEntryId = {},
             navigateToTabByTabId = {},
             navigateToPlaylistById = {}
         )

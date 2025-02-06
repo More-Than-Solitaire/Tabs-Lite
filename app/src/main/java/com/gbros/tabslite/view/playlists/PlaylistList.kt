@@ -3,9 +3,12 @@ package com.gbros.tabslite.view.playlists
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -13,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
@@ -43,6 +47,9 @@ fun PlaylistList(modifier: Modifier = Modifier, livePlaylists: LiveData<List<Pla
         ) {
             item {
                 Spacer(modifier = Modifier.height(height = 6.dp))
+                Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets(
+                    top = WindowInsets.safeDrawing.getTop(LocalDensity.current)
+                )))
             }
             items(playlists) { playlist ->
                 PlaylistListItem(playlist = playlist) {
@@ -51,6 +58,9 @@ fun PlaylistList(modifier: Modifier = Modifier, livePlaylists: LiveData<List<Pla
             }
             item {
                 Spacer(modifier = Modifier.height(height = 24.dp))
+                Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets(
+                    bottom = WindowInsets.safeDrawing.getBottom(LocalDensity.current)
+                )))
             }
         }
     }
