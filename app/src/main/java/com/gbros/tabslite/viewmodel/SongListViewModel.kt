@@ -37,7 +37,7 @@ class SongListViewModel(
      */
     override val sortBy: LiveData<SortBy> = sortPreferenceName?.let { notNullSortPreferenceName ->
         dataAccess.getLivePreference(notNullSortPreferenceName).map { sortByPreference ->
-            SortBy.valueOf(sortByPreference.value)
+            sortByPreference?.let { SortBy.valueOf(sortByPreference.value) } ?: SortBy.Name
         }
     } ?: backupSortBy
 

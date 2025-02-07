@@ -61,7 +61,7 @@ class HomeViewModel
      * How the playlists are currently sorted
      */
     override val playlistsSortBy: LiveData<PlaylistsSortBy> = dataAccess.getLivePreference(Preference.PLAYLIST_SORT).map { sortByPreference ->
-        PlaylistsSortBy.valueOf(sortByPreference.value)
+        sortByPreference?.let { PlaylistsSortBy.valueOf(sortByPreference.value) } ?: PlaylistsSortBy.Name
     }
 
     /**
