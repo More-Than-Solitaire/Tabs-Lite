@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
 import android.content.res.Resources.NotFoundException
+import android.os.Build
 import android.util.Log
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.platform.ClipboardManager
@@ -13,6 +14,8 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.UrlAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withAnnotation
@@ -285,11 +288,20 @@ class TabViewModel
             // append an annotated styled chord
             builder
                 .withStyle(
-                    SpanStyle(
-                        color = colorScheme.onPrimaryContainer,
-                        fontWeight = FontWeight.Bold,
-                        background = colorScheme.primaryContainer
-                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        SpanStyle(
+                            // Only Android 8 and up support variable weight fonts
+                            color = colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Bold,
+                            background = colorScheme.primaryContainer
+                        )
+                    } else {
+                        SpanStyle(
+                            color = colorScheme.onPrimaryContainer,
+                            fontFamily = FontFamily(Font(R.font.roboto_mono_bold)),
+                            background = colorScheme.primaryContainer
+                        )
+                    }
                 ) {
                     withAnnotation("chord", chordName.toString()) {
                         append(chordName)

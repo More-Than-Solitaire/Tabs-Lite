@@ -1,5 +1,6 @@
 package com.gbros.tabslite.view.tabview
 
+import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.ColorScheme
@@ -51,7 +52,14 @@ fun TabText(
     // dynamic variables
     var measuredWidth by remember { mutableIntStateOf(0) }
 
-    val font = remember { FontFamily(Font(R.font.roboto_mono_variable_weight)) }
+    val font = remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Only Android 8+ supports variable weight fonts
+            FontFamily(Font(R.font.roboto_mono_variable_weight))
+        } else {
+            FontFamily(Font(R.font.roboto_mono_regular))
+        }
+    }
     val localDensity = LocalDensity.current
     val colorScheme = MaterialTheme.colorScheme
     val uriHandler = LocalUriHandler.current
