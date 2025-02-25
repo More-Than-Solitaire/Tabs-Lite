@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
@@ -113,6 +114,7 @@ fun TabsSearchBarPreview() {
         override val query: LiveData<String>,
         override val searchSuggestions: LiveData<List<String>>,
         override val tabSuggestions: LiveData<List<ITab>>,
+        override val loadingState: LiveData<LoadingState>,
     ) : ITabSearchBarViewState
 
     AppTheme {
@@ -120,7 +122,8 @@ fun TabsSearchBarPreview() {
             viewState = TabSearchBarViewStateForTest(
                 query = MutableLiveData("Test query"),
                 searchSuggestions = MutableLiveData(listOf("suggestion1", "suggestion 2")),
-                tabSuggestions = MutableLiveData(listOf(Tab(0)))
+                tabSuggestions = MutableLiveData(listOf(Tab(0))),
+                loadingState = MutableLiveData()
             ),
             leadingIcon = { Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
