@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.Tab
@@ -31,7 +32,27 @@ class HomeActivity : ComponentActivity() {
         enableEdgeToEdge()  // enabled by default on Android 15+ (API 35+), but this is for lower Android versions
 
         val dataAccess = AppDatabase.getInstance(applicationContext).dataAccess()
+        launchInitialFetchAndSetupJobs(dataAccess)
 
+        setContent {
+            AppTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(color = MaterialTheme.colorScheme.background)
+                ) {
+                    TabsLiteNavGraph()
+                }
+            }
+        }
+    }
+
+    /**
+     * Launch the startup jobs for TabsLite, including pre-loading top tabs, ensuring preferences
+     * are created, and loading any tabs that the user favorited or added to a playlist, but weren't
+     * downloaded successfully at the time
+     */
+    private fun launchInitialFetchAndSetupJobs(dataAccess: DataAccess) {
         // fetch the most popular tabs
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -83,17 +104,6 @@ class HomeActivity : ComponentActivity() {
             }
         }
 
-        setContent {
-            AppTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(color = MaterialTheme.colorScheme.background)
-                ) {
-                    TabsLiteNavGraph()
-                }
-            }
-        }
     }
 }
 
