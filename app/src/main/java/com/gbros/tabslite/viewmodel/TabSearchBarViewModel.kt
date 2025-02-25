@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.gbros.tabslite.LoadingState
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.utilities.TAG
@@ -70,8 +71,10 @@ class TabSearchBarViewModel(
                 UgApi.searchSuggest(newQuery, dataAccess = dataAccess)
             } catch (ex: UgApi.NoInternetException) {
                 // no internet access to fetch search results.
-                loadingState.postValue(LoadingState.Error("No internet connection."))
+                loadingState.postValue(LoadingState.Error(R.string.message_search_suggestion_no_internet))
                 Log.i(TAG, "No internet connection: ${ex.message}", ex)
+            } catch (ex: Exception) {
+                loadingState.postValue(LoadingState.Error(R.string.message_search_suggestion_unexpected_error))
             }
         }
     }

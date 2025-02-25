@@ -170,7 +170,7 @@ class TabViewModel
                     val tabId = dataAccess.getEntryById(id)?.tabId
                     if (tabId == null) {
                         Log.e(TAG, "Couldn't get tab from playlist entry $id")
-                        _state.postValue(LoadingState.Error("Unexpected error loading tab from playlist entry $id"))
+                        _state.postValue(LoadingState.Error(R.string.message_tab_load_from_playlist_unexpected_error))
                     } else {
                         currentTab = Tab(tabId)
                     }
@@ -180,19 +180,32 @@ class TabViewModel
             currentTab?.load(dataAccess, forceInternetFetch = forceReload)
         }
         reloadJob.invokeOnCompletion { ex ->
-            if (ex != null) {
-                if (ex is UgApi.NoInternetException) {
-                    Log.i(TAG, "No internet while fetching tab $id (playlistEntryId: $idIsPlaylistEntryId)", ex)
-                    _state.postValue(LoadingState.Error("Can't load this tab from the internet: No internet access."))
-                } else if (ex is NotFoundException) {
-                    Log.e(TAG, "Tab $id (playlistEntry: $idIsPlaylistEntryId) not found.", ex)
-                    _state.postValue(LoadingState.Error("Tab $id (playlist entry: $idIsPlaylistEntryId) not found. Please report this issue to the developer."))
-                } else {
-                    Log.e(TAG, "Unexpected error loading tab $id (playlistEntryId: $idIsPlaylistEntryId): ${ex.message}", ex)
-                    _state.postValue(LoadingState.Error("Unexpected error loading tab from the internet: ${ex.message}"))
+            when (ex) {
+                null -> {
+                    // success
+                    _state.postValue(LoadingState.Success)
                 }
-            } else {
-                _state.postValue(LoadingState.Success)
+                is UgApi.NoInternetException -> {
+                    Log.i(TAG, "No internet while fetching tab $id (playlistEntryId: $idIsPlaylistEntryId)", ex)
+                    _state.postValue(LoadingState.Error(R.string.message_tab_load_no_internet))
+                }
+                is UgApi.UnavailableForLegalReasonsException -> {
+                    Log.i(TAG, "Tab ${tab.value?.songName} (${tab.value?.tabId}) unavailable for legal reasons.")
+                    _state.postValue(LoadingState.Error(R.string.message_tab_unavailable_for_legal_reasons))
+                }
+                is NotFoundException -> {
+                    // this shouldn't happen. We only get to this page through the app; it's strange to have a tab ID somewhere else, but not found here.
+                    Log.e(TAG, "Tab $id (playlistEntry: $idIsPlaylistEntryId) not found.", ex)
+                    if (idIsPlaylistEntryId) {
+                        _state.postValue(LoadingState.Error(R.string.message_tab_playlist_entry_not_found))
+                    } else {
+                        _state.postValue(LoadingState.Error(R.string.message_tab_not_found))
+                    }
+                }
+                else -> {
+                    Log.e(TAG, "Unexpected error loading tab $id (playlistEntryId: $idIsPlaylistEntryId): ${ex.message}", ex)
+                    _state.postValue(LoadingState.Error(R.string.message_tab_load_unexpected_error))
+                }
             }
         }
     }

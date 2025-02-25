@@ -65,6 +65,8 @@ data class Tab(
                 } catch (ex: UgApi.NoInternetException) {
                     Log.i(TAG, "Not connected to the internet during empty tab fetch for tab $tabId for playlist $playlistId: ${ex.message}. Skipping the rest of the tabs in this playlist.")
                     throw ex  // exit the fetch if we're not connected to the internet
+                } catch (ex: UgApi.UnavailableForLegalReasonsException) { // must be before catch for NotFoundException since this is a type of NotFoundException
+                    Log.i(TAG, "Tab $tabId unavailable for legal reasons.")
                 } catch (ex: NotFoundException) {
                     Log.e(TAG, "Tab NOT FOUND during fetch of empty tab $tabId for playlist $playlistId")
                 } catch (ex: Exception) {

@@ -314,7 +314,7 @@ fun TabScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     if (viewState.state.value is LoadingState.Error) {
-                        ErrorCard(text = (viewState.state.value as LoadingState.Error).message)
+                        ErrorCard(text = stringResource((viewState.state.value as LoadingState.Error).messageStringRef))
                     } else {
                         CircularProgressIndicator()  // still loading
                     }

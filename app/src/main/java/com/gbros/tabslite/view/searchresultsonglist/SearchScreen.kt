@@ -127,7 +127,7 @@ fun SearchScreen(
                     .fillMaxSize()
                     .padding(all = 24.dp), contentAlignment = Alignment.Center
             ) {
-                ErrorCard(text = (searchState.value as LoadingState.Error).message)
+                ErrorCard(text = stringResource((searchState.value as LoadingState.Error).messageStringRef))
             }
         } else if (searchState.value is LoadingState.Success && searchResults.value.isEmpty()) {
             Box(
@@ -279,7 +279,7 @@ private fun SearchScreenPreviewError() {
         [tab]            [ch]G[/ch]
         I’m by your side.[/tab]    """.trimIndent()
     val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
-    val state = SearchViewStateForTest("my song", MutableLiveData(listOf(tabForTest, tabForTest, tabForTest)), MutableLiveData(LoadingState.Error("Unexpected error: test error")), MutableLiveData(false))
+    val state = SearchViewStateForTest("my song", MutableLiveData(listOf(tabForTest, tabForTest, tabForTest)), MutableLiveData(LoadingState.Error(R.string.error)), MutableLiveData(false))
 
     val tabSearchBarViewState = TabSearchBarViewStateForTest(
         query = MutableLiveData("my song"),

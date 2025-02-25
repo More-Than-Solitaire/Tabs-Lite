@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gbros.tabslite.LoadingState
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Search
 import com.gbros.tabslite.data.tab.ITab
@@ -102,12 +103,12 @@ class SearchViewModel
             }
             fetchSearchResultsJob.invokeOnCompletion { ex ->
                 if (ex is UgApi.NoInternetException) {
-                    searchState.postValue(LoadingState.Error("You're not connected to the internet."))
+                    searchState.postValue(LoadingState.Error(R.string.message_search_no_internet))
                 } else if (ex is CancellationException) {
                     // probably job was cancelled due to timeout (see below)
-                    searchState.postValue(LoadingState.Error(ex.message ?: ""))
+                    searchState.postValue(LoadingState.Error(R.string.message_search_timeout))
                 } else if (ex != null) {
-                    searchState.postValue(LoadingState.Error("Unexpected error loading search results: ${ex.message}"))
+                    searchState.postValue(LoadingState.Error(R.string.message_search_unexpected_error))
                     Log.e(TAG, "Unexpected error loading search results: ${ex.message}", ex)
                 } else {
                     searchState.postValue(LoadingState.Success)

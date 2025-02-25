@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.gbros.tabslite.LoadingState
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.playlist.Playlist
@@ -155,7 +156,7 @@ class HomeViewModel
         }
         exportJob.invokeOnCompletion { ex ->
             if (ex != null) {
-                playlistImportState.postValue(LoadingState.Error(ex.message ?: "No error message"))
+                playlistImportState.postValue(LoadingState.Error(R.string.message_playlist_import_export_unexpected_error))
                 Log.e(TAG, "Unexpected error during playlist export: ${ex.message}")
             } else {
                 playlistImportState.postValue(LoadingState.Success)
@@ -202,7 +203,7 @@ class HomeViewModel
                                 playlistImportProgress.postValue(progressFromPreviouslyImportedPlaylists + (progress * progressForThisPlaylist))
                             })
                     } catch (ex: UgApi.NoInternetException) {
-                        playlistImportState.postValue(LoadingState.Error("No internet connection. Playlist tabs have been added, but won't be downloaded until next time you restart the app with internet access."))
+                        playlistImportState.postValue(LoadingState.Error(R.string.message_playlist_import_delayed_internet_access))
                         Log.i(TAG, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) completed without internet access.")
                     } catch (ex: Exception) {
                         Log.e(TAG, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) failed: ${ex.message}", ex)
@@ -218,7 +219,7 @@ class HomeViewModel
         }
         importJob.invokeOnCompletion { ex ->
             if (ex != null) {
-                playlistImportState.postValue(LoadingState.Error(ex.message ?: "No error message"))
+                playlistImportState.postValue(LoadingState.Error(R.string.message_playlist_import_export_unexpected_error))
                 Log.e(TAG, "Unexpected error during playlist import: ${ex.message}")
             } else {
                 playlistImportState.postValue(LoadingState.Success)

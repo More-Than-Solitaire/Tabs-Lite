@@ -388,7 +388,7 @@ object UgApi {
                         }
 
                         Log.i(TAG, "Url not available (451: unavailable for legal reasons). content: \n$content")
-                        return@withContext conn.inputStream
+                        throw UnavailableForLegalReasonsException("Url '$url' unavailable for legal reasons: 451.\n$content")
                     } else {
                         return@withContext conn.inputStream
                     }
@@ -396,7 +396,10 @@ object UgApi {
             } while (true)
 
             throw Exception("Unreachable: Could not create authenticated stream.")  // shouldn't get here
-        } catch (ex: FileNotFoundException) {
+        } catch (ex: UnavailableForLegalReasonsException) {
+            throw ex  // pass through UnavailableForLegalReasonsExceptions
+        }
+        catch (ex: FileNotFoundException) {
             throw NotFoundException("NOT FOUND during fetch of url $url. Response code $responseCode.", ex)
         } catch (ex: ConnectException) {
             throw NoInternetException("Could not fetch $url. ConnectException (no internet access)", ex)
@@ -534,9 +537,13 @@ object UgApi {
         constructor(message: String, cause: Throwable) : super(message, cause)
     }
 
-    class TabFetchException : Exception {
+    open class TabFetchException : Exception {
         constructor(message: String) : super(message)
         constructor(message: String, cause: Throwable) : super(message, cause)
+    }
+
+    class UnavailableForLegalReasonsException : NotFoundException {
+        constructor(message: String) : super(message)
     }
 
     //#endregion
