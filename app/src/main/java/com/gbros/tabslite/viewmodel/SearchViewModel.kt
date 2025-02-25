@@ -90,8 +90,8 @@ class SearchViewModel
      */
     fun onMoreSearchResultsNeeded(retryOnTimeout: Boolean = true) {
         if (searchMutex.tryLock()) {  // only fetch one page of search results at a time
-            searchState.postValue(LoadingState.Loading)
             val fetchSearchResultsJob = CoroutineScope(Dispatchers.IO).async {
+                searchState.postValue(LoadingState.Loading)
                 val newSearchResults = searchSession.fetchNextSearchResults()
                 if (newSearchResults.isNotEmpty()) {
                     val updatedResults = results.value?.toMutableList()
@@ -102,16 +102,22 @@ class SearchViewModel
                 }
             }
             fetchSearchResultsJob.invokeOnCompletion { ex ->
-                if (ex is UgApi.NoInternetException) {
-                    searchState.postValue(LoadingState.Error(R.string.message_search_no_internet))
-                } else if (ex is CancellationException) {
-                    // probably job was cancelled due to timeout (see below)
-                    searchState.postValue(LoadingState.Error(R.string.message_search_timeout))
-                } else if (ex != null) {
-                    searchState.postValue(LoadingState.Error(R.string.message_search_unexpected_error))
-                    Log.e(TAG, "Unexpected error loading search results: ${ex.message}", ex)
-                } else {
-                    searchState.postValue(LoadingState.Success)
+                when (ex) {
+                    null -> {
+                        // success
+                        searchState.postValue(LoadingState.Success)
+                    }
+                    is UgApi.NoInternetException -> {
+                        searchState.postValue(LoadingState.Error(R.string.message_search_no_internet))
+                    }
+                    is CancellationException -> {
+                        // probably job was cancelled due to timeout (see below)
+                        searchState.postValue(LoadingState.Error(R.string.message_search_timeout))
+                    }
+                    else -> {
+                        searchState.postValue(LoadingState.Error(R.string.message_search_unexpected_error))
+                        Log.e(TAG, "Unexpected error loading search results: ${ex.message}", ex)
+                    }
                 }
 
                 searchMutex.unlock()
