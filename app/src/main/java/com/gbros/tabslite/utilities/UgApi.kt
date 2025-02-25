@@ -38,8 +38,6 @@ import java.util.Locale
 import java.util.TimeZone
 import kotlin.random.Random
 
-private const val LOG_NAME = "tabslite.UgApi         "
-
 /**
  * The API interface handling all API-specific logic to get data from the server (or send to the server)
  */
@@ -98,8 +96,9 @@ object UgApi {
             // no internet access
             throw NoInternetException("No internet access to fetch search suggestions for query $q", ex)
         } catch (ex: Exception) {
-            Log.e(LOG_NAME, "SearchSuggest ${ex.javaClass.canonicalName} while finding search suggestions. Probably no internet; no search suggestions added", ex)
-            return@withContext
+            val message = "SearchSuggest ${ex.javaClass.canonicalName} while finding search suggestions. Probably no internet; no search suggestions added"
+            Log.e(TAG, message, ex)
+            throw SearchException(message, ex)
         }
     }
 
@@ -121,9 +120,11 @@ object UgApi {
         } catch (ex: NotFoundException) {
             // end of search results
             return@withContext SearchRequestType()
+        } catch (ex: NoInternetException) {
+            throw ex  // pass through NoInternetExceptions
         } catch (ex: Exception) {
-            Log.e(LOG_NAME, "Unexpected exception reading search results for page $page of query '$query': ${ex.message}", ex)
-            return@withContext SearchRequestType()
+            Log.e(TAG, "Unexpected exception reading search results for page $page of query '$query': ${ex.message}", ex)
+            throw SearchException("Couldn't fetch search results for page $page of query '$query': ${ex.message}", ex)
         }
 
         var result: SearchRequestType
@@ -132,13 +133,9 @@ object UgApi {
         try {
             val searchResultTypeToken = object : TypeToken<SearchRequestType>() {}.type
             result = gson.fromJson(jsonReader, searchResultTypeToken)
-            Log.v(LOG_NAME, "Search for $query page $page success.")
+            Log.v(TAG, "Search for $query page $page success.")
         } catch (syntaxException: JsonSyntaxException) {
             // usually this block happens when the end of the exact query is reached and a 'did you mean' suggestion is available
-            Log.v(
-                LOG_NAME,
-                "Search exception.  Probably just a 'did you mean' search suggestion at the end."
-            )
             try {
                 val stringTypeToken = object : TypeToken<String>() {}.type
                 val suggestedSearch: String = gson.fromJson(jsonReader, stringTypeToken)
@@ -146,16 +143,9 @@ object UgApi {
                 result = SearchRequestType(suggestedSearch)
             } catch (ex: IllegalStateException) {
                 inputStream.close()
-                Log.e(
-                    LOG_NAME,
-                    "Search illegal state exception!  Check SearchRequestType for consistency with data.  Query: $query, page $page",
-                    syntaxException
-                )
-
-                throw Exception(
-                    "Search illegal state exception!  Check SearchRequestType for consistency with data.  Query: $query, page $page",
-                    ex
-                )
+                val message = "Search illegal state exception!  Check SearchRequestType for consistency with data.  Query: $query, page $page"
+                Log.e(TAG, message, syntaxException)
+                throw SearchException(message, syntaxException)
             }
         } finally {
             inputStream.close()
@@ -209,7 +199,7 @@ object UgApi {
             }
         } catch (ex: Exception) {
             val chordCount = chordIds.size
-            Log.i(LOG_NAME, "Couldn't fetch chords: '$chordParam'. Chord count that we're looking for: $chordCount. ${ex.message}", ex)
+            Log.i(TAG, "Couldn't fetch chords: '$chordParam'. Chord count that we're looking for: $chordCount. ${ex.message}", ex)
             cancel("Error fetching chord(s).")
         }
 
@@ -268,7 +258,7 @@ object UgApi {
         tabAccessType: String = "public"
     ): TabDataType = withContext(Dispatchers.IO) {
         // get the tab and corresponding chords, and put them in the database.  Then return true
-        Log.v(LOG_NAME, "Loading tab $tabId.")
+        Log.v(TAG, "Loading tab $tabId.")
         val url =
             "https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType"
         val requestResponse: TabRequestType = with(authenticatedStream(url)) {
@@ -278,7 +268,7 @@ object UgApi {
         }
 
         Log.v(
-            LOG_NAME,
+            TAG,
             "Parsed response for tab $tabId. Name: ${requestResponse.song_name}, capo ${requestResponse.capo}"
         )
 
@@ -286,15 +276,17 @@ object UgApi {
         try {
             dataAccess.insertAll(requestResponse.getChordVariations())
         } catch (ex: Exception) {
-            Log.w(LOG_NAME, "Couldn't get chord variations from tab $tabId", ex)
+            Log.w(TAG, "Couldn't get chord variations from tab $tabId", ex)
         }
 
         val result = requestResponse.getTabFull()
         if (result.content.isNotBlank()) {
             dataAccess.upsert(result)
-            Log.v(LOG_NAME, "Successfully inserted tab ${result.songName} (${result.tabId})")
+            Log.v(TAG, "Successfully inserted tab ${result.songName} (${result.tabId})")
         } else {
-            Log.e(LOG_NAME, "Tab $tabId fetch completed successfully but had no content! This shouldn't happen.")
+            val message = "Tab $tabId fetch completed successfully but had no content! This shouldn't happen."
+            Log.e(TAG, message)
+            throw TabFetchException(message)
         }
         return@withContext result
     }
@@ -314,7 +306,7 @@ object UgApi {
      * @throws Exception if an unknown error occurs (could still be an internet access issue)
      */
     private suspend fun authenticatedStream(url: String): InputStream = withContext(Dispatchers.IO) {
-        Log.v(LOG_NAME, "Getting authenticated stream for url: $url.")
+        Log.v(TAG, "Getting authenticated stream for url: $url.")
         try {
             apiKeyFetchLock.lock()
 
@@ -330,7 +322,7 @@ object UgApi {
         }
 
         // api key is not null
-        Log.v(LOG_NAME, "Api key: $apiKey, device id: $deviceId.")
+        Log.v(TAG, "Api key: $apiKey, device id: $deviceId.")
 
         var responseCode = 0
         try {
@@ -355,18 +347,18 @@ object UgApi {
                 conn.connectTimeout = (5000)  // timeout of 5 seconds
                 conn.readTimeout = 6000
                 responseCode = conn.responseCode
-                Log.v(LOG_NAME, "Retrieved URL with response code $responseCode.")
+                Log.v(TAG, "Retrieved URL with response code $responseCode.")
 
                 if (responseCode == 498 && numTries == 1) {  // don't bother the second time through
                     Log.i(
-                        LOG_NAME,
+                        TAG,
                         "498 response code for old api key $apiKey and device id $deviceId.  Refreshing api key"
                     )
                     conn.disconnect()
 
                     try {
                         updateApiKey()
-                        Log.v(LOG_NAME, "Got new api key ($apiKey)")
+                        Log.v(TAG, "Got new api key ($apiKey)")
                     } catch (ex: Exception) {
                         // we don't have an internet connection.  Strange, because we shouldn't have gotten a 498 error code if we had no internet.
                         val msg =
@@ -374,8 +366,8 @@ object UgApi {
                         throw Exception(msg, ex)
                     }
                 } else {
-                    Log.v(LOG_NAME, "Fetch attempt $numTries - valid token or max retries reached.")
-                    Log.v(LOG_NAME, "Response code $responseCode on try $numTries for url $url (${conn.requestMethod}).")
+                    Log.v(TAG, "Fetch attempt $numTries - valid token or max retries reached.")
+                    Log.v(TAG, "Response code $responseCode on try $numTries for url $url (${conn.requestMethod}).")
 
                     if (responseCode == 498) {
                         // read response content if our api level includes the function
@@ -395,7 +387,7 @@ object UgApi {
                             } catch (_: Exception) { }
                         }
 
-                        Log.i(LOG_NAME, "Url not available (451: unavailable for legal reasons). content: \n$content")
+                        Log.i(TAG, "Url not available (451: unavailable for legal reasons). content: \n$content")
                         return@withContext conn.inputStream
                     } else {
                         return@withContext conn.inputStream
@@ -479,7 +471,7 @@ object UgApi {
         simpleDateFormat.timeZone = TimeZone.getTimeZone("UTC")
         val formattedDateString = simpleDateFormat.format(serverTimestamp.getServerTime().time)
 
-        Log.i(LOG_NAME, "Fetched server time: $formattedDateString}")
+        Log.i(TAG, "Fetched server time: $formattedDateString}")
         return@withContext formattedDateString
     }
 
@@ -536,6 +528,15 @@ object UgApi {
         constructor(message: String) : super(message)
         constructor(message: String, cause: Throwable) : super(message, cause)
         constructor(cause: Throwable) : super(cause)
+    }
+
+    class SearchException : Exception {
+        constructor(message: String, cause: Throwable) : super(message, cause)
+    }
+
+    class TabFetchException : Exception {
+        constructor(message: String) : super(message)
+        constructor(message: String, cause: Throwable) : super(message, cause)
     }
 
     //#endregion

@@ -7,17 +7,21 @@ import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Search
 import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.utilities.TAG
+import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.view.searchresultsonglist.ISearchViewState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
-
-private const val LOG_NAME = "tabslite.UgApi         "
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel(assistedFactory = SearchViewModel.SearchViewModelFactory::class)
 class SearchViewModel
@@ -78,7 +82,12 @@ class SearchViewModel
 
     //#region public methods
 
-    fun onMoreSearchResultsNeeded() {
+    /**
+     * Load another page of search results. Uses a mutex lock to only fetch a single page of results
+     * at a time. On completion, sets [searchState] to [LoadingState.Success] (or [LoadingState.Error]
+     * on error)
+     */
+    fun onMoreSearchResultsNeeded(retryOnTimeout: Boolean = true) {
         if (searchMutex.tryLock()) {  // only fetch one page of search results at a time
             searchState.postValue(LoadingState.Loading)
             val fetchSearchResultsJob = CoroutineScope(Dispatchers.IO).async {
@@ -91,16 +100,37 @@ class SearchViewModel
                     allResultsLoaded.postValue(true)
                 }
             }
-
             fetchSearchResultsJob.invokeOnCompletion { ex ->
-                if (ex != null) {
+                if (ex is UgApi.NoInternetException) {
+                    searchState.postValue(LoadingState.Error("You're not connected to the internet."))
+                } else if (ex is CancellationException) {
+                    // probably job was cancelled due to timeout (see below)
+                    searchState.postValue(LoadingState.Error(ex.message ?: ""))
+                } else if (ex != null) {
                     searchState.postValue(LoadingState.Error("Unexpected error loading search results: ${ex.message}"))
-                    Log.e(LOG_NAME, "Unexpected error loading search results: ${ex.message}", ex)
+                    Log.e(TAG, "Unexpected error loading search results: ${ex.message}", ex)
                 } else {
                     searchState.postValue(LoadingState.Success)
                 }
 
                 searchMutex.unlock()
+            }
+
+            // as a backup, if search takes more than 15 seconds to load, cancel and retry
+            val searchTimeoutJob = CoroutineScope(Dispatchers.Default).async {
+                // wait 15 seconds before cancelling the search job
+                delay(15.seconds)
+            }
+            searchTimeoutJob.invokeOnCompletion {
+                // the search job has been given 15 seconds. If it's still running, cancel.
+                if (!fetchSearchResultsJob.isCompleted) {
+                    fetchSearchResultsJob.cancel("Timeout while waiting for search results.")
+
+                    if (retryOnTimeout) {
+                        // retry once more
+                        onMoreSearchResultsNeeded(retryOnTimeout = false)
+                    }
+                }
             }
         }
     }

@@ -37,6 +37,7 @@ import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.tabview.ITabViewState
@@ -106,7 +107,7 @@ class TabViewModel
             // preload all the new chords
             fetchAllChords()
         } else {
-            Log.e(LOG_NAME, "Transpose button clicked while tab was null.")
+            Log.e(TAG, "Transpose button clicked while tab was null.")
         }
     }
 
@@ -168,7 +169,7 @@ class TabViewModel
                 } else {
                     val tabId = dataAccess.getEntryById(id)?.tabId
                     if (tabId == null) {
-                        Log.e(LOG_NAME, "Couldn't get tab from playlist entry $id")
+                        Log.e(TAG, "Couldn't get tab from playlist entry $id")
                         _state.postValue(LoadingState.Error("Unexpected error loading tab from playlist entry $id"))
                     } else {
                         currentTab = Tab(tabId)
@@ -181,13 +182,13 @@ class TabViewModel
         reloadJob.invokeOnCompletion { ex ->
             if (ex != null) {
                 if (ex is UgApi.NoInternetException) {
-                    Log.i(LOG_NAME, "No internet while fetching tab $id (playlistEntryId: $idIsPlaylistEntryId)", ex)
+                    Log.i(TAG, "No internet while fetching tab $id (playlistEntryId: $idIsPlaylistEntryId)", ex)
                     _state.postValue(LoadingState.Error("Can't load this tab from the internet: No internet access."))
                 } else if (ex is NotFoundException) {
-                    Log.e(LOG_NAME, "Tab $id (playlistEntry: $idIsPlaylistEntryId) not found.", ex)
+                    Log.e(TAG, "Tab $id (playlistEntry: $idIsPlaylistEntryId) not found.", ex)
                     _state.postValue(LoadingState.Error("Tab $id (playlist entry: $idIsPlaylistEntryId) not found. Please report this issue to the developer."))
                 } else {
-                    Log.e(LOG_NAME, "Unexpected error loading tab $id (playlistEntryId: $idIsPlaylistEntryId): ${ex.message}", ex)
+                    Log.e(TAG, "Unexpected error loading tab $id (playlistEntryId: $idIsPlaylistEntryId): ${ex.message}", ex)
                     _state.postValue(LoadingState.Error("Unexpected error loading tab from the internet: ${ex.message}"))
                 }
             } else {
@@ -279,7 +280,7 @@ class TabViewModel
             lastIndex = text.indexOf("[/ch]", firstIndex)+5  // index of end of [/ch]
             if (lastIndex-5 == -1) {
                 // couldn't find a closing tag for this chord.  Handle gracefully and log warning
-                Log.w(LOG_NAME, "Couldn't find closing [/ch] tag for chord starting at position $firstIndex for tab ${tab.value?.tabId}")
+                Log.w(TAG, "Couldn't find closing [/ch] tag for chord starting at position $firstIndex for tab ${tab.value?.tabId}")
                 lastIndex = firstIndex+4  // start the next loop after that [ch] tag
                 continue // skip this chord
             }
@@ -444,8 +445,6 @@ class TabViewModel
 
     //#region private data
 
-    private val LOG_NAME = "tabslite.TabViewModel  "
-
     private val tab: LiveData<out ITab?> = if (idIsPlaylistEntryId) dataAccess.getTabFromPlaylistEntryId(id) else dataAccess.getTab(id)
 
     /**
@@ -511,7 +510,7 @@ class TabViewModel
         }
 
     override val playlistTitle: LiveData<String> = tab.map { t ->
-        Log.d(LOG_NAME, "Playlist title updating")
+        Log.d(TAG, "Playlist title updating")
         if (t is TabWithDataPlaylistEntry && t.playlistTitle != null) t.playlistTitle!! else ""
     }
 
@@ -555,7 +554,7 @@ class TabViewModel
         if (unformatted != null && availableWidth != null) {
             processTabContent(unformatted, availableWidth, currentTheme )
         } else {
-            Log.d(LOG_NAME, "No content yet")
+            Log.d(TAG, "No content yet")
             AnnotatedString("")
         }
     }
@@ -636,10 +635,10 @@ class TabViewModel
             if (entryIdToNavigateTo != null) {
                 onNavigateToPlaylistEntry(entryIdToNavigateTo)
             } else {
-                Log.w(LOG_NAME, "Playlist next song click event triggered while next entry id is null")
+                Log.w(TAG, "Playlist next song click event triggered while next entry id is null")
             }
         } else {
-            Log.w(LOG_NAME, "Playlist next song clicked while tab (id: $id, playlist: $idIsPlaylistEntryId) is null or not playlist entry: ${tab.value?.toString()}")
+            Log.w(TAG, "Playlist next song clicked while tab (id: $id, playlist: $idIsPlaylistEntryId) is null or not playlist entry: ${tab.value?.toString()}")
         }
     }
 
@@ -650,10 +649,10 @@ class TabViewModel
             if (entryIdToNavigateTo != null) {
                 onNavigateToPlaylistEntry(entryIdToNavigateTo)
             } else {
-                Log.w(LOG_NAME, "Playlist previous song click event triggered while previous entry id is null")
+                Log.w(TAG, "Playlist previous song click event triggered while previous entry id is null")
             }
         } else {
-            Log.w(LOG_NAME, "Playlist previous song clicked while tab (id: $id, playlist: $idIsPlaylistEntryId) is null or not playlist entry: ${tab.value?.toString()}")
+            Log.w(TAG, "Playlist previous song clicked while tab (id: $id, playlist: $idIsPlaylistEntryId) is null or not playlist entry: ${tab.value?.toString()}")
         }
     }
 
@@ -703,7 +702,7 @@ class TabViewModel
             try {
                 uriHandler.openUri(urlAnnotation.url.trim())
             } catch (ex: ActivityNotFoundException) {
-                Log.i(LOG_NAME, "Couldn't launch URL, copying to clipboard instead")
+                Log.i(TAG, "Couldn't launch URL, copying to clipboard instead")
                 clipboardManager.nativeClipboard.setPrimaryClip(ClipData.newPlainText(urlAnnotation.url.trim(), urlAnnotation.url.trim()))
             }
         }
@@ -769,7 +768,7 @@ class TabViewModel
                 )
             }
         } else {
-            Log.e(LOG_NAME, "Couldn't add the requested tab $currentTab to playlist ${selectedPlaylist?.playlistId} at transpose $currentTranspose. All of the values need to be non-null.")
+            Log.e(TAG, "Couldn't add the requested tab $currentTab to playlist ${selectedPlaylist?.playlistId} at transpose $currentTranspose. All of the values need to be non-null.")
         }
     }
 
@@ -820,7 +819,7 @@ class TabViewModel
         }
         autoscrollPreferenceJob.invokeOnCompletion { err ->
             if (err != null) {
-                Log.e(LOG_NAME, "Couldn't load autoscroll user preference: ${err.message}", err)
+                Log.e(TAG, "Couldn't load autoscroll user preference: ${err.message}", err)
                 _autoscrollSpeedSliderPosition.postValue(0.5f) // have a fallback value in case of exception or database errors
             } else {
                 val result = autoscrollPreferenceJob.getCompleted()

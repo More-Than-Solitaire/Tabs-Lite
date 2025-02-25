@@ -5,7 +5,6 @@ import android.content.ContentResolver
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -75,8 +74,6 @@ import com.gbros.tabslite.view.songlist.SortByDropdown
 import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.viewmodel.HomeViewModel
-
-private const val LOG_NAME = "tabslite.HomeScreen    "
 
 const val HOME_ROUTE = "home"
 
@@ -151,18 +148,14 @@ fun HomeScreen(
     val exportDataFilePickerActivityLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK && result.data?.data != null) {
             onExportPlaylists(result.data!!.data!!, contentResolver)
-        } else {
-            Log.w(LOG_NAME, "Export playlists clicked, but no file chosen.")
-        }
+        } // else: user cancelled the action
     }
 
     // handle playlist data import
     val importPlaylistsPickerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { fileToImport ->
         if (fileToImport != null) {
             onImportPlaylists(fileToImport, contentResolver)
-        } else {
-            Log.w(LOG_NAME, "Import Playlists clicked, but fileToImport is null")
-        }
+        } // else: user cancelled the action
     }
 
     if (showAboutDialog) {
@@ -399,7 +392,8 @@ private fun HomeScreenPreview() {
     val tabSearchBarViewState = TabSearchBarViewStateForTest(
         query = MutableLiveData(""),
         searchSuggestions = MutableLiveData(listOf()),
-        tabSuggestions = MutableLiveData(listOf())
+        tabSuggestions = MutableLiveData(listOf()),
+        loadingState = MutableLiveData(LoadingState.Loading)
     )
 
     AppTheme {
@@ -437,7 +431,8 @@ private class SongListViewStateForTest(
 private class TabSearchBarViewStateForTest(
     override val query: LiveData<String>,
     override val searchSuggestions: LiveData<List<String>>,
-    override val tabSuggestions: LiveData<List<ITab>>
+    override val tabSuggestions: LiveData<List<ITab>>,
+    override val loadingState: LiveData<LoadingState>
 ) : ITabSearchBarViewState
 
 //#endregion

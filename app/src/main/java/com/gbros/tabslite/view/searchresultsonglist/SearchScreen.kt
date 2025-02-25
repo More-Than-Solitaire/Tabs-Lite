@@ -189,7 +189,8 @@ private class SearchViewStateForTest(
 private class TabSearchBarViewStateForTest(
     override val query: LiveData<String>,
     override val searchSuggestions: LiveData<List<String>>,
-    override val tabSuggestions: LiveData<List<ITab>>
+    override val tabSuggestions: LiveData<List<ITab>>,
+    override val loadingState: LiveData<LoadingState>
 ): ITabSearchBarViewState
 
 @Composable
@@ -228,7 +229,8 @@ private fun SearchScreenPreview() {
     val tabSearchBarViewState = TabSearchBarViewStateForTest(
         query = MutableLiveData("my song"),
         searchSuggestions = MutableLiveData(listOf()),
-        tabSuggestions = MutableLiveData(listOf(Tab(0)))
+        tabSuggestions = MutableLiveData(listOf(Tab(0))),
+        loadingState = MutableLiveData()
     )
 
     AppTheme {
@@ -282,7 +284,8 @@ private fun SearchScreenPreviewError() {
     val tabSearchBarViewState = TabSearchBarViewStateForTest(
         query = MutableLiveData("my song"),
         searchSuggestions = MutableLiveData(listOf()),
-        tabSuggestions = MutableLiveData(listOf(Tab(0)))
+        tabSuggestions = MutableLiveData(listOf(Tab(0))),
+        loadingState = MutableLiveData()
     )
 
     AppTheme {

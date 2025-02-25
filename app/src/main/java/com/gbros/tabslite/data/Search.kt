@@ -3,9 +3,8 @@ package com.gbros.tabslite.data
 import android.util.Log
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.UgApi
-
-private const val LOG_NAME = "tabslite.Search        "
 
 /**
  * Represents a search session with one search query.  Gets search results and provides a method to
@@ -38,7 +37,7 @@ class Search(private var query: String, private val dataAccess: DataAccess) {
      * @throws [SearchDidYouMeanException] if no results, but there's a suggested query
      */
     private suspend fun getSearchResults(page: Int, query: String): List<ITab> {
-        Log.d(LOG_NAME, "starting search '$query' page $page")
+        Log.d(TAG, "starting search '$query' page $page")
         val searchResult = UgApi.search(query, (page))  // always search the next page that hasn't been loaded yet
 
         return if (!searchResult.didYouMean.isNullOrBlank()) {
@@ -51,7 +50,7 @@ class Search(private var query: String, private val dataAccess: DataAccess) {
                 dataAccess.insert(tab)
             }
 
-            Log.d(LOG_NAME, "Successful search for $query page $page.  Results: ${searchResult.getSongs().size}")
+            Log.d(TAG, "Successful search for $query page $page.  Results: ${searchResult.getSongs().size}")
             Tab.fromTabDataType(searchResult.getSongs())
         }
     }
@@ -84,7 +83,7 @@ class Search(private var query: String, private val dataAccess: DataAccess) {
         }
 
         // fallback to empty result list. Normally we shouldn't get here
-        Log.e(LOG_NAME, "Empty search result fallback after 3 Did You Mean tries. Shouldn't happen normally.")
+        Log.e(TAG, "Empty search result fallback after 3 Did You Mean tries. Shouldn't happen normally.")
         return listOf()
     }
 }

@@ -2,10 +2,9 @@ package com.gbros.tabslite.data.chord
 
 import android.util.Log
 import com.gbros.tabslite.data.DataAccess
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.UgApi
 import kotlin.math.abs
-
-private const val LOG_NAME = "tabslite.ICompleteChord"
 
 object Chord {
     // region public methods
@@ -80,7 +79,7 @@ object Chord {
             text.startsWith("Gb", true) -> "G" + text.substring(2)
             text.startsWith("G", true) -> "G#" + text.substring(1)
             else -> {
-                Log.e(LOG_NAME, "Weird Chord not transposed: $text")
+                Log.e(TAG, "Weird Chord not transposed: $text")
                 text
             }
         }
@@ -111,7 +110,7 @@ object Chord {
             text.startsWith("Gb", true) -> "F" + text.substring(2)
             text.startsWith("G", true) -> "F#" + text.substring(1)
             else -> {
-                Log.e(LOG_NAME, "Weird Chord not transposed: $text")
+                Log.e(TAG, "Weird Chord not transposed: $text")
                 text
             }
         }

@@ -15,6 +15,7 @@ import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.view.playlists.PlaylistsSortBy
 import com.gbros.tabslite.view.songlist.SortBy
@@ -22,8 +23,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
-private const val LOG_NAME = "tabslite.HomeActivity  "
 
 @AndroidEntryPoint
 class HomeActivity : ComponentActivity() {
@@ -37,11 +36,11 @@ class HomeActivity : ComponentActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 UgApi.fetchTopTabs(dataAccess)
-                Log.i(LOG_NAME, "Initial top tabs fetched successfully.")
+                Log.i(TAG, "Initial top tabs fetched successfully.")
             } catch (ex: UgApi.NoInternetException) {
-                Log.i(LOG_NAME, "Initial top tabs fetch failed due to no internet connection.", ex)
+                Log.i(TAG, "Initial top tabs fetch failed due to no internet connection.", ex)
             } catch (ex: Exception) {
-                Log.e(LOG_NAME, "Unexpected exception during initial top tabs fetch: ${ex.message}", ex)
+                Log.e(TAG, "Unexpected exception during initial top tabs fetch: ${ex.message}", ex)
             }
         }
 
@@ -78,9 +77,9 @@ class HomeActivity : ComponentActivity() {
             try {
                 Tab.fetchAllEmptyPlaylistTabsFromInternet(dataAccess)
             } catch (ex: UgApi.NoInternetException) {
-                Log.i(LOG_NAME, "Initial empty-playlist-tab fetch failed: no internet connection", ex)
+                Log.i(TAG, "Initial empty-playlist-tab fetch failed: no internet connection", ex)
             } catch (ex: Exception) {
-                Log.e(LOG_NAME, "Unexpected exception during inital empty-playlist-tab fetch: ${ex.message}", ex)
+                Log.e(TAG, "Unexpected exception during inital empty-playlist-tab fetch: ${ex.message}", ex)
             }
         }
 

@@ -1,6 +1,7 @@
 package com.gbros.tabslite.view.tabsearchbar
 
 import androidx.lifecycle.LiveData
+import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.data.tab.ITab
 
 interface ITabSearchBarViewState {
@@ -18,4 +19,5 @@ interface ITabSearchBarViewState {
      * The current search suggestions to be displayed
      */
     val searchSuggestions: LiveData<List<String>>
+    val loadingState: LiveData<LoadingState>
 }

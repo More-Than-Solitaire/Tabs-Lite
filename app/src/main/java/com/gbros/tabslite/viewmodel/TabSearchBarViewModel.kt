@@ -1,11 +1,14 @@
 package com.gbros.tabslite.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
+import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +52,8 @@ class TabSearchBarViewModel(
         dataAccess.getSearchSuggestions(currentQuery)
     }
 
+    override val loadingState: MutableLiveData<LoadingState> = MutableLiveData(LoadingState.Success)
+
     //#endregion
 
     //#region public methods
@@ -65,6 +70,8 @@ class TabSearchBarViewModel(
                 UgApi.searchSuggest(newQuery, dataAccess = dataAccess)
             } catch (ex: UgApi.NoInternetException) {
                 // no internet access to fetch search results.
+                loadingState.postValue(LoadingState.Error("No internet connection."))
+                Log.i(TAG, "No internet connection: ${ex.message}", ex)
             }
         }
     }

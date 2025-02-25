@@ -1,7 +1,6 @@
 package com.gbros.tabslite.view.tabview
 
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -37,8 +36,6 @@ import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.chorddisplay.ChordModalBottomSheet
 import com.smarttoolfactory.gesture.detectTransformGestures
-
-private const val LOG_NAME = "tabslite.TabText    "
 
 @Composable
 fun TabText(
@@ -162,7 +159,6 @@ fun TabTextTestCase1() {
                 chordVariations = chords,
                 loadingState = LoadingState.Success
             ) {
-                Log.d(LOG_NAME, "bottom sheet dismissed")
                 bottomSheetTrigger = false
             }
         }

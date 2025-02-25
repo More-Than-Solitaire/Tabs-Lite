@@ -1,7 +1,6 @@
 package com.gbros.tabslite.view.chorddisplay
 
 import android.content.res.Configuration
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,8 +32,6 @@ import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.card.ErrorCard
 import com.gbros.tabslite.view.tabview.TabText
-
-private const val LOG_NAME = "tabslite.ChordModalB"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -162,10 +159,7 @@ private fun ChordModalBottomSheetPreview () {
                 title = chordToShow,
                 chordVariations = chords,
                 loadingState = LoadingState.Success,
-                onDismiss = {
-                    Log.d(LOG_NAME, "bottom sheet dismissed")
-                    bottomSheetTrigger = false
-                }
+                onDismiss = { }
             )
         }
     }

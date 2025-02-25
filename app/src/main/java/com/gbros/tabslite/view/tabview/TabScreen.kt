@@ -58,7 +58,6 @@ import com.gbros.tabslite.viewmodel.TabViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
-private const val LOG_NAME = "tabslite.TabScreen     "
 private const val FALLBACK_FONT_SIZE_SP = 14f  // fall back to a font size of 14.sp if the system font size can't be read
 
 //#region use case tab screen

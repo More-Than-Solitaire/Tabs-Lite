@@ -12,6 +12,7 @@ import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.playlist.PlaylistFileExportType
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.homescreen.IHomeViewState
@@ -27,8 +28,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-
-private const val LOG_NAME = "tabslite.HomeViewModel "
 
 @HiltViewModel(assistedFactory = HomeViewModel.HomeViewModelFactory::class)
 class HomeViewModel
@@ -157,7 +156,7 @@ class HomeViewModel
         exportJob.invokeOnCompletion { ex ->
             if (ex != null) {
                 playlistImportState.postValue(LoadingState.Error(ex.message ?: "No error message"))
-                Log.e(LOG_NAME, "Unexpected error during playlist export: ${ex.message}")
+                Log.e(TAG, "Unexpected error during playlist export: ${ex.message}")
             } else {
                 playlistImportState.postValue(LoadingState.Success)
             }
@@ -204,9 +203,9 @@ class HomeViewModel
                             })
                     } catch (ex: UgApi.NoInternetException) {
                         playlistImportState.postValue(LoadingState.Error("No internet connection. Playlist tabs have been added, but won't be downloaded until next time you restart the app with internet access."))
-                        Log.i(LOG_NAME, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) completed without internet access.")
+                        Log.i(TAG, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) completed without internet access.")
                     } catch (ex: Exception) {
-                        Log.e(LOG_NAME, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) failed: ${ex.message}", ex)
+                        Log.e(TAG, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) failed: ${ex.message}", ex)
                     }
 
                     progressFromPreviouslyImportedPlaylists += progressForThisPlaylist
@@ -220,7 +219,7 @@ class HomeViewModel
         importJob.invokeOnCompletion { ex ->
             if (ex != null) {
                 playlistImportState.postValue(LoadingState.Error(ex.message ?: "No error message"))
-                Log.e(LOG_NAME, "Unexpected error during playlist import: ${ex.message}")
+                Log.e(TAG, "Unexpected error during playlist import: ${ex.message}")
             } else {
                 playlistImportState.postValue(LoadingState.Success)
             }

@@ -4,8 +4,7 @@ import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
-private const val LOG_NAME = "tabslite.PlaylistEntry "
+import com.gbros.tabslite.utilities.TAG
 
 /**
  * [DataPlaylistEntry] represents a song in a playlist (or more than once in a playlist). Playlist ID -1
@@ -38,12 +37,12 @@ data class DataPlaylistEntry(
                     if (sortedEntries.all { usedEntry -> usedEntry.entryId != currentEntry!!.nextEntryId }) { // next entry hasn't been used yet; no circular reference
                         currentEntry = entryMap[currentEntry.nextEntryId]  // set up for next iteration
                     } else {
-                        Log.e(LOG_NAME, "Error!  Playlist ${currentEntry.playlistId} linked list is broken: circular reference")
+                        Log.e(TAG, "Error!  Playlist ${currentEntry.playlistId} linked list is broken: circular reference")
                         break  // stop list traversal
                     }
                 }
             } catch (ex: OutOfMemoryError) {
-                Log.e(LOG_NAME, "Error!  Playlist linked list is likely broken: circular reference", ex)
+                Log.e(TAG, "Error!  Playlist linked list is likely broken: circular reference", ex)
             }
 
             // add any remaining elements

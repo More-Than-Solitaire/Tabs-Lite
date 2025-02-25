@@ -29,8 +29,6 @@ import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.card.InfoCard
 
-private const val LOG_NAME = "tabslite.SongListView  "
-
 /**
  * The view including both the list of songs and the dropdown for sorting them
  */
