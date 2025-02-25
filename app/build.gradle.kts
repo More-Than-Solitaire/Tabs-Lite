@@ -71,22 +71,22 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.10.0")  // Compose Integration with activities
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.compose.material3:material3:1.3.1")  // Material Design 3
-    implementation("androidx.compose.material:material-icons-core:1.7.7")
-    implementation("androidx.compose.runtime:runtime-livedata:1.7.7")
+    implementation("androidx.compose.material:material-icons-core:1.7.8")
+    implementation("androidx.compose.runtime:runtime-livedata:1.7.8")
     // Compose Integration with LiveData
     implementation("androidx.compose.ui:ui-tooling-preview")  // Android Studio Preview Support
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.fragment:fragment-ktx:1.8.5")
+    implementation("androidx.fragment:fragment-ktx:1.8.6")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")  // Compose Integration with ViewModels
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
-    implementation("androidx.navigation:navigation-compose:2.8.6")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.8.6")
-    implementation("androidx.navigation:navigation-ui-ktx:2.8.6")
+    implementation("androidx.navigation:navigation-compose:2.8.7")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.8.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.8.7")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-runtime:2.6.1")
@@ -110,11 +110,11 @@ dependencies {
 
     // Debug dependencies
     debugImplementation("androidx.compose.ui:ui-tooling")  // Android Studio Preview support
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.7")  // UI tests
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.8")  // UI tests
 
     // Testing dependencies
     androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.7")  // UI tests
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.8")  // UI tests
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.6.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.test.espresso:espresso-intents:3.6.1")
