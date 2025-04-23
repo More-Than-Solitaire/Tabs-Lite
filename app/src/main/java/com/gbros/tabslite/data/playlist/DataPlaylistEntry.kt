@@ -25,7 +25,7 @@ data class DataPlaylistEntry(
     constructor(playlistEntry: IDataPlaylistEntry) : this(playlistEntry.entryId, playlistEntry.playlistId, playlistEntry.tabId, playlistEntry.nextEntryId, playlistEntry.prevEntryId, playlistEntry.dateAdded, playlistEntry.transpose)
 
     companion object {
-        fun <T: IDataPlaylistEntry> sortLinkedList(entries: List<T>): List<T> {
+        fun <T : IDataPlaylistEntry> sortLinkedList(entries: List<T>): List<T> {
             val entryMap = entries.associateBy { it.entryId }
             val sortedEntries = mutableListOf<T>()
 
@@ -35,21 +35,53 @@ data class DataPlaylistEntry(
                     sortedEntries.add(currentEntry)
 
                     if (sortedEntries.all { usedEntry -> usedEntry.entryId != currentEntry!!.nextEntryId }) { // next entry hasn't been used yet; no circular reference
-                        currentEntry = entryMap[currentEntry.nextEntryId]  // set up for next iteration
+                        // set up for next iteration
+                        currentEntry = entryMap[currentEntry.nextEntryId]
                     } else {
-                        Log.e(TAG, "Error!  Playlist ${currentEntry.playlistId} linked list is broken: circular reference")
-                        break  // stop list traversal
+                        val errorMessage = "Error!  Playlist ${currentEntry.playlistId} linked list is broken: circular reference"
+                        Log.e(TAG, errorMessage)
+                        throw BrokenLinkedListException(errorMessage, entries)
                     }
                 }
             } catch (ex: OutOfMemoryError) {
-                Log.e(TAG, "Error!  Playlist linked list is likely broken: circular reference", ex)
+                val errorMessage = "Error!  Playlist linked list is likely broken: circular reference"
+                Log.e(TAG, errorMessage, ex)
+                throw BrokenLinkedListException(errorMessage, ex, entries)
             }
 
             // add any remaining elements
-            if (sortedEntries.size < entries.size)
-                sortedEntries.addAll(entries.filter { entry -> sortedEntries.all { usedEntry -> usedEntry.entryId != entry.entryId } })
+            if (sortedEntries.size < entries.size) {
+                val remainingEntries =
+                    entries.filter { entry -> sortedEntries.all { usedEntry -> usedEntry.entryId != entry.entryId } }
+                var errorString =
+                    "Error! Playlist ${entries[0].playlistId} linked list is broken. Elements remaining after list traversal:\n"
+                for (e in remainingEntries) {
+                    errorString += "{playlistId: ${e.playlistId}, entryId: ${e.entryId}, nextEntryId: ${e.nextEntryId}, prevEntryId: ${e.prevEntryId}},\n"
+                }
+                Log.e(TAG, errorString)
+                sortedEntries.addAll(remainingEntries)
+                throw BrokenLinkedListException(errorString, sortedEntries)
+            }
 
             return sortedEntries
         }
+    }
+}
+
+/**
+ * Exception thrown when Linked List traversal fails. This could be due to circular references, a lack
+ * of a starting point, or the list being in an invalid state
+ */
+class BrokenLinkedListException : Exception {
+    /**
+     * The broken linked list in question
+     */
+    val list: List<IDataPlaylistEntry>
+
+    constructor(message: String, list: List<IDataPlaylistEntry>) : super(message) {
+        this.list = list
+    }
+    constructor(message: String, cause: Throwable, list: List<IDataPlaylistEntry>) : super(message, cause) {
+        this.list = list
     }
 }

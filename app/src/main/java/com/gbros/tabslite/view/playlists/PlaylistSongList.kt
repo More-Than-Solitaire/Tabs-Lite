@@ -1,22 +1,19 @@
 package com.gbros.tabslite.view.playlists
 
-import androidx.compose.animation.core.animateDpAsState
+import android.util.Log
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -25,26 +22,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.view.card.InfoCard
 import com.gbros.tabslite.view.songlist.SongListItem
 import com.gbros.tabslite.view.swipetodismiss.MaterialSwipeToDismiss
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorder
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /**
  * Represents a playlist of songs.  Handles reordering of songs.
@@ -53,47 +44,38 @@ import org.burnoutcrew.reorderable.reorderable
 fun PlaylistSongList(
     songs: List<TabWithDataPlaylistEntry>,
     navigateToTabByPlaylistEntryId: (entryId: Int) -> Unit,
-    onReorder: (src: TabWithDataPlaylistEntry, dest: TabWithDataPlaylistEntry, moveAfter: Boolean) -> Unit,
+    onReorder: (fromIndex: Int, toIndex: Int) -> Unit,
     onRemove: (tabToRemove: TabWithDataPlaylistEntry) -> Unit
 ) {
     // Use remember to create a MutableState object with a mutable collection type
     var reorderedSongsForDisplay by remember { mutableStateOf(songs) }
-    var currentSongs by remember { mutableStateOf(songs) }
 
-    // Observe changes in songs and update currentSongs accordingly
+    // Observe changes in songs and update current songs accordingly
     DisposableEffect(songs) {
-        reorderedSongsForDisplay = songs.toMutableList()
-        currentSongs = songs.toMutableList()
-        onDispose { }
+        // normally this effect will run when the list is reordered, in which case reorderedSongsForDisplay
+        // should already match the incoming list. Avoiding reassigning reorderedSongsForDisplay prevents
+        // the need for a redraw with a new list, allowing reorder animations to complete.
+        if (!equals(songs, reorderedSongsForDisplay)) {
+            Log.d(TAG, "Reassigning reorderedSongsForDisplay due to list inequality")
+            reorderedSongsForDisplay = songs.toMutableList()
+        }
+        onDispose { }  // only run this effect once per update to songs
     }
 
-    // handle reorder state
-    val reorderState = rememberReorderableLazyListState(
-        onMove = { from, to ->
-            val reorderedSongList = reorderedSongsForDisplay.toMutableList().apply {
-                if (from.index < reorderedSongsForDisplay.size) {  // if we're moving the spacer at the end, don't bother
-                    // handle special case since we have a spacer at the end of the list which means
-                    // we have one more list item than songs.  Always keep the spacer at the end.
-                    val toIndex = to.index.coerceAtMost(reorderedSongsForDisplay.size-1)
-                    if (toIndex != from.index) {
-                        add(toIndex, removeAt(from.index))
-                    }
-                }
-            }
+    var reorderFrom: Int? by remember { mutableStateOf(null) }
+    var reorderTo: Int? by remember { mutableStateOf(null) }
+    val lazyListState = rememberLazyListState()
+    val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        reorderedSongsForDisplay = reorderedSongsForDisplay.toMutableList().apply {
+            add(to.index, removeAt(from.index))
 
-            reorderedSongsForDisplay = reorderedSongList
-        },
-        onDragEnd = { startIndex, endIndex ->
-            if (startIndex < currentSongs.size && startIndex != endIndex) {  // startIndex should always be <= currentSongs.size since we shouldn't be able to drag the spacer
-                // handle special case since we have a spacer at the end of the list which means
-                // we have one more list item than songs.  Always keep the spacer at the end.
-                val toIndex = endIndex.coerceAtMost(currentSongs.size-1)
-                if (toIndex != startIndex) {
-                    onReorder(currentSongs[startIndex], currentSongs[toIndex], startIndex < toIndex)
-                }
+            // save the initial from value for updating the database after the reorder is finished
+            if (reorderFrom == null) {
+                reorderFrom = from.index
             }
+            reorderTo = to.index  // save the most recent to value for updating the database after the reorder is finished
         }
-    )
+    }
 
     if (songs.isEmpty()) {
         // empty playlist
@@ -105,70 +87,78 @@ fun PlaylistSongList(
         ) {
             InfoCard(text = stringResource(id = R.string.playlist_empty_description))
         }
-    } else {
-        Column(
-            modifier = Modifier
-                .windowInsetsPadding(WindowInsets(
-                    left = max(8.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(
-                        LocalLayoutDirection.current)),
-                    right = max(8.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(
-                        LocalLayoutDirection.current))
-                ))
+    }
+    else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = lazyListState,
+            contentPadding = PaddingValues(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            LazyColumn(
-                state = reorderState.listState,
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier
-                    .reorderable(reorderState)
-                    .detectReorderAfterLongPress(reorderState)
-                    .fillMaxHeight()
-            ) {
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-                items(items = reorderedSongsForDisplay, key = { it }) { song ->
-                    ReorderableItem(state = reorderState, key = song) { isDragging ->
-                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp,
-                            label = "playlist item elevation"
-                        )
-
-                        MaterialSwipeToDismiss(onRemove = {
-                            onRemove(song)
-                        }) {
-                            SongListItem(
-                                song = song,
-                                modifier = Modifier
-                                    .shadow(elevation.value),
-                                prependItem = {
-                                    Icon(
-                                        imageVector = ImageVector.vectorResource(R.drawable.ic_drag_handle),
-                                        contentDescription = stringResource(R.string.generic_action_drag_to_reorder),
-                                        modifier = Modifier
-                                            .detectReorder(reorderState)
-                                            .padding(end = 4.dp)
-                                    )
-                                },
-                                onClick = { navigateToTabByPlaylistEntryId(song.entryId) }
-                            )
+            items(reorderedSongsForDisplay, key = { it }) {
+                ReorderableItem(reorderableLazyListState, key = it) { isDragging ->
+                    val interactionSource = remember { MutableInteractionSource() }
+                    MaterialSwipeToDismiss(
+                        onRemove = { onRemove(it) },
+                        enable = !isDragging,
+                        content = {
+                            Card(
+                                onClick = { navigateToTabByPlaylistEntryId(it.entryId) },
+                                interactionSource = interactionSource
+                            ) {
+                                Row {
+                                    IconButton(
+                                        modifier = Modifier.draggableHandle(
+                                            onDragStopped = {
+                                                if (reorderFrom != null && reorderTo != null) {
+                                                    Log.d(TAG, "reordering $reorderFrom to $reorderTo")
+                                                    onReorder(reorderFrom!!, reorderTo!!)
+                                                }
+                                                // reset saved reorder for next move
+                                                reorderFrom = null
+                                                reorderTo = null
+                                            },
+                                            interactionSource = interactionSource
+                                        ),
+                                        onClick = {},
+                                    ) {
+                                        Icon(
+                                            imageVector = ImageVector.vectorResource(R.drawable.ic_drag_handle),
+                                            contentDescription = stringResource(R.string.generic_action_drag_to_reorder)
+                                        )
+                                    }
+                                    SongListItem(song = it)
+                                }
+                            }
                         }
-                    }
-                }
-                item {
-                    Spacer(modifier = Modifier.height(height = 24.dp))
-                    Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets(
-                        bottom = WindowInsets.safeContent.getBottom(LocalDensity.current)
-                    )))
+                    )
                 }
             }
         }
     }
+}
 
+/**
+ * Check equality of two playlists. Checks that the entries are the same entries, not just the contents
+ */
+private fun equals (playlist1: List<TabWithDataPlaylistEntry>, playlist2: List<TabWithDataPlaylistEntry>): Boolean {
+    if (playlist1.size != playlist2.size) {
+        return false
+    }
+
+    for (i in playlist1.indices) {
+        if (playlist1[i].entryId != playlist2[i].entryId) {
+            return false
+        }
+    }
+
+    return true
 }
 
 @Composable @Preview
 private fun PlaylistSongListPreview() {
     AppTheme {
-        PlaylistSongList(songs = createListOfTabWithPlaylistEntry(20), navigateToTabByPlaylistEntryId = {}, onReorder = { _, _, _->}, onRemove = {})
+        PlaylistSongList(songs = createListOfTabWithPlaylistEntry(20), navigateToTabByPlaylistEntryId = {}, onReorder = { _, _->}, onRemove = {})
     }
 }
 
@@ -178,7 +168,7 @@ private fun EmptyPlaylistSongListPreview() {
         PlaylistSongList(
             songs = listOf(),
             navigateToTabByPlaylistEntryId = {},
-            onReorder = { _, _, _ -> },
+            onReorder = { _, _ -> },
             onRemove = {}
         )
     }

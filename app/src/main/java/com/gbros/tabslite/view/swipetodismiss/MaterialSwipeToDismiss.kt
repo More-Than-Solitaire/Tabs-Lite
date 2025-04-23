@@ -25,7 +25,8 @@ import com.gbros.tabslite.view.playlists.RemovePlaylistEntryConfirmationDialog
 @Composable
 fun MaterialSwipeToDismiss(
     onRemove: () -> Unit,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
+    enable: Boolean
 ) {
     var show by remember { mutableStateOf(true) }  // whether to show the row at all
     var resetEntryRemoval by remember { mutableStateOf(false) }  // trigger a reset of the removal state
@@ -51,8 +52,9 @@ fun MaterialSwipeToDismiss(
                 DismissBackground(dismissState)
             },
             modifier = Modifier,
-            enableDismissFromStartToEnd = true,
+            enableDismissFromStartToEnd = false,
             enableDismissFromEndToStart = true,
+            gesturesEnabled = enable,
             content = content
         )
     }

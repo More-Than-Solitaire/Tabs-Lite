@@ -1,13 +1,14 @@
 package com.gbros.tabslite.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.gbros.tabslite.data.DataAccess
-import com.gbros.tabslite.data.playlist.DataPlaylistEntry
 import com.gbros.tabslite.data.playlist.IDataPlaylistEntry
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.view.playlists.IPlaylistViewState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -54,7 +55,7 @@ class PlaylistViewModel
     /**
      * The ordered list of songs in the playlist
      */
-    override val songs: LiveData<List<TabWithDataPlaylistEntry>> = dataAccess.getPlaylistTabs(playlistId).map { unsorted -> DataPlaylistEntry.sortLinkedList(unsorted) }
+    override val songs: LiveData<List<TabWithDataPlaylistEntry>> = dataAccess.getSortedPlaylistTabs(playlistId)
 
     //#endregion
 
@@ -63,15 +64,27 @@ class PlaylistViewModel
     /**
      * Rearrange playlist entries
      */
-    fun entryMoved(src: IDataPlaylistEntry, dest: IDataPlaylistEntry, moveAfter: Boolean) {
-        if (moveAfter) {
+    fun reorderPlaylistEntry(fromIndex: Int, toIndex: Int) {
+        val currentSongs = songs.value
+        if (currentSongs != null) {
             CoroutineScope(Dispatchers.IO).launch {
-                dataAccess.moveEntryAfter(src, dest)
+                Log.d(TAG, "Moving ${currentSongs[fromIndex].songName} to ${if (toIndex > fromIndex) "after" else "before"} ${currentSongs[toIndex].songName}")
+                entryMoved(currentSongs[fromIndex], currentSongs[toIndex], toIndex > fromIndex)
             }
+
         } else {
-            CoroutineScope(Dispatchers.IO).launch {
-                dataAccess.moveEntryBefore(src, dest)
-            }
+            Log.e(TAG, "Attempting to reorder songs in an uninitialized song list")
+        }
+    }
+
+    /**
+     * Rearrange playlist entries
+     */
+    private suspend fun entryMoved(src: IDataPlaylistEntry, dest: IDataPlaylistEntry, moveAfter: Boolean) {
+        if (moveAfter) {
+            dataAccess.moveEntryAfter(src, dest)
+        } else {
+            dataAccess.moveEntryBefore(src, dest)
         }
     }
 

@@ -53,55 +53,79 @@ class HomeActivity : ComponentActivity() {
      * downloaded successfully at the time
      */
     private fun launchInitialFetchAndSetupJobs(dataAccess: DataAccess) {
-        // fetch the most popular tabs
         CoroutineScope(Dispatchers.IO).launch {
-            try {
-                UgApi.fetchTopTabs(dataAccess)
-                Log.i(TAG, "Initial top tabs fetched successfully.")
-            } catch (ex: UgApi.NoInternetException) {
-                Log.i(TAG, "Initial top tabs fetch failed due to no internet connection.", ex)
-            } catch (ex: Exception) {
-                Log.e(TAG, "Unexpected exception during initial top tabs fetch: ${ex.message}", ex)
-            }
+            fetchTopTabs(dataAccess)
         }
 
-        // set default preferences if they aren't already set
         CoroutineScope(Dispatchers.IO).launch {
-            dataAccess.insert(Preference(Preference.FAVORITES_SORT, SortBy.DateAdded.name))
-            dataAccess.insert(Preference(Preference.POPULAR_SORT, SortBy.Popularity.name))
-            dataAccess.insert(Preference(Preference.PLAYLIST_SORT, PlaylistsSortBy.Name.name))
-            dataAccess.insert(Preference(Preference.AUTOSCROLL_DELAY, .5f.toString()))
+            initializeDefaultPlaylists(dataAccess)
         }
 
-        // create favorites and popular tabs playlists if they don't exist
         CoroutineScope(Dispatchers.IO).launch {
-            dataAccess.insert(Playlist(
-                playlistId = Playlist.TOP_TABS_PLAYLIST_ID,
-                userCreated = false,
-                title = "Popular",
-                dateCreated = System.currentTimeMillis(),
-                dateModified = System.currentTimeMillis(),
-                description = "Popular tabs amongst users globally"
-            ))
-            dataAccess.insert(Playlist(
-                playlistId = Playlist.FAVORITES_PLAYLIST_ID,
-                userCreated = true,
-                title = "Favorites",
-                dateCreated = System.currentTimeMillis(),
-                dateModified = System.currentTimeMillis(),
-                description = "Your favorite tabs, stored offline for easy access"
-            ))
+            initializeDefaultPlaylists(dataAccess)
         }
 
-        // load any tabs that were added without internet connection
         CoroutineScope(Dispatchers.IO).launch {
-            try {
-                Tab.fetchAllEmptyPlaylistTabsFromInternet(dataAccess)
-            } catch (ex: UgApi.NoInternetException) {
-                Log.i(TAG, "Initial empty-playlist-tab fetch failed: no internet connection", ex)
-            } catch (ex: Exception) {
-                Log.e(TAG, "Unexpected exception during inital empty-playlist-tab fetch: ${ex.message}", ex)
-            }
+            fetchEmptyTabsFromInternet(dataAccess)
+        }
+    }
+
+    /**
+     * fetch the most popular tabs
+     */
+    private suspend fun fetchTopTabs(dataAccess: DataAccess) {
+        try {
+            UgApi.fetchTopTabs(dataAccess)
+            Log.i(TAG, "Initial top tabs fetched successfully.")
+        } catch (ex: UgApi.NoInternetException) {
+            Log.i(TAG, "Initial top tabs fetch failed due to no internet connection.", ex)
+        } catch (ex: Exception) {
+            Log.e(TAG, "Unexpected exception during initial top tabs fetch: ${ex.message}", ex)
+        }
+    }
+
+    /**
+     * set default preferences if they aren't already set
+     */
+    private suspend fun initializeUserPreferences(dataAccess: DataAccess) {
+        dataAccess.insert(Preference(Preference.FAVORITES_SORT, SortBy.DateAdded.name))
+        dataAccess.insert(Preference(Preference.POPULAR_SORT, SortBy.Popularity.name))
+        dataAccess.insert(Preference(Preference.PLAYLIST_SORT, PlaylistsSortBy.Name.name))
+        dataAccess.insert(Preference(Preference.AUTOSCROLL_DELAY, .5f.toString()))
+    }
+
+    /**
+     * create favorites and popular tabs playlists if they don't exist
+     */
+    private suspend fun initializeDefaultPlaylists(dataAccess: DataAccess) {
+        dataAccess.insert(Playlist(
+            playlistId = Playlist.TOP_TABS_PLAYLIST_ID,
+            userCreated = false,
+            title = "Popular",
+            dateCreated = System.currentTimeMillis(),
+            dateModified = System.currentTimeMillis(),
+            description = "Popular tabs amongst users globally"
+        ))
+        dataAccess.insert(Playlist(
+            playlistId = Playlist.FAVORITES_PLAYLIST_ID,
+            userCreated = true,
+            title = "Favorites",
+            dateCreated = System.currentTimeMillis(),
+            dateModified = System.currentTimeMillis(),
+            description = "Your favorite tabs, stored offline for easy access"
+        ))
+    }
+
+    /**
+     * load any tabs that were added without internet connection
+     */
+    private suspend fun fetchEmptyTabsFromInternet(dataAccess: DataAccess) {
+        try {
+            Tab.fetchAllEmptyPlaylistTabsFromInternet(dataAccess)
+        } catch (ex: UgApi.NoInternetException) {
+            Log.i(TAG, "Initial empty-playlist-tab fetch failed: no internet connection", ex)
+        } catch (ex: Exception) {
+            Log.e(TAG, "Unexpected exception during inital empty-playlist-tab fetch: ${ex.message}", ex)
         }
 
     }

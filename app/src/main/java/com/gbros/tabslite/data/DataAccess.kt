@@ -1,5 +1,6 @@
 package com.gbros.tabslite.data
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import androidx.room.Dao
@@ -11,6 +12,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.playlist.BrokenLinkedListException
 import com.gbros.tabslite.data.playlist.DataPlaylistEntry
 import com.gbros.tabslite.data.playlist.IDataPlaylistEntry
 import com.gbros.tabslite.data.playlist.IPlaylist
@@ -22,6 +24,10 @@ import com.gbros.tabslite.data.playlist.SelfContainedPlaylist
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabDataType
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
+import com.gbros.tabslite.utilities.TAG
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * The Data Access Object for the Tab Full class.
@@ -48,6 +54,27 @@ interface DataAccess {
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id INNER JOIN playlist ON playlist_entry.playlist_id = playlist.id WHERE playlist_entry.playlist_id = :playlistId")
     fun getPlaylistTabs(playlistId: Int): LiveData<List<TabWithDataPlaylistEntry>>
+
+    fun getSortedPlaylistTabs(playlistId: Int): LiveData<List<TabWithDataPlaylistEntry>> = getPlaylistTabs(playlistId).map { unsorted ->
+        try {
+            DataPlaylistEntry.sortLinkedList(unsorted)
+        }
+        catch (ex: BrokenLinkedListException) {
+            Log.w(TAG, "Caught broken linked list sorting playlist ${playlistId}. Attempting to recover")
+            CoroutineScope(Dispatchers.IO).launch {
+                // attempt to fix the broken linked list: clear and re-add all tabs
+                clearPlaylist(playlistId)
+                appendAll(ex.list)
+            }
+
+            // return the broken list in whatever order it's in, in an attempt to recover from the exception
+            if (ex.list.isNotEmpty() && ex.list[0] is TabWithDataPlaylistEntry) {
+                ex.list as List<TabWithDataPlaylistEntry>
+            } else {
+                listOf()
+            }
+        }
+    }
 
     @Query("SELECT EXISTS(SELECT 1 FROM tabs WHERE id = :tabId AND content != '' LIMIT 1)")
     suspend fun existsWithContent(tabId: Int): Boolean
@@ -193,22 +220,42 @@ interface DataAccess {
     suspend fun deleteTabFromFavorites(tabId: Int) = deleteTabFromPlaylist(tabId, FAVORITES_PLAYLIST_ID)
 
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId")
-    fun clearPlaylist(playlistId: Int)
+    suspend fun clearPlaylist(playlistId: Int)
 
-    fun clearTopTabsPlaylist() = clearPlaylist(TOP_TABS_PLAYLIST_ID)
+    /**
+     * Append the tabs in the passed list to their playlist(s). Does not respect passed ordering.
+     */
+    suspend fun appendAll(playlistEntries: List<IDataPlaylistEntry>) {
+        for (entry in playlistEntries) {
+            appendToPlaylist(entry.playlistId, entry.tabId, entry.transpose)
+        }
+    }
+
+    suspend fun clearTopTabsPlaylist() = clearPlaylist(TOP_TABS_PLAYLIST_ID)
 
     @Query("SELECT * FROM playlist_entry WHERE playlist_id = :playlistId")
     suspend fun getAllEntriesInPlaylist(playlistId: Int): List<DataPlaylistEntry>
 
-    suspend fun getSortedEntriesInPlaylist(playlistId: Int): List<DataPlaylistEntry> {
+    suspend fun getSortedEntriesInPlaylist(playlistId: Int): List<IPlaylistEntry> {
         val allEntries = getAllEntriesInPlaylist(playlistId = playlistId)
-        return DataPlaylistEntry.sortLinkedList(allEntries)
+        try {
+            return DataPlaylistEntry.sortLinkedList(allEntries)
+        }
+        catch (ex: BrokenLinkedListException) {
+            Log.w(TAG, "Caught broken linked list getting sorted entries for playlist ${playlistId}. Attempting to recover")
+            // attempt to fix the broken linked list: clear and re-add all tabs
+            clearPlaylist(playlistId)
+            appendAll(ex.list)
+
+            // return the broken list in whatever order it's in, in an attempt to recover from the exception
+            return ex.list
+        }
     }
 
     suspend fun getSelfContainedPlaylists(playlists: List<IPlaylist>): List<SelfContainedPlaylist> {
         val selfContainedPlaylists: MutableList<SelfContainedPlaylist> = mutableListOf()
         for (playlist in playlists) {
-            selfContainedPlaylists.add(SelfContainedPlaylist(playlist, getSortedEntriesInPlaylist(playlist.playlistId) as List<IPlaylistEntry>))
+            selfContainedPlaylists.add(SelfContainedPlaylist(playlist, getSortedEntriesInPlaylist(playlist.playlistId)))
         }
 
         return selfContainedPlaylists

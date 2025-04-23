@@ -1,5 +1,6 @@
 package com.gbros.tabslite.view.songlist
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,10 +67,10 @@ fun SongListView(
                 }
                 items(songs.value) { song ->
                     SongListItem(
-                        song = song,
-                        onClick = {
+                        modifier = Modifier.clickable {
                             navigateToTabById(if (navigateByPlaylistEntryId) song.entryId else song.tabId)
-                        }
+                        },
+                        song = song,
                     )
                 }
                 item {

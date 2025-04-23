@@ -70,13 +70,13 @@ repositories {
 dependencies {
     implementation("androidx.activity:activity-compose:1.10.1")  // Compose Integration with activities
     implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.compose.material3:material3:1.3.1")  // Material Design 3
+    implementation("androidx.compose.material3:material3:1.3.2")  // Material Design 3
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.compose.runtime:runtime-livedata:1.7.8")
     // Compose Integration with LiveData
     implementation("androidx.compose.ui:ui-tooling-preview")  // Android Studio Preview Support
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
-    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.core:core-ktx:1.16.0")
     implementation("androidx.fragment:fragment-ktx:1.8.6")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
@@ -100,11 +100,11 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("com.google.dagger:hilt-android:2.55")
     ksp("com.google.dagger:hilt-android-compiler:2.55")
-    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.10")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation("sh.calvin.reorderable:reorderable:2.4.3")  // Reorderable list
 
     implementation("com.chrynan.chords:chords-compose:2.4.1")
 
