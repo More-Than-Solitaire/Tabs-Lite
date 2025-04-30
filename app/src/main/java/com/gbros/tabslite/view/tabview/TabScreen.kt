@@ -209,7 +209,7 @@ fun TabScreen(
     onFavoriteButtonClick: () -> Unit,
     onAddPlaylistDialogPlaylistSelected: (Playlist) -> Unit,
     onAddToPlaylist: () -> Unit,
-    onCreatePlaylist: (title: String, description: String) -> Unit
+    onCreatePlaylist: (title: String, description: String) -> Unit,
 ) {
     // handle autoscroll
     val scrollState = rememberScrollState()
@@ -232,13 +232,14 @@ fun TabScreen(
             shareTitle = title,
             shareUrl = viewState.shareUrl.observeAsState("https://tabslite.com/").value,
             isFavorite = viewState.isFavorite.observeAsState(false).value,
+            copyText = viewState.plainTextContent.observeAsState("").value,
             onNavigateBack = onNavigateBack,
             onReloadClick = onReload,
             onFavoriteButtonClick = onFavoriteButtonClick,
             onAddToPlaylist = onAddToPlaylist,
             onCreatePlaylist = onCreatePlaylist,
             onPlaylistSelectionChange = onAddPlaylistDialogPlaylistSelected,
-            selectPlaylistConfirmButtonEnabled = viewState.addToPlaylistDialogConfirmButtonEnabled.observeAsState(false).value
+            selectPlaylistConfirmButtonEnabled = viewState.addToPlaylistDialogConfirmButtonEnabled.observeAsState(false).value,
         )
 
         Column {
@@ -378,6 +379,7 @@ private fun TabViewPreview() {
         override val author: LiveData<String>,
         override val transpose: LiveData<Int>,
         override val content: LiveData<AnnotatedString>,
+        override val plainTextContent: LiveData<String>,
         override val state: LiveData<LoadingState>,
         override val autoscrollPaused: LiveData<Boolean>,
         override val autoScrollSpeedSliderPosition: LiveData<Float>,
@@ -406,6 +408,7 @@ private fun TabViewPreview() {
             author = MutableLiveData(tab.artistName),
             transpose = MutableLiveData(tab.transpose),
             content = MutableLiveData(AnnotatedString(tab.content)),
+            plainTextContent = MutableLiveData(tab.content),
             state = MutableLiveData(LoadingState.Success),
             autoscrollPaused = MutableLiveData(true),
             fontSizeSp = MutableLiveData(FALLBACK_FONT_SIZE_SP),

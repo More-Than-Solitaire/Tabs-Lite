@@ -1,5 +1,6 @@
 package com.gbros.tabslite.view.tabview
 
+import android.content.ClipData
 import android.content.Intent
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,15 +30,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
-import com.gbros.tabslite.view.addtoplaylistdialog.AddToPlaylistDialog
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.view.addtoplaylistdialog.AddToPlaylistDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +49,7 @@ fun TabTopAppBar(isFavorite: Boolean,
                  title: String,
                  shareUrl: String,
                  shareTitle: String,
+                 copyText: String,
                  allPlaylists: List<Playlist>,
                  selectedPlaylistTitle: String?,
                  selectPlaylistConfirmButtonEnabled: Boolean,
@@ -53,7 +58,7 @@ fun TabTopAppBar(isFavorite: Boolean,
                  onAddToPlaylist: () -> Unit,
                  onCreatePlaylist: (title: String, description: String) -> Unit,
                  onPlaylistSelectionChange: (Playlist) -> Unit,
-                 onFavoriteButtonClick: () -> Unit
+                 onFavoriteButtonClick: () -> Unit,
 ) {
     val currentContext = LocalContext.current
 
@@ -144,6 +149,21 @@ fun TabTopAppBar(isFavorite: Boolean,
                         onReloadClick()
                     }
                 )
+                val clipboardManager = LocalClipboardManager.current
+                DropdownMenuItem(
+                    text = {
+                        Row {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(R.drawable.ic_content_copy),
+                                contentDescription = stringResource(R.string.generic_action_copy),
+                            )
+                            Text(text = stringResource(R.string.generic_action_copy), modifier = Modifier.padding(top = 2.dp, start = 4.dp))
+                        }
+                    },
+                    onClick = {
+                        clipboardManager.nativeClipboard.setPrimaryClip(ClipData.newPlainText(title, copyText))
+                    }
+                )
             }
         }
     )
@@ -175,6 +195,7 @@ private fun TabTopAppBarPreview() {
             shareTitle = "asdf",
             allPlaylists = list,
             selectedPlaylistTitle = "Test",
+            copyText = "",
             selectPlaylistConfirmButtonEnabled = false,
             onAddToPlaylist = {},
             onCreatePlaylist = {_, _->},

@@ -551,7 +551,7 @@ class TabViewModel
         t?.transpose ?: nonPlaylistTranspose ?: 0
     }
 
-    private val unformattedLiveContent: LiveData<String> = tab.combine(transpose) { t, tr ->
+    private val unformattedContent: LiveData<String> = tab.combine(transpose) { t, tr ->
         val currentDbContent = t?.content ?: ""
         val currentTranspose = tr ?: 0
 
@@ -563,7 +563,12 @@ class TabViewModel
 
         return@combine transposedContent
     }
-    override val content: LiveData<AnnotatedString> = unformattedLiveContent.combine(availableWidthInChars) { unformatted, availableWidth ->
+
+    override val plainTextContent: LiveData<String> = unformattedContent.map { txt ->
+        txt.replace("[tab]", "").replace("[/tab]", "").replace("[ch]", "").replace("[/ch]", "")
+    }
+
+    override val content: LiveData<AnnotatedString> = unformattedContent.combine(availableWidthInChars) { unformatted, availableWidth ->
         if (unformatted != null && availableWidth != null) {
             processTabContent(unformatted, availableWidth, currentTheme )
         } else {
