@@ -52,6 +52,7 @@ import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.utilities.KeepScreenOn
 import com.gbros.tabslite.view.card.ErrorCard
 import com.gbros.tabslite.view.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.viewmodel.TabViewModel

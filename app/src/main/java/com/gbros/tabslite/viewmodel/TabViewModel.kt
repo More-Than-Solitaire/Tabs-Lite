@@ -523,7 +523,6 @@ class TabViewModel
         }
 
     override val playlistTitle: LiveData<String> = tab.map { t ->
-        Log.d(TAG, "Playlist title updating")
         if (t is TabWithDataPlaylistEntry && t.playlistTitle != null) t.playlistTitle!! else ""
     }
 
