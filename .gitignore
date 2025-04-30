@@ -95,6 +95,8 @@ obj/
 .idea/gradle.xml
 .idea/jarRepositories.xml
 .idea/navEditor.xml
+.idea/AndroidProjectSystem.xml
+.idea/inspectionProfiles/Project_Default.xml
 
 # Legacy Eclipse project files
 .classpath
