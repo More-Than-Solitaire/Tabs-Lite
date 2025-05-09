@@ -37,7 +37,6 @@ fun ChordPager(modifier: Modifier = Modifier, chordVariations: List<ChordVariati
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Text(
             text = chordVariations[0].chordId,
             fontSize = MaterialTheme.typography.headlineLarge.fontSize,

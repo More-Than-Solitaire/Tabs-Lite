@@ -2,6 +2,7 @@ package com.gbros.tabslite.view.chorddisplay
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,6 +30,7 @@ import com.chrynan.chords.model.StringNumber
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.card.ErrorCard
 import com.gbros.tabslite.view.tabview.TabText
@@ -56,10 +58,16 @@ fun ChordModalBottomSheet(
     ) {
         if (loadingState is LoadingState.Success) {
             loading = false
-            ChordPager(
-                chordVariations = chordVariations,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            Column {
+                //todo: add this to view model
+                var selectedInstrument by remember { mutableStateOf(Instrument.Guitar) }
+                InstrumentSelector(selectedInstrument, { newInstrument -> selectedInstrument = newInstrument})
+
+                ChordPager(
+                    chordVariations = chordVariations,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
         } else {
             // show loading progress indicator
             Box(
