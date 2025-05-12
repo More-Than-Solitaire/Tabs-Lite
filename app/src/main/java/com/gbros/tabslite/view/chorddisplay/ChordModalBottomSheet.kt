@@ -40,10 +40,11 @@ import com.gbros.tabslite.view.tabview.TabText
 fun ChordModalBottomSheet(
     title: String,
     chordVariations: List<ChordVariation>,
+    instrument: Instrument,
     loadingState: LoadingState,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onInstrumentSelected: (Instrument) -> Unit
 ){
-    var loading by remember { mutableStateOf(true) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val screenWidth = LocalConfiguration.current.smallestScreenWidthDp
@@ -56,51 +57,47 @@ fun ChordModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetMaxWidth = screenWidth.dp
     ) {
-        if (loadingState is LoadingState.Success) {
-            loading = false
-            Column {
-                //todo: add this to view model
-                var selectedInstrument by remember { mutableStateOf(Instrument.Guitar) }
-                InstrumentSelector(selectedInstrument, { newInstrument -> selectedInstrument = newInstrument})
+        Column {
+            InstrumentSelector(instrument, onInstrumentSelected)
+            if (loadingState is LoadingState.Success) {
 
                 ChordPager(
                     chordVariations = chordVariations,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-            }
-        } else {
-            // show loading progress indicator
-            Box(
-                modifier = Modifier
-                    .height(312.dp)  // this is the size of the components above added together, minus the text
-                    .fillMaxWidth()
-                    .padding(all = 16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                if (loadingState is LoadingState.Error) {
-                    ErrorCard(
-                        text = String.format(
-                            stringResource(id = R.string.message_chord_load_failed),
-                            title
+            } else {
+                // show loading progress indicator
+                Box(
+                    modifier = Modifier
+                        .height(344.dp)  // this is the size of the components above added together, minus the text
+                        .fillMaxWidth()
+                        .padding(all = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (loadingState is LoadingState.Error) {
+                        ErrorCard(
+                            text = String.format(
+                                stringResource(id = R.string.message_chord_load_failed),
+                                title
+                            )
                         )
-                    )
-                } else {
-                    CircularProgressIndicator()
+                    } else {
+                        CircularProgressIndicator()
+                    }
                 }
             }
         }
     }
-
 }
 
-@Composable @Preview
-private fun ChordModalBottomSheetPreview () {
+@Composable
+private fun ChordModalBottomSheetPreview (showModal: Boolean) {
     AppTheme {
         val testCase1 = AnnotatedString("""
         [tab]     [ch]C[/ch]                   [ch]Am[/ch] 
         That David played and it pleased the Lord[/tab]
     """.trimIndent())
-        var bottomSheetTrigger by remember { mutableStateOf(true) }
+        var bottomSheetTrigger by remember { mutableStateOf(showModal) }
         var chordToShow by remember { mutableStateOf("Am") }
         val chords = listOf(
         ChordVariation("varid1234", "Am",
@@ -116,7 +113,8 @@ private fun ChordModalBottomSheetPreview () {
             arrayListOf(
                 ChordMarker.Muted(StringNumber(6))
             ),
-            arrayListOf()
+            arrayListOf(),
+            Instrument.Guitar
         ),
         ChordVariation("varid1234", "Am",
             arrayListOf(
@@ -131,7 +129,8 @@ private fun ChordModalBottomSheetPreview () {
             arrayListOf(
                 ChordMarker.Muted(StringNumber(6))
             ),
-            arrayListOf()
+            arrayListOf(),
+            Instrument.Guitar
         ),
         ChordVariation("varid1234", "Am",
             arrayListOf(
@@ -146,7 +145,8 @@ private fun ChordModalBottomSheetPreview () {
             arrayListOf(
                 ChordMarker.Muted(StringNumber(6))
             ),
-            arrayListOf()
+            arrayListOf(),
+            Instrument.Guitar
         )
     )
 
@@ -162,13 +162,28 @@ private fun ChordModalBottomSheetPreview () {
             modifier = Modifier.fillMaxSize()
         )
 
-        if (bottomSheetTrigger) {
+        //if (bottomSheetTrigger) {
             ChordModalBottomSheet(
                 title = chordToShow,
                 chordVariations = chords,
+                instrument = Instrument.Guitar,
                 loadingState = LoadingState.Success,
-                onDismiss = { }
+                onDismiss = { },
+                onInstrumentSelected = { }
             )
-        }
+        ///}
     }
 }
+
+@Preview
+@Composable
+private fun ChordModalBottomSheetExpandedPreview() {
+    ChordModalBottomSheetPreview(true)
+}
+
+@Preview
+@Composable
+private fun ChordModalBottomSheetClosedPreview() {
+    ChordModalBottomSheetPreview(false)
+}
+

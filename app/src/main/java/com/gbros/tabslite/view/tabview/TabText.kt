@@ -33,6 +33,7 @@ import com.chrynan.chords.model.StringNumber
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.chorddisplay.ChordModalBottomSheet
 import com.smarttoolfactory.gesture.detectTransformGestures
@@ -119,7 +120,8 @@ fun TabTextTestCase1() {
                 arrayListOf(
                     ChordMarker.Muted(StringNumber(6))
                 ),
-                arrayListOf()
+                arrayListOf(),
+                Instrument.Guitar
             ),
             ChordVariation("varid1234", "Am",
                 arrayListOf(
@@ -134,7 +136,8 @@ fun TabTextTestCase1() {
                 arrayListOf(
                     ChordMarker.Muted(StringNumber(6))
                 ),
-                arrayListOf()
+                arrayListOf(),
+                Instrument.Guitar
             ),
             ChordVariation("varid1234", "Am",
                 arrayListOf(
@@ -149,7 +152,8 @@ fun TabTextTestCase1() {
                 arrayListOf(
                     ChordMarker.Muted(StringNumber(6))
                 ),
-                arrayListOf()
+                arrayListOf(),
+                Instrument.Guitar
             )
         )
 
@@ -157,10 +161,11 @@ fun TabTextTestCase1() {
             ChordModalBottomSheet(
                 title = "Am",
                 chordVariations = chords,
-                loadingState = LoadingState.Success
-            ) {
-                bottomSheetTrigger = false
-            }
+                loadingState = LoadingState.Success,
+                instrument = Instrument.Guitar,
+                onInstrumentSelected = { },
+                onDismiss =  { bottomSheetTrigger = false }
+            )
         }
     }
 }

@@ -48,6 +48,7 @@ import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
@@ -117,7 +118,8 @@ fun NavGraphBuilder.tabScreen(
             onFavoriteButtonClick = viewModel::onFavoriteButtonClick,
             onAddPlaylistDialogPlaylistSelected = viewModel::onAddPlaylistDialogPlaylistSelected,
             onAddToPlaylist = viewModel::onAddToPlaylist,
-            onCreatePlaylist = viewModel::onCreatePlaylist
+            onCreatePlaylist = viewModel::onCreatePlaylist,
+            onInstrumentSelected = viewModel::onInstrumentSelected
         )
     }
 }
@@ -183,7 +185,8 @@ fun NavGraphBuilder.playlistEntryScreen(
             onFavoriteButtonClick = viewModel::onFavoriteButtonClick,
             onAddPlaylistDialogPlaylistSelected = viewModel::onAddPlaylistDialogPlaylistSelected,
             onAddToPlaylist = viewModel::onAddToPlaylist,
-            onCreatePlaylist = viewModel::onCreatePlaylist
+            onCreatePlaylist = viewModel::onCreatePlaylist,
+            onInstrumentSelected = viewModel::onInstrumentSelected
         )
     }
 }
@@ -211,6 +214,7 @@ fun TabScreen(
     onAddPlaylistDialogPlaylistSelected: (Playlist) -> Unit,
     onAddToPlaylist: () -> Unit,
     onCreatePlaylist: (title: String, description: String) -> Unit,
+    onInstrumentSelected: (instrument: Instrument) -> Unit
 ) {
     // handle autoscroll
     val scrollState = rememberScrollState()
@@ -326,10 +330,14 @@ fun TabScreen(
 
         // chord bottom sheet display if a chord was clicked
         if (viewState.chordDetailsActive.observeAsState(false).value) {
-            ChordModalBottomSheet(title = viewState.chordDetailsTitle.observeAsState("").value,
+            ChordModalBottomSheet(
+                title = viewState.chordDetailsTitle.observeAsState("").value,
                 chordVariations = viewState.chordDetailsVariations.observeAsState(emptyList()).value,
+                instrument = viewState.chordInstrument.observeAsState(Instrument.Guitar).value,
                 loadingState = viewState.chordDetailsState.observeAsState(LoadingState.Loading).value,
-                onDismiss = onChordDetailsDismiss)
+                onDismiss = onChordDetailsDismiss,
+                onInstrumentSelected = onInstrumentSelected
+            )
         }
     }
 
@@ -394,7 +402,8 @@ private fun TabViewPreview() {
         override val artist: LiveData<String>,
         override val addToPlaylistDialogSelectedPlaylistTitle: LiveData<String?>,
         override val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>,
-        override val fontSizeSp: LiveData<Float>
+        override val fontSizeSp: LiveData<Float>,
+        override val chordInstrument: LiveData<Instrument>
     ) : ITabViewState {
         constructor(tab: ITab): this(
             songName = MutableLiveData(tab.songName),
@@ -423,7 +432,8 @@ private fun TabViewPreview() {
             allPlaylists = MutableLiveData(listOf()),
             artist = MutableLiveData("Artist Name"),
             addToPlaylistDialogSelectedPlaylistTitle = MutableLiveData("Playlist1"),
-            addToPlaylistDialogConfirmButtonEnabled = MutableLiveData(false)
+            addToPlaylistDialogConfirmButtonEnabled = MutableLiveData(false),
+            chordInstrument = MutableLiveData(Instrument.Guitar)
         )
 
         override fun getCapoText(context: Context): LiveData<String> {
@@ -487,7 +497,8 @@ private fun TabViewPreview() {
             onAddPlaylistDialogPlaylistSelected = {  },
             onAddToPlaylist = {  },
             onCreatePlaylist = { _, _ -> },
-            onZoom = { }
+            onZoom = { },
+            onInstrumentSelected = { }
         )
     }
 }

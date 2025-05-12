@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Preference
+import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.ui.theme.AppTheme
@@ -58,7 +59,7 @@ class HomeActivity : ComponentActivity() {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            initializeDefaultPlaylists(dataAccess)
+            initializeUserPreferences(dataAccess)
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -92,6 +93,7 @@ class HomeActivity : ComponentActivity() {
         dataAccess.insert(Preference(Preference.POPULAR_SORT, SortBy.Popularity.name))
         dataAccess.insert(Preference(Preference.PLAYLIST_SORT, PlaylistsSortBy.Name.name))
         dataAccess.insert(Preference(Preference.AUTOSCROLL_DELAY, .5f.toString()))
+        dataAccess.insert(Preference(Preference.INSTRUMENT, Instrument.Guitar.name))
     }
 
     /**

@@ -7,12 +7,15 @@ import android.util.Log
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.SearchSuggestions
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist.Companion.TOP_TABS_PLAYLIST_ID
 import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.data.servertypes.SearchSuggestionType
 import com.gbros.tabslite.data.servertypes.ServerTimestampType
 import com.gbros.tabslite.data.servertypes.TabRequestType
 import com.gbros.tabslite.data.tab.TabDataType
+import com.gbros.tabslite.utilities.UgApi.apiKey
+import com.gbros.tabslite.utilities.UgApi.deviceId
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -160,16 +163,14 @@ object UgApi {
      *
      * @param chordIds: List of chord names to fetch.  E.g. A#m7, Gsus, A
      * @param dataAccess: Database to save the updated chords to
-     * @param tuning: The instrument tuning for the tabs to fetch
-     * @param instrument: The instrument to fetch chords for.  Default: 'guitar'.
+     * @param instrument: The instrument to fetch chords for.
      *
      * @return Map from chord ID to the list of [ChordVariation] for that chord
      */
     suspend fun updateChordVariations(
         chordIds: List<CharSequence>,
         dataAccess: DataAccess,
-        tuning: String = "E A D G B E",
-        instrument: String = "guitar"
+        instrument: Instrument,
     ): Map<String, List<ChordVariation>> = withContext(Dispatchers.IO) {
         if (chordIds.isEmpty()) {
             return@withContext mapOf()
@@ -182,10 +183,19 @@ object UgApi {
             chordParam += "&chords[]=$uChord"
         }
 
-        val uTuning = URLEncoder.encode(tuning, "utf-8")
-        val uInstrument = URLEncoder.encode(instrument, "utf-8")
-        val url =
-            "https://api.ultimate-guitar.com/api/v1/tab/applicature?instrument=$uInstrument&tuning=$uTuning$chordParam"
+        var uTuning = ""
+        var uInstrument = ""
+        if (instrument == Instrument.Guitar) {
+            uTuning = URLEncoder.encode("E A D G B E", "utf-8")
+            URLEncoder.encode("guitar", "utf-8")
+        } else if (instrument == Instrument.Ukulele) {
+            uTuning = URLEncoder.encode("g C E A", "utf-8")
+            URLEncoder.encode("ukulele", "utf-8")
+        } else {
+            throw IllegalArgumentException("Invalid instrument selection $instrument; couldn't update chords")
+        }
+
+        val url = "https://api.ultimate-guitar.com/api/v1/tab/applicature?instrument=$uInstrument&tuning=$uTuning$chordParam"
         try {
             val results: List<TabRequestType.ChordInfo> = authenticatedStream(url).use { inputStream ->
                 val jsonReader = JsonReader(inputStream.reader())
@@ -194,8 +204,8 @@ object UgApi {
                 gson.fromJson(jsonReader, chordRequestTypeToken)
             }
             for (result in results) {
-                resultMap[result.chord] = result.getChordVariations()
-                dataAccess.insertAll(result.getChordVariations())
+                resultMap[result.chord] = result.getChordVariations(instrument)
+                dataAccess.insertAll(result.getChordVariations(instrument))
             }
         } catch (ex: Exception) {
             val chordCount = chordIds.size
@@ -257,7 +267,7 @@ object UgApi {
         dataAccess: DataAccess,
         tabAccessType: String = "public"
     ): TabDataType = withContext(Dispatchers.IO) {
-        // get the tab and corresponding chords, and put them in the database.  Then return true
+        // get the tab and put it in the database, then return true
         Log.v(TAG, "Loading tab $tabId.")
         val url =
             "https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType"
@@ -271,13 +281,6 @@ object UgApi {
             TAG,
             "Parsed response for tab $tabId. Name: ${requestResponse.song_name}, capo ${requestResponse.capo}"
         )
-
-        // save all the chords we come across.  Might as well since we already downloaded them.
-        try {
-            dataAccess.insertAll(requestResponse.getChordVariations())
-        } catch (ex: Exception) {
-            Log.w(TAG, "Couldn't get chord variations from tab $tabId", ex)
-        }
 
         val result = requestResponse.getTabFull()
         if (result.content.isNotBlank()) {

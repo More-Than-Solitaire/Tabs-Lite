@@ -12,6 +12,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.BrokenLinkedListException
 import com.gbros.tabslite.data.playlist.DataPlaylistEntry
 import com.gbros.tabslite.data.playlist.IDataPlaylistEntry
@@ -280,14 +281,14 @@ interface DataAccess {
 
     //#region chord variation table
 
-    @Query("SELECT * FROM chord_variation WHERE chord_id = :chordId")
-    suspend fun getChordVariations(chordId: String): List<ChordVariation>
+    @Query("SELECT * FROM chord_variation WHERE chord_id = :chordId AND instrument = :instrument")
+    suspend fun getChordVariations(chordId: String, instrument: Instrument): List<ChordVariation>
 
-    @Query("SELECT * FROM chord_variation WHERE chord_id = :chordId")
-    fun chordVariations(chordId: String): LiveData<List<ChordVariation>>
+    @Query("SELECT * FROM chord_variation WHERE chord_id = :chordId AND instrument = :instrument")
+    fun chordVariations(chordId: String, instrument: Instrument): LiveData<List<ChordVariation>>
 
-    @Query("SELECT DISTINCT chord_id FROM chord_variation WHERE chord_id IN (:chordIds)")
-    suspend fun findAll(chordIds: List<String>): List<String>
+    @Query("SELECT DISTINCT chord_id FROM chord_variation WHERE chord_id IN (:chordIds) AND instrument = :instrument")
+    suspend fun findAll(chordIds: List<String>, instrument: Instrument): List<String>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(chords: List<ChordVariation>)

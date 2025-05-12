@@ -33,6 +33,7 @@ import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.chord.Chord
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
@@ -105,18 +106,19 @@ class TabViewModel
             }
 
             // preload all the new chords
-            fetchAllChords()
+            CoroutineScope(Dispatchers.IO).launch {
+                fetchAllChords()
+            }
         } else {
             Log.e(TAG, "Transpose button clicked while tab was null.")
         }
     }
 
-    private fun fetchAllChords() {
+    private suspend fun fetchAllChords() {
         val chordsUsedInThisTab = tab.value?.getAllChordNames()
+        val instrument = chordInstrument.value ?: Instrument.Guitar
         if (!chordsUsedInThisTab.isNullOrEmpty()) {
-            CoroutineScope(Dispatchers.IO).launch {
-                Chord.ensureAllChordsDownloaded(chordsUsedInThisTab, dataAccess)
-            }
+            Chord.ensureAllChordsDownloaded(chordsUsedInThisTab, instrument, dataAccess)
         }
     }
 
@@ -465,6 +467,13 @@ class TabViewModel
      */
     private var currentChordToDisplay: MutableLiveData<String> = MutableLiveData("")
 
+    override val chordInstrument: LiveData<Instrument> = dataAccess.getLivePreference(Preference.INSTRUMENT).map { p -> if (p != null) Instrument.valueOf(p.value) else Instrument.Guitar }
+
+    private val currentChordInstrumentCombo: LiveData<Pair<String?, Instrument?>> =
+        currentChordToDisplay.combine(chordInstrument) { chord, instrument ->
+            Pair(chord, instrument)
+        } as MutableLiveData<Pair<String?, Instrument?>>
+
     /**
      * To calculate the aspect ratio of a ttf font, run this in python (after pip install fonttools):
      * aspect_ratio = ttLib.TTFont(r'path\to\font.ttf')['hmtx']['space'][0] / ttLib.TTFont(r'path\to\font.ttf')['head'].unitsPerEm
@@ -611,12 +620,16 @@ class TabViewModel
     /**
      * A list of chord fingerings to be displayed in the chord details section
      */
-    override val chordDetailsVariations: LiveData<List<ChordVariation>> = currentChordToDisplay.switchMap { chord ->
-        CoroutineScope(Dispatchers.IO).launch {
-            // double check that the chord is downloaded
-            Chord.getChord(chord, dataAccess)
+    override val chordDetailsVariations: LiveData<List<ChordVariation>> = currentChordInstrumentCombo.switchMap { (chord, instrument) ->
+        if (chord == null || instrument == null) {
+            MutableLiveData(listOf())
+        } else {
+            CoroutineScope(Dispatchers.IO).launch {
+                // double check that the chord is downloaded
+                Chord.getChord(chord, instrument, dataAccess)
+            }
+            dataAccess.chordVariations(chord, instrument)
         }
-        dataAccess.chordVariations(chord)
     }
 
     /**
@@ -821,6 +834,18 @@ class TabViewModel
         }
     }
 
+    /**
+     * Handle user selecting a different instrument to display tabs for
+     */
+    fun onInstrumentSelected(instrument: Instrument) {
+        _chordDetailsState.value = LoadingState.Loading
+        val instrumentPrefUpsertJob = CoroutineScope(Dispatchers.IO).async {
+            dataAccess.upsert(Preference(Preference.INSTRUMENT, instrument.name))
+            fetchAllChords()
+            _chordDetailsState.postValue(LoadingState.Success)
+        }
+    }
+
     //#endregion
 
     //#region init
@@ -845,7 +870,9 @@ class TabViewModel
         }
 
         // preload all chords for fast access on click
-        fetchAllChords()
+        scope.launch {
+            fetchAllChords()
+        }
     }
 
     //#endregion

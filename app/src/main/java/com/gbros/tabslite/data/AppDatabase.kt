@@ -17,7 +17,7 @@ const val DATABASE_NAME = "local-tabs-db"
 /**
  * The Room database for this app
  */
-@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, DataPlaylistEntry::class, Preference::class, SearchSuggestions::class], version = 12)
+@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, DataPlaylistEntry::class, Preference::class, SearchSuggestions::class], version = 13)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dataAccess(): DataAccess
@@ -164,7 +164,11 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE TABLE search_suggestions (query TEXT PRIMARY KEY NOT NULL, suggested_searches TEXT NOT NULL)")
             }
         }
-
+        private val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE chord_variation ADD COLUMN instrument TEXT NOT NULL DEFAULT 'Guitar'")
+            }
+        }
 
         // Create and pre-populate the database. See this article for more details:
         // https://medium.com/google-developers/7-pro-tips-for-room-fbadea4bfbd1#4785
@@ -172,7 +176,7 @@ abstract class AppDatabase : RoomDatabase() {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
                     .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
                             MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
-                            MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
+                            MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
                     .build()
         }
     }

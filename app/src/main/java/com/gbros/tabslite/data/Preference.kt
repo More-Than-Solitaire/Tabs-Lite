@@ -28,5 +28,6 @@ data class Preference(
         const val POPULAR_SORT: String = "POPULAR_SORT"
         const val PLAYLIST_SORT: String = "PLAYLIST_SORT"
         const val AUTOSCROLL_DELAY: String = "AUTOSCROLL_DELAY"
+        const val INSTRUMENT: String = "INSTRUMENT"
     }
 }

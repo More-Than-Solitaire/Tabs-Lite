@@ -5,6 +5,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.LiveData
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
 
 /**
@@ -114,4 +115,9 @@ interface ITabViewState {
     val addToPlaylistDialogSelectedPlaylistTitle: LiveData<String?>
 
     val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>
+
+    /**
+     * The selected instrument to display chords for
+     */
+    val chordInstrument: LiveData<Instrument>
 }

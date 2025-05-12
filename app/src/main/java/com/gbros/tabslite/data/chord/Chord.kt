@@ -9,14 +9,15 @@ import kotlin.math.abs
 object Chord {
     // region public methods
 
-    suspend fun ensureAllChordsDownloaded(chords: List<String>, dataAccess: DataAccess) {
+    suspend fun ensureAllChordsDownloaded(chords: List<String>, instrument: Instrument, dataAccess: DataAccess) {
         // find chords that aren't in the database
-        val alreadyDownloadedChords = dataAccess.findAll(chords)
+        val alreadyDownloadedChords = dataAccess.findAll(chords, instrument)
         val chordsToDownload = chords.filter { usedChord -> !alreadyDownloadedChords.contains(usedChord) }
 
         // download
         if (chordsToDownload.isNotEmpty()) {
-            UgApi.updateChordVariations(chordsToDownload, dataAccess)
+            UgApi.updateChordVariations(chordsToDownload, dataAccess, Instrument.Guitar)
+            UgApi.updateChordVariations(chordsToDownload, dataAccess, Instrument.Ukulele)
         }
     }
 
@@ -44,9 +45,10 @@ object Chord {
         return chordParts.joinToString("/")
     }
 
-    suspend fun getChord(chord: String, dataAccess: DataAccess) {
-        dataAccess.getChordVariations(chord).ifEmpty {
-            UgApi.updateChordVariations(listOf(chord), dataAccess).getOrDefault(chord, listOf())
+    suspend fun getChord(chord: String, instrument: Instrument, dataAccess: DataAccess) {
+        dataAccess.getChordVariations(chord, instrument).ifEmpty {
+            UgApi.updateChordVariations(listOf(chord), dataAccess, Instrument.Guitar)
+            UgApi.updateChordVariations(listOf(chord), dataAccess, Instrument.Ukulele)
         }
     }
 

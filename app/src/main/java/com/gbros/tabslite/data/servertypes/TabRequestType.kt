@@ -6,6 +6,7 @@ import com.chrynan.chords.model.Finger
 import com.chrynan.chords.model.FretNumber
 import com.chrynan.chords.model.StringNumber
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.tab.TabDataType
 
 class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var artist_id: Int, var artist_name: String, var type: String, var part: String, var version: Int, var votes: Int, var rating: Double, var date: String,
@@ -63,7 +64,7 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
                 }
             }
 
-            fun toChordVariation(chordName: String): ChordVariation {
+            fun toChordVariation(chordName: String, instrument: Instrument): ChordVariation {
                 val noteMarkerSet = ArrayList<ChordMarker.Note>()
                 val openMarkerSet = ArrayList<ChordMarker.Open>()
                 val mutedMarkerSet = ArrayList<ChordMarker.Muted>()
@@ -109,15 +110,16 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
                 return ChordVariation(
                     varId = id.lowercase(), chordId = chordName,
                     noteChordMarkers = noteMarkerSet, openChordMarkers = openMarkerSet,
-                    mutedChordMarkers = mutedMarkerSet, barChordMarkers = barMarkerSet
+                    mutedChordMarkers = mutedMarkerSet, barChordMarkers = barMarkerSet,
+                    instrument = instrument
                 )
             }
         }
 
-        fun getChordVariations(): List<ChordVariation> {
+        fun getChordVariations(instrument: Instrument): List<ChordVariation> {
             val result = ArrayList<ChordVariation>()
             for (variation in variations) {
-                result.add(variation.toChordVariation(chord))
+                result.add(variation.toChordVariation(chord, instrument))
             }
 
             return result
@@ -186,16 +188,5 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
         }
 
         return tab
-    }
-
-    fun getChordVariations(): List<ChordVariation> {
-        val myChords = ArrayList<ChordVariation>()
-        for (chord: ChordInfo in applicature) {
-            for (variation: ChordInfo.VarInfo in chord.variations) {
-                myChords.add(variation.toChordVariation(chord.chord))
-            }
-        }
-
-        return myChords
     }
 }

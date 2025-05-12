@@ -23,7 +23,8 @@ data class ChordVariation(
     @ColumnInfo(name = "note_chord_markers") val noteChordMarkers: @RawValue ArrayList<ChordMarker.Note>,
     @ColumnInfo(name = "open_chord_markers") val openChordMarkers: @RawValue ArrayList<ChordMarker.Open>,
     @ColumnInfo(name = "muted_chord_markers") val mutedChordMarkers: @RawValue ArrayList<ChordMarker.Muted>,
-    @ColumnInfo(name = "bar_chord_markers") val barChordMarkers: @RawValue ArrayList<ChordMarker.Bar>
+    @ColumnInfo(name = "bar_chord_markers") val barChordMarkers: @RawValue ArrayList<ChordMarker.Bar>,
+    @ColumnInfo(name = "instrument") val instrument: Instrument
 ) : Parcelable {
 
     override fun toString() = varId

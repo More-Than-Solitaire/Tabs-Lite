@@ -1,5 +1,6 @@
 package com.gbros.tabslite.view.chorddisplay
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,19 +27,22 @@ import com.chrynan.chords.util.maxFret
 import com.chrynan.chords.util.minFret
 import com.chrynan.colors.RgbaColor
 import com.gbros.tabslite.data.chord.ChordVariation
+import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.utilities.TAG
 import kotlin.math.max
 import kotlin.math.min
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalUnsignedTypes::class)
 @Composable
 fun ChordPager(modifier: Modifier = Modifier, chordVariations: List<ChordVariation>) {
+    val chordName = if (chordVariations.isEmpty()) " " else chordVariations[0].chordId
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = chordVariations[0].chordId,
+            text = chordName,
             fontSize = MaterialTheme.typography.headlineLarge.fontSize,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground,
@@ -63,10 +67,25 @@ fun ChordPager(modifier: Modifier = Modifier, chordVariations: List<ChordVariati
                 chord.minFret,
                 max(chord.maxFret - 2, defaultMinFret)
             )    // first fret shown
-            val chartLayout = ChordChart.STANDARD_TUNING_GUITAR_CHART.copy(
-                fretStart = FretNumber(startFret),
-                fretEnd = FretNumber(endFret)
-            )
+
+            // get the chart layout based on the selected instrument
+            val chartLayout = if (chordVariations[page].instrument == Instrument.Guitar) {
+                ChordChart.STANDARD_TUNING_GUITAR_CHART.copy(
+                    fretStart = FretNumber(startFret),
+                    fretEnd = FretNumber(endFret)
+                )
+            } else if (chordVariations[page].instrument == Instrument.Ukulele) {
+                ChordChart.STANDARD_TUNING_UKELELE.copy(
+                    fretStart = FretNumber(startFret),
+                    fretEnd = FretNumber(endFret)
+                )
+            } else {
+                Log.e(TAG, "Invalid instrument selection: ${chordVariations[page].instrument}, defaulting to guitar")
+                ChordChart.STANDARD_TUNING_GUITAR_CHART.copy(
+                    fretStart = FretNumber(startFret),
+                    fretEnd = FretNumber(endFret)
+                )
+            }
 
             ChordWidget(
                 chord = chord,
@@ -95,6 +114,65 @@ fun Color.toChrynanRgba() : RgbaColor {
 
 //region preview
 
+@Preview
+@Composable
+fun UkulelePreview() {
+    /**
+     * Automatically add these chords to an empty constructor
+     */
+    val chords = listOf(
+        ChordVariation("varid1234", "Am",
+            arrayListOf(
+                ChordMarker.Note(FretNumber(1), Finger.INDEX, StringNumber(4)),
+                ChordMarker.Note(FretNumber(2), Finger.MIDDLE, StringNumber(3)),
+                ChordMarker.Note(FretNumber(2), Finger.RING, StringNumber(2))
+            ),
+            arrayListOf(
+                ChordMarker.Open(StringNumber(1)),
+            ),
+            arrayListOf(),
+            arrayListOf(),
+            Instrument.Ukulele
+        ),
+        ChordVariation("varid1234", "Am",
+            arrayListOf(
+                ChordMarker.Note(FretNumber(1), Finger.INDEX, StringNumber(4)),
+                ChordMarker.Note(FretNumber(2), Finger.MIDDLE, StringNumber(3)),
+                ChordMarker.Note(FretNumber(2), Finger.RING, StringNumber(2))
+            ),
+            arrayListOf(
+                ChordMarker.Open(StringNumber(1)),
+                ChordMarker.Open(StringNumber(5))
+            ),
+            arrayListOf(
+                ChordMarker.Muted(StringNumber(6))
+            ),
+            arrayListOf(),
+            Instrument.Ukulele
+        ),
+        ChordVariation("varid1234", "Am",
+            arrayListOf(
+                ChordMarker.Note(FretNumber(1), Finger.INDEX, StringNumber(4)),
+                ChordMarker.Note(FretNumber(2), Finger.MIDDLE, StringNumber(3)),
+                ChordMarker.Note(FretNumber(2), Finger.RING, StringNumber(2))
+            ),
+            arrayListOf(
+                ChordMarker.Open(StringNumber(1)),
+                ChordMarker.Open(StringNumber(5))
+            ),
+            arrayListOf(
+                ChordMarker.Muted(StringNumber(6))
+            ),
+            arrayListOf(),
+            Instrument.Ukulele
+        )
+    )
+
+    AppTheme {
+        ChordPager(chordVariations = chords)
+    }
+}
+
 @Composable @Preview
 fun ChordPagerPreview() {
     /**
@@ -114,7 +192,8 @@ fun ChordPagerPreview() {
             arrayListOf(
                 ChordMarker.Muted(StringNumber(6))
             ),
-            arrayListOf()
+            arrayListOf(),
+            Instrument.Guitar
         ),
         ChordVariation("varid1234", "Am",
             arrayListOf(
@@ -129,7 +208,8 @@ fun ChordPagerPreview() {
             arrayListOf(
                 ChordMarker.Muted(StringNumber(6))
             ),
-            arrayListOf()
+            arrayListOf(),
+            Instrument.Guitar
         ),
         ChordVariation("varid1234", "Am",
             arrayListOf(
@@ -144,7 +224,8 @@ fun ChordPagerPreview() {
             arrayListOf(
                 ChordMarker.Muted(StringNumber(6))
             ),
-            arrayListOf()
+            arrayListOf(),
+            Instrument.Guitar
         )
     )
 
@@ -172,7 +253,8 @@ fun ChordPagerBarredChordsPreview() {
             ),
             barChordMarkers = arrayListOf(
                 ChordMarker.Bar(FretNumber(3), Finger.INDEX, StringNumber(1), StringNumber(5))
-            )
+            ),
+            Instrument.Guitar
         ),
         ChordVariation("varid1234", "Am",
             arrayListOf(
@@ -187,7 +269,8 @@ fun ChordPagerBarredChordsPreview() {
             arrayListOf(
                 ChordMarker.Muted(StringNumber(6))
             ),
-            arrayListOf()
+            arrayListOf(),
+            Instrument.Guitar
         ),
         ChordVariation("varid1234", "Am",
             arrayListOf(
@@ -202,7 +285,8 @@ fun ChordPagerBarredChordsPreview() {
             arrayListOf(
                 ChordMarker.Muted(StringNumber(6))
             ),
-            arrayListOf()
+            arrayListOf(),
+            Instrument.Guitar
         )
     )
 

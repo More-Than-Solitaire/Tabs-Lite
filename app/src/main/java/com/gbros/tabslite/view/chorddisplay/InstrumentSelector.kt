@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.gbros.tabslite.R
@@ -26,13 +27,13 @@ fun InstrumentSelector(selectedInstrument: Instrument, onInstrumentSelected: (In
             onClick = { onInstrumentSelected(Instrument.Guitar) },
             selected = selectedInstrument == Instrument.Guitar,
             iconId = R.drawable.ic_tabslite_guitar,
-            contentDescription = "Guitar",
+            contentDescription = stringResource(R.string.instrument_title_guitar),
         )
         SelectableIconButton(
             onClick = { onInstrumentSelected(Instrument.Ukulele) },
             selected = selectedInstrument == Instrument.Ukulele,
             iconId = R.drawable.ic_ukulele,
-            contentDescription = "Ukulele",
+            contentDescription = stringResource(R.string.instrument_title_ukulele),
         )
     }
 }
@@ -54,7 +55,7 @@ private fun SelectableIconButton(
 
     if (selected) {
         FilledTonalButton(
-            onClick = onClick,
+            onClick = { },  // this is already selected; ignore the tap
             enabled = enabled,
             content = {
                 icon()
