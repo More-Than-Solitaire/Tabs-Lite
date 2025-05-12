@@ -187,10 +187,10 @@ object UgApi {
         var uInstrument = ""
         if (instrument == Instrument.Guitar) {
             uTuning = URLEncoder.encode("E A D G B E", "utf-8")
-            URLEncoder.encode("guitar", "utf-8")
+            uInstrument = URLEncoder.encode("guitar", "utf-8")
         } else if (instrument == Instrument.Ukulele) {
             uTuning = URLEncoder.encode("g C E A", "utf-8")
-            URLEncoder.encode("ukulele", "utf-8")
+            uInstrument = URLEncoder.encode("ukulele", "utf-8")
         } else {
             throw IllegalArgumentException("Invalid instrument selection $instrument; couldn't update chords")
         }
