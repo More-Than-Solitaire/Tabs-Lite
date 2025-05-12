@@ -44,6 +44,10 @@
     <string name="error">Error</string>
     <string name="info">Info</string>
 
+    <string name="instrument_title_guitar">Guitar</string>
+    <string name="instrument_title_ukulele">Ukulele</string>
+    <string name="instrument_title_banjo">Banjo</string>
+    <string name="instrument_title_piano">Piano</string>
 
     <string name="capo_zero" translation_description="The capo text used when the capo is not used">None</string>
     <string name="capo_11" translation_description="The capo text used when the capo is 11">%sth Fret</string>
