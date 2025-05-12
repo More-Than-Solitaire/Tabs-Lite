@@ -518,6 +518,8 @@ class TabViewModel
 
     //#region view state
 
+    override val useFlats: LiveData<Boolean> = dataAccess.getLivePreference(Preference.USE_FLATS).map { p -> p?.value?.toBoolean() == true }
+
     override val songName: LiveData<String> = tab.map { t -> t?.songName ?: "" }
 
     override val isFavorite: LiveData<Boolean> = if (idIsPlaylistEntryId) dataAccess.playlistEntryExistsInFavorites(id) else dataAccess.tabExistsInFavoritesLive(id)
@@ -559,14 +561,15 @@ class TabViewModel
         t?.transpose ?: nonPlaylistTranspose ?: 0
     }
 
-    private val unformattedContent: LiveData<String> = tab.combine(transpose) { t, tr ->
+    private val unformattedContent: LiveData<String> = tab.combine(transpose, useFlats) { t, tr, f ->
         val currentDbContent = t?.content ?: ""
         val currentTranspose = tr ?: 0
+        val useFlats = f == true
 
         val chordPattern = Regex("\\[ch](.*?)\\[/ch]")
         val transposedContent = chordPattern.replace(currentDbContent) {
             val chord = it.groupValues[1]
-            "[ch]" + Chord.transposeChord(chord, currentTranspose) + "[/ch]"
+            "[ch]" + Chord.transposeChord(chord, currentTranspose, useFlats) + "[/ch]"
         }
 
         return@combine transposedContent
@@ -614,8 +617,7 @@ class TabViewModel
     /**
      * The title for the chord details section (usually the name of the active chord being displayed)
      */
-    private val _chordDetailsTitle: MutableLiveData<String> = MutableLiveData("")
-    override val chordDetailsTitle: LiveData<String> = _chordDetailsTitle
+    override val chordDetailsTitle: LiveData<String> = currentChordToDisplay
 
     /**
      * A list of chord fingerings to be displayed in the chord details section
@@ -721,8 +723,8 @@ class TabViewModel
 
         content.value?.getStringAnnotations(tag = "chord", start = start, end = end)
             ?.firstOrNull()?.item?.let { chord ->
-                _chordDetailsActive.postValue(true)
                 _chordDetailsState.postValue(LoadingState.Loading)
+                _chordDetailsActive.postValue(true)
                 currentChordToDisplay.postValue(chord)
             }
 
@@ -740,7 +742,6 @@ class TabViewModel
 
     fun onChordDetailsDismiss() {
         _chordDetailsActive.postValue(false)
-        _chordDetailsTitle.postValue("")
     }
 
     fun onAutoscrollSliderValueChange(newValue: Float) {
@@ -839,10 +840,21 @@ class TabViewModel
      */
     fun onInstrumentSelected(instrument: Instrument) {
         _chordDetailsState.value = LoadingState.Loading
-        val instrumentPrefUpsertJob = CoroutineScope(Dispatchers.IO).async {
+        CoroutineScope(Dispatchers.IO).launch {
             dataAccess.upsert(Preference(Preference.INSTRUMENT, instrument.name))
             fetchAllChords()
             _chordDetailsState.postValue(LoadingState.Success)
+        }
+    }
+
+    fun onUseFlatsToggled(useFlats: Boolean) {
+        _chordDetailsState.value = LoadingState.Loading
+        // use the transpose function to force the correct flat/sharp
+        currentChordToDisplay.value = Chord.transposeChord(currentChordToDisplay.value.toString(), 0, useFlats)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            dataAccess.upsert(Preference(Preference.USE_FLATS, useFlats.toString()))
+            fetchAllChords()
         }
     }
 

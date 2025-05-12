@@ -1,8 +1,10 @@
 package com.gbros.tabslite.view.chorddisplay
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,9 +43,11 @@ fun ChordModalBottomSheet(
     title: String,
     chordVariations: List<ChordVariation>,
     instrument: Instrument,
+    useFlats: Boolean,
     loadingState: LoadingState,
     onDismiss: () -> Unit,
-    onInstrumentSelected: (Instrument) -> Unit
+    onInstrumentSelected: (Instrument) -> Unit,
+    onUseFlatsToggled: (Boolean) -> Unit
 ){
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -58,10 +62,17 @@ fun ChordModalBottomSheet(
         sheetMaxWidth = screenWidth.dp
     ) {
         Column {
-            InstrumentSelector(instrument, onInstrumentSelected)
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                InstrumentSelector(instrument, onInstrumentSelected)
+                UseFlatsToggle(useFlats, onUseFlatsToggled)
+            }
             if (loadingState is LoadingState.Success) {
 
                 ChordPager(
+                    title = title,
                     chordVariations = chordVariations,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -162,16 +173,18 @@ private fun ChordModalBottomSheetPreview (showModal: Boolean) {
             modifier = Modifier.fillMaxSize()
         )
 
-        //if (bottomSheetTrigger) {
+        if (bottomSheetTrigger) {
             ChordModalBottomSheet(
                 title = chordToShow,
                 chordVariations = chords,
                 instrument = Instrument.Guitar,
+                useFlats = false,
                 loadingState = LoadingState.Success,
                 onDismiss = { },
-                onInstrumentSelected = { }
+                onInstrumentSelected = { },
+                onUseFlatsToggled = { }
             )
-        ///}
+        }
     }
 }
 

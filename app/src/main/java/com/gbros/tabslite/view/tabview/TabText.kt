@@ -163,8 +163,10 @@ fun TabTextTestCase1() {
                 chordVariations = chords,
                 loadingState = LoadingState.Success,
                 instrument = Instrument.Guitar,
+                useFlats = false,
                 onInstrumentSelected = { },
-                onDismiss =  { bottomSheetTrigger = false }
+                onDismiss =  { bottomSheetTrigger = false },
+                onUseFlatsToggled = { }
             )
         }
     }

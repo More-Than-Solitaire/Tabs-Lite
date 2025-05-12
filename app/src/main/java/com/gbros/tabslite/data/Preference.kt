@@ -24,10 +24,35 @@ data class Preference(
 ) {
 
     companion object {
+        /**
+         * The preference name for the user preference of which order the favorites playlist should
+         * be ordered in
+         */
         const val FAVORITES_SORT: String = "FAVORITES_SORT"
+
+        /**
+         * The preference name for which order the popular tabs playlist should be ordered in
+         */
         const val POPULAR_SORT: String = "POPULAR_SORT"
+
+        /**
+         * The preference name for which order the user-created playlists should be sorted in
+         */
         const val PLAYLIST_SORT: String = "PLAYLIST_SORT"
+
+        /**
+         * The preference name for the delay in ms between 1px scrolls during autoscroll
+         */
         const val AUTOSCROLL_DELAY: String = "AUTOSCROLL_DELAY"
+
+        /**
+         * The preference name for which instrument to display chords for
+         */
         const val INSTRUMENT: String = "INSTRUMENT"
+
+        /**
+         * The preference name for whether to use the flats forms of chords vs sharps
+         */
+        const val USE_FLATS: String = "USE_FLATS"
     }
 }

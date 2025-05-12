@@ -35,14 +35,17 @@ import kotlin.math.min
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalUnsignedTypes::class)
 @Composable
-fun ChordPager(modifier: Modifier = Modifier, chordVariations: List<ChordVariation>) {
-    val chordName = if (chordVariations.isEmpty()) " " else chordVariations[0].chordId
+fun ChordPager(
+    title: String,
+    modifier: Modifier = Modifier,
+    chordVariations: List<ChordVariation>
+) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = chordName,
+            text = title,
             fontSize = MaterialTheme.typography.headlineLarge.fontSize,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground,
@@ -169,7 +172,7 @@ fun UkulelePreview() {
     )
 
     AppTheme {
-        ChordPager(chordVariations = chords)
+        ChordPager(title = "Am", chordVariations = chords)
     }
 }
 
@@ -230,7 +233,7 @@ fun ChordPagerPreview() {
     )
 
     AppTheme {
-        ChordPager(chordVariations = chords)
+        ChordPager(title = "Am", chordVariations = chords)
     }
 }
 
@@ -291,7 +294,7 @@ fun ChordPagerBarredChordsPreview() {
     )
 
     AppTheme {
-        ChordPager(chordVariations = chords)
+        ChordPager(title = "Am", chordVariations = chords)
     }
 }
 

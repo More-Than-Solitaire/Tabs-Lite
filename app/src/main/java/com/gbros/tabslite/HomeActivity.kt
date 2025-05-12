@@ -94,6 +94,7 @@ class HomeActivity : ComponentActivity() {
         dataAccess.insert(Preference(Preference.PLAYLIST_SORT, PlaylistsSortBy.Name.name))
         dataAccess.insert(Preference(Preference.AUTOSCROLL_DELAY, .5f.toString()))
         dataAccess.insert(Preference(Preference.INSTRUMENT, Instrument.Guitar.name))
+        dataAccess.insert(Preference(Preference.USE_FLATS, false.toString()))
     }
 
     /**

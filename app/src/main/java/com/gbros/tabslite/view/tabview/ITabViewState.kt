@@ -120,4 +120,9 @@ interface ITabViewState {
      * The selected instrument to display chords for
      */
     val chordInstrument: LiveData<Instrument>
+
+    /**
+     * Whether to display chords as flats or sharps
+     */
+    val useFlats: LiveData<Boolean>
 }

@@ -96,7 +96,7 @@ fun NavGraphBuilder.tabScreen(
             idIsPlaylistEntryId = false,
             defaultFontSize = defaultFontSizeInSp,
             dataAccess = db.dataAccess(),
-            navigateToPlaylistEntryById = { /* ignore playlist navigation */ }
+            navigateToPlaylistEntryById = { /* ignore playlist navigation because we're not in a playlist */ }
         )}
 
         TabScreen(
@@ -119,7 +119,8 @@ fun NavGraphBuilder.tabScreen(
             onAddPlaylistDialogPlaylistSelected = viewModel::onAddPlaylistDialogPlaylistSelected,
             onAddToPlaylist = viewModel::onAddToPlaylist,
             onCreatePlaylist = viewModel::onCreatePlaylist,
-            onInstrumentSelected = viewModel::onInstrumentSelected
+            onInstrumentSelected = viewModel::onInstrumentSelected,
+            onUseFlatsToggled = viewModel::onUseFlatsToggled
         )
     }
 }
@@ -186,7 +187,8 @@ fun NavGraphBuilder.playlistEntryScreen(
             onAddPlaylistDialogPlaylistSelected = viewModel::onAddPlaylistDialogPlaylistSelected,
             onAddToPlaylist = viewModel::onAddToPlaylist,
             onCreatePlaylist = viewModel::onCreatePlaylist,
-            onInstrumentSelected = viewModel::onInstrumentSelected
+            onInstrumentSelected = viewModel::onInstrumentSelected,
+            onUseFlatsToggled = viewModel::onUseFlatsToggled
         )
     }
 }
@@ -214,7 +216,8 @@ fun TabScreen(
     onAddPlaylistDialogPlaylistSelected: (Playlist) -> Unit,
     onAddToPlaylist: () -> Unit,
     onCreatePlaylist: (title: String, description: String) -> Unit,
-    onInstrumentSelected: (instrument: Instrument) -> Unit
+    onInstrumentSelected: (instrument: Instrument) -> Unit,
+    onUseFlatsToggled: (useFlats: Boolean) -> Unit,
 ) {
     // handle autoscroll
     val scrollState = rememberScrollState()
@@ -334,9 +337,11 @@ fun TabScreen(
                 title = viewState.chordDetailsTitle.observeAsState("").value,
                 chordVariations = viewState.chordDetailsVariations.observeAsState(emptyList()).value,
                 instrument = viewState.chordInstrument.observeAsState(Instrument.Guitar).value,
+                useFlats = viewState.useFlats.observeAsState(false).value,
                 loadingState = viewState.chordDetailsState.observeAsState(LoadingState.Loading).value,
                 onDismiss = onChordDetailsDismiss,
-                onInstrumentSelected = onInstrumentSelected
+                onInstrumentSelected = onInstrumentSelected,
+                onUseFlatsToggled = onUseFlatsToggled
             )
         }
     }
@@ -403,7 +408,8 @@ private fun TabViewPreview() {
         override val addToPlaylistDialogSelectedPlaylistTitle: LiveData<String?>,
         override val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>,
         override val fontSizeSp: LiveData<Float>,
-        override val chordInstrument: LiveData<Instrument>
+        override val chordInstrument: LiveData<Instrument>,
+        override val useFlats: LiveData<Boolean>
     ) : ITabViewState {
         constructor(tab: ITab): this(
             songName = MutableLiveData(tab.songName),
@@ -433,7 +439,8 @@ private fun TabViewPreview() {
             artist = MutableLiveData("Artist Name"),
             addToPlaylistDialogSelectedPlaylistTitle = MutableLiveData("Playlist1"),
             addToPlaylistDialogConfirmButtonEnabled = MutableLiveData(false),
-            chordInstrument = MutableLiveData(Instrument.Guitar)
+            chordInstrument = MutableLiveData(Instrument.Guitar),
+            useFlats = MutableLiveData(false)
         )
 
         override fun getCapoText(context: Context): LiveData<String> {
@@ -498,7 +505,8 @@ private fun TabViewPreview() {
             onAddToPlaylist = {  },
             onCreatePlaylist = { _, _ -> },
             onZoom = { },
-            onInstrumentSelected = { }
+            onInstrumentSelected = { },
+            onUseFlatsToggled = { }
         )
     }
 }

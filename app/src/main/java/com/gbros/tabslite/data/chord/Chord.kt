@@ -2,6 +2,7 @@ package com.gbros.tabslite.data.chord
 
 import android.util.Log
 import com.gbros.tabslite.data.DataAccess
+import com.gbros.tabslite.data.chord.Chord.useFlats
 import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.UgApi
 import kotlin.math.abs
@@ -21,7 +22,11 @@ object Chord {
         }
     }
 
-    fun transposeChord(chord: CharSequence, halfSteps: Int): String {
+    /**
+     * Transpose one chord a specified number of steps up or down. Also converts to the correct form
+     * (flats vs sharps)
+     */
+    fun transposeChord(chord: CharSequence, halfSteps: Int, useFlats: Boolean): String {
         val numSteps = abs(halfSteps)
         val up = halfSteps > 0
 
@@ -39,6 +44,7 @@ object Chord {
                         chordParts[i] = transposeDown(chordParts[i])
                     }
                 }
+                chordParts[i] = useFlats(chordParts[i], useFlats)
             }
         }
 
@@ -55,6 +61,34 @@ object Chord {
     // endregion
 
     // region private methods
+
+    /**
+     * Helper function to convert chords to the correct form (flats or sharps), depending on user
+     * preference
+     *
+     * @param chordName: The chord name (e.g. A#m7 but not A#m7/G) to convert (e.g. Bbm7)
+     * @param useFlats: Whether to convert sharps to flats (true) or flats to sharps (false)
+     */
+    fun useFlats(chordName: String, useFlats: Boolean): String {
+        return when {
+            useFlats && chordName.startsWith("A#", true) -> "Bb" + chordName.substring(2)
+            !useFlats && chordName.startsWith("Bb", true) -> "A#" + chordName.substring(2)
+
+            useFlats && chordName.startsWith("C#", true) -> "Db" + chordName.substring(2)
+            !useFlats && chordName.startsWith("Db", true) -> "C#" + chordName.substring(2)
+
+            useFlats && chordName.startsWith("D#", true) -> "Eb" + chordName.substring(2)
+            !useFlats && chordName.startsWith("Eb", true) -> "D#" + chordName.substring(2)
+
+            useFlats && chordName.startsWith("F#", true) -> "Gb" + chordName.substring(2)
+            !useFlats && chordName.startsWith("Gb", true) -> "F#" + chordName.substring(2)
+
+            useFlats && chordName.startsWith("G#", true) -> "Ab" + chordName.substring(2)
+            !useFlats && chordName.startsWith("Ab", true) -> "G#" + chordName.substring(2)
+
+            else -> chordName  // no change needed
+        }
+    }
 
     /**
      * Helper function to transpose a chord name up by one half step
