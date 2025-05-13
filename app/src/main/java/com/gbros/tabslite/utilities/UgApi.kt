@@ -108,14 +108,15 @@ object UgApi {
     /**
      * Perform a search for the given query, and get the tabs that match that search query.
      *
-     * @param [query] The search term to find
-     * @param [page] The page of the search results to fetch
+     * @param [title] The search term to find
+     * @param [artistId] (Optional) The ID of the artist to filter search results to. Can be paired with the [title] set to an empty string to perform an artist song list. If null or 0, this parameter will be ignored
+     * @param [page] The 1-indexed page of the search results to fetch
      *
      * @return A [SearchRequestType] with the search results, or an empty [SearchRequestType] if there are no search results on that page
      */
-    suspend fun search(query: String, page: Int): SearchRequestType = withContext(Dispatchers.IO) {
+    suspend fun search(title: String, artistId: Int? = null, page: Int): SearchRequestType = withContext(Dispatchers.IO) {
         val url =
-            "https://api.ultimate-guitar.com/api/v1/tab/search?title=$query&page=$page&type[]=300&official[]=0"
+            "https://api.ultimate-guitar.com/api/v1/tab/search?title=$title&page=$page&artist_id=$artistId&type[]=300&official[]=0"
 
         val inputStream: InputStream?
         try {
@@ -126,8 +127,8 @@ object UgApi {
         } catch (ex: NoInternetException) {
             throw ex  // pass through NoInternetExceptions
         } catch (ex: Exception) {
-            Log.e(TAG, "Unexpected exception reading search results for page $page of query '$query': ${ex.message}", ex)
-            throw SearchException("Couldn't fetch search results for page $page of query '$query': ${ex.message}", ex)
+            Log.e(TAG, "Unexpected exception reading search results for page $page of query '$title': ${ex.message}", ex)
+            throw SearchException("Couldn't fetch search results for page $page of query '$title': ${ex.message}", ex)
         }
 
         var result: SearchRequestType
@@ -136,7 +137,7 @@ object UgApi {
         try {
             val searchResultTypeToken = object : TypeToken<SearchRequestType>() {}.type
             result = gson.fromJson(jsonReader, searchResultTypeToken)
-            Log.v(TAG, "Search for $query page $page success.")
+            Log.v(TAG, "Search for $title page $page success.")
         } catch (syntaxException: JsonSyntaxException) {
             // usually this block happens when the end of the exact query is reached and a 'did you mean' suggestion is available
             try {
@@ -146,7 +147,7 @@ object UgApi {
                 result = SearchRequestType(suggestedSearch)
             } catch (ex: IllegalStateException) {
                 inputStream.close()
-                val message = "Search illegal state exception!  Check SearchRequestType for consistency with data.  Query: $query, page $page"
+                val message = "Search illegal state exception!  Check SearchRequestType for consistency with data.  Query: $title, page $page"
                 Log.e(TAG, message, syntaxException)
                 throw SearchException(message, syntaxException)
             }

@@ -50,6 +50,11 @@ interface ITabViewState {
     val artist: LiveData<String>
 
     /**
+     * The ID of the song author
+     */
+    val artistId: LiveData<Int>
+
+    /**
      * How many steps up or down this tab's content is transposed
      */
     val transpose: LiveData<Int>

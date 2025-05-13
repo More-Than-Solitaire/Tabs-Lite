@@ -10,7 +10,23 @@ import com.gbros.tabslite.utilities.UgApi
  * Represents a search session with one search query.  Gets search results and provides a method to
  * retrieve more search results if the first page isn't enough.
  */
-class Search(private var query: String, private val dataAccess: DataAccess) {
+class Search(
+    /**
+     * The query currently being searched for (in the title field)
+     */
+    private var query: String,
+
+    /**
+     * (Optional) the ID of the artist to filter by. Can be paired with an empty [query] to do an artist song list. Ignored if null or 0.
+     */
+    private var artistId: Int?,
+
+    /**
+     * The data access object interface into the data layer, for caching results and returning cached results
+     */
+    private val dataAccess: DataAccess
+) {
+
     //#region private data
 
     /**
@@ -31,14 +47,15 @@ class Search(private var query: String, private val dataAccess: DataAccess) {
      *
      * @param [page] The page of results to fetch
      * @param [query] The query to search for
+     * @param [artistId] (Optional) Filter results by artist ID
      *
      * @return A list of search results, or an empty list if there are no search results
      *
      * @throws [SearchDidYouMeanException] if no results, but there's a suggested query
      */
-    private suspend fun getSearchResults(page: Int, query: String): List<ITab> {
+    private suspend fun getSearchResults(page: Int, query: String, artistId: Int?): List<ITab> {
         Log.d(TAG, "starting search '$query' page $page")
-        val searchResult = UgApi.search(query, (page))  // always search the next page that hasn't been loaded yet
+        val searchResult = UgApi.search(query, artistId, page)  // always search the next page that hasn't been loaded yet
 
         return if (!searchResult.didYouMean.isNullOrBlank()) {
             throw SearchDidYouMeanException(searchResult.didYouMean!!)
@@ -70,7 +87,7 @@ class Search(private var query: String, private val dataAccess: DataAccess) {
         var retriesLeft = 3
         while (retriesLeft-- > 0) {
             try {
-                val results = getSearchResults(page = ++currentSearchPage, query = query)
+                val results = getSearchResults(page = ++currentSearchPage, artistId = artistId, query = query)
                 if (results.isEmpty()) {
                     currentSearchPage--
                 }

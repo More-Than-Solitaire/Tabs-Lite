@@ -28,6 +28,7 @@ import kotlin.time.Duration.Companion.seconds
 class SearchViewModel
 @AssistedInject constructor(
     @Assisted override val query: String,
+    @Assisted val artistId: Int?,
     @Assisted dataAccess: DataAccess
 ) : ViewModel(), ISearchViewState {
 
@@ -35,7 +36,7 @@ class SearchViewModel
 
     @AssistedFactory
     interface SearchViewModelFactory {
-        fun create(query: String, dataAccess: DataAccess): SearchViewModel
+        fun create(query: String, artistId: Int?, dataAccess: DataAccess): SearchViewModel
     }
 
     //#endregion
@@ -66,7 +67,7 @@ class SearchViewModel
     /**
      * The last page of search results that's been fetched from the server
      */
-    private var searchSession = Search(query, dataAccess)
+    private var searchSession = Search(query, artistId, dataAccess)
 
     private var searchMutex = Mutex(locked = false)
 

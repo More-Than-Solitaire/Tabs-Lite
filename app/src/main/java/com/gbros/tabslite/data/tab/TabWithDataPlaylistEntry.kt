@@ -38,6 +38,7 @@ data class TabWithDataPlaylistEntry(
     @ColumnInfo(name = "song_id") override var songId: Int = 0,
     @ColumnInfo(name = "song_name") override var songName: String = "",
     @ColumnInfo(name = "artist_name") override var artistName: String = "",
+    @ColumnInfo(name = "artist_id") override var artistId: Int = 0,
     @ColumnInfo(name = "verified") override var isVerified: Boolean = false,
     @ColumnInfo(name = "num_versions") override var numVersions: Int = 0,
     @ColumnInfo(name = "type") override var type: String = "",

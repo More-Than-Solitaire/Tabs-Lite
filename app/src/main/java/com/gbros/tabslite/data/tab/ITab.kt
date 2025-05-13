@@ -32,6 +32,7 @@ interface ITab {
      * The author of the original song (not the person who wrote up these chords, that's [contributorUserName])
      */
     val artistName: String
+    val artistId: Int
     val isVerified: Boolean
     val numVersions: Int
 

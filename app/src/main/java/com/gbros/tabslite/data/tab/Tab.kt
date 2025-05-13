@@ -13,6 +13,7 @@ data class Tab(
     @ColumnInfo(name = "song_id") override var songId: Int = -1,
     @ColumnInfo(name = "song_name") override var songName: String = "",
     @ColumnInfo(name = "artist_name") override var artistName: String = "",
+    @ColumnInfo(name = "artist_id") override val artistId: Int = -1,
     @ColumnInfo(name = "type") override var type: String = "",
     @ColumnInfo(name = "part") override var part: String = "",
     @ColumnInfo(name = "version") override var version: Int = 0,
@@ -81,14 +82,14 @@ data class Tab(
 
     //#region constructors
 
-    constructor(tabId: Int? = 0) : this(tabId = tabId ?: 0, songId = 0, songName = "", artistName = "", isVerified = false, numVersions = 0,
+    constructor(tabId: Int? = 0) : this(tabId = tabId ?: 0, songId = 0, songName = "", artistName = "", artistId = 0, isVerified = false, numVersions = 0,
         type = "", part = "", version = 0, votes = 0, rating = 0.0, date = 0, status = "", presetId = 0, tabAccessType = "",
         tpVersion = 0, tonalityName = "", versionDescription = "", recordingIsAcoustic = false, recordingTonalityName = "",
         recordingPerformance = "", recordingArtists = arrayListOf(), recommended = arrayListOf(), userRating = 0, difficulty = "", tuning = "",
         capo = 0, urlWeb = "", strumming = arrayListOf(), videosCount = 0, proBrother = 0, contributorUserId = 0, contributorUserName = "",
         content = "")
 
-    constructor(tabFromDatabase: TabDataType) : this(tabId = tabFromDatabase.tabId, songId = tabFromDatabase.songId, songName = tabFromDatabase.songName, artistName = tabFromDatabase.artistName, isVerified = tabFromDatabase.isVerified, numVersions = tabFromDatabase.numVersions,
+    constructor(tabFromDatabase: TabDataType) : this(tabId = tabFromDatabase.tabId, songId = tabFromDatabase.songId, songName = tabFromDatabase.songName, artistName = tabFromDatabase.artistName, artistId = tabFromDatabase.artistId, isVerified = tabFromDatabase.isVerified, numVersions = tabFromDatabase.numVersions,
         type = tabFromDatabase.type, part = tabFromDatabase.part, version = tabFromDatabase.version, votes = tabFromDatabase.votes, rating = tabFromDatabase.rating, date = tabFromDatabase.date, status = tabFromDatabase.status, presetId = tabFromDatabase.presetId, tabAccessType = tabFromDatabase.tabAccessType,
         tpVersion = tabFromDatabase.tpVersion, tonalityName = tabFromDatabase.tonalityName, versionDescription = tabFromDatabase.versionDescription, recordingIsAcoustic = tabFromDatabase.recordingIsAcoustic, recordingTonalityName = tabFromDatabase.recordingTonalityName,
         recordingPerformance = tabFromDatabase.recordingPerformance, recordingArtists = tabFromDatabase.recordingArtists, recommended = tabFromDatabase.recommended, userRating = tabFromDatabase.userRating, difficulty = tabFromDatabase.difficulty, tuning = tabFromDatabase.tuning,

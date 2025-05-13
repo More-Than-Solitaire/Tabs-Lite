@@ -518,6 +518,8 @@ class TabViewModel
 
     //#region view state
 
+    override val artistId: LiveData<Int> = tab.map { t -> t.artistId }
+
     override val useFlats: LiveData<Boolean> = dataAccess.getLivePreference(Preference.USE_FLATS).map { p -> p?.value?.toBoolean() == true }
 
     override val songName: LiveData<String> = tab.map { t -> t?.songName ?: "" }

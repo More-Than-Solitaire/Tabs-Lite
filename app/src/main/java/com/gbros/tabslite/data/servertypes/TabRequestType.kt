@@ -142,6 +142,7 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
             songId = song_id,
             songName = song_name,
             artistName = artist_name,
+            artistId = artist_id,
             type = type,
             part = part,
             version = version,

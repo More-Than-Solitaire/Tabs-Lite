@@ -43,7 +43,7 @@
     <string name="message_chord_load_failed" translation_description="Error message shown when chord could not be loaded. %s represents the name of the chord that couldn't be loaded">Impossibile caricare gli accordi \'%s\'. Controlla la tua connessione internet.</string>
     <string name="message_no_search_results" translation_description="Info message shown when there are no results to a search query. This could be due to an internet connection issue.">Nessun risultato di ricerca. Controlla la tua ricerca o la tua connessione internet.</string>
     <string name="message_empty_list" translation_description="Default info message when there are no items in a list">Qui non c\'è niente!</string>
-    <string name="tab_title">%1$s di %2$s</string>
+    <string name="tab_title"><annotation arg="songName">%1$s</annotation><annotation arg="plainText"> di </annotation><annotation arg="artistName">%2$s</annotation></string>
     <string name="tab_difficulty">Difficoltà: %s</string>
     <string name="tab_tuning">Sintonizzazione: %s</string>
     <string name="tab_capo">Capo: %s</string>

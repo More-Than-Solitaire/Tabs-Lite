@@ -14,6 +14,7 @@ data class TabDataType(
     @ColumnInfo(name = "song_id") var songId: Int = -1,
     @ColumnInfo(name = "song_name") var songName: String = "",
     @ColumnInfo(name = "artist_name") var artistName: String = "",
+    @ColumnInfo(name = "artist_id") var artistId: Int = -1,
     @ColumnInfo(name = "type") var type: String = "",
     @ColumnInfo(name = "part") var part: String = "",
     @ColumnInfo(name = "version") var version: Int = 0,

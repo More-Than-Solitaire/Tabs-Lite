@@ -48,7 +48,6 @@ import com.gbros.tabslite.view.addtoplaylistdialog.AddToPlaylistDialog
 fun TabTopAppBar(isFavorite: Boolean,
                  title: String,
                  shareUrl: String,
-                 shareTitle: String,
                  copyText: String,
                  allPlaylists: List<Playlist>,
                  selectedPlaylistTitle: String?,
@@ -99,7 +98,7 @@ fun TabTopAppBar(isFavorite: Boolean,
                 val sendIntent: Intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, shareUrl)
-                    putExtra(Intent.EXTRA_TITLE, shareTitle)
+                    putExtra(Intent.EXTRA_TITLE, title)
                     type = "text/plain"
                 }
                 val shareIntent = Intent.createChooser(sendIntent, null)
@@ -192,7 +191,6 @@ private fun TabTopAppBarPreview() {
         TabTopAppBar(
             isFavorite = true,
             shareUrl = "https://tabslite.com/tab/1234",
-            shareTitle = "asdf",
             allPlaylists = list,
             selectedPlaylistTitle = "Test",
             copyText = "",
@@ -203,7 +201,7 @@ private fun TabTopAppBarPreview() {
             onPlaylistSelectionChange = {},
             onNavigateBack = {},
             onReloadClick = {},
-            title = "Long Time Ago by CoolGuyz",
+            title = ""
         )
     }
 }

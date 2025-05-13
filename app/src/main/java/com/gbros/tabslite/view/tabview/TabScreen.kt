@@ -1,6 +1,9 @@
 package com.gbros.tabslite.view.tabview
 
 import android.content.Context
+import android.text.Annotation
+import android.text.SpannedString
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipboardManager
@@ -30,8 +34,12 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.LinkInteractionListener
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -54,6 +62,7 @@ import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.utilities.KeepScreenOn
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.view.card.ErrorCard
 import com.gbros.tabslite.view.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.viewmodel.TabViewModel
@@ -72,7 +81,8 @@ fun NavController.navigateToTab(tabId: Int) {
 }
 
 fun NavGraphBuilder.tabScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToArtistIdSongList: (artistId: Int) -> Unit
 ) {
     composable(
         route = TAB_ROUTE_TEMPLATE.format("{$TAB_NAV_ARG}"),
@@ -102,6 +112,7 @@ fun NavGraphBuilder.tabScreen(
         TabScreen(
             viewState = viewModel,
             onNavigateBack = onNavigateBack,
+            onArtistClicked = onNavigateToArtistIdSongList,
             onPlaylistNextSongClick = viewModel::onPlaylistNextSongClick,
             onPlaylistPreviousSongClick = viewModel::onPlaylistPreviousSongClick,
             onTransposeUpClick = viewModel::onTransposeUpClick,
@@ -141,7 +152,8 @@ fun NavController.navigateToPlaylistEntry(playlistEntryId: Int) {
 
 fun NavGraphBuilder.playlistEntryScreen(
     onNavigateToPlaylistEntry: (Int) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToArtistIdSongList: (artistId: Int) -> Unit
 ) {
     composable(
         route = PLAYLIST_ENTRY_ROUTE,
@@ -170,6 +182,7 @@ fun NavGraphBuilder.playlistEntryScreen(
         TabScreen(
             viewState = viewModel,
             onNavigateBack = onNavigateBack,
+            onArtistClicked = onNavigateToArtistIdSongList,
             onPlaylistNextSongClick = viewModel::onPlaylistNextSongClick,
             onPlaylistPreviousSongClick = viewModel::onPlaylistPreviousSongClick,
             onTransposeUpClick = viewModel::onTransposeUpClick,
@@ -199,6 +212,7 @@ fun NavGraphBuilder.playlistEntryScreen(
 fun TabScreen(
     viewState: ITabViewState,
     onNavigateBack: () -> Unit,
+    onArtistClicked: (artistId: Int) -> Unit,
     onPlaylistNextSongClick: () -> Unit,
     onPlaylistPreviousSongClick: () -> Unit,
     onTransposeUpClick: () -> Unit,
@@ -232,12 +246,52 @@ fun TabScreen(
                 right = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(LocalLayoutDirection.current))
             ))
     ) {
-        val title = String.format(format = stringResource(R.string.tab_title), viewState.songName.observeAsState("...").value, viewState.artist.observeAsState("...").value)
+        // create clickable title
+        val songName = viewState.songName.observeAsState("...").value
+        val artistName = viewState.artist.observeAsState("...").value
+        val currentContext = LocalContext.current
+        val artistId = viewState.artistId.observeAsState(0).value
+        val titleText = remember { currentContext.getText(R.string.tab_title) as SpannedString }
+        val annotations = remember { titleText.getSpans(0, titleText.length, Annotation::class.java) }
+        val titleBuilder = buildAnnotatedString {
+            annotations.forEach { annotation ->
+                if (annotation.key == "arg") {
+                    when (annotation.value) {
+                        "songName" -> {
+                            append(songName)
+                        }  // do nothing to the song name
+
+                        "artistName" -> {
+                            // make the artist name clickable
+                            withLink(
+                                link = LinkAnnotation.Clickable(
+                                    tag = "artistId",
+                                    linkInteractionListener = LinkInteractionListener {
+                                        Log.d(TAG, "artist clicked")
+                                        onArtistClicked(artistId)
+                                    }
+                                )) {
+                                append(artistName)
+                            }
+                        }
+
+                        "plainText" -> {
+                            append(
+                                titleText.subSequence(
+                                    titleText.getSpanStart(annotation),
+                                    titleText.getSpanEnd(annotation)
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         TabTopAppBar(
-            title = title,
+            title = titleBuilder.toString(),
             allPlaylists = viewState.allPlaylists.observeAsState(listOf()).value,
             selectedPlaylistTitle = viewState.addToPlaylistDialogSelectedPlaylistTitle.observeAsState(null).value,
-            shareTitle = title,
             shareUrl = viewState.shareUrl.observeAsState("https://tabslite.com/").value,
             isFavorite = viewState.isFavorite.observeAsState(false).value,
             copyText = viewState.plainTextContent.observeAsState("").value,
@@ -252,7 +306,7 @@ fun TabScreen(
 
         Column {
             Text(  // Tab title
-                text = title,
+                text = titleBuilder,
                 style = MaterialTheme.typography.headlineMedium,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -405,6 +459,7 @@ private fun TabViewPreview() {
         override val shareUrl: LiveData<String>,
         override val allPlaylists: LiveData<List<Playlist>>,
         override val artist: LiveData<String>,
+        override val artistId: LiveData<Int>,
         override val addToPlaylistDialogSelectedPlaylistTitle: LiveData<String?>,
         override val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>,
         override val fontSizeSp: LiveData<Float>,
@@ -437,6 +492,7 @@ private fun TabViewPreview() {
             shareUrl = MutableLiveData("https://tabslite.com/tab/1234"),
             allPlaylists = MutableLiveData(listOf()),
             artist = MutableLiveData("Artist Name"),
+            artistId = MutableLiveData(1),
             addToPlaylistDialogSelectedPlaylistTitle = MutableLiveData("Playlist1"),
             addToPlaylistDialogConfirmButtonEnabled = MutableLiveData(false),
             chordInstrument = MutableLiveData(Instrument.Guitar),
@@ -481,32 +537,33 @@ private fun TabViewPreview() {
         [tab]            [ch]G[/ch]
         I’m by your side.[/tab]    """.trimIndent()
 
-    val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
+    val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", 1, false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
 
 
     AppTheme {
         TabScreen(
             viewState = TabViewStateForTest(tabForTest),
-            onNavigateBack = {},
-            onPlaylistNextSongClick = {  },
-            onPlaylistPreviousSongClick = {  },
-            onTransposeUpClick = {  },
-            onTransposeDownClick = {  },
-            onTransposeResetClick = {  },
+            onNavigateBack = { },
+            onPlaylistNextSongClick = { },
+            onPlaylistPreviousSongClick = { },
+            onTransposeUpClick = { },
+            onTransposeDownClick = { },
+            onTransposeResetClick = { },
             onTextClick = { _, _, _ -> },
             onScreenMeasured = { _, _, _ -> },
-            onChordDetailsDismiss = {  },
-            onAutoscrollSliderValueChange = {  },
-            onAutoscrollButtonClick = {  },
-            onAutoscrollSliderValueChangeFinished = {  },
-            onReload = {  },
-            onFavoriteButtonClick = {  },
-            onAddPlaylistDialogPlaylistSelected = {  },
-            onAddToPlaylist = {  },
+            onChordDetailsDismiss = { },
+            onAutoscrollSliderValueChange = { },
+            onAutoscrollButtonClick = { },
+            onAutoscrollSliderValueChangeFinished = { },
+            onReload = { },
+            onFavoriteButtonClick = { },
+            onAddPlaylistDialogPlaylistSelected = { },
+            onAddToPlaylist = { },
             onCreatePlaylist = { _, _ -> },
             onZoom = { },
             onInstrumentSelected = { },
-            onUseFlatsToggled = { }
+            onUseFlatsToggled = { },
+            onArtistClicked = { }
         )
     }
 }
