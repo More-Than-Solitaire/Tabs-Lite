@@ -41,6 +41,7 @@
     <string name="generic_action_reload">Reload</string>
     <string name="generic_action_menu">Menu</string>
     <string name="generic_action_copy">Copy</string>
+    <string name="generic_action_clear">Clear</string>
     <string name="error">Error</string>
     <string name="info">Info</string>
 
