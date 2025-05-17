@@ -9,9 +9,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
@@ -75,10 +77,18 @@ fun TabsSearchBar(
                 },
                 leadingIcon = leadingIcon,
                 trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = stringResource(id = R.string.app_action_description_search)
-                    )
+                    IconButton(onClick = {
+                        onQueryChange("")
+                    }) {
+                        if (query.value.isNotEmpty()) {
+                            Icon(Icons.Filled.Clear, stringResource(R.string.generic_action_clear))
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = stringResource(id = R.string.app_action_description_search)
+                            )
+                        }
+                    }
                 }
             )
         },
