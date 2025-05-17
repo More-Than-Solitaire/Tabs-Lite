@@ -82,7 +82,7 @@
     <string name="message_search_suggestion_no_internet" translation_description="Informational message displayed when additional search suggestions can't be fetched because we're not connected to the internet.">You\'re not connected to the internet.</string>
     <string name="message_search_suggestion_unexpected_error" translation_description="Error message displayed when additional search suggestions can't be loaded because of an unknown/unexpected issue.">Unexpected error fetching more search suggestions.</string>
 
-    <string name="tab_title">%1$s by %2$s</string>
+    <string name="tab_title"><annotation arg="songName">%1$s</annotation><annotation arg="plainText"> by </annotation><annotation arg="artistName">%2$s</annotation></string>
     <string name="tab_difficulty">Difficulty: %s</string>
     <string name="tab_tuning">Tuning: %s</string>
     <string name="tab_capo">Capo: %s</string>
