@@ -1,28 +1,14 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.12.2")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
-        classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.8.9")
-    }
-}
-
 plugins {
-    id("com.diffplug.spotless") version "6.23.3"
-    id("com.google.dagger.hilt.android") version "2.55" apply false
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.1.0" apply false // this version matches your Kotlin version
-}
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.navigationSafeargs) apply false
+    alias(libs.plugins.daggerHilt) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.kotlinSerialization) apply false
+    alias(libs.plugins.kotlinParcelize) apply false
+    alias(libs.plugins.compose.compiler) apply false
 
-allprojects {
-    repositories {
-        google()
-    }
+    alias(libs.plugins.spotless)
 }
 
 spotless {
