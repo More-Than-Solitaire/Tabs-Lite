@@ -1,6 +1,7 @@
 package com.gbros.tabslite.viewmodel
 
 import android.content.ContentResolver
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -28,19 +29,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 @HiltViewModel(assistedFactory = HomeViewModel.HomeViewModelFactory::class)
 class HomeViewModel
 @AssistedInject constructor(
-    @Assisted private val dataAccess: DataAccess
+    @Assisted private val dataAccess: DataAccess,
+    @Assisted private val context: Context // <-- Add context
 ) : ViewModel(), IHomeViewState {
 
     //#region dependency injection factory
 
     @AssistedFactory
     interface HomeViewModelFactory {
-        fun create(dataAccess: DataAccess): HomeViewModel
+        fun create(dataAccess: DataAccess, context: Context): HomeViewModel
     }
 
     //#endregion
@@ -64,15 +67,53 @@ class HomeViewModel
         sortByPreference?.let { PlaylistsSortBy.valueOf(sortByPreference.value) } ?: PlaylistsSortBy.Name
     }
 
+    private val _playlists = MutableLiveData<List<Playlist>>()
     /**
      * The user's saved playlists, sorted by [playlistsSortBy]
      */
-    override val playlists: LiveData<List<Playlist>> = dataAccess.getLivePlaylists().combine(playlistsSortBy) { playlists, currentSortBy ->
-        when(currentSortBy) {
-            PlaylistsSortBy.Name -> playlists?.sortedBy { it.title } ?: listOf()
-            PlaylistsSortBy.DateAdded -> playlists?.sortedByDescending { it.dateCreated } ?: listOf()
-            PlaylistsSortBy.DateModified -> playlists?.sortedByDescending { it.dateModified } ?: listOf()
-            null -> playlists ?: listOf()
+    override val playlists: LiveData<List<Playlist>> = _playlists
+
+    init {
+        // Try to load initial playlist from SharedPreferences
+        val sharedPreferences = context.getSharedPreferences("export_prefs", Context.MODE_PRIVATE)
+        val lastExportUriString = sharedPreferences.getString("last_export_uri", null)
+        if (lastExportUriString != null) {
+            val uri = Uri.parse(lastExportUriString)
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    val jsonString = inputStream?.bufferedReader()?.use { it.readText() }
+                    inputStream?.close()
+                    if (jsonString != null) {
+                        val playlistsFromExport = Json.decodeFromString<List<Playlist>>(jsonString)
+                        withContext(Dispatchers.Main) {
+                            _playlists.value = playlistsFromExport
+                        }
+                    } else {
+                        // Fallback to DB playlists if file is empty
+                        observeDbPlaylists()
+                    }
+                } catch (e: Exception) {
+                    // Fallback to DB playlists if error
+                    observeDbPlaylists()
+                }
+            }
+        } else {
+            // No export found, fallback to DB playlists
+            observeDbPlaylists()
+        }
+    }
+
+    private fun observeDbPlaylists() {
+        dataAccess.getLivePlaylists().combine(playlistsSortBy) { playlists, currentSortBy ->
+            when(currentSortBy) {
+                PlaylistsSortBy.Name -> playlists?.sortedBy { it.title } ?: listOf()
+                PlaylistsSortBy.DateAdded -> playlists?.sortedByDescending { it.dateCreated } ?: listOf()
+                PlaylistsSortBy.DateModified -> playlists?.sortedByDescending { it.dateModified } ?: listOf()
+                null -> playlists ?: listOf()
+            }
+        }.observeForever { dbPlaylists ->
+            _playlists.postValue(dbPlaylists)
         }
     }
 
