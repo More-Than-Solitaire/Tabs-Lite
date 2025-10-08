@@ -79,6 +79,7 @@ fun TabsSearchBar(
                 trailingIcon = {
                     IconButton(onClick = {
                         onQueryChange("")
+                        active = true  // focus input on searchbar
                     }) {
                         if (query.value.isNotEmpty()) {
                             Icon(Icons.Filled.Clear, stringResource(R.string.generic_action_clear))
