@@ -3,6 +3,7 @@ package com.gbros.tabslite.view.songlist
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,28 +25,35 @@ fun SongListItem(
     modifier: Modifier = Modifier,
     song: ITab,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .absolutePadding(5.dp, 5.dp, 5.dp, 5.dp)
-    ) {
-        Column (
-            modifier = Modifier
-                .weight(1f)
-        ){
-            Text(
-                text = song.songName,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = song.artistName,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-        Column {
-            Text(text = song.type)
-            Text(text = String.format(stringResource(id = R.string.tab_version_abbreviation), song.version))
+    Card {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier
+                .absolutePadding(5.dp, 5.dp, 5.dp, 5.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Text(
+                    text = song.songName,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = song.artistName,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            Column {
+                Text(text = song.type)
+                Text(
+                    text = String.format(
+                        stringResource(id = R.string.tab_version_abbreviation),
+                        song.version
+                    )
+                )
+            }
         }
     }
 }
