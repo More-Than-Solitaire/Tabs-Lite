@@ -26,4 +26,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "TabsLite"
-include(":tabslite")
+include(":app")
