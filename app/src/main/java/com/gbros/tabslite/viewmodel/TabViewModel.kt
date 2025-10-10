@@ -752,6 +752,10 @@ class TabViewModel
 
     override val songName: LiveData<String> = tab.map { t -> t?.songName ?: "" }
 
+    override val version: LiveData<Int> = tab.map { t -> t.version }
+
+    override val songVersions: LiveData<List<ITab>> = tab.switchMap { t -> dataAccess.getTabsBySongId(t.songId).map { t -> t } }
+
     override val isFavorite: LiveData<Boolean> = if (idIsPlaylistEntryId) dataAccess.playlistEntryExistsInFavorites(id) else dataAccess.tabExistsInFavoritesLive(id)
 
     /**

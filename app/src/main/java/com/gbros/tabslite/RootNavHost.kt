@@ -35,13 +35,15 @@ fun TabsLiteNavGraph() {
 
         tabScreen (
             onNavigateBack = navController::popBackStack,
-            onNavigateToArtistIdSongList = navController::navigateToArtistIdSongList
+            onNavigateToArtistIdSongList = navController::navigateToArtistIdSongList,
+            onNavigateToTabByTabId = navController::navigateToTab
         )
 
         playlistEntryScreen (
             onNavigateToPlaylistEntry = navController::navigateToPlaylistEntry,
             onNavigateBack = navController::popBackStack,
-            onNavigateToArtistIdSongList = navController::navigateToArtistIdSongList
+            onNavigateToArtistIdSongList = navController::navigateToArtistIdSongList,
+            onNavigateToTabByTabId = navController::navigateToTab
         )
 
         playlistDetailScreen(

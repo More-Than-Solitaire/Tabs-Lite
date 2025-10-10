@@ -7,6 +7,7 @@ import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
+import com.gbros.tabslite.data.tab.ITab
 
 /**
  * The view state for [TabScreen] to control the state of each UI element in the view
@@ -53,6 +54,10 @@ interface ITabViewState {
      * The ID of the song author
      */
     val artistId: LiveData<Int>
+
+    val version: LiveData<Int>
+
+    val songVersions: LiveData<List<ITab>>
 
     /**
      * How many steps up or down this tab's content is transposed
@@ -130,5 +135,4 @@ interface ITabViewState {
      * Whether to display chords as flats or sharps
      */
     val useFlats: LiveData<Boolean>
-
 }

@@ -61,6 +61,7 @@ import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.utilities.KeepScreenOn
@@ -84,7 +85,8 @@ fun NavController.navigateToTab(tabId: Int) {
 
 fun NavGraphBuilder.tabScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToArtistIdSongList: (artistId: Int) -> Unit
+    onNavigateToArtistIdSongList: (artistId: Int) -> Unit,
+    onNavigateToTabByTabId: (id: Int) -> Unit
 ) {
     composable(
         route = TAB_ROUTE_TEMPLATE.format("{$TAB_NAV_ARG}"),
@@ -114,6 +116,7 @@ fun NavGraphBuilder.tabScreen(
         TabScreen(
             viewState = viewModel,
             onNavigateBack = onNavigateBack,
+            onNavigateToTabByTabId = onNavigateToTabByTabId,
             onArtistClicked = onNavigateToArtistIdSongList,
             onPlaylistNextSongClick = viewModel::onPlaylistNextSongClick,
             onPlaylistPreviousSongClick = viewModel::onPlaylistPreviousSongClick,
@@ -156,7 +159,8 @@ fun NavController.navigateToPlaylistEntry(playlistEntryId: Int) {
 fun NavGraphBuilder.playlistEntryScreen(
     onNavigateToPlaylistEntry: (Int) -> Unit,
     onNavigateBack: () -> Unit,
-    onNavigateToArtistIdSongList: (artistId: Int) -> Unit
+    onNavigateToArtistIdSongList: (artistId: Int) -> Unit,
+    onNavigateToTabByTabId: (id: Int) -> Unit
 ) {
     composable(
         route = PLAYLIST_ENTRY_ROUTE,
@@ -185,6 +189,7 @@ fun NavGraphBuilder.playlistEntryScreen(
         TabScreen(
             viewState = viewModel,
             onNavigateBack = onNavigateBack,
+            onNavigateToTabByTabId = onNavigateToTabByTabId,
             onArtistClicked = onNavigateToArtistIdSongList,
             onPlaylistNextSongClick = viewModel::onPlaylistNextSongClick,
             onPlaylistPreviousSongClick = viewModel::onPlaylistPreviousSongClick,
@@ -216,6 +221,7 @@ fun NavGraphBuilder.playlistEntryScreen(
 fun TabScreen(
     viewState: ITabViewState,
     onNavigateBack: () -> Unit,
+    onNavigateToTabByTabId: (id: Int) -> Unit,
     onArtistClicked: (artistId: Int) -> Unit,
     onPlaylistNextSongClick: () -> Unit,
     onPlaylistPreviousSongClick: () -> Unit,
@@ -336,7 +342,10 @@ fun TabScreen(
                 tuning = viewState.tuning.observeAsState("").value,
                 capo = viewState.getCapoText(context = LocalContext.current).observeAsState("").value,
                 key = viewState.key.observeAsState("").value,
-                author = viewState.author.observeAsState("").value
+                author = viewState.author.observeAsState("").value,
+                version = viewState.version.observeAsState(-1).value,
+                songVersions = viewState.songVersions.observeAsState(listOf(Tab(tabId = 198052, version = 3))).value,
+                onNavigateToTabById = onNavigateToTabByTabId
             )
 
             TabTransposeSection(
@@ -451,6 +460,8 @@ private fun TabViewPreview() {
         override val tuning: LiveData<String>,
         override val key: LiveData<String>,
         override val author: LiveData<String>,
+        override val version: LiveData<Int>,
+        override val songVersions: LiveData<List<ITab>>,
         override val transpose: LiveData<Int>,
         override val content: LiveData<AnnotatedString>,
         override val plainTextContent: LiveData<String>,
@@ -483,6 +494,8 @@ private fun TabViewPreview() {
             tuning = MutableLiveData(tab.tuning),
             key = MutableLiveData(tab.tonalityName),
             author = MutableLiveData(tab.artistName),
+            version = MutableLiveData(tab.version),
+            songVersions = MutableLiveData(listOf()),
             transpose = MutableLiveData(tab.transpose),
             content = MutableLiveData(AnnotatedString(tab.content)),
             plainTextContent = MutableLiveData(tab.content),
@@ -570,7 +583,8 @@ private fun TabViewPreview() {
             onInstrumentSelected = { },
             onUseFlatsToggled = { },
             onArtistClicked = { },
-            onExportToPdfClick = { _, _ -> }
+            onExportToPdfClick = { _, _ -> },
+            onNavigateToTabByTabId = { _ -> }
         )
     }
 }
