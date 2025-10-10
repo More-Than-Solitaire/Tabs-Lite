@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         applicationId = "com.gbros.tabslite"
-        minSdk = 31
+        minSdk = 24
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         versionCode = 3700
@@ -75,7 +75,6 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.pdf.viewer)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
