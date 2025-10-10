@@ -1,6 +1,7 @@
 package com.gbros.tabslite.view.tabview
 
 import android.content.ClipData
+import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -58,6 +59,7 @@ fun TabTopAppBar(isFavorite: Boolean,
                  onCreatePlaylist: (title: String, description: String) -> Unit,
                  onPlaylistSelectionChange: (Playlist) -> Unit,
                  onFavoriteButtonClick: () -> Unit,
+                 onExportToPdfClick: (Context) -> Unit
 ) {
     val currentContext = LocalContext.current
 
@@ -163,6 +165,21 @@ fun TabTopAppBar(isFavorite: Boolean,
                         clipboardManager.nativeClipboard.setPrimaryClip(ClipData.newPlainText(title, copyText))
                     }
                 )
+                DropdownMenuItem(
+                    text = {
+                        Row {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(R.drawable.ic_picture_as_pdf),
+                                contentDescription = stringResource(R.string.generic_action_export_to_pdf),
+                            )
+                            Text(text = stringResource(R.string.generic_action_export_to_pdf), modifier = Modifier.padding(top = 2.dp, start = 4.dp))
+                        }
+                    },
+                    onClick = {
+                        showMenu = false
+                        onExportToPdfClick(currentContext)
+                    }
+                )
             }
         }
     )
@@ -201,6 +218,7 @@ private fun TabTopAppBarPreview() {
             onPlaylistSelectionChange = {},
             onNavigateBack = {},
             onReloadClick = {},
+            onExportToPdfClick = {},
             title = ""
         )
     }

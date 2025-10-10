@@ -33,6 +33,7 @@ viewpager2 = "1.1.0"
 workRuntime = "2.10.3"
 chrynanChords = "2.4.1"
 composeExtendedGestures = "3.1"
+pdfViewer = "1.0.0-alpha10"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -74,6 +75,7 @@ org-jetbrains-kotlin-stdlib-jdk8 = { group = "org.jetbrains.kotlin", name = "kot
 org-jetbrains-kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinCoroutines" }
 org-jetbrains-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinCoroutines" }
 org-jetbrains-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerializationJson" }
+androidx-pdf-viewer = { group = "androidx.pdf", name = "pdf-viewer", version.ref = "pdfViewer" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

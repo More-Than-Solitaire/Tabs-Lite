@@ -130,4 +130,5 @@ interface ITabViewState {
      * Whether to display chords as flats or sharps
      */
     val useFlats: LiveData<Boolean>
+
 }

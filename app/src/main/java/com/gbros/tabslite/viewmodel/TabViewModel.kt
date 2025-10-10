@@ -4,8 +4,10 @@ import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
 import android.content.res.Resources.NotFoundException
+import android.graphics.pdf.PdfDocument
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.UriHandler
@@ -22,6 +24,7 @@ import androidx.compose.ui.text.withAnnotation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -228,7 +231,7 @@ class TabViewModel
             while (content.indexOf("[tab]", indexOfEndOfTabBlock) != -1) {  // loop through each [tab] line representing lyrics and the chords to go with them
                 val indexOfStartOfTabBlock = content.indexOf("[tab]", indexOfEndOfTabBlock)
                 // any content before the [tab] block starts (and after the last [/tab] block ended) should be added without custom word-wrapping.  Default wrapping can take care of long lines here.
-                appendChordLine(content.subSequence(indexOfEndOfTabBlock, indexOfStartOfTabBlock), this, colorScheme)
+                appendWrappedChordLine(content.subSequence(indexOfEndOfTabBlock, indexOfStartOfTabBlock), availableWidthInChars, this, colorScheme)
                 indexOfEndOfTabBlock = content.indexOf("[/tab]", indexOfStartOfTabBlock)+6
                 if (indexOfEndOfTabBlock-6 == -1) indexOfEndOfTabBlock = content.length+6
 
@@ -240,7 +243,7 @@ class TabViewModel
             }
             // append anything after the last tab block
             if (indexOfEndOfTabBlock < content.length) {
-                appendChordLine(content.subSequence(indexOfEndOfTabBlock, content.length), this, colorScheme)
+                appendWrappedChordLine(content.subSequence(indexOfEndOfTabBlock, content.length), availableWidthInChars, this, colorScheme)
             }
 
             // add active hyperlinks
@@ -281,10 +284,20 @@ class TabViewModel
     }
 
     /**
+     * Processes and wraps the lines for the chord block, then appends to the annotated string builder.
+     */
+    private fun appendWrappedChordLine(line: CharSequence, availableWidthInChars: UInt, builder: AnnotatedString.Builder, colorScheme: ColorScheme) {
+        val wrappedLines = wrapLine(line.toString(), availableWidthInChars)
+        for (wrappedLine in wrappedLines) {
+            appendChordLine(wrappedLine, builder, colorScheme)
+        }
+    }
+
+    /**
      * Annotate, style, and append a line with chords to the given annotated string builder
      */
     @OptIn(ExperimentalTextApi::class)
-    private fun appendChordLine(line: CharSequence, builder: AnnotatedString.Builder, colorScheme: ColorScheme) {
+    private fun appendChordLine(line: CharSequence, builder: AnnotatedString.Builder, colorScheme: ColorScheme?) {
         val text = line.trimEnd()
         var lastIndex = 0
 
@@ -302,32 +315,59 @@ class TabViewModel
             val chordName = text.subSequence(firstIndex+4 until lastIndex-5)
 
             // append an annotated styled chord
-            builder
-                .withStyle(
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        SpanStyle(
-                            // Only Android 8 and up support variable weight fonts
-                            color = colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Bold,
-                            background = colorScheme.primaryContainer
-                        )
-                    } else {
-                        SpanStyle(
-                            color = colorScheme.onPrimaryContainer,
-                            fontFamily = FontFamily(Font(R.font.roboto_mono_bold)),
-                            background = colorScheme.primaryContainer
-                        )
-                    }
-                ) {
-                    withAnnotation("chord", chordName.toString()) {
-                        append(chordName)
-                    }
+            if (colorScheme == null) {
+                builder.withAnnotation("chord", chordName.toString()) {
+                    append(chordName)
                 }
+            }
+            else {
+                builder
+                    .withStyle(
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            SpanStyle(
+                                // Only Android 8 and up support variable weight fonts
+                                color = colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Bold,
+                                background = colorScheme.primaryContainer
+                            )
+                        } else {
+                            SpanStyle(
+                                color = colorScheme.onPrimaryContainer,
+                                fontFamily = FontFamily(Font(R.font.roboto_mono_bold)),
+                                background = colorScheme.primaryContainer
+                            )
+                        }
+                    ) {
+                        withAnnotation("chord", chordName.toString()) {
+                            append(chordName)
+                        }
+                    }
+            }
         }
 
         // append any remaining non-chords
         builder.append(text.subSequence(lastIndex until text.length).trimEnd())
         builder.append("\n")
+    }
+
+    /**
+     * Take a line and return a list of lines shorter than the available width
+     */
+    private fun wrapLine(line: String, availableWidthInChars: UInt): List<String> {
+        val wrappedLines = mutableListOf<String>()
+        var remainingLine = line
+
+        while (remainingLine != "") {
+            val wordBreakLocation = findSingleLineWordBreakIndex(availableWidthInChars, remainingLine)
+            remainingLine = if (wordBreakLocation < remainingLine.length) {
+                wrappedLines.add(remainingLine.substring(0, wordBreakLocation))
+                remainingLine.substring(wordBreakLocation until remainingLine.length)
+            } else {
+                wrappedLines.add(remainingLine.trimEnd())
+                ""
+            }
+        }
+        return wrappedLines
     }
 
     /**
@@ -364,6 +404,66 @@ class TabViewModel
             wrappedLines.add(line1)
         }
         return wrappedLines
+    }
+
+    /**
+     * Finds a "nice" spot to break a single line.  Ignores \[ch] and \[/ch] tags.  To be used prior to processing chords.
+     *
+     * @param line The line to break.
+     * @param availableWidthInChars The available width in characters.
+     * @return The index of the character to break at.
+     */
+    private fun findSingleLineWordBreakIndex(availableWidthInChars: UInt, line: String): Int {
+        // thanks @Andro https://stackoverflow.com/a/11498125
+        val breakingChars = "‐–〜゠= \t\r\n"  // all the chars that we'll break a line at
+
+        // track fallback line break locations outside of chords (any character but a chord is included)
+        var fallbackLineBreak = 0
+        var currentlyInChord = false
+
+        // start from the start of the line and find each nice word break until the line's too long
+        var wordBreakLocation = 0  // track nice location separately to include ignored characters up to breakpoint but not past shared breakpoint
+        var numIgnoredCharacters = 0  // tags (e.g. [ch][/ch]) will be ignored in character counts since they'll be removed in processing.
+        for (i in 1 ..< availableWidthInChars.toInt()) {
+            // loop through each character and note shared word break locations
+            if (line.length <= i+numIgnoredCharacters) {
+                break
+            }
+
+            // ignore any [ch] or [/ch] tags
+            if (line.length > i+numIgnoredCharacters) {
+                if (line[(i+numIgnoredCharacters)] == '[') {
+                    if (line.length >= (i+numIgnoredCharacters+4) && line.subSequence((i+numIgnoredCharacters), (i+numIgnoredCharacters+4)) == "[ch]") {
+                        numIgnoredCharacters += 4
+                        currentlyInChord = true
+                    }
+                    if (line.length >= (i+numIgnoredCharacters+5) && line.subSequence((i+numIgnoredCharacters), (i+numIgnoredCharacters+5)) == "[/ch]") {
+                        numIgnoredCharacters += 5
+                        currentlyInChord = false
+                    }
+                }
+            }
+
+            if (!currentlyInChord)
+                fallbackLineBreak = i+numIgnoredCharacters  // any character outside of a chord is a fallback linebreak location
+
+            if ((line.length > i+numIgnoredCharacters && breakingChars.contains(line[i+numIgnoredCharacters]))) {
+                wordBreakLocation =i + numIgnoredCharacters
+            }
+        }
+
+        // if no good word break location exists
+        if (wordBreakLocation < 1) {
+            // try to handle nicely by breaking at the last spot outside of a chord
+            wordBreakLocation = if (fallbackLineBreak > 0) {
+                fallbackLineBreak
+            } else {
+                // welp we tried.  Just force the line break at the end of the line.  [ch][/ch] artifacts will show up.
+                availableWidthInChars.toInt()
+            }
+        }
+
+        return wordBreakLocation // give the actual character place the user can break at, prior to processing
     }
 
     /**
@@ -454,6 +554,133 @@ class TabViewModel
         return urlPattern.findAll(s)
     }
 
+    private fun createPdf(): PdfDocument {
+        val doc = PdfDocument()
+        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 page size
+
+        // Margins
+        val leftMargin = 40f
+        val rightMargin = 40f
+        val topMargin = 50f
+        val bottomMargin = 50f
+
+        var currentPageNumber = 1
+
+        fun startNewPage(pageNumber: Int): PdfDocument.Page {
+            val newPageInfo = PdfDocument.PageInfo.Builder(pageInfo.pageWidth, pageInfo.pageHeight, pageNumber).create()
+            return doc.startPage(newPageInfo)
+        }
+
+        var page = startNewPage(currentPageNumber)
+        var canvas = page.canvas
+        var currentY = topMargin
+
+        // draw title
+        val titlePaint = android.graphics.Paint().apply {
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+            textSize = 18f
+            textAlign = android.graphics.Paint.Align.CENTER
+        }
+        val titleX = pageInfo.pageWidth / 2f // center the title on the page
+        canvas.drawText(songName.value ?: "", titleX, currentY, titlePaint)
+        currentY += titlePaint.fontSpacing * 2 // Add some vertical space after the title
+
+        // wrap content
+        val contentPaint = android.graphics.Paint().apply {
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.MONOSPACE, android.graphics.Typeface.NORMAL)
+            textSize = 12f
+        }
+        val availableWidthInPt = pageInfo.pageWidth - leftMargin - rightMargin
+        val ptPerChar = contentPaint.measureText("A")
+        val availableWidthInChars = (availableWidthInPt / ptPerChar).toUInt()
+        val wrappedContent: AnnotatedString = processTabContent(unformattedContent.value ?: "", availableWidthInChars, currentTheme)
+
+        // draw content
+        val chordTextPaint = android.graphics.Paint().apply {
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.MONOSPACE, android.graphics.Typeface.BOLD)
+            textSize = 12f
+            color = android.graphics.Color.BLACK // Chord text color is black
+        }
+        val chordBackgroundPaint = android.graphics.Paint().apply {
+            color = "#FFDEA0".toColorInt() // Use theme color for highlight, or yellow as a fallback
+            style = android.graphics.Paint.Style.FILL
+        }
+        val lineRegex = Regex(".*\\R?") // Regex to match a full line including its newline characters
+        lineRegex.findAll(wrappedContent.text).forEach { lineMatchResult ->
+            val line = lineMatchResult.value.trimEnd() // The actual line content without trailing newline
+            val lineStartOffset = lineMatchResult.range.first
+
+            if (currentY + contentPaint.fontSpacing > pageInfo.pageHeight - bottomMargin) {
+                // Finish current page and start a new one
+                doc.finishPage(page)
+                currentPageNumber++
+                page = startNewPage(currentPageNumber)
+                canvas = page.canvas
+                currentY = topMargin
+            }
+
+            var currentX = leftMargin
+            val lineEndOffset = lineStartOffset + line.length
+
+            // Get chord annotations for the current line
+            val lineAnnotations = wrappedContent.getStringAnnotations("chord", lineStartOffset, lineEndOffset)
+
+            var lastCharIndexInLine = 0
+            for (annotation in lineAnnotations) {
+                // Calculate the start and end of the annotation relative to the current line
+                val annotationStartInLine = annotation.start - lineStartOffset
+                val annotationEndInLine = annotation.end - lineStartOffset
+
+                // Draw text before the chord
+                if (annotationStartInLine > lastCharIndexInLine) {
+                    val textBefore = line.substring(lastCharIndexInLine, annotationStartInLine)
+                    canvas.drawText(textBefore, currentX, currentY, contentPaint)
+                    currentX += contentPaint.measureText(textBefore)
+                }
+
+                // Draw the chord using the annotation's item
+                val chordText = annotation.item
+                val chordWidth = contentPaint.measureText(chordText) // Use contentPaint to measure for correct monospaced width
+
+                // Draw the highlight background
+                val backgroundRect = android.graphics.RectF(currentX - chordTextPaint.letterSpacing, currentY - chordTextPaint.textSize, currentX + chordWidth + chordTextPaint.letterSpacing, currentY + chordTextPaint.descent())
+                canvas.drawRect(backgroundRect, chordBackgroundPaint)
+
+                // Draw the chord text over the highlight
+                canvas.drawText(chordText, currentX, currentY, chordTextPaint)
+                currentX += chordWidth // Advance currentX by the width of the chord
+
+                lastCharIndexInLine = annotationEndInLine
+            }
+
+            // Draw any remaining text after the last annotation
+            if (lastCharIndexInLine < line.length) {
+                val remainingText = line.substring(lastCharIndexInLine)
+                canvas.drawText(remainingText, currentX, currentY, contentPaint)
+            }
+
+            currentY += contentPaint.fontSpacing
+        }
+
+        doc.finishPage(page)
+        return doc    }
+
+    /**
+     * Calculates the number of characters that can fit in the screen.
+     *
+     * @param availableWidthInPx The width of the screen in pixels
+     * @param fontSizeSp The font size in sp
+     * @param currentDensity The current density of the screen
+     *
+     * @return The number of characters that can fit in the screen
+     */
+    private fun getAvailableWidthInChars(availableWidthInPx: Int, fontSizeSp: Float, currentDensity: Density):UInt {
+        val characterHeightInPixels = with (currentDensity) { fontSizeSp.sp.toPx() }
+        val characterWidthInPixels = characterHeightInPixels * ROBOTO_ASPECT_RATIO
+        val charsPerLine = floor(availableWidthInPx / characterWidthInPixels).toUInt()
+        return charsPerLine
+    }
+
 //endregion
 
 //#endregion
@@ -478,7 +705,7 @@ class TabViewModel
      * To calculate the aspect ratio of a ttf font, run this in python (after pip install fonttools):
      * aspect_ratio = ttLib.TTFont(r'path\to\font.ttf')['hmtx']['space'][0] / ttLib.TTFont(r'path\to\font.ttf')['head'].unitsPerEm
      */
-    private val ROBOTO_ASPECT_RATIO = 0.60009765625  // the width-to-height ratio of roboto mono Regular.
+    private val ROBOTO_ASPECT_RATIO = 0.60009765625  // the empirical width-to-height ratio of roboto mono Regular.
 
     private val screenDensity: MutableLiveData<Density> = MutableLiveData()
 
@@ -493,10 +720,7 @@ class TabViewModel
         if (currentWidthPx == null || currentFontSizeSp == null || currentDensity == null) {
             return@combine 0u
         }
-        val characterHeightInPixels = with (currentDensity) { currentFontSizeSp.sp.toPx() }
-        val characterWidthInPixels = characterHeightInPixels * ROBOTO_ASPECT_RATIO
-        val charsPerLine = floor(currentWidthPx / characterWidthInPixels).toUInt()
-        return@combine charsPerLine
+        return@combine getAvailableWidthInChars(currentWidthPx, currentFontSizeSp, currentDensity)
     }
 
     private var currentTheme: ColorScheme? = null
@@ -512,7 +736,6 @@ class TabViewModel
                 null  // fallback to a null selection to let the UI handle the nothing-is-selected case
             }
     }
-
 
     //#endregion
 
@@ -661,6 +884,26 @@ class TabViewModel
     //#endregion
 
     //#region event handling
+    fun onExportToPdfClick(context: Context) {
+        val pdfDoc = createPdf()
+
+        // save the document to file
+        try {
+            val songName = this@TabViewModel.songName.value ?: "tabslite-export"
+            val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
+            // Sanitize the song title to create a valid filename
+            val fileName = "${songName.replace("[^a-zA-Z0-9.-]", "")}.pdf"
+            val file = java.io.File(downloadsDir, fileName)
+            val fos = java.io.FileOutputStream(file)
+            pdfDoc.writeTo(fos)
+            pdfDoc.close()
+            fos.close()
+            Toast.makeText(context, "PDF saved to Downloads", Toast.LENGTH_LONG).show()
+        } catch (e: java.io.IOException) {
+            e.printStackTrace()
+            Toast.makeText(context, "Error saving PDF: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
 
     fun onPlaylistNextSongClick() {
         val currentTab = tab.value
@@ -849,6 +1092,10 @@ class TabViewModel
         }
     }
 
+    /**
+     * Handle user toggling between flats and sharps by converting all chords to use flats or sharps
+     * depending on the passed parameter
+     */
     fun onUseFlatsToggled(useFlats: Boolean) {
         _chordDetailsState.value = LoadingState.Loading
         // use the transpose function to force the correct flat/sharp

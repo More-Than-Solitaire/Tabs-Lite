@@ -131,7 +131,8 @@ fun NavGraphBuilder.tabScreen(
             onAddToPlaylist = viewModel::onAddToPlaylist,
             onCreatePlaylist = viewModel::onCreatePlaylist,
             onInstrumentSelected = viewModel::onInstrumentSelected,
-            onUseFlatsToggled = viewModel::onUseFlatsToggled
+            onUseFlatsToggled = viewModel::onUseFlatsToggled,
+            onExportToPdfClick = viewModel::onExportToPdfClick
         )
     }
 }
@@ -201,7 +202,8 @@ fun NavGraphBuilder.playlistEntryScreen(
             onAddToPlaylist = viewModel::onAddToPlaylist,
             onCreatePlaylist = viewModel::onCreatePlaylist,
             onInstrumentSelected = viewModel::onInstrumentSelected,
-            onUseFlatsToggled = viewModel::onUseFlatsToggled
+            onUseFlatsToggled = viewModel::onUseFlatsToggled,
+            onExportToPdfClick = viewModel::onExportToPdfClick
         )
     }
 }
@@ -232,6 +234,7 @@ fun TabScreen(
     onCreatePlaylist: (title: String, description: String) -> Unit,
     onInstrumentSelected: (instrument: Instrument) -> Unit,
     onUseFlatsToggled: (useFlats: Boolean) -> Unit,
+    onExportToPdfClick: (Context) -> Unit
 ) {
     // handle autoscroll
     val scrollState = rememberScrollState()
@@ -302,6 +305,7 @@ fun TabScreen(
             onCreatePlaylist = onCreatePlaylist,
             onPlaylistSelectionChange = onAddPlaylistDialogPlaylistSelected,
             selectPlaylistConfirmButtonEnabled = viewState.addToPlaylistDialogConfirmButtonEnabled.observeAsState(false).value,
+            onExportToPdfClick = onExportToPdfClick
         )
 
         Column {
@@ -563,7 +567,8 @@ private fun TabViewPreview() {
             onZoom = { },
             onInstrumentSelected = { },
             onUseFlatsToggled = { },
-            onArtistClicked = { }
+            onArtistClicked = { },
+            onExportToPdfClick = { }
         )
     }
 }
