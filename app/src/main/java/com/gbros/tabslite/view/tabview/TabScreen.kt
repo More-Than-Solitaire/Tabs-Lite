@@ -1,6 +1,8 @@
 package com.gbros.tabslite.view.tabview
 
+import android.content.ContentResolver
 import android.content.Context
+import android.net.Uri
 import android.text.Annotation
 import android.text.SpannedString
 import android.util.Log
@@ -234,7 +236,7 @@ fun TabScreen(
     onCreatePlaylist: (title: String, description: String) -> Unit,
     onInstrumentSelected: (instrument: Instrument) -> Unit,
     onUseFlatsToggled: (useFlats: Boolean) -> Unit,
-    onExportToPdfClick: (Context) -> Unit
+    onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit
 ) {
     // handle autoscroll
     val scrollState = rememberScrollState()
@@ -568,7 +570,7 @@ private fun TabViewPreview() {
             onInstrumentSelected = { },
             onUseFlatsToggled = { },
             onArtistClicked = { },
-            onExportToPdfClick = { }
+            onExportToPdfClick = { _, _ -> }
         )
     }
 }

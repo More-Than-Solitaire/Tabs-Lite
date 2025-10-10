@@ -2,12 +2,13 @@ package com.gbros.tabslite.viewmodel
 
 import android.content.ActivityNotFoundException
 import android.content.ClipData
+import android.content.ContentResolver
 import android.content.Context
 import android.content.res.Resources.NotFoundException
 import android.graphics.pdf.PdfDocument
+import android.net.Uri
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.UriHandler
@@ -554,6 +555,9 @@ class TabViewModel
         return urlPattern.findAll(s)
     }
 
+    /**
+     * Create a PDF document from the current tab
+     */
     private fun createPdf(): PdfDocument {
         val doc = PdfDocument()
         val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 page size
@@ -582,7 +586,8 @@ class TabViewModel
             textAlign = android.graphics.Paint.Align.CENTER
         }
         val titleX = pageInfo.pageWidth / 2f // center the title on the page
-        canvas.drawText(songName.value ?: "", titleX, currentY, titlePaint)
+        val title = "${songName.value} - ${author.value}"
+        canvas.drawText(title, titleX, currentY, titlePaint)
         currentY += titlePaint.fontSpacing * 2 // Add some vertical space after the title
 
         // wrap content
@@ -884,24 +889,21 @@ class TabViewModel
     //#endregion
 
     //#region event handling
-    fun onExportToPdfClick(context: Context) {
-        val pdfDoc = createPdf()
 
-        // save the document to file
-        try {
-            val songName = this@TabViewModel.songName.value ?: "tabslite-export"
-            val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
-            // Sanitize the song title to create a valid filename
-            val fileName = "${songName.replace("[^a-zA-Z0-9.-]", "")}.pdf"
-            val file = java.io.File(downloadsDir, fileName)
-            val fos = java.io.FileOutputStream(file)
-            pdfDoc.writeTo(fos)
-            pdfDoc.close()
-            fos.close()
-            Toast.makeText(context, "PDF saved to Downloads", Toast.LENGTH_LONG).show()
-        } catch (e: java.io.IOException) {
-            e.printStackTrace()
-            Toast.makeText(context, "Error saving PDF: ${e.message}", Toast.LENGTH_LONG).show()
+    fun onExportToPdfClick(exportFile: Uri, contentResolver: ContentResolver) {
+        val exportJob = CoroutineScope(Dispatchers.IO).async {
+            val pdfDoc = createPdf()
+            contentResolver.openOutputStream(exportFile).use { outputStream ->
+                pdfDoc.writeTo(outputStream)
+                pdfDoc.close()
+                outputStream?.flush()
+            }
+        }
+
+        exportJob.invokeOnCompletion { ex ->
+            if (ex != null) {
+                Log.e(TAG, "Unexpected error during playlist export: ${ex.message}")
+            }
         }
     }
 

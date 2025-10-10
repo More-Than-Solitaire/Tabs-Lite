@@ -1,8 +1,12 @@
 package com.gbros.tabslite.view.tabview
 
+import android.app.Activity.RESULT_OK
 import android.content.ClipData
-import android.content.Context
+import android.content.ContentResolver
 import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -59,7 +63,7 @@ fun TabTopAppBar(isFavorite: Boolean,
                  onCreatePlaylist: (title: String, description: String) -> Unit,
                  onPlaylistSelectionChange: (Playlist) -> Unit,
                  onFavoriteButtonClick: () -> Unit,
-                 onExportToPdfClick: (Context) -> Unit
+                 onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit
 ) {
     val currentContext = LocalContext.current
 
@@ -68,6 +72,14 @@ fun TabTopAppBar(isFavorite: Boolean,
 
     // remember whether the Add To Playlist dialog is shown currently
     var showAddToPlaylistDialog by remember { mutableStateOf(false) }
+
+    // handle pdf export
+    val contentResolver = LocalContext.current.contentResolver
+    val exportDataFilePickerActivityLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK && result.data?.data != null) {
+            onExportToPdfClick(result.data!!.data!!, contentResolver)
+        } // else: user cancelled the action
+    }
 
     val topAppBarState = rememberTopAppBarState()
     TopAppBar(
@@ -177,7 +189,14 @@ fun TabTopAppBar(isFavorite: Boolean,
                     },
                     onClick = {
                         showMenu = false
-                        onExportToPdfClick(currentContext)
+                        // handle pdf export
+                        val exportFileIntent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = "application/pdf"
+                            putExtra(Intent.EXTRA_TITLE, "$title.pdf")
+
+                        }
+                        exportDataFilePickerActivityLauncher.launch(exportFileIntent)
                     }
                 )
             }
@@ -218,7 +237,7 @@ private fun TabTopAppBarPreview() {
             onPlaylistSelectionChange = {},
             onNavigateBack = {},
             onReloadClick = {},
-            onExportToPdfClick = {},
+            onExportToPdfClick = {_, _ ->},
             title = ""
         )
     }
