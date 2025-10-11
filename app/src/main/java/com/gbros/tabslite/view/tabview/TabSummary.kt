@@ -54,7 +54,7 @@ fun TabSummary(
     onNavigateToTabById: (Int) -> Unit) {
     var versionDropdownExpanded by remember { mutableStateOf(false) }
 
-    Row(
+    Column(
         modifier = Modifier
             .windowInsetsPadding(
                 WindowInsets(
@@ -67,36 +67,30 @@ fun TabSummary(
                 )
             )
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column {
-            Text(
-                text = stringResource(id = R.string.tab_difficulty, difficulty),
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = stringResource(id = R.string.tab_tuning, tuning),
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = stringResource(id = R.string.tab_capo, capo),
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = stringResource(id = R.string.tab_key, key),
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = stringResource(id = R.string.tab_author, author),
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = "${songVersions.size} versions",
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
-        Column {
+        Row (
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = stringResource(id = R.string.tab_difficulty, difficulty),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = stringResource(id = R.string.tab_tuning, tuning),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = stringResource(id = R.string.tab_capo, capo),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = stringResource(id = R.string.tab_key, key),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
             // versions dropdown to switch versions of this song
             ExposedDropdownMenuBox(
                 expanded = versionDropdownExpanded,
@@ -124,12 +118,13 @@ fun TabSummary(
                                     modifier = Modifier.height(24.dp)
                                 ) {
                                     Text(stringResource(R.string.tab_version_number, selectionOption.version))
-                                    Spacer(Modifier.weight(1f))
-                                    val numStars = String.format(Locale.getDefault(), "%.1f", selectionOption.rating)
-                                    Text(numStars, modifier = Modifier.padding(horizontal = 4.dp))
-                                    ProportionallyFilledStar(fillPercentage = (selectionOption.rating / 5.0).toFloat().coerceIn(0f, 1f),
-                                        modifier = Modifier.width(18.dp))
-                                    Text("(${roundToThousands(selectionOption.votes)})", modifier = Modifier.padding(start = 4.dp))
+                                    if (selectionOption.votes > 0) {
+                                        Spacer(Modifier.weight(1f))
+                                        val numStars = String.format(Locale.getDefault(), "%.1f", selectionOption.rating)
+                                        Text(numStars, modifier = Modifier.padding(horizontal = 4.dp))
+                                        ProportionallyFilledStar(fillPercentage = (selectionOption.rating / 5.0).toFloat().coerceIn(0f, 1f), modifier = Modifier.width(18.dp))
+                                        Text("(${roundToThousands(selectionOption.votes)})", modifier = Modifier.padding(start = 4.dp))
+                                    }
                                 }
                             },
                             onClick = {
@@ -141,6 +136,12 @@ fun TabSummary(
                 }
             }
         }
+
+        // author can be long so don't size the version dropdown based on this content
+        Text(
+            text = stringResource(id = R.string.tab_author, author),
+            color = MaterialTheme.colorScheme.onBackground
+        )
     }
 }
 
