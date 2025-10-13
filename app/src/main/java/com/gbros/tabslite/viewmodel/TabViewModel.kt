@@ -223,10 +223,7 @@ class TabViewModel
      * every chord with tag "chord"
      */
     @OptIn(ExperimentalTextApi::class)
-    private fun processTabContent(content: String, availableWidthInChars: UInt, colorScheme: ColorScheme?): AnnotatedString {
-        if (colorScheme == null) {
-            return AnnotatedString("")  // skip processing until color scheme has been set
-        }
+    private fun processTabContent(content: String, availableWidthInChars: UInt, colorScheme: ColorScheme): AnnotatedString {
         val processedTab = buildAnnotatedString {
             var indexOfEndOfTabBlock = 0
             while (content.indexOf("[tab]", indexOfEndOfTabBlock) != -1) {  // loop through each [tab] line representing lyrics and the chords to go with them
@@ -559,6 +556,7 @@ class TabViewModel
      * Create a PDF document from the current tab
      */
     private fun createPdf(): PdfDocument {
+        val currentColors = currentTheme.value ?: return PdfDocument()
         val doc = PdfDocument()
         val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 page size
 
@@ -598,7 +596,7 @@ class TabViewModel
         val availableWidthInPt = pageInfo.pageWidth - leftMargin - rightMargin
         val ptPerChar = contentPaint.measureText("A")
         val availableWidthInChars = (availableWidthInPt / ptPerChar).toUInt()
-        val wrappedContent: AnnotatedString = processTabContent(unformattedContent.value ?: "", availableWidthInChars, currentTheme)
+        val wrappedContent: AnnotatedString = processTabContent(unformattedContent.value ?: "", availableWidthInChars, currentColors)
 
         // draw content
         val chordTextPaint = android.graphics.Paint().apply {
@@ -728,7 +726,7 @@ class TabViewModel
         return@combine getAvailableWidthInChars(currentWidthPx, currentFontSizeSp, currentDensity)
     }
 
-    private var currentTheme: ColorScheme? = null
+    private val currentTheme: MutableLiveData<ColorScheme> = MutableLiveData()
 
     override val allPlaylists: LiveData<List<Playlist>> = dataAccess.getLivePlaylists()
 
@@ -813,9 +811,9 @@ class TabViewModel
         txt.replace("[tab]", "").replace("[/tab]", "").replace("[ch]", "").replace("[/ch]", "")
     }
 
-    override val content: LiveData<AnnotatedString> = unformattedContent.combine(availableWidthInChars) { unformatted, availableWidth ->
-        if (unformatted != null && availableWidth != null) {
-            processTabContent(unformatted, availableWidth, currentTheme )
+    override val content: LiveData<AnnotatedString> = unformattedContent.combine(availableWidthInChars, currentTheme) { unformatted, availableWidth, theme ->
+        if (unformatted != null && availableWidth != null && availableWidth > 0u && theme != null) {
+            processTabContent(unformatted, availableWidth, theme)
         } else {
             Log.d(TAG, "No content yet")
             AnnotatedString("")
@@ -1067,9 +1065,17 @@ class TabViewModel
      * Save the current screen details to enable custom wrapping
      */
     fun onScreenMeasured(screenWidth: Int, localDensity: Density, colorScheme: ColorScheme) {
-        screenDensity.value = localDensity
-        screenWidthInPx.value = screenWidth
-        currentTheme = colorScheme
+        if (screenDensity.value != localDensity){
+            screenDensity.value = localDensity
+        }
+
+        if (screenWidthInPx.value != screenWidth) {
+            screenWidthInPx.value = screenWidth
+        }
+
+        if (currentTheme.value != colorScheme) {
+            currentTheme.value = colorScheme
+        }
     }
 
     /**
