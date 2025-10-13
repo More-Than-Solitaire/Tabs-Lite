@@ -17,6 +17,7 @@ import com.gbros.tabslite.view.songversionlist.songVersionScreen
 import com.gbros.tabslite.view.tabview.navigateToPlaylistEntry
 import com.gbros.tabslite.view.tabview.navigateToTab
 import com.gbros.tabslite.view.tabview.playlistEntryScreen
+import com.gbros.tabslite.view.tabview.swapToTab
 import com.gbros.tabslite.view.tabview.tabScreen
 
 /**
@@ -36,14 +37,14 @@ fun TabsLiteNavGraph() {
         tabScreen (
             onNavigateBack = navController::popBackStack,
             onNavigateToArtistIdSongList = navController::navigateToArtistIdSongList,
-            onNavigateToTabByTabId = navController::navigateToTab
+            onNavigateToTabVersionById = navController::swapToTab
         )
 
         playlistEntryScreen (
             onNavigateToPlaylistEntry = navController::navigateToPlaylistEntry,
             onNavigateBack = navController::popBackStack,
             onNavigateToArtistIdSongList = navController::navigateToArtistIdSongList,
-            onNavigateToTabByTabId = navController::navigateToTab
+            onNavigateToTabVersionById = navController::swapToTab
         )
 
         playlistDetailScreen(

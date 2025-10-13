@@ -83,10 +83,19 @@ fun NavController.navigateToTab(tabId: Int) {
     navigate(TAB_ROUTE_TEMPLATE.format(tabId.toString()))
 }
 
+/**
+ * Navigate to a tab by tab ID, but replace the current item in the back stack.
+ */
+fun NavController.swapToTab(tabId: Int) {
+    navigate(TAB_ROUTE_TEMPLATE.format(tabId.toString())) {
+        popUpTo(route = TAB_ROUTE_TEMPLATE.format("{$TAB_NAV_ARG}")) { inclusive = true }
+    }
+}
+
 fun NavGraphBuilder.tabScreen(
     onNavigateBack: () -> Unit,
     onNavigateToArtistIdSongList: (artistId: Int) -> Unit,
-    onNavigateToTabByTabId: (id: Int) -> Unit
+    onNavigateToTabVersionById: (id: Int) -> Unit
 ) {
     composable(
         route = TAB_ROUTE_TEMPLATE.format("{$TAB_NAV_ARG}"),
@@ -116,7 +125,7 @@ fun NavGraphBuilder.tabScreen(
         TabScreen(
             viewState = viewModel,
             onNavigateBack = onNavigateBack,
-            onNavigateToTabByTabId = onNavigateToTabByTabId,
+            onNavigateToTabByTabId = onNavigateToTabVersionById,
             onArtistClicked = onNavigateToArtistIdSongList,
             onPlaylistNextSongClick = viewModel::onPlaylistNextSongClick,
             onPlaylistPreviousSongClick = viewModel::onPlaylistPreviousSongClick,
@@ -160,7 +169,7 @@ fun NavGraphBuilder.playlistEntryScreen(
     onNavigateToPlaylistEntry: (Int) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToArtistIdSongList: (artistId: Int) -> Unit,
-    onNavigateToTabByTabId: (id: Int) -> Unit
+    onNavigateToTabVersionById: (id: Int) -> Unit
 ) {
     composable(
         route = PLAYLIST_ENTRY_ROUTE,
@@ -189,7 +198,7 @@ fun NavGraphBuilder.playlistEntryScreen(
         TabScreen(
             viewState = viewModel,
             onNavigateBack = onNavigateBack,
-            onNavigateToTabByTabId = onNavigateToTabByTabId,
+            onNavigateToTabByTabId = onNavigateToTabVersionById,
             onArtistClicked = onNavigateToArtistIdSongList,
             onPlaylistNextSongClick = viewModel::onPlaylistNextSongClick,
             onPlaylistPreviousSongClick = viewModel::onPlaylistPreviousSongClick,
