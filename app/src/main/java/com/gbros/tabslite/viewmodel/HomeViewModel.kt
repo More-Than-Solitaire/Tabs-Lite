@@ -11,6 +11,7 @@ import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Preference
+import com.gbros.tabslite.data.ThemeSelection
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.playlist.PlaylistFileExportType
 import com.gbros.tabslite.utilities.TAG
@@ -76,6 +77,12 @@ class HomeViewModel
         }
     }
 
+    /**
+     * The user's selected app-wide theme. Defaults to System, but can be forced to light or dark
+     */
+    override val selectedAppTheme: LiveData<ThemeSelection> = dataAccess.getLivePreference(Preference.APP_THEME).map { themePreference ->
+        themePreference?.let { ThemeSelection.valueOf(themePreference.value) } ?: ThemeSelection.System
+    }
 
     //#endregion
 
@@ -109,6 +116,15 @@ class HomeViewModel
     //#endregion
 
     //#region public methods
+
+    /**
+     * Set the app-wide theme (light, dark, or system) by saving it to preferences
+     */
+    fun setAppTheme(theme: ThemeSelection) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataAccess.upsert(Preference(Preference.APP_THEME, theme.name))
+        }
+    }
 
     /**
      * handle playlist sorting

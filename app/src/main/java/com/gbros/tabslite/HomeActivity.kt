@@ -9,10 +9,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.map
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Preference
+import com.gbros.tabslite.data.ThemeSelection
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.Tab
@@ -34,9 +37,12 @@ class HomeActivity : ComponentActivity() {
 
         val dataAccess = AppDatabase.getInstance(applicationContext).dataAccess()
         launchInitialFetchAndSetupJobs(dataAccess)
+        val darkModePref = dataAccess.getLivePreference(Preference.APP_THEME).map { themePref ->
+            return@map ThemeSelection.valueOf(themePref?.value ?: ThemeSelection.System.name)
+        }
 
         setContent {
-            AppTheme {
+            AppTheme(theme = darkModePref.observeAsState(ThemeSelection.System).value) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -95,6 +101,7 @@ class HomeActivity : ComponentActivity() {
         dataAccess.insert(Preference(Preference.AUTOSCROLL_DELAY, .5f.toString()))
         dataAccess.insert(Preference(Preference.INSTRUMENT, Instrument.Guitar.name))
         dataAccess.insert(Preference(Preference.USE_FLATS, false.toString()))
+        dataAccess.insert(Preference(Preference.APP_THEME, ThemeSelection.System.name))
     }
 
     /**

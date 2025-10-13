@@ -54,5 +54,10 @@ data class Preference(
          * The preference name for whether to use the flats forms of chords vs sharps
          */
         const val USE_FLATS: String = "USE_FLATS"
+
+        /**
+         * The preference name for the [ThemeSelection] to use
+         */
+        const val APP_THEME: String = "APP_THEME"
     }
 }

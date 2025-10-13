@@ -62,6 +62,7 @@ import androidx.navigation.compose.composable
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.ThemeSelection
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
@@ -105,6 +106,7 @@ fun NavGraphBuilder.homeScreen(
             onExportPlaylists = viewModel::exportPlaylists,
             onImportPlaylists = viewModel::importPlaylists,
             onCreatePlaylist = viewModel::createPlaylist,
+            onThemeSelectionChange = viewModel::setAppTheme,
             navigateToPlaylistById = onNavigateToPlaylist,
             navigateToTabByTabId = onNavigateToTab
         )
@@ -125,6 +127,7 @@ fun HomeScreen(
     onExportPlaylists: (destinationFile: Uri, contentResolver: ContentResolver) -> Unit,
     onImportPlaylists: (sourceFile: Uri, contentResolver: ContentResolver) -> Unit,
     onCreatePlaylist: (title: String, description: String) -> Unit,
+    onThemeSelectionChange: (ThemeSelection) -> Unit,
     navigateToTabByTabId: (id: Int) -> Unit,
     navigateToPlaylistById: (id: Int) -> Unit
 ) {
@@ -160,6 +163,7 @@ fun HomeScreen(
 
     if (showAboutDialog) {
         AboutDialog(
+            selectedTheme = viewState.selectedAppTheme.observeAsState(ThemeSelection.System).value,
             onDismissRequest = { showAboutDialog = false },
             onExportPlaylistsClicked = {
                 showAboutDialog = false
@@ -177,7 +181,8 @@ fun HomeScreen(
 
                 // launch a file picker to choose the file to import
                 importPlaylistsPickerLauncher.launch("application/json")
-            }
+            },
+            onSwitchThemeMode = onThemeSelectionChange
         )
     }
 
@@ -381,7 +386,8 @@ private fun HomeScreenPreview() {
         playlistImportState = MutableLiveData(LoadingState.Loading),
         playlistImportProgress = MutableLiveData(0.6f),
         playlists = MutableLiveData(listOf()),
-        playlistsSortBy = MutableLiveData(PlaylistsSortBy.Name)
+        playlistsSortBy = MutableLiveData(PlaylistsSortBy.Name),
+        selectedAppTheme = MutableLiveData(ThemeSelection.System)
     )
 
     val songListState = SongListViewStateForTest(
@@ -410,6 +416,7 @@ private fun HomeScreenPreview() {
             onExportPlaylists = {_,_->},
             onImportPlaylists = {_,_->},
             onCreatePlaylist = {_,_->},
+            onThemeSelectionChange = {},
             navigateToTabByTabId = {},
             navigateToPlaylistById = {}
         )
@@ -420,7 +427,8 @@ private class HomeViewStateForTest(
     override val playlistImportProgress: LiveData<Float>,
     override val playlistImportState: LiveData<LoadingState>,
     override val playlists: LiveData<List<Playlist>>,
-    override val playlistsSortBy: LiveData<PlaylistsSortBy>
+    override val playlistsSortBy: LiveData<PlaylistsSortBy>,
+    override val selectedAppTheme: LiveData<ThemeSelection>
 ) : IHomeViewState
 
 private class SongListViewStateForTest(

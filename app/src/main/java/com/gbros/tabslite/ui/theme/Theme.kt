@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import com.gbros.tabslite.data.ThemeSelection
 
 
 private val LightColors = lightColorScheme(
@@ -74,9 +75,14 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun AppTheme(
-    useDarkTheme: Boolean = isSystemInDarkTheme(),
+    theme: ThemeSelection = ThemeSelection.System,
     content: @Composable() () -> Unit
 ) {
+    val useDarkTheme = when (theme) {
+        ThemeSelection.ForceLight -> false
+        ThemeSelection.ForceDark -> true
+        ThemeSelection.System -> isSystemInDarkTheme()
+    }
     val colors = if (!useDarkTheme) {
         LightColors
     } else {

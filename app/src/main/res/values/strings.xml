@@ -15,6 +15,10 @@
     <string name="app_icon_description_half_star" translation_description="Accessibility text for a half star icon">Half star</string>
     <string name="app_icon_description_filled_star" translation_description="Accessibility text for a full star icon">Filled star</string>
 
+    <string name="theme_selection_system" translation_description="Title of the theme option that means use dark mode when the phone is set to dark mode, and light when the phone is set to light mode. This is the default theme option.">Use system</string>
+    <string name="theme_selection_light" translation_description="Title of the theme option that means use light mode regardless of system setting.">Force light</string>
+    <string name="theme_selection_dark" translation_description="Title of the theme option that means use dark mode regardless of system setting.">Force dark</string>
+
     <string name="title_favorites_playlist" translation_description="The title of the Favorites playlist/home tab">Favorites</string>
     <string name="title_popular_playlist" translation_description="The title of the Popular playlist/home tab">Popular</string>
     <string name="title_playlists_page" translation_description="The title of the Playlists home tab">Playlists</string>
