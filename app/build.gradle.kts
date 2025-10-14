@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinSerialization)
@@ -7,6 +9,12 @@ plugins {
     alias(libs.plugins.daggerHilt)
     alias(libs.plugins.navigationSafeargs)
     alias(libs.plugins.compose.compiler)
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
+    }
 }
 
 android {
@@ -44,10 +52,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    kotlinOptions {
-        jvmTarget = "21"
-    }
-
     dependenciesInfo {
         includeInApk = false // don"t include Google signed dependency tree in APK to allow the app to be compatible with FDroid
         includeInBundle = true
@@ -80,8 +84,6 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.glide)
-    ksp(libs.glide.compiler)
     implementation(libs.compose.extended.gestures)
     implementation(libs.google.android.material)
     implementation(libs.google.code.gson)

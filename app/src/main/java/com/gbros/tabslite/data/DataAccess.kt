@@ -37,12 +37,14 @@ import kotlinx.coroutines.launch
 interface DataAccess {
     //#region tab table
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs LEFT JOIN (SELECT IFNULL(transpose, null) as transpose, tab_id FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID) ON tab_id = id WHERE id = :tabId")
     fun getTab(tabId: Int): LiveData<Tab>
 
     @Query("SELECT * FROM tabs WHERE id = :tabId")
     suspend fun getTabInstance(tabId: Int): TabDataType
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id LEFT JOIN (SELECT id AS playlist_id, user_created, title, date_created, date_modified, description FROM playlist ) AS playlist ON playlist_entry.playlist_id = playlist.playlist_id WHERE playlist_entry.entry_id = :playlistEntryId")
     fun getTabFromPlaylistEntryId(playlistEntryId: Int): LiveData<TabWithDataPlaylistEntry?>
 
@@ -56,6 +58,7 @@ interface DataAccess {
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id INNER JOIN playlist ON playlist_entry.playlist_id = playlist.id WHERE playlist_entry.playlist_id = :playlistId")
     fun getPlaylistTabs(playlistId: Int): LiveData<List<TabWithDataPlaylistEntry>>
 
+    @RewriteQueriesToDropUnusedColumns
     fun getSortedPlaylistTabs(playlistId: Int): LiveData<List<TabWithDataPlaylistEntry>> = getPlaylistTabs(playlistId).map { unsorted ->
         try {
             DataPlaylistEntry.sortLinkedList(unsorted)
