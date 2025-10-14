@@ -584,7 +584,7 @@ class TabViewModel
             textAlign = android.graphics.Paint.Align.CENTER
         }
         val titleX = pageInfo.pageWidth / 2f // center the title on the page
-        val title = "${songName.value} - ${author.value}"
+        val title = "${songName.value} - ${artist.value}"
         canvas.drawText(title, titleX, currentY, titlePaint)
         currentY += titlePaint.fontSpacing * 2 // Add some vertical space after the title
 
@@ -666,7 +666,8 @@ class TabViewModel
         }
 
         doc.finishPage(page)
-        return doc    }
+        return doc
+    }
 
     /**
      * Calculates the number of characters that can fit in the screen.
