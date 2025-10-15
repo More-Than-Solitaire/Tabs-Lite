@@ -1,5 +1,6 @@
 package com.gbros.tabslite.view.searchresultsonglist
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +48,7 @@ import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.view.card.ErrorCard
 import com.gbros.tabslite.view.card.InfoCard
 import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
@@ -69,6 +71,7 @@ fun NavController.navigateToSearch(query: String) {
  * NavController extension to allow navigation to a list of songs by a specified artist ID
  */
 fun NavController.navigateToArtistIdSongList(artistId: Int) {
+    Log.d(TAG, "navigating to artist $artistId song list")
     navigate(ARTIST_SONG_LIST_TEMPLATE.format(artistId.toString()))
 }
 

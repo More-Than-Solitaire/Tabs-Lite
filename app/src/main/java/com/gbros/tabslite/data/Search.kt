@@ -54,7 +54,7 @@ class Search(
      * @throws [SearchDidYouMeanException] if no results, but there's a suggested query
      */
     private suspend fun getSearchResults(page: Int, query: String, artistId: Int?): List<ITab> {
-        Log.d(TAG, "starting search '$query' page $page")
+        Log.d(TAG, "starting search '$query' page $page artist $artistId")
         val searchResult = UgApi.search(query, artistId, page)  // always search the next page that hasn't been loaded yet
 
         return if (!searchResult.didYouMean.isNullOrBlank()) {

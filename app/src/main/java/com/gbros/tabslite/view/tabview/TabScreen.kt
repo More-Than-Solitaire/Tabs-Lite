@@ -287,7 +287,7 @@ fun TabScreen(
                                 link = LinkAnnotation.Clickable(
                                     tag = "artistId",
                                     linkInteractionListener = LinkInteractionListener {
-                                        Log.d(TAG, "artist clicked")
+                                        Log.d(TAG, "artist $artistId ($artistName) clicked")
                                         onArtistClicked(artistId)
                                     }
                                 )) {
