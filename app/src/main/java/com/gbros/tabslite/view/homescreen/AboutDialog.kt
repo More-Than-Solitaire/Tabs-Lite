@@ -102,7 +102,7 @@ fun AboutDialog(
                         .padding(all = 8.dp)
                         .fillMaxWidth()
                 ) {
-                    Text(modifier = Modifier.padding(all = 8.dp), text = "Theming")
+                    Text(modifier = Modifier.padding(all = 8.dp), text = stringResource(R.string.theme_selection_title))
                     Spacer(modifier = Modifier.weight(1f))
                     // versions dropdown to switch versions of this song
                     var themeDropdownExpanded by remember { mutableStateOf(false) }
