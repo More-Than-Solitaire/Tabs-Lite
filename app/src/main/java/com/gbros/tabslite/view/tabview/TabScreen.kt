@@ -29,7 +29,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -237,7 +237,7 @@ fun TabScreen(
     onTransposeUpClick: () -> Unit,
     onTransposeDownClick: () -> Unit,
     onTransposeResetClick: () -> Unit,
-    onTextClick: (Int, UriHandler, ClipboardManager) -> Unit,
+    onTextClick: (Int, UriHandler, Clipboard) -> Unit,
     onScreenMeasured: (screenWidth: Int, localDensity: Density, colorScheme: ColorScheme) -> Unit,
     onZoom: (zoomFactor: Float) -> Unit,
     onChordDetailsDismiss: () -> Unit,

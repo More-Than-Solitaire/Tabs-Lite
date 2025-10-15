@@ -6,15 +6,14 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.ClipboardManager
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.Clipboard
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
@@ -43,13 +42,10 @@ fun TabText(
     modifier: Modifier = Modifier,
     text: AnnotatedString,
     fontSizeSp: Float,
-    onTextClick: (clickLocation: Int, uriHandler: UriHandler, clipboardManager: ClipboardManager) -> Unit,
+    onTextClick: (clickLocation: Int, uriHandler: UriHandler, clipboardManager: Clipboard) -> Unit,
     onScreenMeasured: (screenWidth: Int, localDensity: Density, colorScheme: ColorScheme) -> Unit,
     onZoom: (zoomFactor: Float) -> Unit
 ){
-    // dynamic variables
-    var measuredWidth by remember { mutableIntStateOf(0) }
-
     val font = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Only Android 8+ supports variable weight fonts
@@ -61,7 +57,7 @@ fun TabText(
     val localDensity = LocalDensity.current
     val colorScheme = MaterialTheme.colorScheme
     val uriHandler = LocalUriHandler.current
-    val clipboardManager = LocalClipboardManager.current
+    val clipboardManager = LocalClipboard.current
 
     ClickableText(
         text = text,
@@ -79,7 +75,6 @@ fun TabText(
                 })
             }
             .onGloballyPositioned { layoutResult ->
-                measuredWidth = layoutResult.size.width
                 onScreenMeasured(layoutResult.size.width, localDensity, colorScheme)
             },
         onClick = { clickLocation ->

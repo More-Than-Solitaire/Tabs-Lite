@@ -10,7 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.compose.material3.ColorScheme
-import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -962,7 +962,7 @@ class TabViewModel
      * Callback for when a chord is clicked, to display the chord fingering diagram
      */
     @OptIn(ExperimentalTextApi::class)
-    fun onContentClick(clickLocation: Int, uriHandler: UriHandler, clipboardManager: ClipboardManager) {
+    fun onContentClick(clickLocation: Int, uriHandler: UriHandler, clipboardManager: Clipboard) {
         val lineEndChars = "\r\n\t"
         val clickedChar = content.value?.getOrNull(clickLocation)
         val clickedOnNewline = clickedChar == null || lineEndChars.contains(clickedChar, true)
