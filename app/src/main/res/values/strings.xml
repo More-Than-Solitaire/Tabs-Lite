@@ -18,6 +18,7 @@
     <string name="theme_selection_system" translation_description="Title of the theme option that means use dark mode when the phone is set to dark mode, and light when the phone is set to light mode. This is the default theme option.">Use system</string>
     <string name="theme_selection_light" translation_description="Title of the theme option that means use light mode regardless of system setting.">Force light</string>
     <string name="theme_selection_dark" translation_description="Title of the theme option that means use dark mode regardless of system setting.">Force dark</string>
+    <string name="theme_selection_title" translation_description="Label shown next to the theme selection dropdown">Theming</string>
 
     <string name="title_favorites_playlist" translation_description="The title of the Favorites playlist/home tab">Favorites</string>
     <string name="title_popular_playlist" translation_description="The title of the Popular playlist/home tab">Popular</string>
