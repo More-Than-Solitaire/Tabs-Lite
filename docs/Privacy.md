@@ -4,11 +4,8 @@
 <strong>Last updated October 17, 2025</strong>       
 
 This Privacy Notice for More Than Solitaire, Inc ("<strong>we</strong>," "<strong>us</strong>," or "<strong>our</strong>"), describes how and why we might access, collect, store, use, and/or share ("<strong>process</strong>") your personal information when you use our services ("<strong>Services</strong>"), including when you:
-
  - Visit our website at <a target="_blank" data-custom-class="link" href="https://tabslite.com/">https://tabslite.com/</a> or any website of ours that links to this Privacy Notice  
-
  - Download and use our mobile application (TabsLite), or any other application of ours that links to this Privacy Notice  
-
  - Engage with us in other related ways, including any sales, marketing, or events
 <strong>Questions or concerns? </strong>Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at <a target="_blank" data-custom-class="link" href="mailto:support@tabslite.com">support@tabslite.com</a>.  
 
@@ -54,52 +51,35 @@ All personal information that you provide to us must be true, complete, and accu
 ## <a name="infouse"></a> 2. HOW DO WE PROCESS YOUR INFORMATION?
 <strong><em>In Short: </em></strong><em>We process your information to provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law. We process the personal information for the following purposes listed below. We may also process your information for other purposes only with your prior explicit consent.</em> 
 <strong>We process your personal information for a variety of reasons, depending on how you interact with our Services, including:</strong>  
-
  - <strong>To save or protect an individual's vital interest.</strong> We may process your information when necessary to save or protect an individual’s vital interest, such as to prevent harm. 
 
 ## <a name="legalbases"></a> 3. WHAT LEGAL BASES DO WE RELY ON TO PROCESS YOUR INFORMATION?
 <em><strong>In Short: </strong>We only process your personal information when we believe it is necessary and we have a valid legal reason (i.e., legal basis) to do so under applicable law, like with your consent, to comply with laws, to provide you with services to enter into or fulfill our contractual obligations, to protect your rights, or to fulfill our legitimate business interests.</em> 
 <em><strong><u>If you are located in the EU or UK, this section applies to you.</u></strong></em> 
 The General Data Protection Regulation (GDPR) and UK GDPR require us to explain the valid legal bases we rely on in order to process your personal information. As such, we may rely on the following legal bases to process your personal information:
-
  - <strong>Consent. </strong>We may process your information if you have given us permission (i.e., consent) to use your personal information for a specific purpose. You can withdraw your consent at any time. Learn more about <a data-custom-class="link" href="#withdrawconsent">withdrawing your consent</a>.  
-
  - <strong>Legal Obligations.</strong> We may process your information where we believe it is necessary for compliance with our legal obligations, such as to cooperate with a law enforcement body or regulatory agency, exercise or defend our legal rights, or disclose your information as evidence in litigation in which we are involved.   
-
  - <strong>Vital Interests.</strong> We may process your information where we believe it is necessary to protect your vital interests or the vital interests of a third party, such as situations involving potential threats to the safety of any person. 
 
 <strong><u><em>If you are located in Canada, this section applies to you.</em></u></strong> 
 We may process your information if you have given us specific permission (i.e., express consent) to use your personal information for a specific purpose, or in situations where your permission can be inferred (i.e., implied consent). You can <a data-custom-class="link" href="#withdrawconsent">withdraw your consent</a> at any time. 
 In some exceptional cases, we may be legally permitted under applicable law to process your information without your consent, including, for example:
-
  - If collection is clearly in the interests of an individual and consent cannot be obtained in a timely way 
-
  - For investigations and fraud detection and prevention 
-
  - For business transactions provided certain conditions are met 
-
  - If it is contained in a witness statement and the collection is necessary to assess, process, or settle an insurance claim 
-
  - For identifying injured, ill, or deceased persons and communicating with next of kin 
-
  - If we have reasonable grounds to believe an individual has been, is, or may be victim of financial abuse 
-
  - If it is reasonable to expect collection and use with consent would compromise the availability or the accuracy of the information and the collection is reasonable for purposes related to investigating a breach of an agreement or a contravention of the laws of Canada or a province 
-
  - If disclosure is required to comply with a subpoena, warrant, court order, or rules of the court relating to the production of records 
-
  - If it was produced by an individual in the course of their employment, business, or profession and the collection is consistent with the purposes for which the information was produced 
-
  - If the collection is solely for journalistic, artistic, or literary purposes 
-
  - If the information is publicly available and is specified by the regulations 
-
  - We may disclose de-identified information for approved research or statistics projects, subject to ethics oversight and confidentiality commitments 
 
 ## <a name="whoshare"></a> 4. WHEN AND WITH WHOM DO WE SHARE YOUR PERSONAL INFORMATION?
 <strong><em>In Short:</em></strong><em> We may share information in specific situations described in this section and/or with the following third parties.</em> 
 We may need to share your personal information in the following situations:
-
  - <strong>Business Transfers.</strong> We may share or transfer your information in connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business to another company.      
 
 ## <a name="inforetain"></a> 5. HOW LONG DO WE KEEP YOUR INFORMATION?
@@ -126,37 +106,38 @@ California law requires us to let you know how we respond to web browser DNT sig
 
 ## <a name="uslaws"></a> 9. DO UNITED STATES RESIDENTS HAVE SPECIFIC PRIVACY RIGHTS?
 <strong><em>In Short: </em></strong><em>If you are a resident of California, Colorado, Connecticut, Delaware, Florida, Indiana, Iowa, Kentucky, Maryland, Minnesota, Montana, Nebraska, New Hampshire, New Jersey, Oregon, Rhode Island, Tennessee, Texas, Utah, or Virginia, you may have the right to request access to and receive details about the personal information we maintain about you and how we have processed it, correct inaccuracies, get a copy of, or delete your personal information. You may also have the right to withdraw your consent to our processing of your personal information. These rights may be limited in some circumstances by applicable law. More information is provided below.</em><strong><h3>Categories of Personal Information We Collect</h3></strong>The table below shows the categories of personal information we have collected in the past twelve (12) months. The table includes illustrative examples of each category and does not reflect the personal information we collect from you. For a comprehensive inventory of all personal information we process, please refer to the section "<a data-custom-class="link" href="#infocollect">WHAT INFORMATION DO WE COLLECT?</a>" 
-<table style="width: 100%;"><thead><tr><th style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black; text-align: left;"><strong>Category</strong></th><th style="width: 51.4385%; border-top: 1px solid black; border-right: 1px solid black; text-align: left;"><strong>Examples</strong></th><th style="width: 14.9084%; border-right: 1px solid black; border-top: 1px solid black; text-align: center; text-align: left;"><strong>Collected</strong></th></tr></thead><tbody><tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">A. Identifiers</td><td style="width: 51.4385%; border-top: 1px solid black; border-right: 1px solid black;">Contact details, such as real name, alias, postal address, telephone or mobile contact number, unique personal identifier, online identifier, Internet Protocol address, email address, and account name</td><td style="width: 14.9084%; text-align: center; vertical-align: middle; border-right: 1px solid black; border-top: 1px solid black;"> 
-NO 
-</td></tr></tbody></table><table style="width: 100%;"><tbody><tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">B. Personal information as defined in the California Customer Records statute</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Name, contact information, education, employment, employment history, and financial information</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> 
-NO 
-</td></tr></tbody></table><table style="width: 100%;"><tbody><tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">C. Protected classification characteristics under state or federal law</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Gender, age, date of birth, race and ethnicity, national origin, marital status, and other demographic data</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> 
-NO 
-</td></tr><tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">D. Commercial information</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Transaction information, purchase history, financial details, and payment information</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> 
-NO 
-</td></tr><tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">E. Biometric information</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Fingerprints and voiceprints</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> 
-NO 
-</td></tr><tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">F. Internet or other similar network activity</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Browsing history, search history, online behavior, interest data, and interactions with our and other websites, applications, systems, and advertisements</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> 
-NO 
-</td></tr><tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">G. Geolocation data</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Device location</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> 
-NO 
-</td></tr><tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">H. Audio, electronic, sensory, or similar information</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Images and audio, video or call recordings created in connection with our business activities</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> 
-NO 
-</td></tr><tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">I. Professional or employment-related information</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Business contact details in order to provide you our Services at a business level or job title, work history, and professional qualifications if you apply for a job with us</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> 
-NO 
-</td></tr><tr><td style="border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black; width: 33.8274%;">J. Education Information</td><td style="border-right: 1px solid black; border-top: 1px solid black; width: 51.4385%;">Student records and directory information</td><td style="text-align: center; border-right: 1px solid black; border-top: 1px solid black; width: 14.9084%;"> 
-NO 
-</td></tr><tr><td style="border-width: 1px; border-color: black; border-style: solid; width: 33.8274%;">K. Inferences drawn from collected personal information</td><td style="border-bottom: 1px solid black; border-top: 1px solid black; border-right: 1px solid black; width: 51.4385%;">Inferences drawn from any of the collected personal information listed above to create a profile or summary about, for example, an individual’s preferences and characteristics</td><td style="text-align: center; border-right: 1px solid black; border-bottom: 1px solid black; border-top: 1px solid black; width: 14.9084%;"> 
-NO 
-</td></tr><tr><td style="border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; line-height: 1.5;">L. Sensitive personal Information</td><td style="border-right: 1px solid black; border-bottom: 1px solid black; line-height: 1.5;"></td><td style="border-right: 1px solid black; border-bottom: 1px solid black;"> 
-NO 
-</td></tr></tbody></table> 
+
+<table style="width: 100%;">
+ <thead>
+  <tr>
+   <th style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black; text-align: left;"><strong>Category</strong></th>
+   <th style="width: 51.4385%; border-top: 1px solid black; border-right: 1px solid black; text-align: left;"><strong>Examples</strong></th>
+   <th style="width: 14.9084%; border-right: 1px solid black; border-top: 1px solid black; text-align: center; text-align: left;"><strong>Collected</strong></th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr>
+   <td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">A. Identifiers</td>
+   <td style="width: 51.4385%; border-top: 1px solid black; border-right: 1px solid black;">Contact details, such as real name, alias, postal address, telephone or mobile contact number, unique personal identifier, online identifier, Internet Protocol address, email address, and account name</td>
+   <td style="width: 14.9084%; text-align: center; vertical-align: middle; border-right: 1px solid black; border-top: 1px solid black;"> NO </td>
+  </tr>
+  <tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">B. Personal information as defined in the California Customer Records statute</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Name, contact information, education, employment, employment history, and financial information</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> NO </td></tr>
+  <tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">C. Protected classification characteristics under state or federal law</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Gender, age, date of birth, race and ethnicity, national origin, marital status, and other demographic data</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> NO </td></tr>
+   <tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">D. Commercial information</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Transaction information, purchase history, financial details, and payment information</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> NO </td></tr>
+   <tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">E. Biometric information</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Fingerprints and voiceprints</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> NO </td></tr>
+   <tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">F. Internet or other similar network activity</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Browsing history, search history, online behavior, interest data, and interactions with our and other websites, applications, systems, and advertisements</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> NO </td></tr>
+<tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">G. Geolocation data</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Device location</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> NO </td></tr>
+   <tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">H. Audio, electronic, sensory, or similar information</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Images and audio, video or call recordings created in connection with our business activities</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> NO </td></tr>
+   <tr><td style="width: 33.8274%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;">I. Professional or employment-related information</td><td style="width: 51.4385%; border-right: 1px solid black; border-top: 1px solid black;">Business contact details in order to provide you our Services at a business level or job title, work history, and professional qualifications if you apply for a job with us</td><td style="width: 14.9084%; text-align: center; border-right: 1px solid black; border-top: 1px solid black;"> NO </td></tr>
+<tr><td style="border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black; width: 33.8274%;">J. Education Information</td><td style="border-right: 1px solid black; border-top: 1px solid black; width: 51.4385%;">Student records and directory information</td><td style="text-align: center; border-right: 1px solid black; border-top: 1px solid black; width: 14.9084%;"> NO </td></tr>
+   <tr><td style="border-width: 1px; border-color: black; border-style: solid; width: 33.8274%;">K. Inferences drawn from collected personal information</td><td style="border-bottom: 1px solid black; border-top: 1px solid black; border-right: 1px solid black; width: 51.4385%;">Inferences drawn from any of the collected personal information listed above to create a profile or summary about, for example, an individual’s preferences and characteristics</td><td style="text-align: center; border-right: 1px solid black; border-bottom: 1px solid black; border-top: 1px solid black; width: 14.9084%;"> NO </td></tr>
+<tr><td style="border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; line-height: 1.5;">L. Sensitive personal Information</td><td style="border-right: 1px solid black; border-bottom: 1px solid black; line-height: 1.5;"></td><td style="border-right: 1px solid black; border-bottom: 1px solid black;"> NO </td></tr>
+ </tbody>
+</table> 
+
 We may also collect other personal information outside of these categories through instances where you interact with us in person, online, or by phone or mail in the context of:
-
  - Receiving help through our customer support channels;  
-
  - Participation in customer surveys or contests; and  
-
  - Facilitation in the delivery of our Services and to respond to your inquiries.
 
 <strong><h3>Sources of Personal Information</h3></strong>Learn more about the sources of personal information we collect in "<a data-custom-class="link" href="#infocollect">WHAT INFORMATION DO WE COLLECT?</a>"<strong><h3>How We Use and Share Personal Information</h3></strong>Learn more about how we use your personal information in the section, "<a data-custom-class="link" href="#infouse">HOW DO WE PROCESS YOUR INFORMATION?</a>" 
@@ -164,34 +145,20 @@ We may also collect other personal information outside of these categories throu
 We may disclose your personal information with our service providers pursuant to a written contract between us and each service provider. Learn more about how we disclose personal information to in the section, "<a data-custom-class="link" href="#whoshare">WHEN AND WITH WHOM DO WE SHARE YOUR PERSONAL INFORMATION?</a>" 
 We may use your personal information for our own business purposes, such as for undertaking internal research for technological development and demonstration. This is not considered to be "selling" of your personal information. 
 We have not disclosed, sold, or shared any personal information to third parties for a business or commercial purpose in the preceding twelve (12) months. We will not sell or share personal information in the future belonging to website visitors, users, and other consumers.<strong><h3>Your Rights</h3></strong>You have rights under certain US state data protection laws. However, these rights are not absolute, and in certain cases, we may decline your request as permitted by law. These rights include:
-
  - <strong>Right to know</strong> whether or not we are processing your personal data 
-
  - <strong>Right to access </strong>your personal data 
-
  - <strong>Right to correct </strong>inaccuracies in your personal data 
-
  - <strong>Right to request</strong> the deletion of your personal data 
-
  - <strong>Right to obtain a copy </strong>of the personal data you previously shared with us 
-
  - <strong>Right to non-discrimination</strong> for exercising your rights 
-
  - <strong>Right to opt out</strong> of the processing of your personal data if it is used for targeted advertising (or sharing as defined under California’s privacy law), the sale of personal data, or profiling in furtherance of decisions that produce legal or similarly significant effects ("profiling")
 Depending upon the state where you live, you may also have the following rights:
-
  - Right to access the categories of personal data being processed (as permitted by applicable law, including the privacy law in Minnesota) 
-
  - Right to obtain a list of the categories of third parties to which we have disclosed personal data (as permitted by applicable law, including the privacy law in California, Delaware, and Maryland) 
-
  - Right to obtain a list of specific third parties to which we have disclosed personal data (as permitted by applicable law, including the privacy law in Minnesota and Oregon) 
-
  - Right to obtain a list of third parties to which we have sold personal data (as permitted by applicable law, including the privacy law in Connecticut) 
-
  - Right to review, understand, question, and depending on where you live, correct how personal data has been profiled (as permitted by applicable law, including the privacy law in Connecticut and Minnesota) 
-
  - Right to limit use and disclosure of sensitive personal data (as permitted by applicable law, including the privacy law in California) 
-
  - Right to opt out of the collection of sensitive data and personal data collected through the operation of a voice or facial recognition feature (as permitted by applicable law, including the privacy law in Florida)
 <strong><h3>How to Exercise Your Rights</h3></strong>To exercise these rights, you can contact us by submitting a <a data-custom-class="link" href="https://app.termly.io/dsar/b0060123-141d-4fc3-b2e4-73f019323f06" rel="noopener noreferrer" target="_blank">data subject access request</a>, by emailing us at <a target="_blank" data-custom-class="link" href="mailto:support@tabslite.com">support@tabslite.com</a>, or by referring to the contact details at the bottom of this document. 
 Under certain US state data protection laws, you can designate an authorized agent to make a request on your behalf. We may deny a request from an authorized agent that does not submit proof that they have been validly authorized to act on your behalf in accordance with applicable laws. 
