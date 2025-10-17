@@ -4,3 +4,6 @@ description: Guitar tabs for Android
 include: [".well-known"]
 header_pages:
   - Acknowledgements.md
+footer_pages:
+  - Privacy.md
+
