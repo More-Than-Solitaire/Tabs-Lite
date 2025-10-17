@@ -5,7 +5,3 @@ include: [".well-known"]
 header_pages:
   - Acknowledgements.md
   - Privacy.md
-footer_pages:
-  - Privacy.md
-
-
