@@ -2,6 +2,7 @@ package com.gbros.tabslite.view.homescreen
 
 import android.app.Activity.RESULT_OK
 import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
@@ -76,6 +77,7 @@ import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.viewmodel.HomeViewModel
 
+
 const val HOME_ROUTE = "home"
 
 fun NavController.popUpToHome() {
@@ -91,8 +93,9 @@ fun NavGraphBuilder.homeScreen(
     onNavigateToPlaylist: (Int) -> Unit
 ) {
     composable(HOME_ROUTE) {
-        val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: HomeViewModel = hiltViewModel<HomeViewModel, HomeViewModel.HomeViewModelFactory> { factory -> factory.create(dataAccess = db.dataAccess()) }
+        val context = LocalContext.current.applicationContext
+        val db = AppDatabase.getInstance(context)
+        val viewModel: HomeViewModel = hiltViewModel<HomeViewModel, HomeViewModel.HomeViewModelFactory> { factory -> factory.create(dataAccess = db.dataAccess(), context = context) }
         HomeScreen(
             viewState = viewModel,
             favoriteSongListViewState = viewModel.favoriteSongListViewModel,
@@ -145,11 +148,20 @@ fun HomeScreen(
     var pagerNav by remember { mutableIntStateOf(-1) }
     
     var showAboutDialog by remember { mutableStateOf(false) }
-    val contentResolver = LocalContext.current.contentResolver
+    val context = LocalContext.current
+    val contentResolver = context.contentResolver
 
     // handle playlist data export
     val exportDataFilePickerActivityLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK && result.data?.data != null) {
+            // Save export details to SharedPreferences
+            val sharedPreferences = context.getSharedPreferences("export_prefs", Context.MODE_PRIVATE)
+            sharedPreferences.edit().apply {
+                putString("last_export_file_name", "tabslite_backup.json")
+                putString("last_export_uri", result.data!!.data!!.toString())
+                putLong("last_export_time", System.currentTimeMillis())
+                apply()
+            }
             onExportPlaylists(result.data!!.data!!, contentResolver)
         } // else: user cancelled the action
     }
@@ -168,12 +180,14 @@ fun HomeScreen(
             onExportPlaylistsClicked = {
                 showAboutDialog = false
 
+                // https://developer.android.com/training/data-storage/shared/documents-files
                 // launch a file picker to find where to export the playlist data to
                 val filePickerEvent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
                     type = "application/json"
                     putExtra(Intent.EXTRA_TITLE, "tabslite_backup.json")
                 }
+
                 exportDataFilePickerActivityLauncher.launch(filePickerEvent)
             },
             onImportPlaylistsClicked = {
