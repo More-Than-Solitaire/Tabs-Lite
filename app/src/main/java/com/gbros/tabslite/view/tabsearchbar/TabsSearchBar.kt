@@ -25,6 +25,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -57,10 +59,11 @@ fun TabsSearchBar(
     val lazyColumnState = rememberLazyListState()
     val searchSuggestions = viewState.searchSuggestions.observeAsState(listOf())
     val suggestedTabs = viewState.tabSuggestions.observeAsState(listOf())
+    val focusRequester = remember { FocusRequester() }
 
     val onActiveChange = {expanded: Boolean -> active = expanded}
     SearchBar(
-        modifier = modifier,
+        modifier = modifier.focusRequester(focusRequester),
         expanded = active,
         onExpandedChange = onActiveChange,
         windowInsets = WindowInsets.safeDrawing,
@@ -79,7 +82,7 @@ fun TabsSearchBar(
                 trailingIcon = {
                     IconButton(onClick = {
                         onQueryChange("")
-                        active = true  // focus input on searchbar
+                        focusRequester.requestFocus()
                     }) {
                         if (query.value.isNotEmpty()) {
                             Icon(Icons.Filled.Clear, stringResource(R.string.generic_action_clear))
