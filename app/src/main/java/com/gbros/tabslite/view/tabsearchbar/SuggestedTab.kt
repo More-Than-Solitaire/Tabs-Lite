@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -17,25 +19,35 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
-import com.gbros.tabslite.data.tab.ITab
-import com.gbros.tabslite.data.tab.Tab
+import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun SuggestedTab(modifier: Modifier = Modifier, tab: ITab, onClick: (tabId: Int) -> Unit) {
+fun SuggestedTab(modifier: Modifier = Modifier, tab: TabWithDataPlaylistEntry, navigateToTabByTabId: (tabId: Int) -> Unit, navigateToTabByPlaylistEntryId: (playlistEntryId: Int) -> Unit) {
     Card(
         modifier = modifier
-            .clickable(onClick = {onClick(tab.tabId)})
+            .clickable(onClick = {
+                when {
+                    tab.playlistId == -1 -> navigateToTabByTabId(tab.tabId)
+                    tab.entryId > 0 -> navigateToTabByPlaylistEntryId(tab.entryId)
+                    else -> navigateToTabByTabId(tab.tabId)
+                }
+            })
     ) {
         Row(
             modifier = Modifier
                 .padding(all = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            val icon = when {
+                tab.playlistId == -1 -> Icons.Default.Favorite
+                tab.entryId > 0 -> ImageVector.vectorResource(id = R.drawable.ic_playlist_play)
+                else -> ImageVector.vectorResource(id = R.drawable.ic_search_activity)
+            }
             Icon(
                 modifier = Modifier
                     .padding(end = 4.dp),
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_search_activity),
+                imageVector = icon,
                 contentDescription = null
             )
             Text(
@@ -61,7 +73,7 @@ fun SuggestedTab(modifier: Modifier = Modifier, tab: ITab, onClick: (tabId: Int)
 @Composable
 @Preview
 private fun SuggestedTabPreview() {
-    val suggestion = Tab(
+    val suggestion = TabWithDataPlaylistEntry(
         tabId = 0,
         songName = "Three Little Birds",
         artistName = "Bob Marley"
@@ -69,7 +81,44 @@ private fun SuggestedTabPreview() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            onClick = {}
+            navigateToTabByTabId = {},
+            navigateToTabByPlaylistEntryId = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun SuggestedTabPreviewFavorite() {
+    val suggestion = TabWithDataPlaylistEntry(
+        tabId = 0,
+        playlistId = -1,
+        songName = "Three Little Birds",
+        artistName = "Bob Marley"
+    )
+    AppTheme {
+        SuggestedTab(
+            tab = suggestion,
+            navigateToTabByTabId = {},
+            navigateToTabByPlaylistEntryId = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun SuggestedTabPreviewPlaylist() {
+    val suggestion = TabWithDataPlaylistEntry(
+        tabId = 0,
+        entryId = 1,
+        songName = "Three Little Birds",
+        artistName = "Bob Marley"
+    )
+    AppTheme {
+        SuggestedTab(
+            tab = suggestion,
+            navigateToTabByTabId = {},
+            navigateToTabByPlaylistEntryId = {}
         )
     }
 }
@@ -77,7 +126,7 @@ private fun SuggestedTabPreview() {
 @Composable
 @Preview
 private fun SuggestedTabPreviewTextOverflow() {
-    val suggestion = Tab(
+    val suggestion = TabWithDataPlaylistEntry(
         tabId = 0,
         songName = "Three Little Birds and a lot lot more long title",
         artistName = "Bob Marley with a long artist name as well"
@@ -85,7 +134,8 @@ private fun SuggestedTabPreviewTextOverflow() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            onClick = {}
+            navigateToTabByTabId = {},
+            navigateToTabByPlaylistEntryId = {}
         )
     }
 }
@@ -93,7 +143,7 @@ private fun SuggestedTabPreviewTextOverflow() {
 @Composable
 @Preview
 private fun SuggestedTabPreviewTextOverflowTitleOnly() {
-    val suggestion = Tab(
+    val suggestion = TabWithDataPlaylistEntry(
         tabId = 0,
         songName = "Three Little Birds and a lot lot more long title",
         artistName = "Bob"
@@ -101,7 +151,8 @@ private fun SuggestedTabPreviewTextOverflowTitleOnly() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            onClick = {}
+            navigateToTabByTabId = {},
+            navigateToTabByPlaylistEntryId = {}
         )
     }
 }
@@ -109,7 +160,7 @@ private fun SuggestedTabPreviewTextOverflowTitleOnly() {
 @Composable
 @Preview
 private fun SuggestedTabPreviewTextOverflowArtistOnly() {
-    val suggestion = Tab(
+    val suggestion = TabWithDataPlaylistEntry(
         tabId = 0,
         songName = "Birds",
         artistName = "Bob with a very very long artist name that should overflow"
@@ -117,7 +168,8 @@ private fun SuggestedTabPreviewTextOverflowArtistOnly() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            onClick = {}
+            navigateToTabByTabId = {},
+            navigateToTabByPlaylistEntryId = {}
         )
     }
 }

@@ -36,8 +36,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
-import com.gbros.tabslite.data.tab.ITab
-import com.gbros.tabslite.data.tab.Tab
+import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -52,7 +51,8 @@ fun TabsSearchBar(
     viewState: ITabSearchBarViewState,
     onQueryChange: (newQuery: String) -> Unit,
     onSearch: (query: String) -> Unit,
-    onNavigateToTabById: (tabId: Int) -> Unit
+    onNavigateToTabById: (tabId: Int) -> Unit,
+    onNavigateToPlaylistEntryById: (playlistEntryId: Int) -> Unit
 ) {
     val query = viewState.query.observeAsState("")
     var active by remember { mutableStateOf(false) }
@@ -104,7 +104,8 @@ fun TabsSearchBar(
                             modifier = Modifier
                                 .fillMaxWidth(),
                             tab = suggestedTab,
-                            onClick = onNavigateToTabById
+                            navigateToTabByTabId = onNavigateToTabById,
+                            navigateToTabByPlaylistEntryId = onNavigateToPlaylistEntryById
                         )
                     }
                     items(items = searchSuggestions.value) { searchSuggestion ->
@@ -127,7 +128,7 @@ fun TabsSearchBarPreview() {
     class TabSearchBarViewStateForTest(
         override val query: LiveData<String>,
         override val searchSuggestions: LiveData<List<String>>,
-        override val tabSuggestions: LiveData<List<ITab>>,
+        override val tabSuggestions: LiveData<List<TabWithDataPlaylistEntry>>,
         override val loadingState: LiveData<LoadingState>,
     ) : ITabSearchBarViewState
 
@@ -136,7 +137,7 @@ fun TabsSearchBarPreview() {
             viewState = TabSearchBarViewStateForTest(
                 query = MutableLiveData("Test query"),
                 searchSuggestions = MutableLiveData(listOf("suggestion1", "suggestion 2")),
-                tabSuggestions = MutableLiveData(listOf(Tab(0))),
+                tabSuggestions = MutableLiveData(listOf(TabWithDataPlaylistEntry(0))),
                 loadingState = MutableLiveData()
             ),
             leadingIcon = { Icon(
@@ -146,7 +147,8 @@ fun TabsSearchBarPreview() {
             )},
             onQueryChange = {},
             onSearch = {},
-            onNavigateToTabById = {}
+            onNavigateToTabById = {},
+            onNavigateToPlaylistEntryById = {}
         )
     }
 }

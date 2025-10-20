@@ -38,6 +38,7 @@ fun NavController.navigateToSongVersion(songId: Int) {
 
 fun NavGraphBuilder.songVersionScreen(
     onNavigateToTabByTabId: (Int) -> Unit,
+    onNavigateToTabByPlaylistEntryId: (Int) -> Unit,
     onNavigateToSearch: (String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -55,7 +56,8 @@ fun NavGraphBuilder.songVersionScreen(
             onTabSearchBarQueryChange = viewModel.tabSearchBarViewModel::onQueryChange,
             onNavigateToTabByTabId = onNavigateToTabByTabId,
             onNavigateBack = onNavigateBack,
-            onNavigateToSearch = onNavigateToSearch
+            onNavigateToSearch = onNavigateToSearch,
+            onNavigateToTabByPlaylistEntryId = onNavigateToTabByPlaylistEntryId
         )
     }
 }
@@ -68,6 +70,7 @@ fun SongVersionScreen(
     onNavigateToTabByTabId: (id: Int) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToSearch: (query: String) -> Unit,
+    onNavigateToTabByPlaylistEntryId: (id: Int) -> Unit
 ) {
     val songVersions = viewState.songVersions.observeAsState(listOf()).value.sortedByDescending { song -> song.votes }
 
@@ -88,7 +91,8 @@ fun SongVersionScreen(
             viewState = tabSearchBarViewState,
             onSearch = onNavigateToSearch,
             onQueryChange = onTabSearchBarQueryChange,
-            onNavigateToTabById = onNavigateToTabByTabId
+            onNavigateToTabById = onNavigateToTabByTabId,
+            onNavigateToPlaylistEntryById = onNavigateToTabByPlaylistEntryId
         )
 
         SongVersionList(songVersions = songVersions, navigateToTabByTabId = onNavigateToTabByTabId)

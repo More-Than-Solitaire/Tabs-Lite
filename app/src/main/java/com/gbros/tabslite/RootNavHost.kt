@@ -32,6 +32,7 @@ fun TabsLiteNavGraph() {
             onNavigateToSearch = navController::navigateToSearch,
             onNavigateToTab = navController::navigateToTab,
             onNavigateToPlaylist = navController::navigateToPlaylistDetail,
+            onNavigateToPlaylistEntry = navController::navigateToPlaylistEntry
         )
 
         tabScreen (
@@ -56,6 +57,7 @@ fun TabsLiteNavGraph() {
             onNavigateToSongId = navController::navigateToSongVersion,
             onNavigateToSearch = navController::navigateToSearch,
             onNavigateToTabByTabId = navController::navigateToTab,
+            onNavigateToPlaylistEntryByEntryId = navController::navigateToPlaylistEntry,
             onNavigateBack = navController::popUpToHome
         )
 
@@ -63,11 +65,13 @@ fun TabsLiteNavGraph() {
             onNavigateToSongId = navController::navigateToSongVersion,
             onNavigateToSearch = navController::navigateToSearch,
             onNavigateToTabByTabId = navController::navigateToTab,
+            onNavigateToPlaylistEntryByEntryId = navController::navigateToPlaylistEntry,
             onNavigateBack = navController::popUpToHome
         )
 
         songVersionScreen(
             onNavigateToTabByTabId = navController::navigateToTab,
+            onNavigateToTabByPlaylistEntryId = navController::navigateToPlaylistEntry,
             onNavigateToSearch = navController::navigateToSearch,
             onNavigateBack = navController::popBackStack
         )

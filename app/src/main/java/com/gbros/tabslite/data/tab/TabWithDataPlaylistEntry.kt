@@ -13,7 +13,7 @@ data class TabWithDataPlaylistEntry(
     /**
      * The ID of the playlist entry that represents this tab/playlist combo
      */
-    @ColumnInfo(name = "entry_id") override var entryId: Int,
+    @ColumnInfo(name = "entry_id") override var entryId: Int = -1,
 
     /**
      * The ID of the playlist that this tab/playlist combo belongs to

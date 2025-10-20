@@ -64,7 +64,6 @@ import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.ThemeSelection
 import com.gbros.tabslite.data.playlist.Playlist
-import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.playlists.PlaylistsSortBy
@@ -88,7 +87,8 @@ fun NavController.popUpToHome() {
 fun NavGraphBuilder.homeScreen(
     onNavigateToSearch: (String) -> Unit,
     onNavigateToTab: (Int) -> Unit,
-    onNavigateToPlaylist: (Int) -> Unit
+    onNavigateToPlaylist: (Int) -> Unit,
+    onNavigateToPlaylistEntry: (Int) -> Unit
 ) {
     composable(HOME_ROUTE) {
         val db = AppDatabase.getInstance(LocalContext.current)
@@ -108,7 +108,8 @@ fun NavGraphBuilder.homeScreen(
             onCreatePlaylist = viewModel::createPlaylist,
             onThemeSelectionChange = viewModel::setAppTheme,
             navigateToPlaylistById = onNavigateToPlaylist,
-            navigateToTabByTabId = onNavigateToTab
+            navigateToTabByTabId = onNavigateToTab,
+            navigateToPlaylistEntryById = onNavigateToPlaylistEntry
         )
     }
 }
@@ -129,7 +130,8 @@ fun HomeScreen(
     onCreatePlaylist: (title: String, description: String) -> Unit,
     onThemeSelectionChange: (ThemeSelection) -> Unit,
     navigateToTabByTabId: (id: Int) -> Unit,
-    navigateToPlaylistById: (id: Int) -> Unit
+    navigateToPlaylistById: (id: Int) -> Unit,
+    navigateToPlaylistEntryById: (id: Int) -> Unit
 ) {
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     val secondaryPagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
@@ -217,7 +219,8 @@ fun HomeScreen(
                 viewState = tabSearchBarViewState,
                 onSearch = onNavigateToSearch,
                 onQueryChange = onTabSearchBarQueryChange,
-                onNavigateToTabById = navigateToTabByTabId
+                onNavigateToTabById = navigateToTabByTabId,
+                onNavigateToPlaylistEntryById = navigateToPlaylistEntryById
             )
             PrimaryTabRow (
                 selectedTabIndex = pagerState.currentPage,
@@ -418,7 +421,8 @@ private fun HomeScreenPreview() {
             onCreatePlaylist = {_,_->},
             onThemeSelectionChange = {},
             navigateToTabByTabId = {},
-            navigateToPlaylistById = {}
+            navigateToPlaylistById = {},
+            navigateToPlaylistEntryById = {}
         )
     }
 }
@@ -439,7 +443,7 @@ private class SongListViewStateForTest(
 private class TabSearchBarViewStateForTest(
     override val query: LiveData<String>,
     override val searchSuggestions: LiveData<List<String>>,
-    override val tabSuggestions: LiveData<List<ITab>>,
+    override val tabSuggestions: LiveData<List<TabWithDataPlaylistEntry>>,
     override val loadingState: LiveData<LoadingState>
 ) : ITabSearchBarViewState
 

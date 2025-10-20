@@ -8,7 +8,7 @@ import androidx.lifecycle.switchMap
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
-import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
@@ -42,7 +42,7 @@ class TabSearchBarViewModel(
     /**
      * A couple suggested tabs already loaded in the database
      */
-    override val tabSuggestions: LiveData<List<ITab>> = query.switchMap { currentQuery ->
+    override val tabSuggestions: LiveData<List<TabWithDataPlaylistEntry>> = query.switchMap { currentQuery ->
         dataAccess.findMatchingTabs(currentQuery).map { a -> a }
     }
 

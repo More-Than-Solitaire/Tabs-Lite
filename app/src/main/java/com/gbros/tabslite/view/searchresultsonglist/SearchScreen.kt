@@ -45,7 +45,6 @@ import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.tab.ITab
-import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.utilities.TAG
@@ -83,6 +82,7 @@ fun NavGraphBuilder.searchByTitleScreen(
     onNavigateToSongId: (Int) -> Unit,
     onNavigateToSearch: (String) -> Unit,
     onNavigateToTabByTabId: (tabId: Int) -> Unit,
+    onNavigateToPlaylistEntryByEntryId: (playlistEntryId: Int) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     composable(
@@ -99,7 +99,8 @@ fun NavGraphBuilder.searchByTitleScreen(
             onNavigateToSongVersionsBySongId = onNavigateToSongId,
             onNavigateBack = onNavigateBack,
             onNavigateToSearch = onNavigateToSearch,
-            onNavigateToTabByTabId = onNavigateToTabByTabId
+            onNavigateToTabByTabId = onNavigateToTabByTabId,
+            onNavigateToPlaylistEntryByEntryId = onNavigateToPlaylistEntryByEntryId
         )
     }
 }
@@ -112,6 +113,7 @@ fun NavGraphBuilder.listSongsByArtistIdScreen(
     onNavigateToSongId: (Int) -> Unit,
     onNavigateToSearch: (String) -> Unit,
     onNavigateToTabByTabId: (tabId: Int) -> Unit,
+    onNavigateToPlaylistEntryByEntryId: (playlistEntryId: Int) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     composable(
@@ -129,7 +131,8 @@ fun NavGraphBuilder.listSongsByArtistIdScreen(
             onNavigateToSongVersionsBySongId = onNavigateToSongId,
             onNavigateBack = onNavigateBack,
             onNavigateToSearch = onNavigateToSearch,
-            onNavigateToTabByTabId = onNavigateToTabByTabId
+            onNavigateToTabByTabId = onNavigateToTabByTabId,
+            onNavigateToPlaylistEntryByEntryId = onNavigateToPlaylistEntryByEntryId
         )
     }
 }
@@ -143,7 +146,8 @@ fun SearchScreen(
     onNavigateToSongVersionsBySongId: (songId: Int) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToSearch: (query: String) -> Unit,
-    onNavigateToTabByTabId: (tabId: Int) -> Unit
+    onNavigateToTabByTabId: (tabId: Int) -> Unit,
+    onNavigateToPlaylistEntryByEntryId: (playlistEntryId: Int) -> Unit
 ) {
     val lazyColumnState = rememberLazyListState()
     var needMoreSearchResults by remember { mutableStateOf(true) }
@@ -169,7 +173,8 @@ fun SearchScreen(
             viewState = tabSearchBarViewState,
             onSearch = onNavigateToSearch,
             onQueryChange = onTabSearchBarQueryChange,
-            onNavigateToTabById = onNavigateToTabByTabId
+            onNavigateToTabById = onNavigateToTabByTabId,
+            onNavigateToPlaylistEntryById = onNavigateToPlaylistEntryByEntryId
         )
 
         if (searchState.value is LoadingState.Error) {
@@ -240,7 +245,7 @@ private class SearchViewStateForTest(
 private class TabSearchBarViewStateForTest(
     override val query: LiveData<String>,
     override val searchSuggestions: LiveData<List<String>>,
-    override val tabSuggestions: LiveData<List<ITab>>,
+    override val tabSuggestions: LiveData<List<TabWithDataPlaylistEntry>>,
     override val loadingState: LiveData<LoadingState>
 ): ITabSearchBarViewState
 
@@ -280,7 +285,7 @@ private fun SearchScreenPreview() {
     val tabSearchBarViewState = TabSearchBarViewStateForTest(
         query = MutableLiveData("my song"),
         searchSuggestions = MutableLiveData(listOf()),
-        tabSuggestions = MutableLiveData(listOf(Tab(0))),
+        tabSuggestions = MutableLiveData(listOf(TabWithDataPlaylistEntry(0))),
         loadingState = MutableLiveData()
     )
 
@@ -293,7 +298,8 @@ private fun SearchScreenPreview() {
             onNavigateBack = {},
             onNavigateToSearch = {},
             onTabSearchBarQueryChange = {},
-            onNavigateToTabByTabId = {}
+            onNavigateToTabByTabId = {},
+            onNavigateToPlaylistEntryByEntryId = {}
         )
     }
 }
@@ -335,7 +341,7 @@ private fun SearchScreenPreviewError() {
     val tabSearchBarViewState = TabSearchBarViewStateForTest(
         query = MutableLiveData("my song"),
         searchSuggestions = MutableLiveData(listOf()),
-        tabSuggestions = MutableLiveData(listOf(Tab(0))),
+        tabSuggestions = MutableLiveData(listOf(TabWithDataPlaylistEntry(0))),
         loadingState = MutableLiveData()
     )
 
@@ -348,7 +354,8 @@ private fun SearchScreenPreviewError() {
             onNavigateBack = {},
             onNavigateToSearch = {},
             onTabSearchBarQueryChange = {},
-            onNavigateToTabByTabId = {}
+            onNavigateToTabByTabId = {},
+            onNavigateToPlaylistEntryByEntryId = {}
         )
     }
 }

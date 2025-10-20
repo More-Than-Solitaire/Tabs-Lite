@@ -94,9 +94,11 @@ interface DataAccess {
 
     /**
      * Get top 7 downloaded tabs whose id, title, or artist matches the provided query
+     *
+     * SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id LEFT JOIN (SELECT id AS playlist_id, user_created, title, date_created, date_modified, description FROM playlist ) AS playlist ON playlist_entry.playlist_id = playlist.playlist_id WHERE playlist_entry.entry_id = :playlistEntryId
      */
-    @Query("SELECT *, 0 as transpose FROM tabs WHERE content != '' AND (id = :query OR song_name LIKE '%' || :query || '%' OR artist_name LIKE '%' || :query || '%') LIMIT 7")
-    fun findMatchingTabs(query: String): LiveData<List<Tab>>
+    @Query("SELECT *, 0 as transpose FROM tabs LEFT JOIN playlist_entry ON tabs.id = playlist_entry.tab_id LEFT JOIN (SELECT id AS playlist_id, user_created, title, date_created, date_modified, description FROM playlist ) AS playlist ON playlist_entry.playlist_id = playlist.playlist_id WHERE content != '' AND (id = :query OR song_name LIKE '%' || :query || '%' OR artist_name LIKE '%' || :query || '%') GROUP BY tabs.id LIMIT 7")
+    fun findMatchingTabs(query: String): LiveData<List<TabWithDataPlaylistEntry>>
 
     //#endregion
 
