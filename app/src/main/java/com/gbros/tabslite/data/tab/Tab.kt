@@ -57,7 +57,7 @@ data class Tab(
 
         suspend fun fetchAllEmptyPlaylistTabsFromInternet(dataAccess: DataAccess, playlistId: Int? = null, onProgressChange: (progress: Float) -> Unit = {}) {
             val emptyTabs: List<Int> = if (playlistId == null) dataAccess.getEmptyPlaylistTabIds() else dataAccess.getEmptyPlaylistTabIds(playlistId)
-            Log.d(TAG, "Found ${emptyTabs.size} empty playlist tabs to fetch")
+            Log.d(TAG, "Found ${emptyTabs.size} empty playlist tabs (filter by playlist id: $playlistId) to fetch")
             var numFetchedTabs = 0f
             emptyTabs.forEach { tabId ->
                 try {

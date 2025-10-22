@@ -51,7 +51,10 @@ interface DataAccess {
     @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE tabs.content is NULL OR tabs.content is ''")
     suspend fun getEmptyPlaylistTabIds(): List<Int>
 
-    @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = :playlistId AND (tabs.content is NULL OR tabs.content is '')")
+    @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE tabs.content is NULL OR tabs.content is '' ORDER BY playlist_entry.playlist_id DESC, playlist_entry.entry_id ASC")
+    fun getEmptyPlaylistTabIdsLive(): LiveData<List<Int>>
+
+    @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = :playlistId AND (tabs.id is NULL OR tabs.content is NULL OR tabs.content is '')")
     suspend fun getEmptyPlaylistTabIds(playlistId: Int): List<Int>
     
     @RewriteQueriesToDropUnusedColumns

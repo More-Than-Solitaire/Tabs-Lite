@@ -201,7 +201,7 @@ class HomeViewModel
             }
 
             if (!dataToImport.isNullOrBlank()) {
-                val importedData = Json.decodeFromString<PlaylistFileExportType>(dataToImport!!)
+                val importedData = Json.decodeFromString<PlaylistFileExportType>(dataToImport)
 
                 // import all playlists (except Favorites and Top Tabs)
                 val totalEntriesToImport = importedData.playlists.sumOf { pl -> pl.entries.size }.toFloat()

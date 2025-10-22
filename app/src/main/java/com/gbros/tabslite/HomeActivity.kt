@@ -72,9 +72,7 @@ class HomeActivity : ComponentActivity() {
             initializeDefaultPlaylists(dataAccess)
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            fetchEmptyTabsFromInternet(dataAccess)
-        }
+        fetchEmptyTabsFromInternet(dataAccess)
     }
 
     /**
@@ -129,15 +127,21 @@ class HomeActivity : ComponentActivity() {
     /**
      * load any tabs that were added without internet connection
      */
-    private suspend fun fetchEmptyTabsFromInternet(dataAccess: DataAccess) {
-        try {
-            Tab.fetchAllEmptyPlaylistTabsFromInternet(dataAccess)
-        } catch (ex: UgApi.NoInternetException) {
-            Log.i(TAG, "Initial empty-playlist-tab fetch failed: no internet connection", ex)
-        } catch (ex: Exception) {
-            Log.e(TAG, "Unexpected exception during inital empty-playlist-tab fetch: ${ex.message}", ex)
+    private fun fetchEmptyTabsFromInternet(dataAccess: DataAccess) {
+        dataAccess.getEmptyPlaylistTabIdsLive().observe(this) { tabIds ->
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    Log.i(TAG, "Fetching empty playlist tab - ${tabIds.size} remaining.")
+                    if (tabIds.isNotEmpty()) {
+                        Tab(tabIds.first()).load(dataAccess, false)
+                    }
+                } catch (ex: UgApi.NoInternetException) {
+                    Log.i(TAG, "Initial empty-playlist-tab fetch failed: no internet connection", ex)
+                } catch (ex: Exception) {
+                    Log.e(TAG, "Unexpected exception during initial empty-playlist-tab fetch: ${ex.message}", ex)
+                }
+            }
         }
-
     }
 }
 
