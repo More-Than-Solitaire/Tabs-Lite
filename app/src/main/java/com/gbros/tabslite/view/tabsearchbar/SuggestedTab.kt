@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -19,6 +20,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gbros.tabslite.R
+import com.gbros.tabslite.data.playlist.Playlist.Companion.FAVORITES_PLAYLIST_ID
+import com.gbros.tabslite.data.playlist.Playlist.Companion.TOP_TABS_PLAYLIST_ID
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 
@@ -28,8 +31,7 @@ fun SuggestedTab(modifier: Modifier = Modifier, tab: TabWithDataPlaylistEntry, n
         modifier = modifier
             .clickable(onClick = {
                 when {
-                    tab.playlistId == -1 -> navigateToTabByTabId(tab.tabId)
-                    tab.entryId > 0 -> navigateToTabByPlaylistEntryId(tab.entryId)
+                    tab.entryId > 0 && tab.playlistId > 0 -> navigateToTabByPlaylistEntryId(tab.entryId)
                     else -> navigateToTabByTabId(tab.tabId)
                 }
             })
@@ -40,7 +42,8 @@ fun SuggestedTab(modifier: Modifier = Modifier, tab: TabWithDataPlaylistEntry, n
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             val icon = when {
-                tab.playlistId == -1 -> Icons.Default.Favorite
+                tab.playlistId == FAVORITES_PLAYLIST_ID -> Icons.Default.Favorite
+                tab.playlistId == TOP_TABS_PLAYLIST_ID -> Icons.Default.Person
                 tab.entryId > 0 -> ImageVector.vectorResource(id = R.drawable.ic_playlist_play)
                 else -> ImageVector.vectorResource(id = R.drawable.ic_search_activity)
             }
@@ -93,6 +96,24 @@ private fun SuggestedTabPreviewFavorite() {
     val suggestion = TabWithDataPlaylistEntry(
         tabId = 0,
         playlistId = -1,
+        songName = "Three Little Birds",
+        artistName = "Bob Marley"
+    )
+    AppTheme {
+        SuggestedTab(
+            tab = suggestion,
+            navigateToTabByTabId = {},
+            navigateToTabByPlaylistEntryId = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun SuggestedTabPreviewPopular() {
+    val suggestion = TabWithDataPlaylistEntry(
+        tabId = 0,
+        playlistId = -2,
         songName = "Three Little Birds",
         artistName = "Bob Marley"
     )

@@ -53,7 +53,7 @@ interface ITabViewState {
     /**
      * The ID of the song author
      */
-    val artistId: LiveData<Int>
+    val artistId: LiveData<Int?>
 
     val version: LiveData<Int>
 

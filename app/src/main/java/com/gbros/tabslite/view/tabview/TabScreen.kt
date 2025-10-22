@@ -288,7 +288,9 @@ fun TabScreen(
                                     tag = "artistId",
                                     linkInteractionListener = LinkInteractionListener {
                                         Log.d(TAG, "artist $artistId ($artistName) clicked")
-                                        onArtistClicked(artistId)
+                                        if (artistId != null){
+                                            onArtistClicked(artistId)
+                                        }
                                     }
                                 )) {
                                 append(artistName)
@@ -485,7 +487,7 @@ private fun TabViewPreview() {
         override val shareUrl: LiveData<String>,
         override val allPlaylists: LiveData<List<Playlist>>,
         override val artist: LiveData<String>,
-        override val artistId: LiveData<Int>,
+        override val artistId: LiveData<Int?>,
         override val addToPlaylistDialogSelectedPlaylistTitle: LiveData<String?>,
         override val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>,
         override val fontSizeSp: LiveData<Float>,

@@ -745,15 +745,15 @@ class TabViewModel
 
     //#region view state
 
-    override val artistId: LiveData<Int> = tab.map { t -> t.artistId }
+    override val artistId: LiveData<Int?> = tab.map { t -> t?.artistId }
 
     override val useFlats: LiveData<Boolean> = dataAccess.getLivePreference(Preference.USE_FLATS).map { p -> p?.value?.toBoolean() == true }
 
     override val songName: LiveData<String> = tab.map { t -> t?.songName ?: "" }
 
-    override val version: LiveData<Int> = tab.map { t -> t.version }
+    override val version: LiveData<Int> = tab.map { t -> t?.version ?: 0 }
 
-    override val songVersions: LiveData<List<ITab>> = tab.switchMap { t -> dataAccess.getTabsBySongId(t.songId).map { t -> t } }
+    override val songVersions: LiveData<List<ITab>> = tab.switchMap { t -> if(t == null) MutableLiveData(listOf()) else dataAccess.getTabsBySongId(t.songId).map { t -> t } }
 
     override val isFavorite: LiveData<Boolean> = if (idIsPlaylistEntryId) dataAccess.playlistEntryExistsInFavorites(id) else dataAccess.tabExistsInFavoritesLive(id)
 
