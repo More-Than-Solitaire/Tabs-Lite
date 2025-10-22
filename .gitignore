@@ -143,3 +143,8 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
+/app/release/baselineProfiles/0/app-release.dm
+/app/release/baselineProfiles/1/app-release.dm
+/.idea/deploymentTargetSelector.xml
+/.idea/deviceManager.xml
+/app/release/output-metadata.json
