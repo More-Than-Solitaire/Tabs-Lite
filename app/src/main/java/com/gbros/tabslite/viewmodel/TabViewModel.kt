@@ -760,11 +760,7 @@ class TabViewModel
     /**
      * Whether to display the playlist navigation bar
      */
-    override val isPlaylistEntry: Boolean
-        get() {
-            val t = tab.value
-            return t is TabWithDataPlaylistEntry && t.playlistId > 0  // return false if this is the favorites or popular tabs playlists (<=0)
-        }
+    override val isPlaylistEntry: LiveData<Boolean> = tab.map { t -> t is TabWithDataPlaylistEntry && t.playlistId > 0 }
 
     override val playlistTitle: LiveData<String> = tab.map { t ->
         if (t is TabWithDataPlaylistEntry && t.playlistTitle != null) t.playlistTitle!! else ""

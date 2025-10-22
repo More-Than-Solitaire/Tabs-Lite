@@ -309,6 +309,8 @@ fun TabScreen(
                 }
             }
         }
+        val isPlaylistEntry = viewState.isPlaylistEntry.observeAsState(false)
+        val playlistTitle = viewState.playlistTitle.observeAsState("...")
 
         TabTopAppBar(
             title = titleBuilder.toString(),
@@ -338,9 +340,9 @@ fun TabScreen(
                     .fillMaxWidth()
                     .padding(bottom = 4.dp,)
             )
-            if (viewState.isPlaylistEntry) {
+            if (isPlaylistEntry.value) {
                 TabPlaylistNavigation(
-                    title = viewState.playlistTitle.observeAsState("").value,
+                    title = playlistTitle.value,
                     nextSongButtonEnabled = viewState.playlistNextSongButtonEnabled.observeAsState(false).value,
                     previousSongButtonEnabled = viewState.playlistPreviousSongButtonEnabled.observeAsState(false).value,
                     onNextSongClick = onPlaylistNextSongClick,
@@ -378,10 +380,10 @@ fun TabScreen(
                 )
                 Spacer(modifier = Modifier.padding(vertical = 24.dp))
 
-                if (viewState.isPlaylistEntry) {
+                if (isPlaylistEntry.value) {
                     TabPlaylistNavigation(
                         modifier = Modifier.padding(end = 96.dp),  // extra for the autoscroll button
-                        title = viewState.playlistTitle.observeAsState("").value,
+                        title = playlistTitle.value,
                         nextSongButtonEnabled = viewState.playlistNextSongButtonEnabled.observeAsState(false).value,
                         previousSongButtonEnabled = viewState.playlistPreviousSongButtonEnabled.observeAsState(false).value,
                         onNextSongClick = onPlaylistNextSongClick,
@@ -463,7 +465,7 @@ private fun TabViewPreview() {
     data class TabViewStateForTest(
         override val songName: LiveData<String>,
         override val isFavorite: LiveData<Boolean>,
-        override val isPlaylistEntry: Boolean,
+        override val isPlaylistEntry: LiveData<Boolean>,
         override val playlistTitle: LiveData<String>,
         override val playlistNextSongButtonEnabled: LiveData<Boolean>,
         override val playlistPreviousSongButtonEnabled: LiveData<Boolean>,
@@ -497,7 +499,7 @@ private fun TabViewPreview() {
         constructor(tab: ITab): this(
             songName = MutableLiveData(tab.songName),
             isFavorite = MutableLiveData(true),
-            isPlaylistEntry = false,
+            isPlaylistEntry = MutableLiveData(false),
             playlistTitle = MutableLiveData("none"),
             playlistNextSongButtonEnabled = MutableLiveData(false),
             playlistPreviousSongButtonEnabled = MutableLiveData(false),

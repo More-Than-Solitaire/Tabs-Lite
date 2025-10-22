@@ -24,7 +24,7 @@ interface ITabViewState {
     /**
      * Whether to display the playlist navigation bar
      */
-    val isPlaylistEntry: Boolean
+    val isPlaylistEntry: LiveData<Boolean>
 
     val playlistTitle: LiveData<String>
 
