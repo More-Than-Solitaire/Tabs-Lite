@@ -753,31 +753,6 @@ class TabViewModel
     private val _chordsPinned: MutableLiveData<Boolean> = MutableLiveData(false)
     override val chordsPinned: LiveData<Boolean> = _chordsPinned
 
-    override val allChordsInTab: LiveData<List<String>> = tab.map { t -> t?.getAllChordNames() ?: emptyList() }
-
-    override val pinnedChordVariations: LiveData<Map<String, ChordVariation?>> = 
-        allChordsInTab.combine(chordInstrument) { chords, instrument ->
-            Pair(chords, instrument)
-        }.switchMap { (chords, instrument) ->
-            liveData(Dispatchers.IO) {
-                if (chords.isNullOrEmpty() || instrument == null) {
-                    emit(emptyMap())
-                } else {
-                    val map = mutableMapOf<String, ChordVariation?>()
-                    chords.forEach { chordName ->
-                        try {
-                            val variations = dataAccess.getChordVariations(chordName, instrument)
-                            map[chordName] = variations.firstOrNull()
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error loading chord variation for $chordName: ${e.message}", e)
-                            map[chordName] = null
-                        }
-                    }
-                    emit(map)
-                }
-            }
-        }
-
     override val songName: LiveData<String> = tab.map { t -> t?.songName ?: "" }
 
     override val version: LiveData<Int> = tab.map { t -> t?.version ?: 0 }
@@ -836,6 +811,38 @@ class TabViewModel
     override val plainTextContent: LiveData<String> = unformattedContent.map { txt ->
         txt.replace("[tab]", "").replace("[/tab]", "").replace("[ch]", "").replace("[/ch]", "")
     }
+
+    override val allChordsInTab: LiveData<List<String>> = unformattedContent.map { content ->
+        // Extract all chord names from the transposed content
+        val chordPattern = Regex("\\[ch](.*?)\\[/ch]")
+        val matches = chordPattern.findAll(content)
+        matches.map { it.groupValues[1] }.distinct().toList()
+    }
+
+    override val pinnedChordVariations: LiveData<Map<String, ChordVariation?>> = 
+        allChordsInTab.combine(chordInstrument) { chords, instrument ->
+            Pair(chords, instrument)
+        }.switchMap { (chords, instrument) ->
+            liveData(Dispatchers.IO) {
+                if (chords.isNullOrEmpty() || instrument == null) {
+                    emit(emptyMap())
+                } else {
+                    val map = mutableMapOf<String, ChordVariation?>()
+                    chords.forEach { chordName ->
+                        try {
+                            // Force fetch the chord from network if not in database
+                            Chord.getChord(chordName, instrument, dataAccess)
+                            val variations = dataAccess.getChordVariations(chordName, instrument)
+                            map[chordName] = variations.firstOrNull()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error loading chord variation for $chordName: ${e.message}", e)
+                            map[chordName] = null
+                        }
+                    }
+                    emit(map)
+                }
+            }
+        }
 
     override val content: LiveData<AnnotatedString> = unformattedContent.combine(availableWidthInChars, currentTheme) { unformatted, availableWidth, theme ->
         if (unformatted != null && availableWidth != null && availableWidth > 0u && theme != null) {

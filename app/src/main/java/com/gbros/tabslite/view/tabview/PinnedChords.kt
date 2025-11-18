@@ -56,20 +56,20 @@ fun PinnedChords(
 ) {
     // Calculate top padding: status bar + app bar height (approximately 64dp for Material3)
     val topPadding = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding() + 64.dp
-    
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(top = topPadding)
             .shadow(elevation = 4.dp)
             .background(MaterialTheme.colorScheme.surface)
-            .padding(vertical = 8.dp)
+            .padding(vertical = 4.dp)
     ) {
         Row(
             modifier = Modifier
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             chords.forEach { chord ->
                 ChordDiagramChip(
@@ -96,18 +96,19 @@ private fun ChordDiagramChip(
 ) {
     Column(
         modifier = modifier
-            .width(80.dp)
+            .width(90.dp)
             .clickable(onClick = onClick)
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(4.dp),
+            .padding(vertical = 3.dp, horizontal = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = chordName,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 12.sp,
+            fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 2.dp)
         )
         
         if (chordVariation != null) {
@@ -134,15 +135,18 @@ private fun ChordDiagramChip(
                 chart = chartLayout,
                 modifier = Modifier
                     .width(80.dp)
-                    .height(90.dp),
+                    .height(100.dp),
                 viewData = ChordViewData(
                     noteColor = MaterialTheme.colorScheme.primary.toChrynanRgba(),
-                    noteLabelTextColor = MaterialTheme.colorScheme.surface.toChrynanRgba(),
-                    fretColor = MaterialTheme.colorScheme.onSurfaceVariant.toChrynanRgba(),
-                    fretLabelTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toChrynanRgba(),
-                    stringColor = MaterialTheme.colorScheme.onSurfaceVariant.toChrynanRgba(),
-                    stringLabelTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toChrynanRgba(),
-                    stringLabelState = StringLabelState.HIDE,
+                    noteLabelTextColor = MaterialTheme.colorScheme.onPrimary.toChrynanRgba(),
+                    fretColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                    fretLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                    stringColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                    stringLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                    // stringLabelState = StringLabelState.SHOW_LABEL,
+                    mutedStringText = "x",
+                    openStringText = "",
+                    showFingerNumbers = false,
                     fitToHeight = true
                 )
             )
@@ -151,7 +155,7 @@ private fun ChordDiagramChip(
             Box(
                 modifier = Modifier
                     .width(80.dp)
-                    .height(90.dp)
+                    .height(100.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
