@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.DropdownMenu
@@ -57,12 +58,14 @@ fun TabTopAppBar(isFavorite: Boolean,
                  allPlaylists: List<Playlist>,
                  selectedPlaylistTitle: String?,
                  selectPlaylistConfirmButtonEnabled: Boolean,
+                 chordsPinned: Boolean = false,
                  onNavigateBack: () -> Unit,
                  onReloadClick: () -> Unit,
                  onAddToPlaylist: () -> Unit,
                  onCreatePlaylist: (title: String, description: String) -> Unit,
                  onPlaylistSelectionChange: (Playlist) -> Unit,
                  onFavoriteButtonClick: () -> Unit,
+                 onChordsPinnedToggled: () -> Unit = {},
                  onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit
 ) {
     val currentContext = LocalContext.current
@@ -100,6 +103,14 @@ fun TabTopAppBar(isFavorite: Boolean,
             }
         },
         actions = {
+            IconButton(onClick = onChordsPinnedToggled) {
+                Icon(
+                    imageVector = Icons.Default.PushPin,
+                    contentDescription = "Pin chords",
+                    tint = if (chordsPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                )
+            }
+            
             IconButton(onClick = onFavoriteButtonClick) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -231,12 +242,14 @@ private fun TabTopAppBarPreview() {
             selectedPlaylistTitle = "Test",
             copyText = "",
             selectPlaylistConfirmButtonEnabled = false,
+            chordsPinned = false,
             onAddToPlaylist = {},
             onCreatePlaylist = {_, _->},
             onFavoriteButtonClick = {},
             onPlaylistSelectionChange = {},
             onNavigateBack = {},
             onReloadClick = {},
+            onChordsPinnedToggled = {},
             onExportToPdfClick = {_, _ ->},
             title = ""
         )

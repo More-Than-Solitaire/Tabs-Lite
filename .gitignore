@@ -148,3 +148,4 @@ fastlane/readme.md
 /.idea/deploymentTargetSelector.xml
 /.idea/deviceManager.xml
 /app/release/output-metadata.json
+.idea/studiobot.xml

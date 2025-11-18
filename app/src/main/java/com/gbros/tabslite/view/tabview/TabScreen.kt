@@ -1,3 +1,4 @@
+
 package com.gbros.tabslite.view.tabview
 
 import android.content.ContentResolver
@@ -7,12 +8,17 @@ import android.text.Annotation
 import android.text.SpannedString
 import android.util.Log
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.safeDrawing
@@ -30,9 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.Clipboard
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -146,6 +154,7 @@ fun NavGraphBuilder.tabScreen(
             onCreatePlaylist = viewModel::onCreatePlaylist,
             onInstrumentSelected = viewModel::onInstrumentSelected,
             onUseFlatsToggled = viewModel::onUseFlatsToggled,
+            onChordsPinnedToggled = viewModel::onChordsPinnedToggled,
             onExportToPdfClick = viewModel::onExportToPdfClick
         )
     }
@@ -219,6 +228,7 @@ fun NavGraphBuilder.playlistEntryScreen(
             onCreatePlaylist = viewModel::onCreatePlaylist,
             onInstrumentSelected = viewModel::onInstrumentSelected,
             onUseFlatsToggled = viewModel::onUseFlatsToggled,
+            onChordsPinnedToggled = viewModel::onChordsPinnedToggled,
             onExportToPdfClick = viewModel::onExportToPdfClick
         )
     }
@@ -251,6 +261,7 @@ fun TabScreen(
     onCreatePlaylist: (title: String, description: String) -> Unit,
     onInstrumentSelected: (instrument: Instrument) -> Unit,
     onUseFlatsToggled: (useFlats: Boolean) -> Unit,
+    onChordsPinnedToggled: () -> Unit,
     onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit
 ) {
     // handle autoscroll
@@ -258,14 +269,17 @@ fun TabScreen(
 
     KeepScreenOn()
 
-    Column(
-        modifier = Modifier
-            .verticalScroll(scrollState)
-            .windowInsetsPadding(WindowInsets(
-                left = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(LocalLayoutDirection.current)),
-                right = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(LocalLayoutDirection.current))
-            ))
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .windowInsetsPadding(WindowInsets(
+                    left = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(LocalLayoutDirection.current)),
+                    right = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(LocalLayoutDirection.current))
+                ))
+        ) {
         // create clickable title
         val songName = viewState.songName.observeAsState("...").value
         val artistName = viewState.artist.observeAsState("...").value
@@ -309,27 +323,35 @@ fun TabScreen(
                 }
             }
         }
-        val isPlaylistEntry = viewState.isPlaylistEntry.observeAsState(false)
-        val playlistTitle = viewState.playlistTitle.observeAsState("...")
+            val isPlaylistEntry = viewState.isPlaylistEntry.observeAsState(false)
+            val playlistTitle = viewState.playlistTitle.observeAsState("...")
 
-        TabTopAppBar(
-            title = titleBuilder.toString(),
-            allPlaylists = viewState.allPlaylists.observeAsState(listOf()).value,
-            selectedPlaylistTitle = viewState.addToPlaylistDialogSelectedPlaylistTitle.observeAsState(null).value,
-            shareUrl = viewState.shareUrl.observeAsState("https://tabslite.com/").value,
-            isFavorite = viewState.isFavorite.observeAsState(false).value,
-            copyText = viewState.plainTextContent.observeAsState("").value,
-            onNavigateBack = onNavigateBack,
-            onReloadClick = onReload,
-            onFavoriteButtonClick = onFavoriteButtonClick,
-            onAddToPlaylist = onAddToPlaylist,
-            onCreatePlaylist = onCreatePlaylist,
-            onPlaylistSelectionChange = onAddPlaylistDialogPlaylistSelected,
-            selectPlaylistConfirmButtonEnabled = viewState.addToPlaylistDialogConfirmButtonEnabled.observeAsState(false).value,
-            onExportToPdfClick = onExportToPdfClick
-        )
+            TabTopAppBar(
+                title = titleBuilder.toString(),
+                allPlaylists = viewState.allPlaylists.observeAsState(listOf()).value,
+                selectedPlaylistTitle = viewState.addToPlaylistDialogSelectedPlaylistTitle.observeAsState(null).value,
+                shareUrl = viewState.shareUrl.observeAsState("https://tabslite.com/").value,
+                isFavorite = viewState.isFavorite.observeAsState(false).value,
+                copyText = viewState.plainTextContent.observeAsState("").value,
+                chordsPinned = viewState.chordsPinned.observeAsState(false).value,
+                onNavigateBack = onNavigateBack,
+                onReloadClick = onReload,
+                onFavoriteButtonClick = onFavoriteButtonClick,
+                onAddToPlaylist = onAddToPlaylist,
+                onCreatePlaylist = onCreatePlaylist,
+                onPlaylistSelectionChange = onAddPlaylistDialogPlaylistSelected,
+                selectPlaylistConfirmButtonEnabled = viewState.addToPlaylistDialogConfirmButtonEnabled.observeAsState(false).value,
+                onChordsPinnedToggled = onChordsPinnedToggled,
+                onExportToPdfClick = onExportToPdfClick
+            )
 
-        Column {
+            // Add spacing for pinned chords when they are shown
+            // Height = status bar (~40-50dp) + app bar (64dp) + chord banner (~106dp with padding)
+            if (viewState.chordsPinned.observeAsState(false).value) {
+                val topInset = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
+                Spacer(modifier = Modifier.height(topInset + 64.dp + 106.dp))
+            }
+            
             Text(  // Tab title
                 text = titleBuilder,
                 style = MaterialTheme.typography.headlineMedium,
@@ -413,19 +435,44 @@ fun TabScreen(
             }
         }
 
-        // chord bottom sheet display if a chord was clicked
-        if (viewState.chordDetailsActive.observeAsState(false).value) {
-            ChordModalBottomSheet(
-                title = viewState.chordDetailsTitle.observeAsState("").value,
-                chordVariations = viewState.chordDetailsVariations.observeAsState(emptyList()).value,
-                instrument = viewState.chordInstrument.observeAsState(Instrument.Guitar).value,
-                useFlats = viewState.useFlats.observeAsState(false).value,
-                loadingState = viewState.chordDetailsState.observeAsState(LoadingState.Loading).value,
-                onDismiss = onChordDetailsDismiss,
-                onInstrumentSelected = onInstrumentSelected,
-                onUseFlatsToggled = onUseFlatsToggled
+        // Sticky pinned chords at the top
+        if (viewState.chordsPinned.observeAsState(false).value) {
+            val allChords = viewState.allChordsInTab.observeAsState(emptyList()).value
+            val chordVariations = viewState.pinnedChordVariations.observeAsState(emptyMap()).value
+            val instrument = viewState.chordInstrument.observeAsState(Instrument.Guitar).value
+            val uriHandler = LocalUriHandler.current
+            val clipboardManager = LocalClipboard.current
+            val clickableText = viewState.content.observeAsState(AnnotatedString("")).value
+
+            PinnedChords(
+                chords = allChords,
+                chordVariations = chordVariations,
+                instrument = instrument,
+                modifier = Modifier.align(Alignment.TopCenter),
+                onChordClick = { chord ->
+                    // When a chord is clicked in the pinned section, show its details
+                    val chordAnnotations = clickableText.getStringAnnotations(tag = "chord", 0, clickableText.length)
+                    val chordAnnotation = chordAnnotations.firstOrNull { it.item == chord }
+                    if (chordAnnotation != null) {
+                        onTextClick(chordAnnotation.start, uriHandler, clipboardManager)
+                    }
+                }
             )
         }
+    }
+
+    // chord bottom sheet display if a chord was clicked
+    if (viewState.chordDetailsActive.observeAsState(false).value) {
+        ChordModalBottomSheet(
+            title = viewState.chordDetailsTitle.observeAsState("").value,
+            chordVariations = viewState.chordDetailsVariations.observeAsState(emptyList()).value,
+            instrument = viewState.chordInstrument.observeAsState(Instrument.Guitar).value,
+            useFlats = viewState.useFlats.observeAsState(false).value,
+            loadingState = viewState.chordDetailsState.observeAsState(LoadingState.Loading).value,
+            onDismiss = onChordDetailsDismiss,
+            onInstrumentSelected = onInstrumentSelected,
+            onUseFlatsToggled = onUseFlatsToggled
+        )
     }
 
     AutoscrollFloatingActionButton(
@@ -494,7 +541,11 @@ private fun TabViewPreview() {
         override val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>,
         override val fontSizeSp: LiveData<Float>,
         override val chordInstrument: LiveData<Instrument>,
-        override val useFlats: LiveData<Boolean>
+        override val useFlats: LiveData<Boolean>,
+        override val chordsPinned: LiveData<Boolean>,
+        override val allChordsInTab: LiveData<List<String>>,
+        override val pinnedChordVariations: LiveData<Map<String, ChordVariation?>>
+
     ) : ITabViewState {
         constructor(tab: ITab): this(
             songName = MutableLiveData(tab.songName),
@@ -528,7 +579,10 @@ private fun TabViewPreview() {
             addToPlaylistDialogSelectedPlaylistTitle = MutableLiveData("Playlist1"),
             addToPlaylistDialogConfirmButtonEnabled = MutableLiveData(false),
             chordInstrument = MutableLiveData(Instrument.Guitar),
-            useFlats = MutableLiveData(false)
+            useFlats = MutableLiveData(false),
+            chordsPinned = MutableLiveData(false),
+            allChordsInTab = MutableLiveData(listOf("C", "Em", "Am", "G", "F")),
+            pinnedChordVariations = MutableLiveData(emptyMap())
         )
 
         override fun getCapoText(context: Context): LiveData<String> {
@@ -597,7 +651,8 @@ private fun TabViewPreview() {
             onUseFlatsToggled = { },
             onArtistClicked = { },
             onExportToPdfClick = { _, _ -> },
-            onNavigateToTabByTabId = { _ -> }
+            onNavigateToTabByTabId = { _ -> },
+            onChordsPinnedToggled = { }
         )
     }
 }

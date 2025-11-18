@@ -135,4 +135,19 @@ interface ITabViewState {
      * Whether to display chords as flats or sharps
      */
     val useFlats: LiveData<Boolean>
+
+    /**
+     * Whether to pin all chords at the top of the screen
+     */
+    val chordsPinned: LiveData<Boolean>
+
+    /**
+     * List of all unique chord names used in this tab
+     */
+    val allChordsInTab: LiveData<List<String>>
+
+    /**
+     * Map of chord names to their first chord variation for pinned display
+     */
+    val pinnedChordVariations: LiveData<Map<String, ChordVariation?>>
 }

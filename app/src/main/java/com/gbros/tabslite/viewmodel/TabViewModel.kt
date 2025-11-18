@@ -29,6 +29,7 @@ import androidx.core.graphics.toColorInt
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.gbros.tabslite.LoadingState
@@ -749,6 +750,34 @@ class TabViewModel
 
     override val useFlats: LiveData<Boolean> = dataAccess.getLivePreference(Preference.USE_FLATS).map { p -> p?.value?.toBoolean() == true }
 
+    private val _chordsPinned: MutableLiveData<Boolean> = MutableLiveData(false)
+    override val chordsPinned: LiveData<Boolean> = _chordsPinned
+
+    override val allChordsInTab: LiveData<List<String>> = tab.map { t -> t?.getAllChordNames() ?: emptyList() }
+
+    override val pinnedChordVariations: LiveData<Map<String, ChordVariation?>> = 
+        allChordsInTab.combine(chordInstrument) { chords, instrument ->
+            Pair(chords, instrument)
+        }.switchMap { (chords, instrument) ->
+            liveData(Dispatchers.IO) {
+                if (chords.isNullOrEmpty() || instrument == null) {
+                    emit(emptyMap())
+                } else {
+                    val map = mutableMapOf<String, ChordVariation?>()
+                    chords.forEach { chordName ->
+                        try {
+                            val variations = dataAccess.getChordVariations(chordName, instrument)
+                            map[chordName] = variations.firstOrNull()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error loading chord variation for $chordName: ${e.message}", e)
+                            map[chordName] = null
+                        }
+                    }
+                    emit(map)
+                }
+            }
+        }
+
     override val songName: LiveData<String> = tab.map { t -> t?.songName ?: "" }
 
     override val version: LiveData<Int> = tab.map { t -> t?.version ?: 0 }
@@ -1114,6 +1143,13 @@ class TabViewModel
             dataAccess.upsert(Preference(Preference.USE_FLATS, useFlats.toString()))
             fetchAllChords()
         }
+    }
+
+    /**
+     * Handle user toggling the pinned chords display
+     */
+    fun onChordsPinnedToggled() {
+        _chordsPinned.postValue(_chordsPinned.value != true)
     }
 
     //#endregion
