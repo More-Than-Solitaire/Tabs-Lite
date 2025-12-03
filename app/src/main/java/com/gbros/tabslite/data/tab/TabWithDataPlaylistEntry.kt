@@ -6,6 +6,7 @@ import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.playlist.DataPlaylistEntry
 import com.gbros.tabslite.data.playlist.IDataPlaylistEntry
 import com.gbros.tabslite.data.playlist.Playlist
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.parcelize.Parcelize
 
 @Parcelize  // used for playlist reordering
@@ -90,7 +91,7 @@ data class TabWithDataPlaylistEntry(
      *
      * @return this object, for joining calls together
      */
-    override suspend fun load(dataAccess: DataAccess, forceInternetFetch: Boolean): TabWithDataPlaylistEntry {
+    override suspend fun load(dataAccess: DataAccess, db: FirebaseFirestore, forceInternetFetch: Boolean): TabWithDataPlaylistEntry {
         // fetch playlist entry
         val loadedPlaylistEntry = dataAccess.getEntryById(entryId)
         if (loadedPlaylistEntry == null) {
@@ -104,7 +105,7 @@ data class TabWithDataPlaylistEntry(
         set(loadedPlaylistDetail)
 
         // fetch tab
-        val loadedTab = Tab(tabId).load(dataAccess, forceInternetFetch)
+        val loadedTab = Tab(tabId).load(dataAccess, db, forceInternetFetch)
         set(loadedTab)
         return this
     }

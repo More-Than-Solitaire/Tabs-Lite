@@ -20,6 +20,8 @@ import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.homescreen.IHomeViewState
 import com.gbros.tabslite.view.playlists.PlaylistsSortBy
 import com.gbros.tabslite.view.songlist.SortBy
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -36,6 +38,8 @@ class HomeViewModel
 @AssistedInject constructor(
     @Assisted private val dataAccess: DataAccess
 ) : ViewModel(), IHomeViewState {
+
+    private val db = Firebase.firestore
 
     //#region dependency injection factory
 
@@ -215,6 +219,7 @@ class HomeViewModel
                     try {
                         playlist.importToDatabase(
                             dataAccess = dataAccess,
+                            db = db,
                             onProgressChange = { progress ->
                                 playlistImportProgress.postValue(progressFromPreviouslyImportedPlaylists + (progress * progressForThisPlaylist))
                             })

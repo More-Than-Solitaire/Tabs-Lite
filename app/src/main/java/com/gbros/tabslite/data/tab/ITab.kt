@@ -3,6 +3,7 @@ package com.gbros.tabslite.data.tab
 import android.content.Context
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
+import com.google.firebase.firestore.FirebaseFirestore
 
 private const val LOG_NAME = "tabslite.ITab          "
 
@@ -94,9 +95,10 @@ interface ITab {
      * the tab content from the internet and load it into the database.
      *
      * @param dataAccess: The database to load the updated tab into
+     * @param db: The database to load the updated tab from
      * @param forceInternetFetch: If true, load from the internet regardless of whether we already have the tab.  If false, load only if [content] is empty
      *
      * @return The resulting ITab, either from the local database or from the internet
      */
-    suspend fun load(dataAccess: DataAccess, forceInternetFetch: Boolean = false): ITab
+    suspend fun load(dataAccess: DataAccess, db: FirebaseFirestore, forceInternetFetch: Boolean = false): ITab
 }

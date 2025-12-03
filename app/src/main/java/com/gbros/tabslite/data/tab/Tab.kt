@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.BackendConnection
+import com.google.firebase.firestore.FirebaseFirestore
 
 data class Tab(
     @PrimaryKey @ColumnInfo(name = "id") override var tabId: Int,
@@ -55,14 +56,14 @@ data class Tab(
             return dataTabs.map { Tab(it) }
         }
 
-        suspend fun fetchAllEmptyPlaylistTabsFromInternet(dataAccess: DataAccess, playlistId: Int? = null, onProgressChange: (progress: Float) -> Unit = {}) {
+        suspend fun fetchAllEmptyPlaylistTabsFromInternet(dataAccess: DataAccess, db: FirebaseFirestore, playlistId: Int? = null, onProgressChange: (progress: Float) -> Unit = {}) {
             val emptyTabs: List<Int> = if (playlistId == null) dataAccess.getEmptyPlaylistTabIds() else dataAccess.getEmptyPlaylistTabIds(playlistId)
             Log.d(TAG, "Found ${emptyTabs.size} empty playlist tabs (filter by playlist id: $playlistId) to fetch")
             var numFetchedTabs = 0f
             emptyTabs.forEach { tabId ->
                 try {
                     onProgressChange(++numFetchedTabs / emptyTabs.size.toFloat())
-                    BackendConnection.fetchTabFromInternet(tabId, dataAccess)
+                    BackendConnection.fetchTabFromInternet(tabId, dataAccess, db)
                 } catch (ex: BackendConnection.NoInternetException) {
                     Log.i(TAG, "Not connected to the internet during empty tab fetch for tab $tabId for playlist $playlistId: ${ex.message}. Skipping the rest of the tabs in this playlist.")
                     throw ex  // exit the fetch if we're not connected to the internet
@@ -108,10 +109,10 @@ data class Tab(
      * @param dataAccess: The database to load the updated tab into (or fetch the already downloaded tab from)
      * @param forceInternetFetch: If true, load from the internet regardless of whether we already have the tab.  If false, load only if [content] is empty
      */
-    override suspend fun load(dataAccess: DataAccess, forceInternetFetch: Boolean): Tab {
+    override suspend fun load(dataAccess: DataAccess, db: FirebaseFirestore, forceInternetFetch: Boolean): Tab {
         val loadedTab = if (forceInternetFetch || !dataAccess.existsWithContent(tabId)) {
             Log.d(TAG, "Fetching tab $tabId from internet (force = $forceInternetFetch)")
-            Tab(BackendConnection.fetchTabFromInternet(tabId = tabId, dataAccess = dataAccess))
+            Tab(BackendConnection.fetchTabFromInternet(tabId = tabId, dataAccess = dataAccess, db = db))
         } else {
             // Cache hit for tab.  Not fetching from internet.
             Tab(dataAccess.getTabInstance(tabId))

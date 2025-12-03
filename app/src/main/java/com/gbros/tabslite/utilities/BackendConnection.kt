@@ -16,6 +16,8 @@ import com.gbros.tabslite.data.servertypes.TabRequestType
 import com.gbros.tabslite.data.tab.TabDataType
 import com.gbros.tabslite.utilities.BackendConnection.apiKey
 import com.gbros.tabslite.utilities.BackendConnection.deviceId
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObject
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -23,6 +25,7 @@ import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -266,29 +269,26 @@ object BackendConnection {
     suspend fun fetchTabFromInternet(
         tabId: Int,
         dataAccess: DataAccess,
-        tabAccessType: String = "public"
+        db: FirebaseFirestore,
     ): TabDataType = withContext(Dispatchers.IO) {
         // get the tab and put it in the database, then return true
         Log.v(TAG, "Loading tab $tabId.")
-        val url =
-            "https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType"
-        val requestResponse: TabRequestType = with(authenticatedStream(url)) {
-            val jsonReader = JsonReader(reader())
-            val tabRequestTypeToken = object : TypeToken<TabRequestType>() {}.type
-            Gson().fromJson(jsonReader, tabRequestTypeToken)
-        }
 
-        Log.v(
-            TAG,
-            "Parsed response for tab $tabId. Name: ${requestResponse.song_name}, capo ${requestResponse.capo}"
-        )
+        val tabDocRef = db.collection("tabs").document("7567-$tabId")
+        val tabDoc = tabDocRef.get().await()
+        if (!tabDoc.exists()) {
+            throw NotFoundException("Tab $tabId not found in database")
+        }
+        val requestResponse = tabDoc.toObject<TabRequestType>() ?: throw TabFetchException("Couldn't parse tab $tabId from database")
+
+        Log.v(TAG, "Parsed response for tab $tabId. Name: ${requestResponse.song_name}, capo ${requestResponse.capo}")
 
         val result = requestResponse.getTabFull()
         if (result.content.isNotBlank()) {
             dataAccess.upsert(result)
             Log.v(TAG, "Successfully inserted tab ${result.songName} (${result.tabId})")
         } else {
-            val message = "Tab $tabId fetch completed successfully but had no content! This shouldn't happen."
+            val message = "Tab $tabId fetch completed successfully but had no content! This shouldn't happen. Might be a pro tab?"
             Log.e(TAG, message)
             throw TabFetchException(message)
         }
