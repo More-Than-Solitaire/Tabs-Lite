@@ -9,6 +9,9 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
 
     alias(libs.plugins.spotless)
+
+    // Add the dependency for the Google services Gradle plugin
+    alias(libs.plugins.google.services) apply false
 }
 
 spotless {

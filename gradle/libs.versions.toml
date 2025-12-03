@@ -10,6 +10,7 @@ composeUiTest = "1.9.3"
 constraintlayout = "2.2.1"
 coreKtx = "1.17.0"
 daggerHilt = "2.57.2"
+firebaseBom = "34.6.0"
 fragmentKtx = "1.8.9"
 gson = "2.13.2"
 hiltNavigationCompose = "1.3.0"
@@ -31,6 +32,7 @@ viewpager2 = "1.1.0"
 workRuntime = "2.10.5"
 chrynanChords = "2.4.1"
 composeExtendedGestures = "3.1"
+googleServices = "4.4.4"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -62,6 +64,8 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 chrynan-chords-compose = { group = "com.chrynan.chords", name = "chords-compose", version.ref = "chrynanChords" }
 compose-extended-gestures = { group = "com.github.SmartToolFactory", name = "Compose-Extended-Gestures", version.ref = "composeExtendedGestures" }
 compose-reorderable = { group = "sh.calvin.reorderable", name = "reorderable", version.ref = "composeReorderable" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore" } # no version needed because of firebase-bom below
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 google-android-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 google-code-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 google-dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "daggerHilt" }
@@ -81,3 +85,4 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 navigationSafeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationSafeArgs" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }

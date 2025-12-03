@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.daggerHilt)
     alias(libs.plugins.navigationSafeargs)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.google.services)
 }
 
 kotlin {
@@ -79,9 +80,6 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.recyclerview)
-    ksp(libs.androidx.room.compiler)
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.compose.extended.gestures)
@@ -94,7 +92,8 @@ dependencies {
     implementation(libs.org.jetbrains.kotlinx.coroutines.core)
     implementation(libs.org.jetbrains.kotlinx.serialization.json)
     implementation(libs.compose.reorderable)
-
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
     implementation(libs.chrynan.chords.compose)
 
     // Debug dependencies
