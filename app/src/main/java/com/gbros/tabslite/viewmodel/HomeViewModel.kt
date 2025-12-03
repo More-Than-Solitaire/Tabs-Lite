@@ -15,7 +15,7 @@ import com.gbros.tabslite.data.ThemeSelection
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.playlist.PlaylistFileExportType
 import com.gbros.tabslite.utilities.TAG
-import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.utilities.BackendConnection
 import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.homescreen.IHomeViewState
 import com.gbros.tabslite.view.playlists.PlaylistsSortBy
@@ -218,7 +218,7 @@ class HomeViewModel
                             onProgressChange = { progress ->
                                 playlistImportProgress.postValue(progressFromPreviouslyImportedPlaylists + (progress * progressForThisPlaylist))
                             })
-                    } catch (ex: UgApi.NoInternetException) {
+                    } catch (ex: BackendConnection.NoInternetException) {
                         playlistImportState.postValue(LoadingState.Error(R.string.message_playlist_import_delayed_internet_access))
                         Log.i(TAG, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) completed without internet access.")
                     } catch (ex: Exception) {

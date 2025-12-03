@@ -4,7 +4,7 @@ import android.util.Log
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.utilities.TAG
-import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.utilities.BackendConnection
 
 /**
  * Represents a search session with one search query.  Gets search results and provides a method to
@@ -55,7 +55,7 @@ class Search(
      */
     private suspend fun getSearchResults(page: Int, query: String, artistId: Int?): List<ITab> {
         Log.d(TAG, "starting search '$query' page $page artist $artistId")
-        val searchResult = UgApi.search(query, artistId, page)  // always search the next page that hasn't been loaded yet
+        val searchResult = BackendConnection.search(query, artistId, page)  // always search the next page that hasn't been loaded yet
 
         return if (!searchResult.didYouMean.isNullOrBlank()) {
             throw SearchDidYouMeanException(searchResult.didYouMean!!)

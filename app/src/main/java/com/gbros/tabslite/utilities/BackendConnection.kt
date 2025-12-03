@@ -14,8 +14,8 @@ import com.gbros.tabslite.data.servertypes.SearchSuggestionType
 import com.gbros.tabslite.data.servertypes.ServerTimestampType
 import com.gbros.tabslite.data.servertypes.TabRequestType
 import com.gbros.tabslite.data.tab.TabDataType
-import com.gbros.tabslite.utilities.UgApi.apiKey
-import com.gbros.tabslite.utilities.UgApi.deviceId
+import com.gbros.tabslite.utilities.BackendConnection.apiKey
+import com.gbros.tabslite.utilities.BackendConnection.deviceId
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -44,7 +44,7 @@ import kotlin.random.Random
 /**
  * The API interface handling all API-specific logic to get data from the server (or send to the server)
  */
-object UgApi {
+object BackendConnection {
     //#region private data
 
     private val gson = Gson()

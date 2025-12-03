@@ -6,7 +6,7 @@ import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.utilities.TAG
-import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.utilities.BackendConnection
 
 data class Tab(
     @PrimaryKey @ColumnInfo(name = "id") override var tabId: Int,
@@ -62,11 +62,11 @@ data class Tab(
             emptyTabs.forEach { tabId ->
                 try {
                     onProgressChange(++numFetchedTabs / emptyTabs.size.toFloat())
-                    UgApi.fetchTabFromInternet(tabId, dataAccess)
-                } catch (ex: UgApi.NoInternetException) {
+                    BackendConnection.fetchTabFromInternet(tabId, dataAccess)
+                } catch (ex: BackendConnection.NoInternetException) {
                     Log.i(TAG, "Not connected to the internet during empty tab fetch for tab $tabId for playlist $playlistId: ${ex.message}. Skipping the rest of the tabs in this playlist.")
                     throw ex  // exit the fetch if we're not connected to the internet
-                } catch (ex: UgApi.UnavailableForLegalReasonsException) { // must be before catch for NotFoundException since this is a type of NotFoundException
+                } catch (ex: BackendConnection.UnavailableForLegalReasonsException) { // must be before catch for NotFoundException since this is a type of NotFoundException
                     Log.i(TAG, "Tab $tabId unavailable for legal reasons.")
                 } catch (ex: NotFoundException) {
                     Log.e(TAG, "Tab NOT FOUND during fetch of empty tab $tabId for playlist $playlistId")
@@ -111,7 +111,7 @@ data class Tab(
     override suspend fun load(dataAccess: DataAccess, forceInternetFetch: Boolean): Tab {
         val loadedTab = if (forceInternetFetch || !dataAccess.existsWithContent(tabId)) {
             Log.d(TAG, "Fetching tab $tabId from internet (force = $forceInternetFetch)")
-            Tab(UgApi.fetchTabFromInternet(tabId = tabId, dataAccess = dataAccess))
+            Tab(BackendConnection.fetchTabFromInternet(tabId = tabId, dataAccess = dataAccess))
         } else {
             // Cache hit for tab.  Not fetching from internet.
             Tab(dataAccess.getTabInstance(tabId))

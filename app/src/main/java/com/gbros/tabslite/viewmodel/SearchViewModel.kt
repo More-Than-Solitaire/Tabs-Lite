@@ -9,7 +9,7 @@ import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Search
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.utilities.TAG
-import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.utilities.BackendConnection
 import com.gbros.tabslite.view.searchresultsonglist.ISearchViewState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -108,7 +108,7 @@ class SearchViewModel
                         // success
                         searchState.postValue(LoadingState.Success)
                     }
-                    is UgApi.NoInternetException -> {
+                    is BackendConnection.NoInternetException -> {
                         searchState.postValue(LoadingState.Error(R.string.message_search_no_internet))
                     }
                     is CancellationException -> {

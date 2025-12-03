@@ -43,7 +43,7 @@ import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.utilities.TAG
-import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.utilities.BackendConnection
 import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.tabview.ITabViewState
 import dagger.assisted.Assisted
@@ -191,11 +191,11 @@ class TabViewModel
                     // success
                     _state.postValue(LoadingState.Success)
                 }
-                is UgApi.NoInternetException -> {
+                is BackendConnection.NoInternetException -> {
                     Log.i(TAG, "No internet while fetching tab $id (playlistEntryId: $idIsPlaylistEntryId)", ex)
                     _state.postValue(LoadingState.Error(R.string.message_tab_load_no_internet))
                 }
-                is UgApi.UnavailableForLegalReasonsException -> {
+                is BackendConnection.UnavailableForLegalReasonsException -> {
                     Log.i(TAG, "Tab ${tab.value?.songName} (${tab.value?.tabId}) unavailable for legal reasons.")
                     _state.postValue(LoadingState.Error(R.string.message_tab_unavailable_for_legal_reasons))
                 }
