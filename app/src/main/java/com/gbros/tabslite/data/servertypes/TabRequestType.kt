@@ -9,25 +9,25 @@ import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.tab.TabDataType
 
-class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var artist_id: Int, var artist_name: String, var type: String, var part: String, var version: Int, var votes: Int, var rating: Double, var date: String,
-                     var status: String, var preset_id: Int, var tab_access_type: String, var tp_version: Int, var tonality_name: String, val version_description: String?, var verified: Int, val recording: RecordingInfo?,
-                     var versions: List<VersionInfo>, var user_rating: Int, var difficulty: String, var tuning: String, var capo: Int, var urlWeb: String, var strumming: List<StrummingInfo>, var videosCount: Int,
-                     var contributor: ContributorInfo, var pros_brother: String?, var recommended: List<VersionInfo>, var applicature: List<ChordInfo>, val content: String?) {
-    class RecordingInfo(var is_acoustic: Int, var tonality_name: String, var performance: PerformanceInfo?, var recording_artists: List<RecordingArtistsInfo>) {
-        class RecordingArtistsInfo(var join_field: String, var artist: ContributorInfo) {
+class TabRequestType(var id: Int = -1, var song_id: Int = -1, var song_name: String = "", var artist_id: Int = -1, var artist_name: String = "", var type: String = "", var part: String = "", var version: Int = 0, var votes: Int = 0, var rating: Double = 0.0, var date: String = "",
+                     var status: String = "", var preset_id: Int = 0, var tab_access_type: String = "", var tp_version: Int = 0, var tonality_name: String = "", val version_description: String? = null, var verified: Int = 0, val recording: RecordingInfo? = null,
+                     var versions: List<VersionInfo> = emptyList(), var user_rating: Int = 0, var difficulty: String = "", var tuning: String = "", var capo: Int = 0, var urlWeb: String = "", var strumming: List<StrummingInfo> = emptyList(), var videosCount: Int = 0,
+                     var contributor: ContributorInfo = ContributorInfo(), var pros_brother: String? = null, var recommended: List<VersionInfo> = emptyList(), var applicature: List<ChordInfo> = emptyList(), val content: String? = null) {
+    class RecordingInfo(var is_acoustic: Int = 0, var tonality_name: String = "", var performance: PerformanceInfo? = null, var recording_artists: List<RecordingArtistsInfo> = emptyList()) {
+        class RecordingArtistsInfo(var join_field: String = "", var artist: ContributorInfo = ContributorInfo()) {
             override fun toString(): String {
                 return artist.username
             }
         }
 
-        class PerformanceInfo(var name: String, var serie: SerieInfo?, var venue: VenueInfo?, var date_start: Long, var cancelled: Int, var type: String, var comment: String, var video_urls: List<String>) {
-            class VenueInfo(name: String, area: AreaInfo) {
-                class AreaInfo(name: String, country: CountryInfo) {
-                    class CountryInfo(name_english: String)
+        class PerformanceInfo(var name: String = "", var serie: SerieInfo? = null, var venue: VenueInfo? = null, var date_start: Long = 0, var cancelled: Int = 0, var type: String = "", var comment: String = "", var video_urls: List<String> = emptyList()) {
+            class VenueInfo(var name: String = "", var area: AreaInfo = AreaInfo()) {
+                class AreaInfo(var name: String = "", var country: CountryInfo = CountryInfo()) {
+                    class CountryInfo(var name_english: String = "")
                 }
             }
 
-            class SerieInfo(name: String, type: String)
+            class SerieInfo(var name: String = "", var type: String = "")
 
             override fun toString(): String {
                 return "$name; $comment"
@@ -44,14 +44,14 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
     }
 
     class VersionInfo(
-        var id: Int, var song_id: Int, var song_name: String, var artist_name: String, var type: String, var part: String, var version: Int, var votes: Int, var rating: Double, var date: String, var status: String, var preset_id: Int,
-        var tab_access_type: String, var tp_version: Int, var tonality_name: String, var version_description: String, var verified: Int, var recording: RecordingInfo)
+        var id: Int = 0, var song_id: Int = 0, var song_name: String = "", var artist_name: String = "", var type: String = "", var part: String = "", var version: Int = 0, var votes: Int = 0, var rating: Double = 0.0, var date: String = "", var status: String = "", var preset_id: Int = 0,
+        var tab_access_type: String = "", var tp_version: Int = 0, var tonality_name: String = "", var version_description: String = "", var verified: Int = 0, var recording: RecordingInfo = RecordingInfo())
 
-    class ContributorInfo(var user_id: Int, var username: String)
-    class ChordInfo(var chord: String, var variations: List<VarInfo>) {
+    class ContributorInfo(var user_id: Int = 0, var username: String = "")
+    class ChordInfo(var chord: String = "", var variations: List<VarInfo> = emptyList()) {
         class VarInfo(
-            var id: String, var listCapos: List<CapoInfo>, var noteIndex: Int, var notes: List<Int>, var frets: List<Int>, var fingers: List<Int>, var fret: Int) {
-            class CapoInfo(var fret: Int, var startString: Int, var lastString: Int, var finger: Int)
+            var id: String = "", var listCapos: List<CapoInfo> = emptyList(), var noteIndex: Int = 0, var notes: List<Int> = emptyList(), var frets: List<Int> = emptyList(), var fingers: List<Int> = emptyList(), var fret: Int = 0) {
+            class CapoInfo(var fret: Int = 0, var startString: Int = 0, var lastString: Int = 0, var finger: Int = 0)
 
             private fun Int.toFinger(): Finger {
                 return when (this) {
@@ -127,13 +127,13 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
     }
 
     class StrummingInfo(
-        var part: String,
-        var denuminator: Int,
-        var bpm: Int,
-        var is_triplet: Int,
-        var measures: List<MeasureInfo>
+        var part: String = "",
+        var denuminator: Int = 0,
+        var bpm: Int = 0,
+        var is_triplet: Int = 0,
+        var measures: List<MeasureInfo> = emptyList()
     ) {
-        class MeasureInfo(var measure: Int)
+        class MeasureInfo(var measure: Int = 0)
     }
 
     fun getTabFull(): TabDataType {
