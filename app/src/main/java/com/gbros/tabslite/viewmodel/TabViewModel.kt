@@ -14,8 +14,12 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.substring
 import androidx.compose.ui.text.withAnnotation
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
@@ -222,11 +226,25 @@ class TabViewModel
      */
     @OptIn(ExperimentalTextApi::class)
     private fun processTabContent(content: String): AnnotatedString {
-        // todo: if [tab] tags span multiple lines (e.g. for tabs instead of chords) the whole [tab] block should be wrapped together
-        val contentWithTabTagsStripped = content.replace("[tab]", "").replace("[/tab]", "")
+        val tagPattern = Regex("\\[tab](.*?)\\[/tab]")
 
         val processedTab = buildAnnotatedString {
-            appendChordContent(contentWithTabTagsStripped, this)
+            var lastIndex = 0
+            tagPattern.findAll(content).forEach { matchResult ->
+                // Append text before the match
+                val beforeText = content.substring(lastIndex, matchResult.range.first)
+                appendChordContent(beforeText, this, inline = true)
+
+                // Append the content inside the [tab] block
+                appendChordContent(matchResult.groupValues[1], this, inline = false)
+
+                lastIndex = matchResult.range.last + 1
+            }
+
+            // Append any remaining text after the last match
+            if (lastIndex < content.length) {
+                appendChordContent(content.substring(lastIndex), this, inline = true)
+            }
 
 
             // add active hyperlinks
@@ -238,7 +256,6 @@ class TabViewModel
 
         return processedTab
     }
-
     /**
      * Represents a found chord match, including its start and end indices in the original text,
      * and the extracted chord name.
@@ -278,36 +295,40 @@ class TabViewModel
      * Annotate, style, and append a line with chords to the given annotated string builder
      */
     @OptIn(ExperimentalTextApi::class)
-    private fun appendChordContent(content: CharSequence, builder: AnnotatedString.Builder) {
-        val text = content.trimEnd()
+    private fun appendChordContent(content: CharSequence, builder: AnnotatedString.Builder, inline: Boolean = false) {
         var currentIndex = 0 // the index of the last already-consumed character in text
 
         while (true) {
-            val chordMatch = findNextChordMatch(text, currentIndex) ?: break // No more chords found in the line
+            val chordMatch = findNextChordMatch(content, currentIndex) ?: break // No more chords found in the line
 
             // Append any non-chord text before the current chord
-            builder.append(text.subSequence(currentIndex, chordMatch.start))
+            builder.append(content.subSequence(currentIndex, chordMatch.start))
 
             currentIndex = chordMatch.end
 
-
             // get the next character after the chord tag. This is what we will attach the chord annotation to
-            var nextContentCharacter = text.elementAtOrNull(currentIndex)
-            if (nextContentCharacter == null || nextContentCharacter == '{') {
+            var nextContentCharacter = content.elementAtOrNull(currentIndex)
+            if (inline || nextContentCharacter == null || nextContentCharacter == '{') {
                 nextContentCharacter = ' ' // chord tags should be ignored; use a space as the character to put the chord annotation on
             } else {
                 currentIndex++ // consume the next character
             }
 
             // Append the next character, annotated with the chord
-            builder.withAnnotation("chord", chordMatch.chordName) {
-                append(nextContentCharacter)
+            val annotationPrefix = if (inline) ("{il}") else ""
+            builder.withAnnotation("chord", annotationPrefix + chordMatch.chordName) {
+                if (inline) {
+                    // leave content for the button to cover so the spacing isn't weird
+                    append(chordMatch.chordName)
+                    append('\u00A0')  // non-breaking space to give room for button padding
+                } else {
+                    append(nextContentCharacter)
+                }
             }
         }
 
         // Append any remaining non-chords after the last chord (or the entire line if no chords were found)
-        builder.append(text.subSequence(currentIndex until text.length).trimEnd())
-        builder.append("\n")
+        builder.append(content.substring(currentIndex))
     }
 
     private fun getHyperLinks(s: String): Sequence<MatchResult> {

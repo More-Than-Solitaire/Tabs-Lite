@@ -91,11 +91,12 @@ fun TabText(
             )
 
             for (annotation in chordAnnotations) {
+                val chord = if (annotation.item.startsWith("{il}")) annotation.item.substring(4) else annotation.item
                 ChordButton(
-                    text = annotation.item,
+                    text = chord,
                     fontSizeSp = fontSizeSp,
                 ) {
-                    onChordClick(annotation.item)
+                    onChordClick(chord)
                 }
             }
         }
@@ -143,15 +144,16 @@ private fun MeasureScope.placeChordButtons(
                     lastButtonLine = currentButtonLine
                 }
 
-                // Determine the horizontal position, ensuring it doesn't overlap the previous button
-                val x = maxOf(boundingBox.left.toInt(), lastButtonRightEdge + 16)
-                val y = boundingBox.top.toInt()
+                val inline = chordAnnotations[i].item.startsWith("{il}")
 
-                // Position above the text
+                // Determine the horizontal position, ensuring it doesn't overlap the previous button
+                boundingBox.center
+                val x = maxOf(boundingBox.left.toInt(), lastButtonRightEdge)
+                val y = if (inline) boundingBox.bottom.toInt() - chordButton.height else boundingBox.top.toInt()
                 chordButton.placeRelative(x, y)
 
                 // Update the right edge for the next button on this line
-                lastButtonRightEdge = x + chordButton.width
+                lastButtonRightEdge = x + chordButton.width + 16 // 16 is some extra space between buttons
             }
         }
     }
