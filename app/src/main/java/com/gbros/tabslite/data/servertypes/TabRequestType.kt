@@ -148,7 +148,7 @@ class TabRequestType(var id: Int = -1, var song_id: Int = -1, var song_name: Str
             version = version,
             votes = votes,
             rating = rating.toDouble(),
-            date = date.toInt(),
+            date = date.toIntOrNull() ?: 0,
             status = status,
             presetId = preset_id,
             tabAccessType = tab_access_type,

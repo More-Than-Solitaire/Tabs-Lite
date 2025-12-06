@@ -279,20 +279,24 @@ object BackendConnection {
         if (!tabDoc.exists()) {
             throw NotFoundException("Tab $tabId not found in database")
         }
-        val requestResponse = tabDoc.toObject<TabRequestType>() ?: throw TabFetchException("Couldn't parse tab $tabId from database")
+        try {
+            val requestResponse = tabDoc.toObject<TabRequestType>() ?: throw TabFetchException("Couldn't parse tab $tabId from database")
+            Log.v(TAG, "Parsed response for tab $tabId. Name: ${requestResponse.song_name}, capo ${requestResponse.capo}")
 
-        Log.v(TAG, "Parsed response for tab $tabId. Name: ${requestResponse.song_name}, capo ${requestResponse.capo}")
-
-        val result = requestResponse.getTabFull()
-        if (result.content.isNotBlank()) {
-            dataAccess.upsert(result)
-            Log.v(TAG, "Successfully inserted tab ${result.songName} (${result.tabId})")
-        } else {
-            val message = "Tab $tabId fetch completed successfully but had no content! This shouldn't happen. Might be a pro tab?"
-            Log.e(TAG, message)
-            throw TabFetchException(message)
+            val result = requestResponse.getTabFull()
+            if (result.content.isNotBlank()) {
+                dataAccess.upsert(result)
+                Log.v(TAG, "Successfully inserted tab ${result.songName} (${result.tabId})")
+            } else {
+                val message = "Tab $tabId fetch completed successfully but had no content! This shouldn't happen. Might be a pro tab?"
+                Log.e(TAG, message)
+                throw TabFetchException(message)
+            }
+            return@withContext result
+        } catch (ex: Exception) {
+            throw TabFetchException("Error parsing tab $tabId from firestore", ex)
         }
-        return@withContext result
+
     }
 
     //#endregion

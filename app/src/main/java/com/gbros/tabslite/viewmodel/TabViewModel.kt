@@ -212,7 +212,7 @@ class TabViewModel
                 }
                 else -> {
                     Log.e(TAG, "Unexpected error loading tab $id (playlistEntryId: $idIsPlaylistEntryId): ${ex.message}", ex)
-                    _state.postValue(LoadingState.Error(R.string.message_tab_load_unexpected_error))
+                    _state.postValue(LoadingState.Error(R.string.message_tab_load_unexpected_error, ex.message.toString()))
                 }
             }
         }
