@@ -5,11 +5,15 @@ import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
@@ -72,22 +76,46 @@ fun TabText(
             }
         }
     ) { measurables, constraints ->
-        val basicTextPlaceable = measurables[0].measure(constraints)
+        placeChordButtons(chordAnnotations, textLayoutResult, measurables, constraints)
+    }
+}
 
+private fun MeasureScope.placeChordButtons(
+    chordAnnotations:  List<AnnotatedString.Range<String>>,
+    textLayoutResult: MutableState<TextLayoutResult?>,
+    measurables: List<Measurable>,
+    constraints: Constraints): MeasureResult {
+    val basicTextPlaceable = measurables[0].measure(constraints)
 
-        layout(basicTextPlaceable.width, basicTextPlaceable.height) {
-            basicTextPlaceable.placeRelative(0, 0)
+    return layout(basicTextPlaceable.width, basicTextPlaceable.height) {
+        basicTextPlaceable.placeRelative(0, 0)
 
-            textLayoutResult.value?.let { layoutResult ->
-                for (i in chordAnnotations.indices) {
-                    val chordButton = measurables[i+1].measure(Constraints()) // Unconstrained button size
+        textLayoutResult.value?.let { layoutResult ->
+            var lastButtonRightEdge = 0
+            var lastButtonLine = -1
 
-                    // the annotation tells us which chord goes above this place in the text
-                    val boundingBox = layoutResult.getBoundingBox(chordAnnotations[i].start)
+            for (i in chordAnnotations.indices) {
+                val chordButton = measurables[i+1].measure(Constraints()) // Unconstrained button size
 
-                    // Position above the text
-                    chordButton.placeRelative(boundingBox.left.toInt(), boundingBox.top.toInt())
+                // the annotation tells us which chord goes above this place in the text
+                val boundingBox = layoutResult.getBoundingBox(chordAnnotations[i].start)
+                val currentButtonLine = layoutResult.getLineForOffset(chordAnnotations[i].start)
+
+                // If we're on a new line, reset the tracking of the last button's edge
+                if (currentButtonLine != lastButtonLine) {
+                    lastButtonRightEdge = 0
+                    lastButtonLine = currentButtonLine
                 }
+
+                // Determine the horizontal position, ensuring it doesn't overlap the previous button
+                val x = maxOf(boundingBox.left.toInt(), lastButtonRightEdge + 8)
+                val y = boundingBox.top.toInt()
+
+                // Position above the text
+                chordButton.placeRelative(x, y)
+
+                // Update the right edge for the next button on this line
+                lastButtonRightEdge = x + chordButton.width
             }
         }
     }
@@ -117,8 +145,11 @@ private fun TabTextTestCase2() {
     AppTheme {
         val builder = AnnotatedString.Builder("[Intro]\n")
         builder.withAnnotation("chord", "C", block = {append(" ")})
+        builder.append(" ")
         builder.withAnnotation("chord", "Am", block = {append(" ")})
+        builder.append(" ")
         builder.withAnnotation("chord", "C", block = {append(" ")})
+        builder.append(" ")
         builder.withAnnotation("chord", "Am", block = {append(" ")})
 
         TabText(
