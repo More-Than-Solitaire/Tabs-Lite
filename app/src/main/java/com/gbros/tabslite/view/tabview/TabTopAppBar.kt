@@ -53,7 +53,6 @@ import com.gbros.tabslite.view.addtoplaylistdialog.AddToPlaylistDialog
 fun TabTopAppBar(isFavorite: Boolean,
                  title: String,
                  shareUrl: String,
-                 copyText: String,
                  allPlaylists: List<Playlist>,
                  selectedPlaylistTitle: String?,
                  selectPlaylistConfirmButtonEnabled: Boolean,
@@ -162,21 +161,6 @@ fun TabTopAppBar(isFavorite: Boolean,
                         onReloadClick()
                     }
                 )
-                val clipboardManager = LocalClipboard.current
-                DropdownMenuItem(
-                    text = {
-                        Row {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(R.drawable.ic_content_copy),
-                                contentDescription = stringResource(R.string.generic_action_copy),
-                            )
-                            Text(text = stringResource(R.string.generic_action_copy), modifier = Modifier.padding(top = 2.dp, start = 4.dp))
-                        }
-                    },
-                    onClick = {
-                        clipboardManager.nativeClipboard.setPrimaryClip(ClipData.newPlainText(title, copyText))
-                    }
-                )
                 DropdownMenuItem(
                     text = {
                         Row {
@@ -229,7 +213,6 @@ private fun TabTopAppBarPreview() {
             shareUrl = "https://tabslite.com/tab/1234",
             allPlaylists = list,
             selectedPlaylistTitle = "Test",
-            copyText = "",
             selectPlaylistConfirmButtonEnabled = false,
             onAddToPlaylist = {},
             onCreatePlaylist = {_, _->},

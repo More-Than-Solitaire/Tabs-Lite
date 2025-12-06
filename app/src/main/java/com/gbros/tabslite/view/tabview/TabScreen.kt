@@ -29,11 +29,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -72,7 +70,7 @@ import com.gbros.tabslite.viewmodel.TabViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
-private const val FALLBACK_FONT_SIZE_SP = 14f  // fall back to a font size of 14.sp if the system font size can't be read
+private const val FALLBACK_FONT_SIZE_SP = 24f  // fall back to a font size of 14.sp if the system font size can't be read
 
 //#region use case tab screen
 
@@ -132,7 +130,7 @@ fun NavGraphBuilder.tabScreen(
             onTransposeUpClick = viewModel::onTransposeUpClick,
             onTransposeDownClick = viewModel::onTransposeDownClick,
             onTransposeResetClick = viewModel::onTransposeResetClick,
-            onTextClick = viewModel::onContentClick,
+            onTextClick = viewModel::onChordClick,
             onScreenMeasured = viewModel::onScreenMeasured,
             onZoom = viewModel::onZoom,
             onChordDetailsDismiss = viewModel::onChordDetailsDismiss,
@@ -179,7 +177,7 @@ fun NavGraphBuilder.playlistEntryScreen(
         val db = AppDatabase.getInstance(LocalContext.current)
 
         // default the font size to whatever the user default font size is.  This respects system font settings.
-        val defaultFontSize = MaterialTheme.typography.bodyMedium.fontSize
+        val defaultFontSize = MaterialTheme.typography.bodyLarge.fontSize
         val defaultFontSizeInSp = if (defaultFontSize.isSp) {
             defaultFontSize.value
         } else if (defaultFontSize.isEm) {
@@ -205,7 +203,7 @@ fun NavGraphBuilder.playlistEntryScreen(
             onTransposeUpClick = viewModel::onTransposeUpClick,
             onTransposeDownClick = viewModel::onTransposeDownClick,
             onTransposeResetClick = viewModel::onTransposeResetClick,
-            onTextClick = viewModel::onContentClick,
+            onTextClick = viewModel::onChordClick,
             onScreenMeasured = viewModel::onScreenMeasured,
             onZoom = viewModel::onZoom,
             onChordDetailsDismiss = viewModel::onChordDetailsDismiss,
@@ -237,7 +235,7 @@ fun TabScreen(
     onTransposeUpClick: () -> Unit,
     onTransposeDownClick: () -> Unit,
     onTransposeResetClick: () -> Unit,
-    onTextClick: (Int, UriHandler, Clipboard) -> Unit,
+    onTextClick: (chord: String) -> Unit,
     onScreenMeasured: (screenWidth: Int, localDensity: Density, colorScheme: ColorScheme) -> Unit,
     onZoom: (zoomFactor: Float) -> Unit,
     onChordDetailsDismiss: () -> Unit,
@@ -318,7 +316,6 @@ fun TabScreen(
             selectedPlaylistTitle = viewState.addToPlaylistDialogSelectedPlaylistTitle.observeAsState(null).value,
             shareUrl = viewState.shareUrl.observeAsState("https://tabslite.com/").value,
             isFavorite = viewState.isFavorite.observeAsState(false).value,
-            copyText = viewState.plainTextContent.observeAsState("").value,
             onNavigateBack = onNavigateBack,
             onReloadClick = onReload,
             onFavoriteButtonClick = onFavoriteButtonClick,
@@ -374,8 +371,7 @@ fun TabScreen(
                     modifier = Modifier.fillMaxWidth(),
                     text = viewState.content.observeAsState(AnnotatedString("")).value,
                     fontSizeSp = viewState.fontSizeSp.observeAsState(FALLBACK_FONT_SIZE_SP).value,
-                    onTextClick = onTextClick,
-                    onScreenMeasured = onScreenMeasured,
+                    onChordClick = onTextClick,
                     onZoom = onZoom
                 )
                 Spacer(modifier = Modifier.padding(vertical = 24.dp))
@@ -477,7 +473,6 @@ private fun TabViewPreview() {
         override val songVersions: LiveData<List<ITab>>,
         override val transpose: LiveData<Int>,
         override val content: LiveData<AnnotatedString>,
-        override val plainTextContent: LiveData<String>,
         override val state: LiveData<LoadingState>,
         override val autoscrollPaused: LiveData<Boolean>,
         override val autoScrollSpeedSliderPosition: LiveData<Float>,
@@ -511,7 +506,6 @@ private fun TabViewPreview() {
             songVersions = MutableLiveData(listOf()),
             transpose = MutableLiveData(tab.transpose),
             content = MutableLiveData(AnnotatedString(tab.content)),
-            plainTextContent = MutableLiveData(tab.content),
             state = MutableLiveData(LoadingState.Success),
             autoscrollPaused = MutableLiveData(true),
             fontSizeSp = MutableLiveData(FALLBACK_FONT_SIZE_SP),
@@ -581,7 +575,7 @@ private fun TabViewPreview() {
             onTransposeUpClick = { },
             onTransposeDownClick = { },
             onTransposeResetClick = { },
-            onTextClick = { _, _, _ -> },
+            onTextClick = { },
             onScreenMeasured = { _, _, _ -> },
             onChordDetailsDismiss = { },
             onAutoscrollSliderValueChange = { },

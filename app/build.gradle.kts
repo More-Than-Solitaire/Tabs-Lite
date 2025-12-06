@@ -87,6 +87,7 @@ dependencies {
     implementation(libs.google.code.gson)
     implementation(libs.google.dagger.hilt.android)
     implementation(libs.room.ktx)
+    implementation(libs.androidx.compose.ui.text)
     ksp(libs.room.compiler)
     ksp(libs.google.dagger.hilt.android.compiler)
     implementation(libs.org.jetbrains.kotlin.stdlib.jdk8)

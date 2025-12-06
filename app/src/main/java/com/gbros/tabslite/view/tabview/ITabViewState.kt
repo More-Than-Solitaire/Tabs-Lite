@@ -70,11 +70,6 @@ interface ITabViewState {
     val content: LiveData<AnnotatedString>
 
     /**
-     * The unwrapped, plaintext tab content, for copying to clipboard
-     */
-    val plainTextContent: LiveData<String>
-
-    /**
      * The font size that should be used to support the custom wrapping for [content]
      */
     val fontSizeSp: LiveData<Float>

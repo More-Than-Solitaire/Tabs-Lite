@@ -7,22 +7,15 @@ import android.content.Context
 import android.content.res.Resources.NotFoundException
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
-import android.os.Build
 import android.util.Log
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.UrlAnnotation
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withAnnotation
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
@@ -110,7 +103,7 @@ class TabViewModel
                     )
                 }
 
-                // backup transposition in case this tab isn't in a playlist or favorited. This is only used when the tab.transpose value from the database is null
+                // backup transposition in case this tab's not in a playlist or favorited. This is only used when the tab.transpose value from the database is null
                 nonPlaylistTranspose.postValue(newTranspose)
             }
 
@@ -228,41 +221,18 @@ class TabViewModel
      * every chord with tag "chord"
      */
     @OptIn(ExperimentalTextApi::class)
-    private fun processTabContent(content: String, availableWidthInChars: UInt, colorScheme: ColorScheme): AnnotatedString {
-        val processedTab = buildAnnotatedString {
-            var indexOfEndOfTabBlock = 0
-            while (content.indexOf("[tab]", indexOfEndOfTabBlock) != -1) {  // loop through each [tab] line representing lyrics and the chords to go with them
-                val indexOfStartOfTabBlock = content.indexOf("[tab]", indexOfEndOfTabBlock)
-                // any content before the [tab] block starts (and after the last [/tab] block ended) should be added without custom word-wrapping.  Default wrapping can take care of long lines here.
-                appendWrappedChordLine(content.subSequence(indexOfEndOfTabBlock, indexOfStartOfTabBlock), availableWidthInChars, this, colorScheme)
-                indexOfEndOfTabBlock = content.indexOf("[/tab]", indexOfStartOfTabBlock)+6
-                if (indexOfEndOfTabBlock-6 == -1) indexOfEndOfTabBlock = content.length+6
+    private fun processTabContent(content: String): AnnotatedString {
+        // todo: if [tab] tags span multiple lines (e.g. for tabs instead of chords) the whole [tab] block should be wrapped together
+        val contentWithTabTagsStripped = content.replace("[tab]", "").replace("[/tab]", "")
 
-                if (availableWidthInChars != 0u) {  // ignore [tab] block wrapping if availableWidth is 0
-                    // any content that *is* inside [tab] blocks should be custom word-wrapped (wrapped two lines at a time)
-                    val tabBlock = content.subSequence(indexOfStartOfTabBlock+5, indexOfEndOfTabBlock-6)
-                    appendTabBlock(tabBlock, availableWidthInChars, this, colorScheme)
-                }
-            }
-            // append anything after the last tab block
-            if (indexOfEndOfTabBlock < content.length) {
-                appendWrappedChordLine(content.subSequence(indexOfEndOfTabBlock, content.length), availableWidthInChars, this, colorScheme)
-            }
+        val processedTab = buildAnnotatedString {
+            appendChordContent(contentWithTabTagsStripped, this)
+
 
             // add active hyperlinks
             val hyperlinks = getHyperLinks(this.toAnnotatedString().text)
             for (hyperlink in hyperlinks) {
-                addUrlAnnotation(
-                    UrlAnnotation(hyperlink.value),
-                    hyperlink.range.first,
-                    hyperlink.range.last+1
-                )
-                addStyle(
-                    SpanStyle(
-                        color = colorScheme.primary,
-                        textDecoration = TextDecoration.Underline
-                    ), hyperlink.range.first, hyperlink.range.last+1
-                )
+                this.addLink(LinkAnnotation.Url(hyperlink.value), hyperlink.range.first, hyperlink.range.last + 1)
             }
         }
 
@@ -270,280 +240,74 @@ class TabViewModel
     }
 
     /**
-     * Processes and wraps the lines for the tab block, then appends to the annotated string builder.
+     * Represents a found chord match, including its start and end indices in the original text,
+     * and the extracted chord name.
      */
-    private fun appendTabBlock(tabBlock: CharSequence, availableWidthInChars: UInt, builder: AnnotatedString.Builder, colorScheme: ColorScheme) {
-        val lines = tabBlock.split("\n")
-
-        for (i in 0..< lines.count() step 2) {
-            val line1 = lines[i]
-            val line2: String? = if (i+1 < lines.count()) lines[i+1] else null
-            val wrappedLines = wrapLinePair(line1, line2, availableWidthInChars)
-
-            for(wrappedLine in wrappedLines) {
-                appendChordLine(wrappedLine, builder, colorScheme)
-            }
-        }
-    }
+    private data class ChordMatch(val start: Int, val end: Int, val chordName: String)
 
     /**
-     * Processes and wraps the lines for the chord block, then appends to the annotated string builder.
+     * Finds the next occurrence of a chord tag (either [ch]...[/ch] or {ch:...}) starting from
+     * a given index.
+     * @param text The text to search within.
+     * @param startIndex The index to start the search from.
+     * @return A [ChordMatch] object if a chord is found, or null otherwise.
      */
-    private fun appendWrappedChordLine(line: CharSequence, availableWidthInChars: UInt, builder: AnnotatedString.Builder, colorScheme: ColorScheme) {
-        val wrappedLines = wrapLine(line.toString(), availableWidthInChars)
-        for (wrappedLine in wrappedLines) {
-            appendChordLine(wrappedLine, builder, colorScheme)
+    private fun findNextChordMatch(text: CharSequence, startIndex: Int): ChordMatch? {
+        val newStartTag = "{ch:"
+        val newEndTag = "}"
+
+        val nextNewStart = text.indexOf(newStartTag, startIndex)
+
+        // If no chords found at all
+        if (nextNewStart == -1) {
+            return null
         }
+
+        // New format is first or only one
+        val firstIndex = nextNewStart
+        val endIndex = text.indexOf(newEndTag, firstIndex + newStartTag.length)
+        if (endIndex == -1) {
+            Log.w(TAG, "Couldn't find closing $newEndTag tag for chord starting at position $firstIndex")
+            return null // Malformed tag, skip this one
+        }
+        val chordName = text.subSequence(firstIndex + newStartTag.length, endIndex).toString()
+        return ChordMatch(firstIndex, endIndex + newEndTag.length, chordName)
     }
 
     /**
      * Annotate, style, and append a line with chords to the given annotated string builder
      */
     @OptIn(ExperimentalTextApi::class)
-    private fun appendChordLine(line: CharSequence, builder: AnnotatedString.Builder, colorScheme: ColorScheme?) {
-        val text = line.trimEnd()
-        var lastIndex = 0
+    private fun appendChordContent(content: CharSequence, builder: AnnotatedString.Builder) {
+        val text = content.trimEnd()
+        var currentIndex = 0 // the index of the last already-consumed character in text
 
-        while (text.indexOf("[ch]", lastIndex) != -1) {
-            val firstIndex = text.indexOf("[ch]", lastIndex)  // index of start of [ch]
-            builder.append(text.subSequence(lastIndex, firstIndex))  // append any non-chords
+        while (true) {
+            val chordMatch = findNextChordMatch(text, currentIndex) ?: break // No more chords found in the line
 
-            lastIndex = text.indexOf("[/ch]", firstIndex)+5  // index of end of [/ch]
-            if (lastIndex-5 == -1) {
-                // couldn't find a closing tag for this chord.  Handle gracefully and log warning
-                Log.w(TAG, "Couldn't find closing [/ch] tag for chord starting at position $firstIndex for tab ${tab.value?.tabId}")
-                lastIndex = firstIndex+4  // start the next loop after that [ch] tag
-                continue // skip this chord
+            // Append any non-chord text before the current chord
+            builder.append(text.subSequence(currentIndex, chordMatch.start))
+
+            currentIndex = chordMatch.end
+
+
+            // get the next character after the chord tag. This is what we will attach the chord annotation to
+            var nextContentCharacter = text[currentIndex]
+            if (nextContentCharacter == '{') {
+                nextContentCharacter = ' ' // chord tags should be ignored; use a space as the character to put the chord annotation on
+            } else {
+                currentIndex++ // consume the next character
             }
-            val chordName = text.subSequence(firstIndex+4 until lastIndex-5)
 
-            // append an annotated styled chord
-            if (colorScheme == null) {
-                builder.withAnnotation("chord", chordName.toString()) {
-                    append(chordName)
-                }
-            }
-            else {
-                builder
-                    .withStyle(
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            SpanStyle(
-                                // Only Android 8 and up support variable weight fonts
-                                color = colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.Bold,
-                                background = colorScheme.primaryContainer
-                            )
-                        } else {
-                            SpanStyle(
-                                color = colorScheme.onPrimaryContainer,
-                                fontFamily = FontFamily(Font(R.font.roboto_mono_bold)),
-                                background = colorScheme.primaryContainer
-                            )
-                        }
-                    ) {
-                        withAnnotation("chord", chordName.toString()) {
-                            append(chordName)
-                        }
-                    }
+            // Append the next character, annotated with the chord
+            builder.withAnnotation("chord", chordMatch.chordName) {
+                append(nextContentCharacter)
             }
         }
 
-        // append any remaining non-chords
-        builder.append(text.subSequence(lastIndex until text.length).trimEnd())
+        // Append any remaining non-chords after the last chord (or the entire line if no chords were found)
+        builder.append(text.subSequence(currentIndex until text.length).trimEnd())
         builder.append("\n")
-    }
-
-    /**
-     * Take a line and return a list of lines shorter than the available width
-     */
-    private fun wrapLine(line: String, availableWidthInChars: UInt): List<String> {
-        val wrappedLines = mutableListOf<String>()
-        var remainingLine = line
-
-        while (remainingLine != "") {
-            val wordBreakLocation = findSingleLineWordBreakIndex(availableWidthInChars, remainingLine)
-            remainingLine = if (wordBreakLocation < remainingLine.length) {
-                wrappedLines.add(remainingLine.substring(0, wordBreakLocation))
-                remainingLine.substring(wordBreakLocation until remainingLine.length)
-            } else {
-                wrappedLines.add(remainingLine.trimEnd())
-                ""
-            }
-        }
-        return wrappedLines
-    }
-
-    /**
-     * Take a pair of lines and return a list of lines shorter than the available width, wrapped as a pair.
-     */
-    private fun wrapLinePair(line1: String, line2: String?, availableWidthInChars: UInt): List<String> {
-        val wrappedLines = mutableListOf<String>()
-        if (line2 != null) {
-            var remainingLine1 = line1
-            var remainingLine2 = line2
-
-            // append two lines
-            while (remainingLine1 != "" || remainingLine2 != "") {
-                val wordBreakLocation = findMultipleLineWordBreakIndex(availableWidthInChars, remainingLine1, remainingLine2!!)
-
-                remainingLine1 = if (wordBreakLocation.first < remainingLine1.length) {
-                    wrappedLines.add(remainingLine1.substring(0, wordBreakLocation.first))
-                    remainingLine1.substring(wordBreakLocation.first until remainingLine1.length)
-                } else {
-                    wrappedLines.add(remainingLine1.trimEnd())
-                    ""
-                }
-
-                remainingLine2 = if (wordBreakLocation.second < remainingLine2.length) {
-                    wrappedLines.add(remainingLine2.substring(0, wordBreakLocation.second))
-                    remainingLine2.substring(wordBreakLocation.second until remainingLine2.length)
-                } else {
-                    wrappedLines.add(remainingLine2.trimEnd())
-                    ""
-                }
-            }
-        } else {
-            // just line1; append
-            wrappedLines.add(line1)
-        }
-        return wrappedLines
-    }
-
-    /**
-     * Finds a "nice" spot to break a single line.  Ignores \[ch] and \[/ch] tags.  To be used prior to processing chords.
-     *
-     * @param line The line to break.
-     * @param availableWidthInChars The available width in characters.
-     * @return The index of the character to break at.
-     */
-    private fun findSingleLineWordBreakIndex(availableWidthInChars: UInt, line: String): Int {
-        // thanks @Andro https://stackoverflow.com/a/11498125
-        val breakingChars = "‐–〜゠= \t\r\n"  // all the chars that we'll break a line at
-
-        // track fallback line break locations outside of chords (any character but a chord is included)
-        var fallbackLineBreak = 0
-        var currentlyInChord = false
-
-        // start from the start of the line and find each nice word break until the line's too long
-        var wordBreakLocation = 0  // track nice location separately to include ignored characters up to breakpoint but not past shared breakpoint
-        var numIgnoredCharacters = 0  // tags (e.g. [ch][/ch]) will be ignored in character counts since they'll be removed in processing.
-        for (i in 1 ..< availableWidthInChars.toInt()) {
-            // loop through each character and note shared word break locations
-            if (line.length <= i+numIgnoredCharacters) {
-                break
-            }
-
-            // ignore any [ch] or [/ch] tags
-            if (line.length > i+numIgnoredCharacters) {
-                if (line[(i+numIgnoredCharacters)] == '[') {
-                    if (line.length >= (i+numIgnoredCharacters+4) && line.subSequence((i+numIgnoredCharacters), (i+numIgnoredCharacters+4)) == "[ch]") {
-                        numIgnoredCharacters += 4
-                        currentlyInChord = true
-                    }
-                    if (line.length >= (i+numIgnoredCharacters+5) && line.subSequence((i+numIgnoredCharacters), (i+numIgnoredCharacters+5)) == "[/ch]") {
-                        numIgnoredCharacters += 5
-                        currentlyInChord = false
-                    }
-                }
-            }
-
-            if (!currentlyInChord)
-                fallbackLineBreak = i+numIgnoredCharacters  // any character outside of a chord is a fallback linebreak location
-
-            if ((line.length > i+numIgnoredCharacters && breakingChars.contains(line[i+numIgnoredCharacters]))) {
-                wordBreakLocation =i + numIgnoredCharacters
-            }
-        }
-
-        // if no good word break location exists
-        if (wordBreakLocation < 1) {
-            // try to handle nicely by breaking at the last spot outside of a chord
-            wordBreakLocation = if (fallbackLineBreak > 0) {
-                fallbackLineBreak
-            } else {
-                // welp we tried.  Just force the line break at the end of the line.  [ch][/ch] artifacts will show up.
-                availableWidthInChars.toInt()
-            }
-        }
-
-        return wordBreakLocation // give the actual character place the user can break at, prior to processing
-    }
-
-    /**
-     * Finds a "nice" spot to break both lines.  Ignores \[ch] and \[/ch] tags.  To be used prior to processing chords.
-     */
-    private fun findMultipleLineWordBreakIndex(availableWidthInChars: UInt, line1: String, line2: String): Pair<Int, Int> {
-        // thanks @Andro https://stackoverflow.com/a/11498125
-        val breakingChars = "‐–〜゠= \t\r\n"  // all the chars that we'll break a line at
-        // Log.d(LOG_NAME, "Find word break index; available width: $availableWidthInChars chars.  Lengths: ${line1.length}/${line2.length}")
-        // Log.d(LOG_NAME, "line1: $line1")
-        // Log.d(LOG_NAME, "line2: $line2")
-
-        // track fallback line break locations outside of chords (any character but a chord is included)
-        var fallbackLineBreak = Pair(0,0)
-        var currentlyInChordLine1 = false
-        var currentlyInChordLine2 = false
-
-        // start from the start of the line and find each shared word break until the line's too long
-        var sharedWordBreakLocation = Pair(0,0)  // track shared location separately to include ignored characters up to breakpoint but not past shared breakpoint
-        var line1IgnoredCharacters = 0  // tags (e.g. [ch][/ch]) will be ignored in character counts since they'll be removed in processing.
-        var line2IgnoredCharacters = 0
-        for (i in 1 ..< availableWidthInChars.toInt()) {
-            // loop through each character and note shared word break locations
-
-            // ignore any [ch] or [/ch] tags
-            if (line1.length > i+line1IgnoredCharacters) {
-                if (line1[(i+line1IgnoredCharacters)] == '[') {
-                    if (line1.length >= (i+line1IgnoredCharacters+4) && line1.subSequence((i+line1IgnoredCharacters), (i+line1IgnoredCharacters+4)) == "[ch]") {
-                        // Log.d(LOG_NAME, "1: ignoring 4 starting at position $i + $line1IgnoredCharacters")
-                        line1IgnoredCharacters += 4
-                        currentlyInChordLine1 = true
-                    }
-                    if (line1.length >= (i+line1IgnoredCharacters+5) && line1.subSequence((i+line1IgnoredCharacters), (i+line1IgnoredCharacters+5)) == "[/ch]") {
-                        // Log.d(LOG_NAME, "1: ignoring 5 starting at position $i + $line1IgnoredCharacters")
-                        line1IgnoredCharacters += 5
-                        currentlyInChordLine1 = false
-                    }
-                }
-            }
-
-            if (line2.length > (i+line2IgnoredCharacters)) {
-                if (line2[(i+line2IgnoredCharacters)] == '[') {
-                    if (line2.length >= (i+line2IgnoredCharacters+4) && line2.subSequence((i+line2IgnoredCharacters), (i+line2IgnoredCharacters+4)) == "[ch]") {
-                        // Log.d(LOG_NAME, "2: ignoring 4 starting at position $i + $line2IgnoredCharacters")
-                        line2IgnoredCharacters += 4
-                        currentlyInChordLine2 = true
-                    }
-                    if (line2.length >= (i+line2IgnoredCharacters+5) && line2.subSequence((i+line2IgnoredCharacters), (i+line2IgnoredCharacters+5)) == "[/ch]") {
-                        // Log.d(LOG_NAME, "2: ignoring 5 starting at position $i + $line2IgnoredCharacters")
-                        line2IgnoredCharacters += 5
-                        currentlyInChordLine2 = false
-                    }
-                }
-            }
-            if (!currentlyInChordLine1 && !currentlyInChordLine2)
-                fallbackLineBreak = Pair(i+line1IgnoredCharacters, i+line2IgnoredCharacters)  // any character outside of a chord is a fallback linebreak location
-
-            if ((line1.length <= i+line1IgnoredCharacters || breakingChars.contains(line1[i+line1IgnoredCharacters]))
-                && (line2.length <= i+line2IgnoredCharacters || breakingChars.contains(line2[(i+line2IgnoredCharacters)]))) {
-                sharedWordBreakLocation = Pair(i + line1IgnoredCharacters, i + line2IgnoredCharacters)
-                // Log.d(LOG_NAME, "break at $i plus $line1IgnoredCharacters/$line2IgnoredCharacters. Line1 end: ${line1.length <= i+line1IgnoredCharacters}.  Line2 end: ${line2.length <= i+line2IgnoredCharacters}")
-            }
-        }
-
-        // if no good word break location exists
-        if (sharedWordBreakLocation.first < 1 && sharedWordBreakLocation.second < 1) {
-            // try to handle nicely by breaking at the last spot outside of a chord
-            sharedWordBreakLocation = if (fallbackLineBreak.first > 0 && fallbackLineBreak.second > 0){
-                fallbackLineBreak
-            } else{
-                // welp we tried.  Just force the line break at the end of the line.  [ch][/ch] artifacts will show up.
-                Pair(availableWidthInChars.toInt(), availableWidthInChars.toInt())
-            }
-        }
-
-        // Log.d(LOG_NAME, "Return value: ${sharedWordBreakLocation.first}, ${sharedWordBreakLocation.second}")
-        return sharedWordBreakLocation // give the actual character place the user can break at, prior to processing
     }
 
     private fun getHyperLinks(s: String): Sequence<MatchResult> {
@@ -601,7 +365,8 @@ class TabViewModel
         val availableWidthInPt = pageInfo.pageWidth - leftMargin - rightMargin
         val ptPerChar = contentPaint.measureText("A")
         val availableWidthInChars = (availableWidthInPt / ptPerChar).toUInt()
-        val wrappedContent: AnnotatedString = processTabContent(unformattedContent.value ?: "", availableWidthInChars, currentColors)
+        val annotatedContent: AnnotatedString = processTabContent(unformattedContent.value ?: "")
+        // todo: wrap content
 
         // draw content
         val chordTextPaint = android.graphics.Paint().apply {
@@ -614,7 +379,7 @@ class TabViewModel
             style = android.graphics.Paint.Style.FILL
         }
         val lineRegex = Regex(".*\\R?") // Regex to match a full line including its newline characters
-        lineRegex.findAll(wrappedContent.text).forEach { lineMatchResult ->
+        lineRegex.findAll(annotatedContent.text).forEach { lineMatchResult ->
             val line = lineMatchResult.value.trimEnd() // The actual line content without trailing newline
             val lineStartOffset = lineMatchResult.range.first
 
@@ -631,7 +396,7 @@ class TabViewModel
             val lineEndOffset = lineStartOffset + line.length
 
             // Get chord annotations for the current line
-            val lineAnnotations = wrappedContent.getStringAnnotations("chord", lineStartOffset, lineEndOffset)
+            val lineAnnotations = annotatedContent.getStringAnnotations("chord", lineStartOffset, lineEndOffset)
 
             var lastCharIndexInLine = 0
             for (annotation in lineAnnotations) {
@@ -654,6 +419,7 @@ class TabViewModel
                 val backgroundRect = android.graphics.RectF(currentX - chordTextPaint.letterSpacing, currentY - chordTextPaint.textSize, currentX + chordWidth + chordTextPaint.letterSpacing, currentY + chordTextPaint.descent())
                 canvas.drawRect(backgroundRect, chordBackgroundPaint)
 
+                // todo: find the chords based on annotations
                 // Draw the chord text over the highlight
                 canvas.drawText(chordText, currentX, currentY, chordTextPaint)
                 currentX += chordWidth // Advance currentX by the width of the chord
@@ -676,11 +442,11 @@ class TabViewModel
 
     /**
      * Calculates the number of characters that can fit in the screen.
-     *
+     *\
      * @param availableWidthInPx The width of the screen in pixels
      * @param fontSizeSp The font size in sp
      * @param currentDensity The current density of the screen
-     *
+     *\
      * @return The number of characters that can fit in the screen
      */
     private fun getAvailableWidthInChars(availableWidthInPx: Int, fontSizeSp: Float, currentDensity: Density):UInt {
@@ -712,7 +478,7 @@ class TabViewModel
 
     /**
      * To calculate the aspect ratio of a ttf font, run this in python (after pip install fonttools):
-     * aspect_ratio = ttLib.TTFont(r'path\to\font.ttf')['hmtx']['space'][0] / ttLib.TTFont(r'path\to\font.ttf')['head'].unitsPerEm
+     * aspect_ratio = ttLib.TTFont(r'path\to\font.ttf')['hmtx']['space'][0] / ttLib.TTFont(r'path\to/font.ttf')['head'].unitsPerEm
      */
     private val ROBOTO_ASPECT_RATIO = 0.60009765625  // the empirical width-to-height ratio of roboto mono Regular.
 
@@ -795,32 +561,23 @@ class TabViewModel
         t?.transpose ?: nonPlaylistTranspose ?: 0
     }
 
+    // tab content after transposition and useFlats
     private val unformattedContent: LiveData<String> = tab.combine(transpose, useFlats) { t, tr, f ->
         val currentDbContent = t?.content ?: ""
         val currentTranspose = tr ?: 0
         val useFlats = f == true
 
-        val chordPattern = Regex("\\[ch](.*?)\\[/ch]")
+        val chordPattern = Regex("\\{ch:([^}]+?)\\}")
         val transposedContent = chordPattern.replace(currentDbContent) {
             val chord = it.groupValues[1]
-            "[ch]" + Chord.transposeChord(chord, currentTranspose, useFlats) + "[/ch]"
+            "{ch:" + Chord.transposeChord(chord, currentTranspose, useFlats) + "}"
         }
 
         return@combine transposedContent
     }
 
-    override val plainTextContent: LiveData<String> = unformattedContent.map { txt ->
-        txt.replace("[tab]", "").replace("[/tab]", "").replace("[ch]", "").replace("[/ch]", "")
-    }
-
-    override val content: LiveData<AnnotatedString> = unformattedContent.combine(availableWidthInChars, currentTheme) { unformatted, availableWidth, theme ->
-        if (unformatted != null && availableWidth != null && availableWidth > 0u && theme != null) {
-            processTabContent(unformatted, availableWidth, theme)
-        } else {
-            Log.d(TAG, "No content yet")
-            AnnotatedString("")
-        }
-    }
+    // transposed content converted to an annotated string (tags are stripped and chords are annotations not text)
+    override val content: LiveData<AnnotatedString> = unformattedContent.map { transposed -> processTabContent(transposed) }
 
     private val _state: MutableLiveData<LoadingState> = MutableLiveData(LoadingState.Loading)
     override val state: LiveData<LoadingState> = content.combine(_state) { c, _ ->
@@ -874,7 +631,7 @@ class TabViewModel
     private val _chordDetailsState: MutableLiveData<LoadingState> = MutableLiveData(LoadingState.Loading)
     override val chordDetailsState: LiveData<LoadingState> = chordDetailsVariations.switchMap { c ->
         // check for an update in status if we're still in Loading (or Failure) state before returning
-        if (_chordDetailsState.value != LoadingState.Success && c.isNotEmpty()) {
+        if (c != null) {
             _chordDetailsState.postValue(LoadingState.Success)  // chords successfully loaded
         }
         _chordDetailsState
@@ -963,32 +720,21 @@ class TabViewModel
      * Callback for when a chord is clicked, to display the chord fingering diagram
      */
     @OptIn(ExperimentalTextApi::class)
-    fun onContentClick(clickLocation: Int, uriHandler: UriHandler, clipboardManager: Clipboard) {
-        val lineEndChars = "\r\n\t"
-        val clickedChar = content.value?.getOrNull(clickLocation)
-        val clickedOnNewline = clickedChar == null || lineEndChars.contains(clickedChar, true)
-        var start = clickLocation
-        var end = clickLocation
-        if (!clickedOnNewline)
-            start--; end++
+    fun onChordClick(chord: String) {
+        _chordDetailsState.value = LoadingState.Loading
+        _chordDetailsActive.postValue(true)
+        currentChordToDisplay.postValue(chord)
 
-        content.value?.getStringAnnotations(tag = "chord", start = start, end = end)
-            ?.firstOrNull()?.item?.let { chord ->
-                _chordDetailsState.postValue(LoadingState.Loading)
-                _chordDetailsActive.postValue(true)
-                currentChordToDisplay.postValue(chord)
-            }
-
-        // handle link clicks
-        content.value?.getUrlAnnotations(clickLocation, clickLocation)?.firstOrNull()?.item?.let {
-                urlAnnotation ->
-            try {
-                uriHandler.openUri(urlAnnotation.url.trim())
-            } catch (ex: ActivityNotFoundException) {
-                Log.i(TAG, "Couldn't launch URL, copying to clipboard instead")
-                clipboardManager.nativeClipboard.setPrimaryClip(ClipData.newPlainText(urlAnnotation.url.trim(), urlAnnotation.url.trim()))
-            }
-        }
+        // todo: handle link clicks
+//        content.value?.getUrlAnnotations(clickLocation, clickLocation)?.firstOrNull()?.item?.let {
+//                urlAnnotation ->
+//            try {
+//                uriHandler.openUri(urlAnnotation.url.trim())
+//            } catch (ex: ActivityNotFoundException) {
+//                Log.i(TAG, "Couldn't launch URL, copying to clipboard instead")
+//                clipboardManager.nativeClipboard.setPrimaryClip(ClipData.newPlainText(urlAnnotation.url.trim(), urlAnnotation.url.trim()))
+//            }
+//        }
     }
 
     fun onChordDetailsDismiss() {
@@ -1049,8 +795,6 @@ class TabViewModel
                     currentTranspose
                 )
             }
-        } else {
-            Log.e(TAG, "Couldn't add the requested tab $currentTab to playlist ${selectedPlaylist?.playlistId} at transpose $currentTranspose. All of the values need to be non-null.")
         }
     }
 
@@ -1136,7 +880,7 @@ class TabViewModel
         }
         autoscrollPreferenceJob.invokeOnCompletion { err ->
             if (err != null) {
-                Log.e(TAG, "Couldn't load autoscroll user preference: ${err.message}", err)
+                Log.e(TAG, "Couldn\'t load autoscroll user preference: ${err.message}", err)
                 _autoscrollSpeedSliderPosition.postValue(0.5f) // have a fallback value in case of exception or database errors
             } else {
                 val result = autoscrollPreferenceJob.getCompleted()
