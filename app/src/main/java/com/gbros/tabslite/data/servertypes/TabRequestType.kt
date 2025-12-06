@@ -45,7 +45,7 @@ class TabRequestType(var id: Int = -1, var song_id: Int = -1, var song_name: Str
 
     class VersionInfo(
         var id: Int = 0, var song_id: Int = 0, var song_name: String = "", var artist_name: String = "", var type: String = "", var part: String = "", var version: Int = 0, var votes: Int = 0, var rating: Double = 0.0, var date: String = "", var status: String = "", var preset_id: Int = 0,
-        var tab_access_type: String = "", var tp_version: Int = 0, var tonality_name: String = "", var version_description: String = "", var verified: Int = 0, var recording: RecordingInfo = RecordingInfo())
+        var tab_access_type: String = "", var tp_version: Int = 0, var tonality_name: String = "", var version_description: String? = "", var verified: Int = 0, var recording: RecordingInfo = RecordingInfo())
 
     class ContributorInfo(var user_id: Int = 0, var username: String = "")
     class ChordInfo(var chord: String = "", var variations: List<VarInfo> = emptyList()) {
