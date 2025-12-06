@@ -10,6 +10,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.platform.Clipboard
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -68,6 +69,7 @@ class TabViewModel
     @Assisted private val idIsPlaylistEntryId: Boolean,
     @Assisted defaultFontSize: Float,
     @Assisted private val dataAccess: DataAccess,
+    @Assisted private val urlHandler: UriHandler,
     @Assisted private val onNavigateToPlaylistEntry: (Int) -> Unit
 ) : ViewModel(), ITabViewState {
 
@@ -77,7 +79,7 @@ class TabViewModel
 
     @AssistedFactory
     interface TabViewModelFactory {
-        fun create(id: Int, idIsPlaylistEntryId: Boolean, defaultFontSize: Float, dataAccess: DataAccess, navigateToPlaylistEntryById: (Int) -> Unit): TabViewModel
+        fun create(id: Int, idIsPlaylistEntryId: Boolean, defaultFontSize: Float, dataAccess: DataAccess, urlHandler: UriHandler, navigateToPlaylistEntryById: (Int) -> Unit): TabViewModel
     }
 
     //#endregion
@@ -250,7 +252,14 @@ class TabViewModel
             // add active hyperlinks
             val hyperlinks = getHyperLinks(this.toAnnotatedString().text)
             for (hyperlink in hyperlinks) {
-                this.addLink(LinkAnnotation.Url(hyperlink.value), hyperlink.range.first, hyperlink.range.last + 1)
+                this.addLink(
+                    LinkAnnotation.Url(hyperlink.value, linkInteractionListener = {
+                        val url = (it as LinkAnnotation.Url).url.trim()
+                        urlHandler.openUri(url)
+                    }),
+                    hyperlink.range.first,
+                    hyperlink.range.last + 1
+                )
             }
         }
 

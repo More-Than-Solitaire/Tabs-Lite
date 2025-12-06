@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -112,11 +113,13 @@ fun NavGraphBuilder.tabScreen(
             FALLBACK_FONT_SIZE_SP
         }
 
+        val urlHandler = LocalUriHandler.current
         val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(
             id = id,
             idIsPlaylistEntryId = false,
             defaultFontSize = defaultFontSizeInSp,
             dataAccess = db.dataAccess(),
+            urlHandler = urlHandler,
             navigateToPlaylistEntryById = { /* ignore playlist navigation because we're not in a playlist */ }
         )}
 
@@ -186,11 +189,13 @@ fun NavGraphBuilder.playlistEntryScreen(
             FALLBACK_FONT_SIZE_SP
         }
 
+        val urlHandler = LocalUriHandler.current
         val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(
             id = id,
             idIsPlaylistEntryId = true,
             defaultFontSize = defaultFontSizeInSp,
             dataAccess = db.dataAccess(),
+            urlHandler = urlHandler,
             navigateToPlaylistEntryById = onNavigateToPlaylistEntry
         )}
         TabScreen(
