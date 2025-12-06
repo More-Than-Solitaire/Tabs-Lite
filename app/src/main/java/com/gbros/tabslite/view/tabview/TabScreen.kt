@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +30,8 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -70,8 +73,10 @@ import com.gbros.tabslite.view.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.viewmodel.TabViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlin.math.pow
+import kotlin.math.sqrt
 
-private const val FALLBACK_FONT_SIZE_SP = 24f  // fall back to a font size of 14.sp if the system font size can't be read
+private const val FALLBACK_FONT_SIZE_SP = 14f  // fall back to a font size of 14.sp if the system font size can't be read
 
 //#region use case tab screen
 
@@ -104,7 +109,7 @@ fun NavGraphBuilder.tabScreen(
         val db = AppDatabase.getInstance(LocalContext.current)
 
         // default the font size to whatever the user default font size is.  This respects system font settings.
-        val defaultFontSize = MaterialTheme.typography.bodyMedium.fontSize
+        val defaultFontSize = MaterialTheme.typography.bodyLarge.fontSize
         val defaultFontSizeInSp = if (defaultFontSize.isSp) {
             defaultFontSize.value
         } else if (defaultFontSize.isEm) {
@@ -134,7 +139,6 @@ fun NavGraphBuilder.tabScreen(
             onTransposeDownClick = viewModel::onTransposeDownClick,
             onTransposeResetClick = viewModel::onTransposeResetClick,
             onTextClick = viewModel::onChordClick,
-            onScreenMeasured = viewModel::onScreenMeasured,
             onZoom = viewModel::onZoom,
             onChordDetailsDismiss = viewModel::onChordDetailsDismiss,
             onAutoscrollButtonClick = viewModel::onAutoscrollButtonClick,
@@ -209,7 +213,6 @@ fun NavGraphBuilder.playlistEntryScreen(
             onTransposeDownClick = viewModel::onTransposeDownClick,
             onTransposeResetClick = viewModel::onTransposeResetClick,
             onTextClick = viewModel::onChordClick,
-            onScreenMeasured = viewModel::onScreenMeasured,
             onZoom = viewModel::onZoom,
             onChordDetailsDismiss = viewModel::onChordDetailsDismiss,
             onAutoscrollButtonClick = viewModel::onAutoscrollButtonClick,
@@ -241,7 +244,6 @@ fun TabScreen(
     onTransposeDownClick: () -> Unit,
     onTransposeResetClick: () -> Unit,
     onTextClick: (chord: String) -> Unit,
-    onScreenMeasured: (screenWidth: Int, localDensity: Density, colorScheme: ColorScheme) -> Unit,
     onZoom: (zoomFactor: Float) -> Unit,
     onChordDetailsDismiss: () -> Unit,
     onAutoscrollSliderValueChange: (Float) -> Unit,
@@ -263,6 +265,22 @@ fun TabScreen(
 
     Column(
         modifier = Modifier
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val pointers = event.changes
+                        if (pointers.size > 1) {
+                            val zoom = pointers.calculateZoom()
+                            if (zoom != 1f) {
+                                onZoom(zoom)
+                                // don't consume the pointer events so scrolling still works
+                            }
+                        }
+                    }
+                }
+            }
+            .fillMaxSize()
             .verticalScroll(scrollState)
             .windowInsetsPadding(WindowInsets(
                 left = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(LocalLayoutDirection.current)),
@@ -373,7 +391,7 @@ fun TabScreen(
             // content
             if (viewState.state.observeAsState(LoadingState.Loading).value is LoadingState.Success) {
                 TabText(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxSize(),
                     text = viewState.content.observeAsState(AnnotatedString("")).value,
                     fontSizeSp = viewState.fontSizeSp.observeAsState(FALLBACK_FONT_SIZE_SP).value,
                     onChordClick = onTextClick,
@@ -460,6 +478,17 @@ fun TabScreen(
     }
 }
 
+private fun List<PointerInputChange>.calculateZoom(): Float {
+    if (size < 2) return 1f
+
+    val first = this[0]
+    val second = this[1]
+
+    val prevDist = sqrt((second.previousPosition.x - first.previousPosition.x).pow(2) + (second.previousPosition.y - first.previousPosition.y).pow(2))
+    val currDist = sqrt((second.position.x - first.position.x).pow(2) + (second.position.y - first.position.y).pow(2))
+
+    return if (prevDist > 0f) currDist / prevDist else 1f
+}
 //#region previews
 
 @Composable @Preview
@@ -582,7 +611,6 @@ private fun TabViewPreview() {
             onTransposeDownClick = { },
             onTransposeResetClick = { },
             onTextClick = { },
-            onScreenMeasured = { _, _, _ -> },
             onChordDetailsDismiss = { },
             onAutoscrollSliderValueChange = { },
             onAutoscrollButtonClick = { },

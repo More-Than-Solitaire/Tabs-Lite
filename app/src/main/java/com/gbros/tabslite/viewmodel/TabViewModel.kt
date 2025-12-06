@@ -1,7 +1,5 @@
 package com.gbros.tabslite.viewmodel
 
-import android.content.ActivityNotFoundException
-import android.content.ClipData
 import android.content.ContentResolver
 import android.content.Context
 import android.content.res.Resources.NotFoundException
@@ -9,16 +7,13 @@ import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.util.Log
 import androidx.compose.material3.ColorScheme
-import androidx.compose.ui.platform.Clipboard
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.substring
 import androidx.compose.ui.text.withAnnotation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Density
@@ -58,8 +53,8 @@ import kotlinx.coroutines.launch
 import kotlin.math.floor
 
 // font size constraints, measured in sp
-private const val MIN_FONT_SIZE_SP = 2f
-private const val MAX_FONT_SIZE_SP = 36f
+private const val MIN_FONT_SIZE_SP = 6f
+private const val MAX_FONT_SIZE_SP = 42f
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel(assistedFactory = TabViewModel.TabViewModelFactory::class)
@@ -328,7 +323,9 @@ class TabViewModel
             builder.withAnnotation("chord", annotationPrefix + chordMatch.chordName) {
                 if (inline) {
                     // leave content for the button to cover so the spacing isn't weird
-                    append(chordMatch.chordName)
+                    withStyle(SpanStyle().copy(color = Color.Transparent)) {
+                        append(chordMatch.chordName)
+                    }
                     append('\u00A0')  // non-breaking space to give room for button padding
                 } else {
                     append(nextContentCharacter)

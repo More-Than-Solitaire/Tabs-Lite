@@ -26,13 +26,13 @@ fun ChordButton(
         text = text,
         modifier = modifier
             .background(
-                color = MaterialTheme.colorScheme.primary, // Or another color
+                color = MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(4.dp)
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 2.dp), // Adjust padding as needed
+            .padding(horizontal = 3.dp, vertical = 0.dp),
         style = TextStyle(
-            color = MaterialTheme.colorScheme.onPrimary, // Text color on the button
+            color = MaterialTheme.colorScheme.onPrimary,
             fontSize = TextUnit(fontSizeSp, TextUnitType.Sp)
         )
     )
