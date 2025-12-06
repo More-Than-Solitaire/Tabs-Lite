@@ -292,8 +292,8 @@ class TabViewModel
 
 
             // get the next character after the chord tag. This is what we will attach the chord annotation to
-            var nextContentCharacter = text[currentIndex]
-            if (nextContentCharacter == '{') {
+            var nextContentCharacter = text.elementAtOrNull(currentIndex)
+            if (nextContentCharacter == null || nextContentCharacter == '{') {
                 nextContentCharacter = ' ' // chord tags should be ignored; use a space as the character to put the chord annotation on
             } else {
                 currentIndex++ // consume the next character
