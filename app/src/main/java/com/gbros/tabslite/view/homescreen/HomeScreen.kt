@@ -88,7 +88,8 @@ fun NavGraphBuilder.homeScreen(
     onNavigateToSearch: (String) -> Unit,
     onNavigateToTab: (Int) -> Unit,
     onNavigateToPlaylist: (Int) -> Unit,
-    onNavigateToPlaylistEntry: (Int) -> Unit
+    onNavigateToPlaylistEntry: (Int) -> Unit,
+    onNavigateToCreateTab: () -> Unit
 ) {
     composable(HOME_ROUTE) {
         val db = AppDatabase.getInstance(LocalContext.current)
@@ -109,7 +110,8 @@ fun NavGraphBuilder.homeScreen(
             onThemeSelectionChange = viewModel::setAppTheme,
             navigateToPlaylistById = onNavigateToPlaylist,
             navigateToTabByTabId = onNavigateToTab,
-            navigateToPlaylistEntryById = onNavigateToPlaylistEntry
+            navigateToPlaylistEntryById = onNavigateToPlaylistEntry,
+            onNavigateToCreateTab = onNavigateToCreateTab
         )
     }
 }
@@ -131,7 +133,8 @@ fun HomeScreen(
     onThemeSelectionChange: (ThemeSelection) -> Unit,
     navigateToTabByTabId: (id: Int) -> Unit,
     navigateToPlaylistById: (id: Int) -> Unit,
-    navigateToPlaylistEntryById: (id: Int) -> Unit
+    navigateToPlaylistEntryById: (id: Int) -> Unit,
+    onNavigateToCreateTab: () -> Unit
 ) {
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     val secondaryPagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
@@ -184,7 +187,8 @@ fun HomeScreen(
                 // launch a file picker to choose the file to import
                 importPlaylistsPickerLauncher.launch("application/json")
             },
-            onSwitchThemeMode = onThemeSelectionChange
+            onSwitchThemeMode = onThemeSelectionChange,
+            onNavigateToCreateTab = onNavigateToCreateTab
         )
     }
 
@@ -422,7 +426,8 @@ private fun HomeScreenPreview() {
             onThemeSelectionChange = {},
             navigateToTabByTabId = {},
             navigateToPlaylistById = {},
-            navigateToPlaylistEntryById = {}
+            navigateToPlaylistEntryById = {},
+            onNavigateToCreateTab = {}
         )
     }
 }

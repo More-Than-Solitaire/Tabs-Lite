@@ -3,6 +3,8 @@ package com.gbros.tabslite
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.gbros.tabslite.view.createtab.createTabScreen
+import com.gbros.tabslite.view.createtab.navigateToCreateTab
 import com.gbros.tabslite.view.homescreen.HOME_ROUTE
 import com.gbros.tabslite.view.homescreen.homeScreen
 import com.gbros.tabslite.view.homescreen.popUpToHome
@@ -32,7 +34,8 @@ fun TabsLiteNavGraph() {
             onNavigateToSearch = navController::navigateToSearch,
             onNavigateToTab = navController::navigateToTab,
             onNavigateToPlaylist = navController::navigateToPlaylistDetail,
-            onNavigateToPlaylistEntry = navController::navigateToPlaylistEntry
+            onNavigateToPlaylistEntry = navController::navigateToPlaylistEntry,
+            onNavigateToCreateTab = navController::navigateToCreateTab
         )
 
         tabScreen (
@@ -74,6 +77,10 @@ fun TabsLiteNavGraph() {
             onNavigateToTabByPlaylistEntryId = navController::navigateToPlaylistEntry,
             onNavigateToSearch = navController::navigateToSearch,
             onNavigateBack = navController::popBackStack
+        )
+
+        createTabScreen(
+            navController = navController
         )
     }
 }
