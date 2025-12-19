@@ -395,7 +395,6 @@ fun TabScreen(
                     text = viewState.content.observeAsState(AnnotatedString("")).value,
                     fontSizeSp = viewState.fontSizeSp.observeAsState(FALLBACK_FONT_SIZE_SP).value,
                     onChordClick = onTextClick,
-                    onZoom = onZoom
                 )
                 Spacer(modifier = Modifier.padding(vertical = 24.dp))
 

@@ -164,7 +164,6 @@ private fun ChordModalBottomSheetPreview (showModal: Boolean) {
         TabText(
             text = testCase1,
             fontSizeSp = 14f,
-            onZoom = {},
             modifier = Modifier.fillMaxSize(),
             onChordClick = { }
         )

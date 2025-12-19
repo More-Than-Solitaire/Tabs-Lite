@@ -34,7 +34,6 @@ fun TabText(
     modifier: Modifier = Modifier,
     text: AnnotatedString,
     fontSizeSp: Float,
-    onZoom: (zoomFactor: Float) -> Unit,
     onChordClick: (chord: String) -> Unit
 ){
     val textLayoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
@@ -105,7 +104,7 @@ private fun MeasureScope.placeChordButtons(
                 // Determine the horizontal position, ensuring it doesn't overlap the previous button
                 boundingBox.center
                 val x = maxOf(boundingBox.left.toInt(), lastButtonRightEdge)
-                val y = if (inline) boundingBox.bottom.toInt() - chordButton.height else boundingBox.top.toInt()
+                val y = if (inline) boundingBox.bottom.toInt() - chordButton.height else boundingBox.top.toInt() + (chordButton.height.toDouble() * 0.25).toInt()
                 chordButton.placeRelative(x, y)
 
                 // Update the right edge for the next button on this line
@@ -128,7 +127,6 @@ private fun TabTextTestCase1() {
             modifier = Modifier.background(color = Color.White),
             text = builder.toAnnotatedString(),
             fontSizeSp = 14f,
-            onZoom = {},
             onChordClick = {}
         )
     }
@@ -150,7 +148,6 @@ private fun TabTextTestCase2() {
             modifier = Modifier.background(color = Color.White),
             text = builder.toAnnotatedString(),
             fontSizeSp = 14f,
-            onZoom = {},
             onChordClick = {}
         )
     }
@@ -181,7 +178,6 @@ private fun TabTextPreview() {
             modifier = Modifier.background(color = Color.White),
             text = hallelujahTabForTest,
             fontSizeSp = 14f,
-            onZoom = {},
             onChordClick = {}
         )
     }
