@@ -3,6 +3,8 @@ package com.gbros.tabslite.viewmodel
 import android.content.ContentResolver
 import android.content.Context
 import android.content.res.Resources.NotFoundException
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.util.Log
@@ -352,13 +354,11 @@ class TabViewModel
      * Create a PDF document from the current tab
      */
     private fun createPdf(): PdfDocument {
-        val currentColors = currentTheme.value ?: return PdfDocument()
         val doc = PdfDocument()
         val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 page size
 
         // Margins
         val leftMargin = 40f
-        val rightMargin = 40f
         val topMargin = 50f
         val bottomMargin = 50f
 
@@ -374,47 +374,42 @@ class TabViewModel
         var currentY = topMargin
 
         // draw title
-        val titlePaint = android.graphics.Paint().apply {
-            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+        val titlePaint = Paint().apply {
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textSize = 18f
-            textAlign = android.graphics.Paint.Align.CENTER
+            textAlign = Paint.Align.CENTER
+            color = android.graphics.Color.BLACK // Explicitly set text color
         }
         val titleX = pageInfo.pageWidth / 2f // center the title on the page
         val title = "${songName.value} - ${artist.value}"
         canvas.drawText(title, titleX, currentY, titlePaint)
         currentY += titlePaint.fontSpacing * 2 // Add some vertical space after the title
 
-        // wrap content
-        val contentPaint = android.graphics.Paint().apply {
-            typeface = android.graphics.Typeface.create(android.graphics.Typeface.MONOSPACE, android.graphics.Typeface.NORMAL)
+        // setup paints for content
+        val contentPaint = Paint().apply {
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
             textSize = 12f
+            color = android.graphics.Color.BLACK
         }
-        val availableWidthInPt = pageInfo.pageWidth - leftMargin - rightMargin
-        val ptPerChar = contentPaint.measureText("A")
-        val availableWidthInChars = (availableWidthInPt / ptPerChar).toUInt()
-        val annotatedContent: AnnotatedString = processTabContent(unformattedContent.value ?: "")
-        // todo: wrap content
+        val chordTextPaint = Paint().apply {
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textSize = 12f
+            color = android.graphics.Color.BLACK
+        }
 
-        // draw content
-        val chordTextPaint = android.graphics.Paint().apply {
-            typeface = android.graphics.Typeface.create(android.graphics.Typeface.MONOSPACE, android.graphics.Typeface.BOLD)
-            textSize = 12f
-            color = android.graphics.Color.BLACK // Chord text color is black
-        }
-        val chordBackgroundPaint = android.graphics.Paint().apply {
-            color = "#FFDEA0".toColorInt() // Use theme color for highlight, or yellow as a fallback
-            style = android.graphics.Paint.Style.FILL
-        }
+        val annotatedContent: AnnotatedString = processTabContent(unformattedContent.value ?: "")
         val lineRegex = Regex(".*\\R?") // Regex to match a full line including its newline characters
+
         lineRegex.findAll(annotatedContent.text).forEach { lineMatchResult ->
             val line = lineMatchResult.value.trimEnd() // The actual line content without trailing newline
             val lineStartOffset = lineMatchResult.range.first
 
-            if (currentY + contentPaint.fontSpacing > pageInfo.pageHeight - bottomMargin) {
+            // Check if there's enough space for both the lyrics and the chords above them, otherwise start a new page
+            val requiredSpace = contentPaint.fontSpacing + chordTextPaint.fontSpacing
+            if (currentY + requiredSpace > pageInfo.pageHeight - bottomMargin) {
                 // Finish current page and start a new one
                 doc.finishPage(page)
-                currentPageNumber++
-                page = startNewPage(currentPageNumber)
+                page = startNewPage(++currentPageNumber)
                 canvas = page.canvas
                 currentY = topMargin
             }
@@ -422,34 +417,45 @@ class TabViewModel
             var currentX = leftMargin
             val lineEndOffset = lineStartOffset + line.length
 
-            // Get chord annotations for the current line
+            // Get all chord annotations for the current line
             val lineAnnotations = annotatedContent.getStringAnnotations("chord", lineStartOffset, lineEndOffset)
 
             var lastCharIndexInLine = 0
             for (annotation in lineAnnotations) {
-                // Calculate the start and end of the annotation relative to the current line
                 val annotationStartInLine = annotation.start - lineStartOffset
                 val annotationEndInLine = annotation.end - lineStartOffset
 
-                // Draw text before the chord
+                // Draw text before this annotation
                 if (annotationStartInLine > lastCharIndexInLine) {
                     val textBefore = line.substring(lastCharIndexInLine, annotationStartInLine)
                     canvas.drawText(textBefore, currentX, currentY, contentPaint)
                     currentX += contentPaint.measureText(textBefore)
                 }
 
-                // Draw the chord using the annotation's item
-                val chordText = annotation.item
-                val chordWidth = contentPaint.measureText(chordText) // Use contentPaint to measure for correct monospaced width
+                // The character in the main text that the chord is attached to
+                val annotatedChar = line.substring(annotationStartInLine, annotationEndInLine)
+                val annotatedCharWidth = contentPaint.measureText(annotatedChar)
 
-                // Draw the highlight background
-                val backgroundRect = android.graphics.RectF(currentX - chordTextPaint.letterSpacing, currentY - chordTextPaint.textSize, currentX + chordWidth + chordTextPaint.letterSpacing, currentY + chordTextPaint.descent())
-                canvas.drawRect(backgroundRect, chordBackgroundPaint)
+                // Extract chord name and check if it's an inline chord
+                var chordText = annotation.item
+                val isInline = chordText.startsWith("{il}")
+                if (isInline) {
+                    chordText = chordText.substring(4)
+                }
 
-                // todo: find the chords based on annotations
-                // Draw the chord text over the highlight
-                canvas.drawText(chordText, currentX, currentY, chordTextPaint)
-                currentX += chordWidth // Advance currentX by the width of the chord
+                // Draw the chord text above the current position
+                if (!isInline) {
+                    val chordY = currentY - contentPaint.textSize // Position above the main text line
+                    canvas.drawText(chordText, currentX, chordY, chordTextPaint)
+
+                    // Draw the annotated character(s) itself
+                    canvas.drawText(annotatedChar, currentX, currentY, contentPaint)
+                    currentX += annotatedCharWidth // Advance currentX
+                } else {
+                    // If it's an inline chord, just draw the chord, not the annotated character
+                    canvas.drawText(chordText, currentX, currentY, chordTextPaint)
+                    currentX += chordTextPaint.measureText(chordText)
+                }
 
                 lastCharIndexInLine = annotationEndInLine
             }
@@ -460,13 +466,13 @@ class TabViewModel
                 canvas.drawText(remainingText, currentX, currentY, contentPaint)
             }
 
-            currentY += contentPaint.fontSpacing
+            // Move to the next line position
+            currentY += contentPaint.fontSpacing * 2f // Add extra spacing for lines with chords
         }
 
         doc.finishPage(page)
         return doc
     }
-
     /**
      * Calculates the number of characters that can fit in the screen.
      *\
