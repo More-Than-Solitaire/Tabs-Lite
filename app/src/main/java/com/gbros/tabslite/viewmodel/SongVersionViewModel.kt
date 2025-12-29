@@ -14,7 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 @HiltViewModel(assistedFactory = SongVersionViewModel.SongVersionViewModelFactory::class)
 class SongVersionViewModel
 @AssistedInject constructor(
-    @Assisted songId: Int,
+    @Assisted songId: String,
     @Assisted dataAccess: DataAccess,
 ) : ViewModel(), ISongVersionViewState {
 
@@ -22,7 +22,7 @@ class SongVersionViewModel
 
     @AssistedFactory
     interface SongVersionViewModelFactory {
-        fun create(songId: Int, dataAccess: DataAccess): SongVersionViewModel
+        fun create(songId: String, dataAccess: DataAccess): SongVersionViewModel
     }
 
     //#endregion

@@ -68,6 +68,12 @@ object BackendConnection {
 
     //#region public methods
 
+    suspend fun createTab(db: FirebaseFirestore, tab: TabDataType) {
+        val newTabRef = db.collection("tabs").document()
+        newTabRef.set(tab).await()
+        Log.v(TAG, "Created tab ${newTabRef.id}")
+    }
+
     /**
      * Get search suggestions for the given query.  Stores search suggestions to the local database,
      * overwriting any previous search suggestions for the specified query

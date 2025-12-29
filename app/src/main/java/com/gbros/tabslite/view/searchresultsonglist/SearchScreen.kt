@@ -54,10 +54,11 @@ import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.viewmodel.SearchViewModel
 
+
+//#region Use Case: Find a tab to view (by title)
+
 private const val TITLE_SEARCH_NAV_ARG = "query"
 private const val TITLE_SEARCH_ROUTE_TEMPLATE = "search/%s"
-private const val ARTIST_SONG_LIST_TEMPLATE = "artist/%s"
-private const val ARTIST_SONG_LIST_NAV_ARG = "artistId"
 
 /**
  * NavController extension to allow navigation to the search screen based on a query
@@ -67,19 +68,11 @@ fun NavController.navigateToSearch(query: String) {
 }
 
 /**
- * NavController extension to allow navigation to a list of songs by a specified artist ID
- */
-fun NavController.navigateToArtistIdSongList(artistId: Int) {
-    Log.d(TAG, "navigating to artist $artistId song list")
-    navigate(ARTIST_SONG_LIST_TEMPLATE.format(artistId.toString()))
-}
-
-/**
  * NavGraphBuilder extension to build the search by title screen for when a user searches using text
  * (normal search)
  */
 fun NavGraphBuilder.searchByTitleScreen(
-    onNavigateToSongId: (Int) -> Unit,
+    onNavigateToSongId: (String) -> Unit,
     onNavigateToSearch: (String) -> Unit,
     onNavigateToTabByTabId: (tabId: Int) -> Unit,
     onNavigateToPlaylistEntryByEntryId: (playlistEntryId: Int) -> Unit,
@@ -105,12 +98,27 @@ fun NavGraphBuilder.searchByTitleScreen(
     }
 }
 
+//#endregion Use Case: Find a tab to view (by title)
+
+//#region Use Case: Find a tab to view (by artist ID)
+
+private const val ARTIST_SONG_LIST_TEMPLATE = "artist/%s"
+private const val ARTIST_SONG_LIST_NAV_ARG = "artistId"
+
 /**
- * NavGraphBuilder extension to build the search by artist ID screen for when a user clicks an 
+ * NavController extension to allow navigation to a list of songs by a specified artist ID
+ */
+fun NavController.navigateToArtistIdSongList(artistId: Int) {
+    Log.d(TAG, "navigating to artist $artistId song list")
+    navigate(ARTIST_SONG_LIST_TEMPLATE.format(artistId.toString()))
+}
+
+/**
+ * NavGraphBuilder extension to build the search by artist ID screen for when a user clicks an
  * artist name to see all songs by that artist
  */
 fun NavGraphBuilder.listSongsByArtistIdScreen(
-    onNavigateToSongId: (Int) -> Unit,
+    onNavigateToSongId: (String) -> Unit,
     onNavigateToSearch: (String) -> Unit,
     onNavigateToTabByTabId: (tabId: Int) -> Unit,
     onNavigateToPlaylistEntryByEntryId: (playlistEntryId: Int) -> Unit,
@@ -137,17 +145,60 @@ fun NavGraphBuilder.listSongsByArtistIdScreen(
     }
 }
 
+//#endregion Use Case: Find a tab to view (by artist ID)
+
+//#region Use Case: Find a song to create a new version of
+
+private const val SONG_SELECTION_NAV_ARG = "query"
+private const val SONG_SELECTION_ROUTE_TEMPLATE = "selectSong/%s"
+
+/**
+ * NavController extension to allow navigation to the search screen based on a query
+ */
+fun NavController.navigateToSongSelection(query: String) {
+    navigate(SONG_SELECTION_ROUTE_TEMPLATE.format(query))
+}
+
+/**
+ * NavGraphBuilder extension to build the search by title screen for when a user searches using text
+ * (normal search)
+ */
+fun NavGraphBuilder.selectSongByTitleScreen(
+    onNavigateToSongId: (String) -> Unit,
+    onNavigateToSearch: (String) -> Unit,
+    onNavigateBack: () -> Unit,
+) {
+    composable(
+        route = SONG_SELECTION_ROUTE_TEMPLATE.format("{$SONG_SELECTION_NAV_ARG}")
+    ) { navBackStackEntry ->
+        val query = navBackStackEntry.arguments!!.getString(SONG_SELECTION_NAV_ARG, "")
+        val db = AppDatabase.getInstance(LocalContext.current)
+        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create(query, null, db.dataAccess()) }
+        SearchScreen(
+            viewState = viewModel,
+            tabSearchBarViewState = viewModel.tabSearchBarViewModel,
+            onMoreSearchResultsNeeded = viewModel::onMoreSearchResultsNeeded,
+            onTabSearchBarQueryChange = viewModel.tabSearchBarViewModel::onQueryChange,
+            onNavigateToSongVersionsBySongId = onNavigateToSongId,
+            onNavigateBack = onNavigateBack,
+            onNavigateToSearch = onNavigateToSearch,
+        )
+    }
+}
+
+//#endregion Use Case: Find a song to create a new version of
+
 @Composable
 fun SearchScreen(
     viewState: ISearchViewState,
     tabSearchBarViewState: ITabSearchBarViewState,
     onMoreSearchResultsNeeded: suspend () -> Unit,
     onTabSearchBarQueryChange: (newQuery: String) -> Unit,
-    onNavigateToSongVersionsBySongId: (songId: Int) -> Unit,
+    onNavigateToSongVersionsBySongId: (songId: String) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToSearch: (query: String) -> Unit,
-    onNavigateToTabByTabId: (tabId: Int) -> Unit,
-    onNavigateToPlaylistEntryByEntryId: (playlistEntryId: Int) -> Unit
+    onNavigateToTabByTabId: ((tabId: Int) -> Unit)? = null,
+    onNavigateToPlaylistEntryByEntryId: ((playlistEntryId: Int) -> Unit)? = null
 ) {
     val lazyColumnState = rememberLazyListState()
     var needMoreSearchResults by remember { mutableStateOf(true) }
@@ -197,7 +248,7 @@ fun SearchScreen(
             LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp), state = lazyColumnState) {
                 items(items = searchResults.value) { song ->
                     SearchResultCard(song) {
-                        onNavigateToSongVersionsBySongId(song.songId)
+                        onNavigateToSongVersionsBySongId(song.songId.toString())
                     }
                 }
 

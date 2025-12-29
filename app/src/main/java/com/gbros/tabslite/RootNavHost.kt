@@ -3,7 +3,9 @@ package com.gbros.tabslite
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.gbros.tabslite.view.createtab.createTabContentScreen
 import com.gbros.tabslite.view.createtab.createTabScreen
+import com.gbros.tabslite.view.createtab.navigateToCreateTabContent
 import com.gbros.tabslite.view.createtab.navigateToCreateTab
 import com.gbros.tabslite.view.homescreen.HOME_ROUTE
 import com.gbros.tabslite.view.homescreen.homeScreen
@@ -13,7 +15,9 @@ import com.gbros.tabslite.view.playlists.playlistDetailScreen
 import com.gbros.tabslite.view.searchresultsonglist.listSongsByArtistIdScreen
 import com.gbros.tabslite.view.searchresultsonglist.navigateToArtistIdSongList
 import com.gbros.tabslite.view.searchresultsonglist.navigateToSearch
+import com.gbros.tabslite.view.searchresultsonglist.navigateToSongSelection
 import com.gbros.tabslite.view.searchresultsonglist.searchByTitleScreen
+import com.gbros.tabslite.view.searchresultsonglist.selectSongByTitleScreen
 import com.gbros.tabslite.view.songversionlist.navigateToSongVersion
 import com.gbros.tabslite.view.songversionlist.songVersionScreen
 import com.gbros.tabslite.view.tabview.navigateToPlaylistEntry
@@ -72,6 +76,12 @@ fun TabsLiteNavGraph() {
             onNavigateBack = navController::popUpToHome
         )
 
+        selectSongByTitleScreen(
+            onNavigateToSongId = navController::navigateToCreateTabContent,
+            onNavigateToSearch = navController::navigateToSongSelection,
+            onNavigateBack = navController::popUpToHome
+        )
+
         songVersionScreen(
             onNavigateToTabByTabId = navController::navigateToTab,
             onNavigateToTabByPlaylistEntryId = navController::navigateToPlaylistEntry,
@@ -80,7 +90,12 @@ fun TabsLiteNavGraph() {
         )
 
         createTabScreen(
-            navController = navController
+            onNavigateBack = navController::popBackStack,
+            onNavigateToSongSelection = navController::navigateToSongSelection
+        )
+
+        createTabContentScreen(
+            onNavigateBack = navController::popBackStack
         )
     }
 }

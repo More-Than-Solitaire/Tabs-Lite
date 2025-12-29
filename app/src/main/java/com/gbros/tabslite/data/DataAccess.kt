@@ -87,7 +87,10 @@ interface DataAccess {
     suspend fun existsWithContent(tabId: Int): Boolean
 
     @Query("SELECT *, 0 as transpose FROM tabs WHERE song_id = :songId")
-    fun getTabsBySongId(songId: Int): LiveData<List<Tab>>
+    fun getTabsBySongId(songId: String): LiveData<List<Tab>>
+
+    @Query("SELECT *, 0 as transpose FROM tabs WHERE song_id = :songId LIMIT 1")
+    fun getFirstTabBySongId(songId: String): LiveData<Tab?>
 
     @Upsert
     suspend fun upsert(tab: TabDataType)

@@ -29,11 +29,13 @@ import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.viewmodel.SongVersionViewModel
 
+//#region Use Case: Find and view tab
+
 private const val SONG_VERSION_NAV_ARG = "songId"
 const val SONG_VERSION_ROUTE_TEMPLATE = "song/%s"
 
-fun NavController.navigateToSongVersion(songId: Int) {
-    navigate(SONG_VERSION_ROUTE_TEMPLATE.format(songId.toString()))
+fun NavController.navigateToSongVersion(songId: String) {
+    navigate(SONG_VERSION_ROUTE_TEMPLATE.format(songId))
 }
 
 fun NavGraphBuilder.songVersionScreen(
@@ -44,9 +46,9 @@ fun NavGraphBuilder.songVersionScreen(
 ) {
     composable(
         SONG_VERSION_ROUTE_TEMPLATE.format("{$SONG_VERSION_NAV_ARG}"),
-        arguments = listOf(navArgument(SONG_VERSION_NAV_ARG) { type = NavType.IntType })
+        arguments = listOf(navArgument(SONG_VERSION_NAV_ARG) { type = NavType.StringType })
     ) { navBackStackEntry ->
-        val songId = navBackStackEntry.arguments!!.getInt(SONG_VERSION_NAV_ARG)
+        val songId = navBackStackEntry.arguments!!.getString(SONG_VERSION_NAV_ARG)!!
         val db = AppDatabase.getInstance(LocalContext.current)
         val viewModel: SongVersionViewModel = hiltViewModel<SongVersionViewModel, SongVersionViewModel.SongVersionViewModelFactory> { factory -> factory.create(songId, db.dataAccess()) }
 
@@ -61,6 +63,8 @@ fun NavGraphBuilder.songVersionScreen(
         )
     }
 }
+
+//#endregion Use Case: Find and view tab
 
 @Composable
 fun SongVersionScreen(

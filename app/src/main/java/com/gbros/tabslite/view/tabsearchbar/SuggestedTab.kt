@@ -26,16 +26,12 @@ import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun SuggestedTab(modifier: Modifier = Modifier, tab: TabWithDataPlaylistEntry, navigateToTabByTabId: (tabId: Int) -> Unit, navigateToTabByPlaylistEntryId: (playlistEntryId: Int) -> Unit) {
-    Card(
-        modifier = modifier
-            .clickable(onClick = {
-                when {
-                    tab.entryId > 0 && tab.playlistId > 0 -> navigateToTabByPlaylistEntryId(tab.entryId)
-                    else -> navigateToTabByTabId(tab.tabId)
-                }
-            })
-    ) {
+fun SuggestedTab(
+    modifier: Modifier = Modifier,
+    tab: TabWithDataPlaylistEntry,
+    onClick: () -> Unit,
+) {
+    Card(modifier = modifier.clickable(onClick = onClick)) {
         Row(
             modifier = Modifier
                 .padding(all = 4.dp),
@@ -84,8 +80,7 @@ private fun SuggestedTabPreview() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -102,8 +97,7 @@ private fun SuggestedTabPreviewFavorite() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -120,8 +114,7 @@ private fun SuggestedTabPreviewPopular() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -138,8 +131,7 @@ private fun SuggestedTabPreviewPlaylist() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -155,8 +147,7 @@ private fun SuggestedTabPreviewTextOverflow() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -172,8 +163,7 @@ private fun SuggestedTabPreviewTextOverflowTitleOnly() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -189,8 +179,7 @@ private fun SuggestedTabPreviewTextOverflowArtistOnly() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
