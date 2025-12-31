@@ -27,8 +27,8 @@ import kotlin.time.Duration.Companion.seconds
 @HiltViewModel(assistedFactory = SearchViewModel.SearchViewModelFactory::class)
 class SearchViewModel
 @AssistedInject constructor(
-    @Assisted override val query: String,
-    @Assisted val artistId: Int?,
+    @Assisted("query") override val query: String,
+    @Assisted("artistId") val artistId: String?,
     @Assisted dataAccess: DataAccess
 ) : ViewModel(), ISearchViewState {
 
@@ -36,7 +36,7 @@ class SearchViewModel
 
     @AssistedFactory
     interface SearchViewModelFactory {
-        fun create(query: String, artistId: Int?, dataAccess: DataAccess): SearchViewModel
+        fun create(@Assisted("query") query: String, @Assisted("artistId") artistId: String?, dataAccess: DataAccess): SearchViewModel
     }
 
     //#endregion

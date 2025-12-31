@@ -39,8 +39,6 @@ class HomeViewModel
     @Assisted private val dataAccess: DataAccess
 ) : ViewModel(), IHomeViewState {
 
-    private val db = Firebase.firestore
-
     //#region dependency injection factory
 
     @AssistedFactory
@@ -219,7 +217,6 @@ class HomeViewModel
                     try {
                         playlist.importToDatabase(
                             dataAccess = dataAccess,
-                            db = db,
                             onProgressChange = { progress ->
                                 playlistImportProgress.postValue(progressFromPreviouslyImportedPlaylists + (progress * progressForThisPlaylist))
                             })

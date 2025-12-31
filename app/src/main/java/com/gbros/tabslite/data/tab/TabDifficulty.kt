@@ -1,11 +1,11 @@
-package com.gbros.tabslite.data
+package com.gbros.tabslite.data.tab
 
 /**
  * Represents the difficulty of a tab.
  */
 enum class TabDifficulty {
     NotSet,
-    Novice,
-    Intermediate,
-    Advanced
+    novice,
+    intermediate,
+    advanced
 }

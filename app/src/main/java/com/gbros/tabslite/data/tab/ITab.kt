@@ -3,12 +3,11 @@ package com.gbros.tabslite.data.tab
 import android.content.Context
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
-import com.google.firebase.firestore.FirebaseFirestore
 
 private const val LOG_NAME = "tabslite.ITab          "
 
 interface ITab {
-    val tabId: Int
+    val tabId: String
     val type: String
     val part: String
     val version: Int
@@ -16,9 +15,7 @@ interface ITab {
     val rating: Double
     val date: Int
     val status: String
-    val presetId: Int
     val tabAccessType: String
-    val tpVersion: Int
 
     /**
      * The key of the song (e.g. key of 'Am')
@@ -26,33 +23,24 @@ interface ITab {
     var tonalityName: String
     val versionDescription: String
 
-    val songId: Int
+    val songId: String
     val songName: String
+    val songGenre: String
 
     /**
      * The author of the original song (not the person who wrote up these chords, that's [contributorUserName])
      */
     val artistName: String
-    val artistId: Int
+    val artistId: String
     val isVerified: Boolean
-    val numVersions: Int
-
-    // in JSON these are in a separate sublevel "recording"
-    val recordingIsAcoustic: Boolean
-    val recordingTonalityName: String
-    val recordingPerformance: String
-    val recordingArtists: ArrayList<String>
+    val versionsCount: Int
+    val isTabMl: Boolean
 
     var recommended: ArrayList<String>
-    var userRating: Int
     var difficulty: String
     var tuning: String
     var capo: Int
-    var urlWeb: String
-    var strumming: ArrayList<String>
-    var videosCount: Int
-    var proBrother: Int
-    var contributorUserId: Int
+    var contributorUserId: String
 
     /**
      * The author of the chord sheet (not the author of the song - that's [artistName])
@@ -95,10 +83,9 @@ interface ITab {
      * the tab content from the internet and load it into the database.
      *
      * @param dataAccess: The database to load the updated tab into
-     * @param db: The database to load the updated tab from
      * @param forceInternetFetch: If true, load from the internet regardless of whether we already have the tab.  If false, load only if [content] is empty
      *
      * @return The resulting ITab, either from the local database or from the internet
      */
-    suspend fun load(dataAccess: DataAccess, db: FirebaseFirestore, forceInternetFetch: Boolean = false): ITab
+    suspend fun load(dataAccess: DataAccess, forceInternetFetch: Boolean = false): ITab
 }

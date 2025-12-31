@@ -1,6 +1,5 @@
 package com.gbros.tabslite.data.servertypes
 
-import android.util.Log
 import com.chrynan.chords.model.ChordMarker
 import com.chrynan.chords.model.Finger
 import com.chrynan.chords.model.FretNumber
@@ -8,11 +7,12 @@ import com.chrynan.chords.model.StringNumber
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.tab.TabDataType
+import com.gbros.tabslite.data.tab.TabTuning
 
-class TabRequestType(var id: Int = -1, var song_id: Int = -1, var song_name: String = "", var artist_id: Int = -1, var artist_name: String = "", var type: String = "", var part: String = "", var version: Int = 0, var votes: Int = 0, var rating: Double = 0.0, var date: String = "",
-                     var status: String = "", var preset_id: Int = 0, var tab_access_type: String = "", var tp_version: Int = 0, var tonality_name: String = "", val version_description: String? = null, var verified: Int = 0, val recording: RecordingInfo? = null,
-                     var versions: List<VersionInfo> = emptyList(), var user_rating: Int = 0, var difficulty: String = "", var tuning: String = "", var capo: Int = 0, var urlWeb: String = "", var strumming: List<StrummingInfo> = emptyList(), var videosCount: Int = 0,
-                     var contributor: ContributorInfo = ContributorInfo(), var pros_brother: String? = null, var recommended: List<VersionInfo> = emptyList(), var applicature: List<ChordInfo> = emptyList(), val content: String? = null) {
+class TabRequestType(var id: String = "", var song_id: String = "", var song_name: String = "", var artist_id: String = "", var artist_name: String = "", var type: String = "Chords", var part: String = "", var version: Int = 0, var votes: Int = 0, var rating: Double = 0.0, var date: Int = 0,
+                     var status: String = "pending", var tab_access_type: String = "public", var tonality_name: String = "", val version_description: String? = "", var verified: Int = 0, var unique_chords: String = "",
+                     var difficulty: String = "", var tuning: String = TabTuning.Standard.toString(), var capo: Int = 0, var is_tab_ml: Boolean = false, var song_genre: String = "", var ug_difficulty: String = "", var versions_count: Int = 0,
+                     var contributor: ContributorInfo = ContributorInfo(), val content: String = "") {
     class RecordingInfo(var is_acoustic: Int = 0, var tonality_name: String = "", var performance: PerformanceInfo? = null, var recording_artists: List<RecordingArtistsInfo> = emptyList()) {
         class RecordingArtistsInfo(var join_field: String = "", var artist: ContributorInfo = ContributorInfo()) {
             override fun toString(): String {
@@ -47,7 +47,7 @@ class TabRequestType(var id: Int = -1, var song_id: Int = -1, var song_name: Str
         var id: Int = 0, var song_id: Int = 0, var song_name: String = "", var artist_name: String = "", var artist_id: String = "", var type: String = "", var part: String = "", var version: Int = 0, var votes: Int = 0, var rating: Double = 0.0, var date: String = "", var status: String = "", var preset_id: Int = 0,
         var tab_access_type: String = "", var tp_version: Int = 0, var tonality_name: String = "", var version_description: String? = "", var verified: Int = 0, var recording: RecordingInfo = RecordingInfo())
 
-    class ContributorInfo(var user_id: Int = 0, var username: String = "")
+    class ContributorInfo(var user_id: String = "0", var username: String = "Unregistered")
     class ChordInfo(var chord: String = "", var variations: List<VarInfo> = emptyList()) {
         class VarInfo(
             var id: String = "", var listCapos: List<CapoInfo> = emptyList(), var noteIndex: Int = 0, var notes: List<Int> = emptyList(), var frets: List<Int> = emptyList(), var fingers: List<Int> = emptyList(), var fret: Int = 0) {
@@ -126,67 +126,31 @@ class TabRequestType(var id: Int = -1, var song_id: Int = -1, var song_name: Str
         }
     }
 
-    class StrummingInfo(
-        var part: String = "",
-        var denuminator: Int = 0,
-        var bpm: Int = 0,
-        var is_triplet: Int = 0,
-        var measures: List<MeasureInfo> = emptyList()
-    ) {
-        class MeasureInfo(var measure: Int = 0)
-    }
-
     fun getTabFull(): TabDataType {
         val tab = TabDataType(
             tabId = id,
             songId = song_id,
             songName = song_name,
+            songGenre = song_genre,
             artistName = artist_name,
             artistId = artist_id,
             type = type,
             part = part,
             version = version,
             votes = votes,
-            rating = rating.toDouble(),
-            date = date.toIntOrNull() ?: 0,
+            isVerified = verified == 1,
+            rating = rating,
+            date = date,
             status = status,
-            presetId = preset_id,
             tabAccessType = tab_access_type,
-            tpVersion = tp_version,
             tonalityName = tonality_name,
-            isVerified = (verified != 0),
+            capo = capo,
             contributorUserId = contributor.user_id,
             contributorUserName = contributor.username,
-            capo = capo
+            versionsCount = versions_count,
+            versionDescription = version_description ?: "",
+            content = content
         )
-
-        if (version_description != null) {
-            tab.versionDescription = version_description
-        } else {
-            tab.versionDescription = ""
-        }
-
-        if (recording != null) {
-            tab.recordingIsAcoustic = (recording.is_acoustic != 0)
-            tab.recordingPerformance = recording.performance.toString()
-            tab.recordingTonalityName = recording.tonality_name
-            tab.recordingArtists = recording.getArtists()
-        } else {
-            tab.recordingIsAcoustic = false
-            tab.recordingPerformance = ""
-            tab.recordingTonalityName = ""
-            tab.recordingArtists = ArrayList(emptyList<String>())
-        }
-
-        if (content != null) {
-            tab.content = content
-        } else {
-            tab.content = "NO TAB CONTENT - Official tab?"
-            Log.w(
-                javaClass.simpleName,
-                "Warning: tab content is empty for id $id.  This is strange.  Could be an official tab."
-            )
-        }
 
         return tab
     }

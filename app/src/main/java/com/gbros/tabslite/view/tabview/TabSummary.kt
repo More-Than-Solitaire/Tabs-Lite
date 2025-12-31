@@ -51,7 +51,7 @@ fun TabSummary(
     author: String,
     version: Int,
     songVersions: List<ITab>,
-    onNavigateToTabById: (Int) -> Unit) {
+    onNavigateToTabById: (String) -> Unit) {
     var versionDropdownExpanded by remember { mutableStateOf(false) }
 
     Column(
@@ -155,7 +155,7 @@ fun roundToThousands(number: Int): String {
 @Composable @Preview
 private fun TabSummaryPreview() {
     val tab = Tab(
-        tabId = 0,
+        tabId = "0",
         songName = "Three Little Birds and a lot lot more long title",
         artistName = "Bob Marley with a long artist name as well",
         version = 1

@@ -73,7 +73,7 @@ fun SuggestedTab(
 @Preview
 private fun SuggestedTabPreview() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         songName = "Three Little Birds",
         artistName = "Bob Marley"
     )
@@ -89,7 +89,7 @@ private fun SuggestedTabPreview() {
 @Preview
 private fun SuggestedTabPreviewFavorite() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         playlistId = -1,
         songName = "Three Little Birds",
         artistName = "Bob Marley"
@@ -106,7 +106,7 @@ private fun SuggestedTabPreviewFavorite() {
 @Preview
 private fun SuggestedTabPreviewPopular() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         playlistId = -2,
         songName = "Three Little Birds",
         artistName = "Bob Marley"
@@ -123,7 +123,7 @@ private fun SuggestedTabPreviewPopular() {
 @Preview
 private fun SuggestedTabPreviewPlaylist() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         entryId = 1,
         songName = "Three Little Birds",
         artistName = "Bob Marley"
@@ -140,7 +140,7 @@ private fun SuggestedTabPreviewPlaylist() {
 @Preview
 private fun SuggestedTabPreviewTextOverflow() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         songName = "Three Little Birds and a lot lot more long title",
         artistName = "Bob Marley with a long artist name as well"
     )
@@ -156,7 +156,7 @@ private fun SuggestedTabPreviewTextOverflow() {
 @Preview
 private fun SuggestedTabPreviewTextOverflowTitleOnly() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         songName = "Three Little Birds and a lot lot more long title",
         artistName = "Bob"
     )
@@ -172,7 +172,7 @@ private fun SuggestedTabPreviewTextOverflowTitleOnly() {
 @Preview
 private fun SuggestedTabPreviewTextOverflowArtistOnly() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         songName = "Birds",
         artistName = "Bob with a very very long artist name that should overflow"
     )

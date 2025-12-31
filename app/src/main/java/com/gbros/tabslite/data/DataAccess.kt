@@ -39,23 +39,23 @@ interface DataAccess {
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs LEFT JOIN (SELECT IFNULL(transpose, null) as transpose, tab_id FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID) ON tab_id = id WHERE id = :tabId")
-    fun getTab(tabId: Int): LiveData<Tab>
+    fun getTab(tabId: String): LiveData<Tab>
 
     @Query("SELECT * FROM tabs WHERE id = :tabId")
-    suspend fun getTabInstance(tabId: Int): TabDataType
+    suspend fun getTabInstance(tabId: String): TabDataType
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id LEFT JOIN (SELECT id AS playlist_id, user_created, title, date_created, date_modified, description FROM playlist ) AS playlist ON playlist_entry.playlist_id = playlist.playlist_id WHERE playlist_entry.entry_id = :playlistEntryId")
     fun getTabFromPlaylistEntryId(playlistEntryId: Int): LiveData<TabWithDataPlaylistEntry?>
 
     @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE tabs.content is NULL OR tabs.content is ''")
-    suspend fun getEmptyPlaylistTabIds(): List<Int>
+    suspend fun getEmptyPlaylistTabIds(): List<String>
 
     @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE tabs.content is NULL OR tabs.content is '' ORDER BY playlist_entry.playlist_id DESC, playlist_entry.entry_id ASC")
-    fun getEmptyPlaylistTabIdsLive(): LiveData<List<Int>>
+    fun getEmptyPlaylistTabIdsLive(): LiveData<List<String>>
 
     @Query("SELECT DISTINCT tab_id FROM playlist_entry LEFT JOIN tabs ON tabs.id = playlist_entry.tab_id WHERE playlist_entry.playlist_id = :playlistId AND (tabs.id is NULL OR tabs.content is NULL OR tabs.content is '')")
-    suspend fun getEmptyPlaylistTabIds(playlistId: Int): List<Int>
+    suspend fun getEmptyPlaylistTabIds(playlistId: Int): List<String>
     
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tabs INNER JOIN playlist_entry ON tabs.id = playlist_entry.tab_id INNER JOIN playlist ON playlist_entry.playlist_id = playlist.id WHERE playlist_entry.playlist_id = :playlistId")
@@ -84,7 +84,7 @@ interface DataAccess {
     }
 
     @Query("SELECT EXISTS(SELECT 1 FROM tabs WHERE id = :tabId AND content != '' LIMIT 1)")
-    suspend fun existsWithContent(tabId: Int): Boolean
+    suspend fun existsWithContent(tabId: String): Boolean
 
     @Query("SELECT *, 0 as transpose FROM tabs WHERE song_id = :songId")
     fun getTabsBySongId(songId: String): LiveData<List<Tab>>
@@ -204,13 +204,13 @@ interface DataAccess {
     fun update(entry: DataPlaylistEntry)
 
     @Query("INSERT INTO playlist_entry (playlist_id, tab_id, next_entry_id, prev_entry_id, date_added, transpose) VALUES (:playlistId, :tabId, :nextEntryId, :prevEntryId, :dateAdded, :transpose)")
-    suspend fun insert(playlistId: Int, tabId: Int, nextEntryId: Int?, prevEntryId: Int?, dateAdded: Long, transpose: Int)
+    suspend fun insert(playlistId: Int, tabId: String, nextEntryId: Int?, prevEntryId: Int?, dateAdded: Long, transpose: Int)
 
-    suspend fun insertToFavorites(tabId: Int, transpose: Int)
+    suspend fun insertToFavorites(tabId: String, transpose: Int)
             = insert(FAVORITES_PLAYLIST_ID, tabId, null, null, System.currentTimeMillis(), transpose)
 
     @Transaction
-    suspend fun appendToPlaylist(playlistId: Int, tabId: Int, transpose: Int) {
+    suspend fun appendToPlaylist(playlistId: Int, tabId: String, transpose: Int) {
         val lastEntry = getLastEntryInPlaylist(playlistId = playlistId)
         val newEntry = DataPlaylistEntry(entryId = 0, playlistId = playlistId, tabId = tabId, nextEntryId = null, prevEntryId = lastEntry?.entryId, dateAdded = System.currentTimeMillis(), transpose = transpose )
         val newEntryId = insert(newEntry).toInt()
@@ -228,9 +228,9 @@ interface DataAccess {
     suspend fun deleteEntry(entryId: Int)
 
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId AND tab_id = :tabId")
-    suspend fun deleteTabFromPlaylist(tabId: Int, playlistId: Int)
+    suspend fun deleteTabFromPlaylist(tabId: String, playlistId: Int)
 
-    suspend fun deleteTabFromFavorites(tabId: Int) = deleteTabFromPlaylist(tabId, FAVORITES_PLAYLIST_ID)
+    suspend fun deleteTabFromFavorites(tabId: String) = deleteTabFromPlaylist(tabId, FAVORITES_PLAYLIST_ID)
 
     @Query("DELETE FROM playlist_entry WHERE playlist_id = :playlistId")
     suspend fun clearPlaylist(playlistId: Int)
@@ -275,16 +275,16 @@ interface DataAccess {
     }
 
     @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId)")
-    fun tabExistsInFavoritesLive(tabId: Int): LiveData<Boolean>
+    fun tabExistsInFavoritesLive(tabId: String): LiveData<Boolean>
 
     @Query("SELECT EXISTS(SELECT * FROM playlist_entry as favorites INNER JOIN (SELECT * FROM playlist_entry WHERE entry_id = :entryId) AS source ON source.tab_id = favorites.tab_id WHERE favorites.playlist_id = $FAVORITES_PLAYLIST_ID)")
     fun playlistEntryExistsInFavorites(entryId: Int): LiveData<Boolean>
 
     @Query("SELECT EXISTS(SELECT * FROM playlist_entry WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId)")
-    suspend fun tabExistsInFavorites(tabId: Int): Boolean
+    suspend fun tabExistsInFavorites(tabId: String): Boolean
 
     @Query("UPDATE playlist_entry SET transpose = :transpose WHERE playlist_id = $FAVORITES_PLAYLIST_ID AND tab_id = :tabId")
-    suspend fun updateFavoriteTabTransposition(tabId: Int, transpose: Int)
+    suspend fun updateFavoriteTabTransposition(tabId: String, transpose: Int)
 
     @Query("UPDATE playlist_entry SET transpose = :transpose WHERE entry_id = :entryId")
     suspend fun updateEntryTransposition(entryId: Int, transpose: Int)

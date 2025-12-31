@@ -1,15 +1,21 @@
 package com.gbros.tabslite.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import com.gbros.tabslite.LoadingState
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
-import com.gbros.tabslite.data.TabDifficulty
-import com.gbros.tabslite.data.TabTuning
+import com.gbros.tabslite.data.servertypes.TabRequestType
+import com.gbros.tabslite.data.tab.TabDifficulty
+import com.gbros.tabslite.data.tab.TabTuning
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabDataType
 import com.gbros.tabslite.utilities.BackendConnection
+import com.gbros.tabslite.utilities.TAG
+import com.gbros.tabslite.utilities.combine
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -51,6 +57,20 @@ class CreateTabViewModel @AssistedInject constructor(
     val versionDescription: MutableLiveData<String> = MutableLiveData("")
     val tuning: MutableLiveData<TabTuning> = MutableLiveData(TabTuning.Standard)
 
+    // track status of Submit action. Once it's complete, the view should navigate to the next page; this page's actions are done
+    val submissionStatus: MutableLiveData<LoadingState> = MutableLiveData(LoadingState.NotStarted)
+
+    val dataValidated: LiveData<Boolean> = combine(
+        content.map { !it.isNullOrEmpty() },
+        selectedSongName.map { it.isNotEmpty() },
+        selectedArtistName.map { it.isNotEmpty() },
+        difficulty.map { it != TabDifficulty.NotSet },
+        versionDescription.map { it.length <= 10000 },
+        tuning.map { it != null },
+        capo.map { it in 0..30 },
+        combineFn = { values -> values.all { it == true } }
+    )
+
     //#endregion view state
 
     //#region view actions
@@ -69,19 +89,61 @@ class CreateTabViewModel @AssistedInject constructor(
 
     //#region methods
 
-    fun createTab(
-        songName: String, artistName: String, content: String, playlistId: Int,
-        versionDescription: String, difficulty: String, tuning: String, capo: Int
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val tabId = Random.nextInt(Int.MIN_VALUE, -1)
-            val songId = Random.nextInt(Int.MIN_VALUE, -1)
-            val newTab = TabDataType(
-                tabId = tabId, songId = songId, songName = songName, artistName = artistName, content = content, type = "Player Pro",
-                versionDescription = versionDescription, difficulty = difficulty, tuning = tuning, capo = capo
+    fun submitTab() {
+        submissionStatus.value = LoadingState.Loading
+
+        // data checking
+        try {
+            val content = content.value ?: throw IllegalArgumentException("Content is null")
+            if (content.isEmpty()) {
+                throw IllegalArgumentException("Content is empty")
+            }
+
+            val songName = selectedSongName.value ?: throw IllegalArgumentException("Song name is null")
+            if (songName.isEmpty()) {
+                throw IllegalArgumentException("Song name is empty")
+            }
+
+            val artistName = selectedArtistName.value ?: throw IllegalArgumentException("Artist name is null")
+            if (artistName.isEmpty()) {
+                throw IllegalArgumentException("Artist name is empty")
+            }
+
+            val difficulty = difficulty.value ?: throw IllegalArgumentException("Difficulty is null")
+            if (difficulty == TabDifficulty.NotSet) {
+                throw IllegalArgumentException("Difficulty is not set")
+            }
+
+            val versionDescription = versionDescription.value ?: throw IllegalArgumentException("Version description is null")
+            if (versionDescription.length > 10000) {
+                throw IllegalArgumentException("Version description is too long")
+            }
+
+            val tuning = tuning.value ?: throw IllegalArgumentException("Tuning is null")
+            val capo = capo.value ?: throw IllegalArgumentException("Capo is null")
+            if (capo !in 0..30) {
+                throw IllegalArgumentException("Capo must be between 0 and 30")
+            }
+
+            val newTab = TabRequestType(
+                song_id = selectedSongId,
+                content = content,
+                version_description = versionDescription,
+                difficulty = difficulty.name,
+                tuning = tuning.toString(),
+                capo = capo,
             )
-            dataAccess.upsert(newTab)
-            dataAccess.appendToPlaylist(playlistId, tabId, 0)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                val completedTab = BackendConnection.createTab(tab = newTab)
+                dataAccess.upsert(completedTab)
+                dataAccess.insertToFavorites(completedTab.tabId, 0)
+                submissionStatus.postValue(LoadingState.Success)
+            }
+        }
+        catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Missing or invalid data in CreateTabViewModel.submitTab(); the app shouldn't have let the user click Submit", e)
+            submissionStatus.postValue(LoadingState.Error(messageStringRef = R.string.message_tab_creation_failed_missing_arguments))
         }
     }
 

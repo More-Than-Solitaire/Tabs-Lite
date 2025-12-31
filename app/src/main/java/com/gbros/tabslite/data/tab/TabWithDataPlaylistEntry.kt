@@ -24,7 +24,7 @@ data class TabWithDataPlaylistEntry(
     /**
      * The ID of the tab in this tab/playlist combo
      */
-    @ColumnInfo(name = "tab_id") override var tabId: Int = 0,
+    @ColumnInfo(name = "tab_id") override var tabId: String = "",
 
     /**
      * The next entry in this playlist (if one exists, else null)
@@ -35,13 +35,15 @@ data class TabWithDataPlaylistEntry(
      * The previous entry in this playlist (if one exists, else null)
      */
     @ColumnInfo(name = "prev_entry_id") override var prevEntryId: Int? = null,
+
     @ColumnInfo(name = "date_added") override var dateAdded: Long = 0,
-    @ColumnInfo(name = "song_id") override var songId: Int = 0,
+    @ColumnInfo(name = "song_id") override var songId: String = "",
     @ColumnInfo(name = "song_name") override var songName: String = "",
+    @ColumnInfo(name = "song_genre") override var songGenre: String = "",
     @ColumnInfo(name = "artist_name") override var artistName: String = "",
-    @ColumnInfo(name = "artist_id") override var artistId: Int = 0,
+    @ColumnInfo(name = "artist_id") override var artistId: String = "",
     @ColumnInfo(name = "verified") override var isVerified: Boolean = false,
-    @ColumnInfo(name = "num_versions") override var numVersions: Int = 0,
+    @ColumnInfo(name = "versions_count") override var versionsCount: Int = 0,
     @ColumnInfo(name = "type") override var type: String = "",
     @ColumnInfo(name = "part") override var part: String = "",
     @ColumnInfo(name = "version") override var version: Int = 0,
@@ -49,27 +51,17 @@ data class TabWithDataPlaylistEntry(
     @ColumnInfo(name = "rating") override var rating: Double = 0.0,
     @ColumnInfo(name = "date") override var date: Int = 0,
     @ColumnInfo(name = "status") override var status: String = "",
-    @ColumnInfo(name = "preset_id") override var presetId: Int = 0,
     @ColumnInfo(name = "tab_access_type") override var tabAccessType: String = "",
-    @ColumnInfo(name = "tp_version") override var tpVersion: Int = 0,
     @ColumnInfo(name = "tonality_name") override var tonalityName: String = "",
     @ColumnInfo(name = "version_description") override var versionDescription: String = "",
-    @ColumnInfo(name = "recording_is_acoustic") override var recordingIsAcoustic: Boolean = false,
-    @ColumnInfo(name = "recording_tonality_name") override var recordingTonalityName: String = "",
-    @ColumnInfo(name = "recording_performance") override var recordingPerformance: String = "",
-    @ColumnInfo(name = "recording_artists") override var recordingArtists: ArrayList<String> = arrayListOf(),
+    @ColumnInfo(name = "is_tab_ml") override var isTabMl: Boolean = false,
 
     @ColumnInfo(name = "recommended") override var recommended: ArrayList<String> = ArrayList(0),
-    @ColumnInfo(name = "user_rating") override var userRating: Int = 0,
     @ColumnInfo(name = "difficulty") override var difficulty: String = "novice",
     @ColumnInfo(name = "tuning") override var tuning: String = "E A D G B E",
     @ColumnInfo(name = "capo") override var capo: Int = 0,
-    @ColumnInfo(name = "url_web") override var urlWeb: String = "",
-    @ColumnInfo(name = "strumming") override var strumming: ArrayList<String> = ArrayList(),
-    @ColumnInfo(name = "videos_count") override var videosCount: Int = 0,
-    @ColumnInfo(name = "pro_brother") override var proBrother: Int = 0,
-    @ColumnInfo(name = "contributor_user_id") override var contributorUserId: Int = -1,
-    @ColumnInfo(name = "contributor_user_name") override var contributorUserName: String = "",
+    @ColumnInfo(name = "contributor_user_id") override var contributorUserId: String = "0",
+    @ColumnInfo(name = "contributor_user_name") override var contributorUserName: String = "Unregistered",
     @ColumnInfo(name = "content") override var content: String = "",
 
     // columns from Playlist
@@ -91,7 +83,7 @@ data class TabWithDataPlaylistEntry(
      *
      * @return this object, for joining calls together
      */
-    override suspend fun load(dataAccess: DataAccess, db: FirebaseFirestore, forceInternetFetch: Boolean): TabWithDataPlaylistEntry {
+    override suspend fun load(dataAccess: DataAccess, forceInternetFetch: Boolean): TabWithDataPlaylistEntry {
         // fetch playlist entry
         val loadedPlaylistEntry = dataAccess.getEntryById(entryId)
         if (loadedPlaylistEntry == null) {
@@ -105,7 +97,7 @@ data class TabWithDataPlaylistEntry(
         set(loadedPlaylistDetail)
 
         // fetch tab
-        val loadedTab = Tab(tabId).load(dataAccess, db, forceInternetFetch)
+        val loadedTab = Tab(tabId).load(dataAccess, forceInternetFetch)
         set(loadedTab)
         return this
     }
@@ -145,9 +137,10 @@ data class TabWithDataPlaylistEntry(
         tabId = tab.tabId
         songId = tab.songId
         songName = tab.songName
+        songGenre = tab.songGenre
         artistName = tab.artistName
         isVerified = tab.isVerified
-        numVersions = tab.numVersions
+        versionsCount = tab.versionsCount
         type = tab.type
         part = tab.part
         version = tab.version
@@ -156,30 +149,19 @@ data class TabWithDataPlaylistEntry(
         rating = tab.rating
         date = tab.date
         status = tab.status
-        presetId = tab.presetId
         tabAccessType = tab.tabAccessType
-        tpVersion = tab.tpVersion
-        urlWeb = tab.urlWeb
-        userRating = tab.userRating
         difficulty = tab.difficulty
         contributorUserId = tab.contributorUserId
         contributorUserName = tab.contributorUserName
+        isTabMl = tab.isTabMl
 
         // tab play data
         tonalityName = tab.tonalityName
         tuning = tab.tuning
         capo = tab.capo
         content = tab.content
-        strumming = tab.strumming
 
-        // tab recording data
         recommended = tab.recommended
-        recordingIsAcoustic = tab.recordingIsAcoustic
-        recordingTonalityName = tab.recordingTonalityName
-        recordingPerformance = tab.recordingPerformance
-        recordingArtists = tab.recordingArtists
-        videosCount = tab.videosCount
-        proBrother = tab.proBrother
     }
 
     //#endregion

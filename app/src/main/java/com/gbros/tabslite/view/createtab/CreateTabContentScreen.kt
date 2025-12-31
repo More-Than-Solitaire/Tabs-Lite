@@ -44,8 +44,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.gbros.tabslite.data.AppDatabase
-import com.gbros.tabslite.data.TabDifficulty
-import com.gbros.tabslite.data.TabTuning
+import com.gbros.tabslite.data.tab.TabDifficulty
+import com.gbros.tabslite.data.tab.TabTuning
 import com.gbros.tabslite.view.tabview.TabText
 import com.gbros.tabslite.viewmodel.CreateTabViewModel
 import kotlinx.coroutines.launch
@@ -73,6 +73,7 @@ fun NavGraphBuilder.createTabContentScreen(onNavigateBack: () -> Unit) {
             difficultyUpdated = createTabViewModel::difficultyUpdated,
             tuningUpdated = createTabViewModel::tuningUpdated,
             versionDescriptionUpdated = createTabViewModel::versionDescriptionUpdated,
+            saveTab = createTabViewModel::submitTab,
             navigateBack = onNavigateBack
         )
     }
@@ -87,6 +88,7 @@ fun CreateTabContentScreen(
     difficultyUpdated: (TabDifficulty) -> Unit,
     tuningUpdated: (TabTuning) -> Unit,
     versionDescriptionUpdated: (String) -> Unit,
+    saveTab: () -> Unit,
     navigateBack: () -> Unit
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
@@ -298,11 +300,9 @@ fun CreateTabContentScreen(
                                 Text("Back")
                             }
                             Button(
-                                onClick = {
-                                    // todo: save tab
-                                 },
+                                onClick = saveTab,
                                 modifier = Modifier.weight(1f),
-                                enabled = false //todo: enable based on contents of fields
+                                enabled = viewState.dataValidated.observeAsState(false).value
                             ) {
                                 Text("Save Tab")
                             }

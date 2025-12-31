@@ -39,8 +39,7 @@ class HomeActivity : ComponentActivity() {
         enableEdgeToEdge()  // enabled by default on Android 15+ (API 35+), but this is for lower Android versions
 
         val dataAccess = AppDatabase.getInstance(applicationContext).dataAccess()
-        val db = Firebase.firestore
-        launchInitialFetchAndSetupJobs(dataAccess, db)
+        launchInitialFetchAndSetupJobs(dataAccess)
         val darkModePref = dataAccess.getLivePreference(Preference.APP_THEME).map { themePref ->
             return@map ThemeSelection.valueOf(themePref?.value ?: ThemeSelection.System.name)
         }
@@ -63,7 +62,7 @@ class HomeActivity : ComponentActivity() {
      * are created, and loading any tabs that the user favorited or added to a playlist, but weren't
      * downloaded successfully at the time
      */
-    private fun launchInitialFetchAndSetupJobs(dataAccess: DataAccess, db: FirebaseFirestore) {
+    private fun launchInitialFetchAndSetupJobs(dataAccess: DataAccess) {
         CoroutineScope(Dispatchers.IO).launch {
             fetchTopTabs(dataAccess)
         }
@@ -76,7 +75,7 @@ class HomeActivity : ComponentActivity() {
             initializeDefaultPlaylists(dataAccess)
         }
 
-        fetchEmptyTabsFromInternet(dataAccess, db)
+        fetchEmptyTabsFromInternet(dataAccess)
     }
 
     /**
@@ -131,13 +130,13 @@ class HomeActivity : ComponentActivity() {
     /**
      * load any tabs that were added without internet connection
      */
-    private fun fetchEmptyTabsFromInternet(dataAccess: DataAccess, db: FirebaseFirestore) {
+    private fun fetchEmptyTabsFromInternet(dataAccess: DataAccess) {
         dataAccess.getEmptyPlaylistTabIdsLive().observe(this) { tabIds ->
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     Log.i(TAG, "Fetching empty playlist tab - ${tabIds.size} remaining.")
                     if (tabIds.isNotEmpty()) {
-                        Tab(tabIds.first()).load(dataAccess, db, false)
+                        Tab(tabIds.first()).load(dataAccess, false)
                     }
                 } catch (ex: BackendConnection.NoInternetException) {
                     Log.i(TAG, "Initial empty-playlist-tab fetch failed: no internet connection", ex)

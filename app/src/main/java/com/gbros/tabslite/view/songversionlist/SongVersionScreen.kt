@@ -39,7 +39,7 @@ fun NavController.navigateToSongVersion(songId: String) {
 }
 
 fun NavGraphBuilder.songVersionScreen(
-    onNavigateToTabByTabId: (Int) -> Unit,
+    onNavigateToTabByTabId: (String) -> Unit,
     onNavigateToTabByPlaylistEntryId: (Int) -> Unit,
     onNavigateToSearch: (String) -> Unit,
     onNavigateBack: () -> Unit
@@ -71,7 +71,7 @@ fun SongVersionScreen(
     viewState: ISongVersionViewState,
     tabSearchBarViewState: ITabSearchBarViewState,
     onTabSearchBarQueryChange: (newQuery: String) -> Unit,
-    onNavigateToTabByTabId: (id: Int) -> Unit,
+    onNavigateToTabByTabId: (id: String) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToSearch: (query: String) -> Unit,
     onNavigateToTabByPlaylistEntryId: (id: Int) -> Unit

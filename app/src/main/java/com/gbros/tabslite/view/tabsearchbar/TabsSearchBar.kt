@@ -51,7 +51,7 @@ fun TabsSearchBar(
     viewState: ITabSearchBarViewState,
     onQueryChange: (newQuery: String) -> Unit,
     onSearch: (query: String) -> Unit,
-    onNavigateToTabById: ((tabId: Int) -> Unit)? = null,
+    onNavigateToTabById: ((tabId: String) -> Unit)? = null,
     onNavigateToPlaylistEntryById: ((playlistEntryId: Int) -> Unit)? = null
 ) {
     val query = viewState.query.observeAsState("")

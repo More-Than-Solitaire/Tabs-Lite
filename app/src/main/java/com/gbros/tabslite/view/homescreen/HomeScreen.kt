@@ -86,7 +86,7 @@ fun NavController.popUpToHome() {
 
 fun NavGraphBuilder.homeScreen(
     onNavigateToSearch: (String) -> Unit,
-    onNavigateToTab: (Int) -> Unit,
+    onNavigateToTab: (String) -> Unit,
     onNavigateToPlaylist: (Int) -> Unit,
     onNavigateToPlaylistEntry: (Int) -> Unit,
     onNavigateToCreateTab: () -> Unit
@@ -131,7 +131,7 @@ fun HomeScreen(
     onImportPlaylists: (sourceFile: Uri, contentResolver: ContentResolver) -> Unit,
     onCreatePlaylist: (title: String, description: String) -> Unit,
     onThemeSelectionChange: (ThemeSelection) -> Unit,
-    navigateToTabByTabId: (id: Int) -> Unit,
+    navigateToTabByTabId: (id: String) -> Unit,
     navigateToPlaylistById: (id: Int) -> Unit,
     navigateToPlaylistEntryById: (id: Int) -> Unit,
     onNavigateToCreateTab: () -> Unit
@@ -302,6 +302,7 @@ fun HomeScreen(
                     viewState = favoriteSongListViewState,
                     emptyListText = stringResource(R.string.empty_favorites),
                     navigateToTabById = navigateToTabByTabId,
+                    navigateToTabByPlaylistEntryId = navigateToPlaylistEntryById,
                     navigateByPlaylistEntryId = false,
                 )
 
@@ -310,6 +311,7 @@ fun HomeScreen(
                     viewState = popularSongListViewState,
                     emptyListText = stringResource(R.string.empty_popular),
                     navigateToTabById = navigateToTabByTabId,
+                    navigateToTabByPlaylistEntryId = navigateToPlaylistEntryById,
                     navigateByPlaylistEntryId = false,  // can't navigate by playlisty entry because the playlist entries get cleared and refreshed each time the activity starts (e.g. when device is rotated or dark mode is enabled)
                 )
 

@@ -16,7 +16,9 @@ import com.gbros.tabslite.data.servertypes.TabRequestType
 import com.gbros.tabslite.data.tab.TabDataType
 import com.gbros.tabslite.utilities.BackendConnection.apiKey
 import com.gbros.tabslite.utilities.BackendConnection.deviceId
+import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -50,6 +52,8 @@ import kotlin.random.Random
 object BackendConnection {
     //#region private data
 
+    private val db = Firebase.firestore
+
     private val gson = Gson()
 
     private var apiKey: String? = null
@@ -68,10 +72,28 @@ object BackendConnection {
 
     //#region public methods
 
-    suspend fun createTab(db: FirebaseFirestore, tab: TabDataType) {
+    /**
+     * Create a new tab in the database. Fetches song info to insert into tab.
+     *
+     * @param [tab] the tab to create. `id`, `artist_id`, `artist_name`, `song_genre`, and `song_name` fields not respected.
+     *
+     * @return The ID of the created tab
+     */
+    suspend fun createTab(tab: TabRequestType): TabDataType {
+        // fetch song info to insert into tab
+        val songDetails = db.collection("songs").document(tab.song_id).get().await().data
+            ?: throw NotFoundException("Song ${tab.song_id} not found in database")
+
+        tab.artist_id = songDetails["artist_id"] as String
+        tab.artist_name = songDetails["artist_name"] as String
+        tab.song_genre = songDetails["song_genre"] as String
+        tab.song_name = songDetails["song_name"] as String
+
         val newTabRef = db.collection("tabs").document()
+        tab.id = newTabRef.id
         newTabRef.set(tab).await()
         Log.v(TAG, "Created tab ${newTabRef.id}")
+        return tab.getTabFull()
     }
 
     /**
@@ -123,9 +145,19 @@ object BackendConnection {
      *
      * @return A [SearchRequestType] with the search results, or an empty [SearchRequestType] if there are no search results on that page
      */
-    suspend fun search(title: String, artistId: Int? = null, page: Int): SearchRequestType = withContext(Dispatchers.IO) {
+    suspend fun search(title: String, artistId: String? = null, page: Int): SearchRequestType = withContext(Dispatchers.IO) {
+        var artistQuery = artistId
+        if (artistQuery != null) {
+            artistQuery = artistId.replace("7567-", "") // search can't handle prefixed ids
+            artistQuery = URLEncoder.encode(artistQuery, "utf-8")
+            artistQuery = "&artist_id=$artistQuery"
+        }
+        else {
+            artistQuery = ""
+        }
+
         val url =
-            "https://api.ultimate-guitar.com/api/v1/tab/search?title=$title&page=$page&artist_id=$artistId&type[]=300&official[]=0"
+            "https://api.ultimate-guitar.com/api/v1/tab/search?title=$title&page=$page$artistQuery&type[]=300&official[]=0"
 
         val inputStream: InputStream?
         try {
@@ -270,17 +302,15 @@ object BackendConnection {
      *
      * @param tabId         The ID of the tab to load
      * @param dataAccess      The database instance to load a tab from (or into)
-     * @param tabAccessType (Optional) string parameter for internet tab load request
      */
     suspend fun fetchTabFromInternet(
-        tabId: Int,
+        tabId: String,
         dataAccess: DataAccess,
-        db: FirebaseFirestore,
     ): TabDataType = withContext(Dispatchers.IO) {
         // get the tab and put it in the database, then return true
         Log.v(TAG, "Loading tab $tabId.")
 
-        val tabDocRef = db.collection("tabs").document("7567-$tabId")
+        val tabDocRef = db.collection("tabs").document(tabId)
         val tabDoc = tabDocRef.get().await()
         if (!tabDoc.exists()) {
             throw NotFoundException("Tab $tabId not found in database")
@@ -291,6 +321,9 @@ object BackendConnection {
 
             val result = requestResponse.getTabFull()
             if (result.content.isNotBlank()) {
+                if (result.tabId != tabDocRef.id) {
+                    result.tabId = tabDocRef.id  // workaround since some or most tabs in database don't have the id prefixed
+                }
                 dataAccess.upsert(result)
                 Log.v(TAG, "Successfully inserted tab ${result.songName} (${result.tabId})")
             } else {

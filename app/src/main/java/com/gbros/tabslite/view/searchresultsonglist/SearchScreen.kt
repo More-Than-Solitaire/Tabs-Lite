@@ -74,7 +74,7 @@ fun NavController.navigateToSearch(query: String) {
 fun NavGraphBuilder.searchByTitleScreen(
     onNavigateToSongId: (String) -> Unit,
     onNavigateToSearch: (String) -> Unit,
-    onNavigateToTabByTabId: (tabId: Int) -> Unit,
+    onNavigateToTabByTabId: (tabId: String) -> Unit,
     onNavigateToPlaylistEntryByEntryId: (playlistEntryId: Int) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
@@ -108,9 +108,9 @@ private const val ARTIST_SONG_LIST_NAV_ARG = "artistId"
 /**
  * NavController extension to allow navigation to a list of songs by a specified artist ID
  */
-fun NavController.navigateToArtistIdSongList(artistId: Int) {
+fun NavController.navigateToArtistIdSongList(artistId: String) {
     Log.d(TAG, "navigating to artist $artistId song list")
-    navigate(ARTIST_SONG_LIST_TEMPLATE.format(artistId.toString()))
+    navigate(ARTIST_SONG_LIST_TEMPLATE.format(artistId))
 }
 
 /**
@@ -120,15 +120,15 @@ fun NavController.navigateToArtistIdSongList(artistId: Int) {
 fun NavGraphBuilder.listSongsByArtistIdScreen(
     onNavigateToSongId: (String) -> Unit,
     onNavigateToSearch: (String) -> Unit,
-    onNavigateToTabByTabId: (tabId: Int) -> Unit,
+    onNavigateToTabByTabId: (tabId: String) -> Unit,
     onNavigateToPlaylistEntryByEntryId: (playlistEntryId: Int) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     composable(
         route = ARTIST_SONG_LIST_TEMPLATE.format("{$ARTIST_SONG_LIST_NAV_ARG}"),
-        arguments = listOf(navArgument(ARTIST_SONG_LIST_NAV_ARG) { type = NavType.IntType } )
+        arguments = listOf(navArgument(ARTIST_SONG_LIST_NAV_ARG) { type = NavType.StringType } )
     ) { navBackStackEntry ->
-        val artistId = navBackStackEntry.arguments!!.getInt(ARTIST_SONG_LIST_NAV_ARG)
+        val artistId = navBackStackEntry.arguments!!.getString(ARTIST_SONG_LIST_NAV_ARG)
         val db = AppDatabase.getInstance(LocalContext.current)
         val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create("", artistId, db.dataAccess()) }
         SearchScreen(
@@ -197,7 +197,7 @@ fun SearchScreen(
     onNavigateToSongVersionsBySongId: (songId: String) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToSearch: (query: String) -> Unit,
-    onNavigateToTabByTabId: ((tabId: Int) -> Unit)? = null,
+    onNavigateToTabByTabId: ((tabId: String) -> Unit)? = null,
     onNavigateToPlaylistEntryByEntryId: ((playlistEntryId: Int) -> Unit)? = null
 ) {
     val lazyColumnState = rememberLazyListState()
@@ -331,7 +331,7 @@ private fun SearchScreenPreview() {
           Listen to my voice it’s my disguise, [/tab]
         [tab]            [ch]G[/ch]
         I’m by your side.[/tab]    """.trimIndent()
-    val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", 1, false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
+    val tabForTest = TabWithDataPlaylistEntry(1, 1, "1", 1, 1, 1234, "0", "Long Time Ago", "rock","CoolGuyz", "1", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , "public", "C", "E A D G B E", false, ArrayList(), "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
     val state = SearchViewStateForTest("my song", MutableLiveData(listOf(tabForTest, tabForTest, tabForTest)), MutableLiveData(LoadingState.Loading), MutableLiveData(false))
     val tabSearchBarViewState = TabSearchBarViewStateForTest(
         query = MutableLiveData("my song"),
@@ -386,7 +386,7 @@ private fun SearchScreenPreviewError() {
           Listen to my voice it’s my disguise, [/tab]
         [tab]            [ch]G[/ch]
         I’m by your side.[/tab]    """.trimIndent()
-    val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", 1, false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
+    val tabForTest = TabWithDataPlaylistEntry(1, 1, "1", 1, 1, 1234, "0", "Long Time Ago", "rock","CoolGuyz", "1", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , "public", "C", "E A D G B E", false, ArrayList(), "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
     val state = SearchViewStateForTest("my song", MutableLiveData(listOf(tabForTest, tabForTest, tabForTest)), MutableLiveData(LoadingState.Error(R.string.error)), MutableLiveData(false))
 
     val tabSearchBarViewState = TabSearchBarViewStateForTest(

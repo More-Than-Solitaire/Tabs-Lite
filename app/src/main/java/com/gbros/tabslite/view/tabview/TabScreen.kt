@@ -83,29 +83,29 @@ private const val FALLBACK_FONT_SIZE_SP = 14f  // fall back to a font size of 14
 private const val TAB_NAV_ARG = "tabId"
 const val TAB_ROUTE_TEMPLATE = "tab/%s"
 
-fun NavController.navigateToTab(tabId: Int) {
-    navigate(TAB_ROUTE_TEMPLATE.format(tabId.toString()))
+fun NavController.navigateToTab(tabId: String) {
+    navigate(TAB_ROUTE_TEMPLATE.format(tabId))
 }
 
 /**
  * Navigate to a tab by tab ID, but replace the current item in the back stack.
  */
-fun NavController.swapToTab(tabId: Int) {
-    navigate(TAB_ROUTE_TEMPLATE.format(tabId.toString())) {
+fun NavController.swapToTab(tabId: String) {
+    navigate(TAB_ROUTE_TEMPLATE.format(tabId)) {
         popUpTo(route = TAB_ROUTE_TEMPLATE.format("{$TAB_NAV_ARG}")) { inclusive = true }
     }
 }
 
 fun NavGraphBuilder.tabScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToArtistIdSongList: (artistId: Int) -> Unit,
-    onNavigateToTabVersionById: (id: Int) -> Unit
+    onNavigateToArtistIdSongList: (artistId: String) -> Unit,
+    onNavigateToTabVersionById: (id: String) -> Unit
 ) {
     composable(
         route = TAB_ROUTE_TEMPLATE.format("{$TAB_NAV_ARG}"),
-        arguments = listOf(navArgument(TAB_NAV_ARG) { type = NavType.IntType } )
+        arguments = listOf(navArgument(TAB_NAV_ARG) { type = NavType.StringType } )
     ) { navBackStackEntry ->
-        val id = navBackStackEntry.arguments!!.getInt(TAB_NAV_ARG)
+        val id = navBackStackEntry.arguments!!.getString(TAB_NAV_ARG)
         val db = AppDatabase.getInstance(LocalContext.current)
 
         // default the font size to whatever the user default font size is.  This respects system font settings.
@@ -120,8 +120,7 @@ fun NavGraphBuilder.tabScreen(
 
         val urlHandler = LocalUriHandler.current
         val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(
-            id = id,
-            idIsPlaylistEntryId = false,
+            tabId = id,
             defaultFontSize = defaultFontSizeInSp,
             dataAccess = db.dataAccess(),
             urlHandler = urlHandler,
@@ -173,8 +172,8 @@ fun NavController.navigateToPlaylistEntry(playlistEntryId: Int) {
 fun NavGraphBuilder.playlistEntryScreen(
     onNavigateToPlaylistEntry: (Int) -> Unit,
     onNavigateBack: () -> Unit,
-    onNavigateToArtistIdSongList: (artistId: Int) -> Unit,
-    onNavigateToTabVersionById: (id: Int) -> Unit
+    onNavigateToArtistIdSongList: (artistId: String) -> Unit,
+    onNavigateToTabVersionById: (id: String) -> Unit
 ) {
     composable(
         route = PLAYLIST_ENTRY_ROUTE,
@@ -195,8 +194,7 @@ fun NavGraphBuilder.playlistEntryScreen(
 
         val urlHandler = LocalUriHandler.current
         val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(
-            id = id,
-            idIsPlaylistEntryId = true,
+            entryId = id,
             defaultFontSize = defaultFontSizeInSp,
             dataAccess = db.dataAccess(),
             urlHandler = urlHandler,
@@ -236,8 +234,8 @@ fun NavGraphBuilder.playlistEntryScreen(
 fun TabScreen(
     viewState: ITabViewState,
     onNavigateBack: () -> Unit,
-    onNavigateToTabByTabId: (id: Int) -> Unit,
-    onArtistClicked: (artistId: Int) -> Unit,
+    onNavigateToTabByTabId: (id: String) -> Unit,
+    onArtistClicked: (artistId: String) -> Unit,
     onPlaylistNextSongClick: () -> Unit,
     onPlaylistPreviousSongClick: () -> Unit,
     onTransposeUpClick: () -> Unit,
@@ -291,7 +289,7 @@ fun TabScreen(
         val songName = viewState.songName.observeAsState("...").value
         val artistName = viewState.artist.observeAsState("...").value
         val currentContext = LocalContext.current
-        val artistId = viewState.artistId.observeAsState(0).value
+        val artistId = viewState.artistId.observeAsState("").value
         val titleText = remember { currentContext.getText(R.string.tab_title) as SpannedString }
         val annotations = remember { titleText.getSpans(0, titleText.length, Annotation::class.java) }
         val titleBuilder = buildAnnotatedString {
@@ -377,7 +375,7 @@ fun TabScreen(
                 key = viewState.key.observeAsState("").value,
                 author = viewState.author.observeAsState("").value,
                 version = viewState.version.observeAsState(-1).value,
-                songVersions = viewState.songVersions.observeAsState(listOf(Tab(tabId = 198052, version = 3))).value,
+                songVersions = viewState.songVersions.observeAsState(listOf(Tab(tabId = "198052", version = 3))).value,
                 onNavigateToTabById = onNavigateToTabByTabId
             )
 
@@ -518,7 +516,7 @@ private fun TabViewPreview() {
         override val shareUrl: LiveData<String>,
         override val allPlaylists: LiveData<List<Playlist>>,
         override val artist: LiveData<String>,
-        override val artistId: LiveData<Int?>,
+        override val artistId: LiveData<String?>,
         override val addToPlaylistDialogSelectedPlaylistTitle: LiveData<String?>,
         override val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>,
         override val fontSizeSp: LiveData<Float>,
@@ -552,7 +550,7 @@ private fun TabViewPreview() {
             shareUrl = MutableLiveData("https://tabslite.com/tab/1234"),
             allPlaylists = MutableLiveData(listOf()),
             artist = MutableLiveData("Artist Name"),
-            artistId = MutableLiveData(1),
+            artistId = MutableLiveData("1"),
             addToPlaylistDialogSelectedPlaylistTitle = MutableLiveData("Playlist1"),
             addToPlaylistDialogConfirmButtonEnabled = MutableLiveData(false),
             chordInstrument = MutableLiveData(Instrument.Guitar),
@@ -597,7 +595,7 @@ private fun TabViewPreview() {
         [tab]            [ch]G[/ch]
         I’m by your side.[/tab]    """.trimIndent()
 
-    val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", 1, false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
+    val tabForTest = TabWithDataPlaylistEntry(1, 1, "1", 1, 1, 1234, "0", "Long Time Ago", "rock","CoolGuyz", "1", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , "public", "C", "E A D G B E", false, ArrayList(), "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
 
 
     AppTheme {

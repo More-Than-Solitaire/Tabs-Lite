@@ -18,7 +18,7 @@ data class SelfContainedPlaylist(
     /**
      * Imports this instance of [SelfContainedPlaylist] to the database. If this [playlistId] is equal to [Playlist.FAVORITES_PLAYLIST_ID], skips any duplicate entries
      */
-    suspend fun importToDatabase(dataAccess: DataAccess, db: FirebaseFirestore, onProgressChange: (progress: Float) -> Unit = {}) {
+    suspend fun importToDatabase(dataAccess: DataAccess, onProgressChange: (progress: Float) -> Unit = {}) {
         var currentlyImportedEntries = 0f
         if (playlistId == Playlist.FAVORITES_PLAYLIST_ID) {
             // get current favorite tabs (to not reimport tabs that are already favorite tabs)
@@ -40,6 +40,6 @@ data class SelfContainedPlaylist(
         }
 
         // ensure all entries are downloaded locally
-        Tab.fetchAllEmptyPlaylistTabsFromInternet(dataAccess, db, playlistId) { progress -> onProgressChange(0.4f + (progress * 0.6f)) } // 0.4f is the progress already taken above, 0.6f makes this step take 60% of the progress
+        Tab.fetchAllEmptyPlaylistTabsFromInternet(dataAccess, playlistId) { progress -> onProgressChange(0.4f + (progress * 0.6f)) } // 0.4f is the progress already taken above, 0.6f makes this step take 60% of the progress
     }
 }

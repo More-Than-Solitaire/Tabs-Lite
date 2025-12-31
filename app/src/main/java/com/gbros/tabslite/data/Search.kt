@@ -19,7 +19,7 @@ class Search(
     /**
      * (Optional) the ID of the artist to filter by. Can be paired with an empty [query] to do an artist song list. Ignored if null or 0.
      */
-    private var artistId: Int?,
+    private var artistId: String?,
 
     /**
      * The data access object interface into the data layer, for caching results and returning cached results
@@ -53,7 +53,7 @@ class Search(
      *
      * @throws [SearchDidYouMeanException] if no results, but there's a suggested query
      */
-    private suspend fun getSearchResults(page: Int, query: String, artistId: Int?): List<ITab> {
+    private suspend fun getSearchResults(page: Int, query: String, artistId: String?): List<ITab> {
         Log.d(TAG, "starting search '$query' page $page artist $artistId")
         val searchResult = BackendConnection.search(query, artistId, page)  // always search the next page that hasn't been loaded yet
 
