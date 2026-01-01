@@ -1,6 +1,8 @@
 package com.gbros.tabslite.viewmodel
 
 import android.util.Log
+import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.LiveData
@@ -64,6 +66,7 @@ class CreateTabViewModel @AssistedInject constructor(
     //#region view state
 
     val content: MutableLiveData<TextFieldValue> = MutableLiveData(TextFieldValue(""))
+    val annotatedContent: LiveData<AnnotatedString> = content.map { content -> TabContent(urlHandler = {}, content = content.text).content }
     val selectedSongName: LiveData<String> = selectedSong.map { tab -> tab?.songName ?: "Error: $selectedSongId not found" }
     val selectedArtistName: LiveData<String> = selectedSong.map { tab -> tab?.artistName ?: "" }
 

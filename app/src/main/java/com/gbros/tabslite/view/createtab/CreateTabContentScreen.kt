@@ -373,14 +373,16 @@ fun CreateTabContentScreen(
                             .padding(16.dp)
                             .fillMaxSize()
                     ) {
-                        val content by viewState.content.observeAsState(TextFieldValue())
+                        val content by viewState.annotatedContent.observeAsState(AnnotatedString(""))
+                        val scrollState = rememberScrollState()
                         TabText(
-                            text = parseTabToAnnotatedString(content.text),
+                            text = content,
                             fontSizeSp = 14f,
                             onChordClick = {},
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
+                                .verticalScroll(scrollState)
                         )
 
                         Row(modifier = Modifier.fillMaxWidth()) {
@@ -403,34 +405,4 @@ fun CreateTabContentScreen(
             }
         }
     }
-}
-
-fun parseTabToAnnotatedString(content: String): AnnotatedString {
-    val builder = AnnotatedString.Builder()
-    val regex = Regex("\\{ch:([^}]+)\\}")
-    var lastIndex = 0
-
-    regex.findAll(content).forEach { result ->
-        val chord = result.groupValues[1]
-        val startIndex = result.range.first
-
-        // Append text before the match
-        if (startIndex > lastIndex) {
-            builder.append(content.substring(lastIndex, startIndex))
-        }
-
-        // Append an annotated space for the chord
-        builder.withAnnotation("chord", chord) {
-            append(" ")
-        }
-
-        lastIndex = result.range.last + 1
-    }
-
-    // Append remaining text
-    if (lastIndex < content.length) {
-        builder.append(content.substring(lastIndex))
-    }
-
-    return builder.toAnnotatedString()
 }
