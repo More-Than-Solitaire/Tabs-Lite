@@ -1,15 +1,22 @@
 package com.gbros.tabslite.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.utilities.BackendConnection
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.view.songversionlist.ISongVersionViewState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = SongVersionViewModel.SongVersionViewModelFactory::class)
 class SongVersionViewModel
@@ -54,7 +61,12 @@ class SongVersionViewModel
 
     init {
         // this may cause a small memory leak, since observeForever doesn't get garbage collected automatically
+        // this line is just to make sure the search bar shows the song name
         songName.observeForever { name -> tabSearchBarViewModel.onQueryChange(name) }
+
+        // fetch all songs with this song ID. Basic song info is fetched by search query already, but this will include user-generated songs
+        CoroutineScope(Dispatchers.IO).async { BackendConnection.fetchAllTabsBySongId(songId, dataAccess) }
+            .invokeOnCompletion { throwable -> if (throwable != null) Log.e(TAG, "Error fetching all tabs for song $songId", throwable) }
     }
 
     //#endregion

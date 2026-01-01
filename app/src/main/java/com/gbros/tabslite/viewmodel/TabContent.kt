@@ -2,7 +2,6 @@ package com.gbros.tabslite.viewmodel
 
 import android.util.Log
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.LinkAnnotation
@@ -22,14 +21,14 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
      * every chord with tag "chord"
      */
     @OptIn(ExperimentalTextApi::class)
-    private fun processTabContent(content: String): AnnotatedString {
+    private fun processTabContent(tabContent: String): AnnotatedString {
         val tagPattern = Regex("\\[tab](.*?)\\[/tab]", RegexOption.DOT_MATCHES_ALL)
 
         val processedTab = buildAnnotatedString {
             var lastIndex = 0
-            tagPattern.findAll(content).forEach { matchResult ->
+            tagPattern.findAll(tabContent).forEach { matchResult ->
                 // Append text before the match
-                val beforeText = content.substring(lastIndex, matchResult.range.first)
+                val beforeText = tabContent.substring(lastIndex, matchResult.range.first)
                 appendChordContent(beforeText, this, inline = true)
 
                 // Append the content inside the [tab] block
@@ -39,10 +38,9 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
             }
 
             // Append any remaining text after the last match
-            if (lastIndex < content.length) {
-                appendChordContent(content.substring(lastIndex), this, inline = true)
+            if (lastIndex < tabContent.length) {
+                appendChordContent(tabContent.substring(lastIndex), this, inline = true)
             }
-
 
             // add active hyperlinks
             val hyperlinks = getHyperLinks(this.toAnnotatedString().text)

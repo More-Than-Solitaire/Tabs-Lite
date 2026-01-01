@@ -341,6 +341,46 @@ object BackendConnection {
 
     }
 
+    /**
+     * Fetch all tabs from Firestore with the passed songId and insert them into the database. This is useful for search results to ensure
+     * that user-generated tabs are included in the song version list.
+     *
+     * @param songId The ID of the song to fetch tabs for
+     * @param dataAccess The database to insert the tabs into
+     */
+    suspend fun fetchAllTabsBySongId(songId: String, dataAccess: DataAccess) = withContext(Dispatchers.IO) {
+        val tabCollectionRef = db.collection("tabs")
+        val query = tabCollectionRef
+                        .whereEqualTo("status", "approved")
+                        .whereEqualTo("song_id", songId)
+                        .limit(150)
+
+        try {
+            val querySnapshot = query.get().await()
+            if (querySnapshot.isEmpty) {
+                Log.i(TAG, "No tabs found for songId: $songId")
+                return@withContext // No tabs found, so we're done.
+            }
+
+            for (document in querySnapshot.documents) {
+                try {
+                    val tabRequest = document.toObject<TabRequestType>()
+                    val tab = tabRequest?.getTabFull()
+                    if (tab?.content?.isBlank() == false) {
+                        dataAccess.upsert(tab)
+                    } else {
+                        Log.e(TAG, "Fetched tab ${document.id} for song $songId couldn't be parsed, or has blank content. Skipping.")
+                    }
+                } catch (ex: Exception) {
+                    Log.e(TAG, "Error processing a tab document (${document.id}) for songId $songId", ex)
+                    // Continue processing other tabs
+                }
+            }
+        } catch (ex: Exception) {
+            throw TabFetchException("Error fetching tabs for songId $songId from Firestore.", ex)
+        }
+    }
+
     //#endregion
 
     //#region private methods
