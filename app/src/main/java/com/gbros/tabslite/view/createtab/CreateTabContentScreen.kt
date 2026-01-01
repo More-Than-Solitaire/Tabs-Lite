@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,6 +27,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -46,6 +49,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.gbros.tabslite.LoadingState
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.tab.TabDifficulty
 import com.gbros.tabslite.data.tab.TabTuning
@@ -61,7 +66,7 @@ fun NavController.navigateToCreateTabContent(songId: String) {
     navigate(CREATE_TAB_CONTENT_ROUTE.format(songId))
 }
 
-fun NavGraphBuilder.createTabContentScreen(onNavigateBack: () -> Unit) {
+fun NavGraphBuilder.createTabContentScreen(onNavigateBack: () -> Unit, onNavigateToTabByTabId: (String) -> Unit) {
     composable(route = CREATE_TAB_CONTENT_ROUTE.format("{$CREATE_TAB_SONG_ID_NAV_ARG}")) { navBackStackEntry ->
         val songId = navBackStackEntry.arguments!!.getString(CREATE_TAB_SONG_ID_NAV_ARG, "")
         val db = AppDatabase.getInstance(LocalContext.current)
@@ -76,9 +81,10 @@ fun NavGraphBuilder.createTabContentScreen(onNavigateBack: () -> Unit) {
             difficultyUpdated = createTabViewModel::difficultyUpdated,
             tuningUpdated = createTabViewModel::tuningUpdated,
             versionDescriptionUpdated = createTabViewModel::versionDescriptionUpdated,
+            insertChord = createTabViewModel::insertChord,
             saveTab = createTabViewModel::submitTab,
             navigateBack = onNavigateBack,
-            insertChord = createTabViewModel::insertChord
+            navigateToTabByTabId = onNavigateToTabByTabId
         )
     }
 }
@@ -92,14 +98,47 @@ fun CreateTabContentScreen(
     difficultyUpdated: (TabDifficulty) -> Unit,
     tuningUpdated: (TabTuning) -> Unit,
     versionDescriptionUpdated: (String) -> Unit,
+    insertChord: (String) -> Unit,
     saveTab: () -> Unit,
     navigateBack: () -> Unit,
-    insertChord: (String) -> Unit
+    navigateToTabByTabId: (String) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
+    val submissionStatus = viewState.submissionStatus.observeAsState(LoadingState.NotStarted)
     KeepScreenOn()
+
+    // success dialog
+    var successDialogSuppressed by remember { mutableStateOf(false) }
+    if (submissionStatus.value is LoadingState.Success && !successDialogSuppressed) {
+        AlertDialog(
+            onDismissRequest = { successDialogSuppressed = true },
+            title = { Text(stringResource(id = R.string.message_tab_creation_success_title)) },
+            text = { Text(stringResource(id = R.string.message_tab_creation_success_description)) },
+            confirmButton = {
+                TextButton(onClick = { navigateToTabByTabId(viewState.createdTabId.value ?: "") }) {
+                    Text(stringResource(id = R.string.action_navigate_to_new_tab))
+                }
+            }
+        )
+    }
+
+    // error dialog
+    var errorDialogSuppressed by remember(submissionStatus.value) { mutableStateOf(false) }
+    if (submissionStatus.value is LoadingState.Error && !errorDialogSuppressed) {
+        val errorMessage = (submissionStatus.value as LoadingState.Error)
+        AlertDialog(
+            onDismissRequest = { errorDialogSuppressed = true },
+            title = { Text(stringResource(id = R.string.message_tab_creation_failed_title)) },
+            text = { Text(stringResource(id = errorMessage.messageStringRef).format(errorMessage.errorDetails )) },
+            confirmButton = {
+                TextButton(onClick = { errorDialogSuppressed = true }) {
+                    Text(stringResource(id = R.string.generic_action_close))
+                }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -137,17 +176,17 @@ fun CreateTabContentScreen(
                             .verticalScroll(rememberScrollState())
                     ) {
                         OutlinedTextField(
-                            value = viewState.selectedSongName.observeAsState("").value,
+                            value = viewState.selectedSongName.observeAsState(" ").value,
                             onValueChange = {},
-                            label = { Text("Song Name") },
+                            label = { Text(stringResource(id = R.string.label_create_tab_song_name)) },
                             enabled = false,
                             modifier = Modifier.fillMaxWidth()
                         )
 
                         OutlinedTextField(
-                            value = viewState.selectedArtistName.observeAsState("").value,
+                            value = viewState.selectedArtistName.observeAsState(" ").value,
                             onValueChange = { },
-                            label = { Text("Artist Name") },
+                            label = { Text(stringResource(id = R.string.label_create_tab_artist_name)) },
                             enabled = false,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -155,7 +194,7 @@ fun CreateTabContentScreen(
                         OutlinedTextField(
                             value = viewState.versionDescription.observeAsState("").value,
                             onValueChange = versionDescriptionUpdated,
-                            label = { Text("Version Description") },
+                            label = { Text(stringResource(id = R.string.label_create_tab_version_description)) },
                             singleLine = false,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -174,7 +213,7 @@ fun CreateTabContentScreen(
                                 value = difficultyState.value.name,
                                 onValueChange = {},
                                 readOnly = true,
-                                label = { Text("Difficulty") },
+                                label = { Text(stringResource(id = R.string.label_create_tab_difficulty)) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = difficultyExpanded) }
                             )
                             ExposedDropdownMenu(
@@ -207,7 +246,7 @@ fun CreateTabContentScreen(
                                 value = tuningState.value.name,
                                 onValueChange = {},
                                 readOnly = true,
-                                label = { Text("Tuning") },
+                                label = { Text(stringResource(id = R.string.label_create_tab_tuning)) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tuningExpanded) }
                             )
                             ExposedDropdownMenu(
@@ -230,7 +269,7 @@ fun CreateTabContentScreen(
                         OutlinedTextField(
                             value = capo.value.toString(),
                             onValueChange = { capoUpdated(it.toIntOrNull() ?: 0) },
-                            label = { Text("Capo") },
+                            label = { Text(stringResource(id = R.string.label_create_tab_capo)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -240,7 +279,7 @@ fun CreateTabContentScreen(
                             onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Next")
+                            Text(stringResource(id = R.string.generic_action_next))
                         }
                     }
                 }
@@ -256,7 +295,7 @@ fun CreateTabContentScreen(
                         OutlinedTextField(
                             value = tabContent,
                             onValueChange = contentUpdated,
-                            label = { Text("Tab Content") },
+                            label = { Text(stringResource(id = R.string.label_create_tab_content)) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
@@ -265,7 +304,7 @@ fun CreateTabContentScreen(
                             OutlinedTextField(
                                 value = chordToInsert,
                                 onValueChange = { chordToInsert = it },
-                                label = { Text("Chord") },
+                                label = { Text(stringResource(id = R.string.label_create_tab_chord)) },
                                 modifier = Modifier.weight(1f),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii)
                             )
@@ -273,7 +312,7 @@ fun CreateTabContentScreen(
                                 insertChord(chordToInsert)
                                 chordToInsert = ""
                             }) {
-                                Text("Insert")
+                                Text(stringResource(id = R.string.action_insert_chord))
                             }
                         }
 
@@ -284,7 +323,7 @@ fun CreateTabContentScreen(
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Preview")
+                            Text(stringResource(id = R.string.generic_action_preview))
                         }
                     }
                 }
@@ -309,14 +348,14 @@ fun CreateTabContentScreen(
                                 onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Back")
+                                Text(stringResource(id = R.string.generic_action_back))
                             }
                             Button(
                                 onClick = saveTab,
                                 modifier = Modifier.weight(1f),
-                                enabled = viewState.dataValidated.observeAsState(false).value
+                                enabled = viewState.dataValidated.observeAsState(false).value && (submissionStatus.value is LoadingState.NotStarted || submissionStatus.value is LoadingState.Error)
                             ) {
-                                Text("Save Tab")
+                                Text(stringResource(id = R.string.action_create_tab))
                             }
                         }
                     }

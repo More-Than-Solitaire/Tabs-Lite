@@ -95,6 +95,7 @@ fun TabsLiteNavGraph() {
         )
 
         createTabContentScreen(
+            onNavigateToTabByTabId = navController::navigateToTab,
             onNavigateBack = navController::popBackStack
         )
     }

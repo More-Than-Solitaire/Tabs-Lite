@@ -74,6 +74,8 @@ class CreateTabViewModel @AssistedInject constructor(
         combineFn = { values -> values.all { it == true } }
     )
 
+    val createdTabId: MutableLiveData<String> = MutableLiveData("")
+
     //#endregion view state
 
     //#region view actions
@@ -151,6 +153,7 @@ class CreateTabViewModel @AssistedInject constructor(
 
             CoroutineScope(Dispatchers.IO).async {
                 val completedTab = BackendConnection.createTab(tab = newTab)
+                createdTabId.postValue(completedTab.tabId)
                 dataAccess.upsert(completedTab)
                 dataAccess.insertToFavorites(completedTab.tabId, 0)
                 submissionStatus.postValue(LoadingState.Success)
