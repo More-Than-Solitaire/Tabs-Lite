@@ -16,12 +16,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,7 +43,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -99,7 +96,8 @@ fun NavController.swapToTab(tabId: String) {
 fun NavGraphBuilder.tabScreen(
     onNavigateBack: () -> Unit,
     onNavigateToArtistIdSongList: (artistId: String) -> Unit,
-    onNavigateToTabVersionById: (id: String) -> Unit
+    onNavigateToTabVersionById: (id: String) -> Unit,
+    onNavigateToEditTab: (songId: String, tabId: String) -> Unit
 ) {
     composable(
         route = TAB_ROUTE_TEMPLATE.format("{$TAB_NAV_ARG}"),
@@ -150,7 +148,8 @@ fun NavGraphBuilder.tabScreen(
             onCreatePlaylist = viewModel::onCreatePlaylist,
             onInstrumentSelected = viewModel::onInstrumentSelected,
             onUseFlatsToggled = viewModel::onUseFlatsToggled,
-            onExportToPdfClick = viewModel::onExportToPdfClick
+            onExportToPdfClick = viewModel::onExportToPdfClick,
+            onEditTabClick = onNavigateToEditTab
         )
     }
 }
@@ -173,7 +172,8 @@ fun NavGraphBuilder.playlistEntryScreen(
     onNavigateToPlaylistEntry: (Int) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToArtistIdSongList: (artistId: String) -> Unit,
-    onNavigateToTabVersionById: (id: String) -> Unit
+    onNavigateToTabVersionById: (id: String) -> Unit,
+    onNavigateToEditTab: (songId: String, tabId: String) -> Unit
 ) {
     composable(
         route = PLAYLIST_ENTRY_ROUTE,
@@ -223,7 +223,8 @@ fun NavGraphBuilder.playlistEntryScreen(
             onCreatePlaylist = viewModel::onCreatePlaylist,
             onInstrumentSelected = viewModel::onInstrumentSelected,
             onUseFlatsToggled = viewModel::onUseFlatsToggled,
-            onExportToPdfClick = viewModel::onExportToPdfClick
+            onExportToPdfClick = viewModel::onExportToPdfClick,
+            onEditTabClick = onNavigateToEditTab
         )
     }
 }
@@ -254,7 +255,8 @@ fun TabScreen(
     onCreatePlaylist: (title: String, description: String) -> Unit,
     onInstrumentSelected: (instrument: Instrument) -> Unit,
     onUseFlatsToggled: (useFlats: Boolean) -> Unit,
-    onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit
+    onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit,
+    onEditTabClick: (songId: String, tabId: String) -> Unit
 ) {
     // handle autoscroll
     val scrollState = rememberScrollState()
@@ -330,6 +332,8 @@ fun TabScreen(
         }
         val isPlaylistEntry = viewState.isPlaylistEntry.observeAsState(false)
         val playlistTitle = viewState.playlistTitle.observeAsState("...")
+        val songId = viewState.songId.observeAsState()
+        val tabId = viewState.tabId.observeAsState()
 
         TabTopAppBar(
             title = titleBuilder.toString(),
@@ -344,7 +348,14 @@ fun TabScreen(
             onCreatePlaylist = onCreatePlaylist,
             onPlaylistSelectionChange = onAddPlaylistDialogPlaylistSelected,
             selectPlaylistConfirmButtonEnabled = viewState.addToPlaylistDialogConfirmButtonEnabled.observeAsState(false).value,
-            onExportToPdfClick = onExportToPdfClick
+            onExportToPdfClick = onExportToPdfClick,
+            onEditTabClick = {
+                if (songId.value != null && tabId.value != null) {
+                    onEditTabClick(songId.value!!, tabId.value!!)
+                } else {
+                    Log.w(TAG, "onEditTabClick called with null songId or tabId: ${viewState.songId.value}, ${viewState.tabId.value}")
+                }
+            }
         )
 
         Column {
@@ -491,6 +502,8 @@ private fun List<PointerInputChange>.calculateZoom(): Float {
 @Composable @Preview
 private fun TabViewPreview() {
     data class TabViewStateForTest(
+        override val tabId: LiveData<String>,
+        override val songId: LiveData<String>,
         override val songName: LiveData<String>,
         override val isFavorite: LiveData<Boolean>,
         override val isPlaylistEntry: LiveData<Boolean>,
@@ -524,6 +537,8 @@ private fun TabViewPreview() {
         override val useFlats: LiveData<Boolean>
     ) : ITabViewState {
         constructor(tab: ITab): this(
+            tabId = MutableLiveData(tab.tabId),
+            songId = MutableLiveData(tab.songId),
             songName = MutableLiveData(tab.songName),
             isFavorite = MutableLiveData(true),
             isPlaylistEntry = MutableLiveData(false),
@@ -622,7 +637,8 @@ private fun TabViewPreview() {
             onUseFlatsToggled = { },
             onArtistClicked = { },
             onExportToPdfClick = { _, _ -> },
-            onNavigateToTabByTabId = { _ -> }
+            onNavigateToTabByTabId = { _ -> },
+            onEditTabClick = { _, _ -> }
         )
     }
 }

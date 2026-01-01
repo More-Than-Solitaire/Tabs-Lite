@@ -55,6 +55,10 @@ interface ITabViewState {
      */
     val artistId: LiveData<String?>
 
+    val tabId: LiveData<String>
+
+    val songId: LiveData<String>
+
     val version: LiveData<Int>
 
     val songVersions: LiveData<List<ITab>>

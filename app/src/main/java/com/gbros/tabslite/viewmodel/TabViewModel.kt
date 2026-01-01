@@ -61,7 +61,7 @@ private const val MAX_FONT_SIZE_SP = 42f
 @HiltViewModel(assistedFactory = TabViewModel.TabViewModelFactory::class)
 class TabViewModel
 @AssistedInject constructor(
-    @Assisted private val tabId: String? = null,
+    @Assisted private val providedTabId: String? = null,
     @Assisted private val entryId: Int? = null,
     @Assisted defaultFontSize: Float,
     @Assisted private val dataAccess: DataAccess,
@@ -173,14 +173,14 @@ class TabViewModel
                 if (entryId != null) {
                     val tabId = dataAccess.getEntryById(entryId)?.tabId
                     if (tabId == null) {
-                        Log.e(TAG, "Couldn't get tab from playlist entry ${this@TabViewModel.tabId}")
+                        Log.e(TAG, "Couldn't get tab from playlist entry ${this@TabViewModel.providedTabId}")
                         _state.postValue(LoadingState.Error(R.string.message_tab_load_from_playlist_unexpected_error))
                     } else {
                         currentTab = Tab(tabId)
                     }
                 }
-                else if (tabId != null)
-                    currentTab = Tab(tabId)
+                else if (providedTabId != null)
+                    currentTab = Tab(providedTabId)
                 } else {
                     Log.e(TAG, "Couldn't load tab in TabViewModel. Both tabId and entryId were null.")
                     _state.postValue(LoadingState.Error(R.string.message_tab_load_unexpected_error, "tabId and entryId both null"))
@@ -195,7 +195,7 @@ class TabViewModel
                     _state.postValue(LoadingState.Success)
                 }
                 is BackendConnection.NoInternetException -> {
-                    Log.i(TAG, "No internet while fetching tab $tabId / playlist entry $entryId", ex)
+                    Log.i(TAG, "No internet while fetching tab $providedTabId / playlist entry $entryId", ex)
                     _state.postValue(LoadingState.Error(R.string.message_tab_load_no_internet))
                 }
                 is BackendConnection.UnavailableForLegalReasonsException -> {
@@ -204,7 +204,7 @@ class TabViewModel
                 }
                 is NotFoundException -> {
                     // this shouldn't happen. We only get to this page through the app; it's strange to have a tab ID somewhere else, but not found here.
-                    Log.e(TAG, "Tab $tabId / playlist entry $entryId not found.", ex)
+                    Log.e(TAG, "Tab $providedTabId / playlist entry $entryId not found.", ex)
                     if (entryId != null) {
                         _state.postValue(LoadingState.Error(R.string.message_tab_playlist_entry_not_found))
                     } else {
@@ -212,7 +212,7 @@ class TabViewModel
                     }
                 }
                 else -> {
-                    Log.e(TAG, "Unexpected error loading tab $tabId / playlist entry $entryId: ${ex.message}", ex)
+                    Log.e(TAG, "Unexpected error loading tab $providedTabId / playlist entry $entryId: ${ex.message}", ex)
                     _state.postValue(LoadingState.Error(R.string.message_tab_load_unexpected_error, ex.message.toString()))
                 }
             }
@@ -497,7 +497,7 @@ class TabViewModel
 
     //#region private data
 
-    private val tab: LiveData<out ITab?> = if (entryId != null) dataAccess.getTabFromPlaylistEntryId(entryId) else if (tabId != null) dataAccess.getTab(tabId) else MutableLiveData(null)
+    private val tab: LiveData<out ITab?> = if (entryId != null) dataAccess.getTabFromPlaylistEntryId(entryId) else if (providedTabId != null) dataAccess.getTab(providedTabId) else MutableLiveData(null)
 
     /**
      * The chord name to look up in the database and display
@@ -551,6 +551,10 @@ class TabViewModel
 
     //#region view state
 
+    override val tabId: LiveData<String> = tab.map { t -> t?.tabId ?: "" }
+
+    override val songId: LiveData<String> = tab.map { t -> t?.songId ?: "" }
+
     override val artistId: LiveData<String?> = tab.map { t -> t?.artistId }
 
     override val useFlats: LiveData<Boolean> = dataAccess.getLivePreference(Preference.USE_FLATS).map { p -> p?.value?.toBoolean() == true }
@@ -561,7 +565,7 @@ class TabViewModel
 
     override val songVersions: LiveData<List<ITab>> = tab.switchMap { t -> if(t == null) MutableLiveData(listOf()) else dataAccess.getTabsBySongId(t.songId.toString()).map { t -> t } }
 
-    override val isFavorite: LiveData<Boolean> = if (entryId != null) dataAccess.playlistEntryExistsInFavorites(entryId) else if (tabId != null) dataAccess.tabExistsInFavoritesLive(tabId) else MutableLiveData(false)
+    override val isFavorite: LiveData<Boolean> = if (entryId != null) dataAccess.playlistEntryExistsInFavorites(entryId) else if (providedTabId != null) dataAccess.tabExistsInFavoritesLive(providedTabId) else MutableLiveData(false)
 
     /**
      * Whether to display the playlist navigation bar
@@ -713,7 +717,7 @@ class TabViewModel
                 Log.w(TAG, "Playlist next song click event triggered while next entry id is null")
             }
         } else {
-            Log.w(TAG, "Playlist next song clicked while tab (id: $tabId, playlistEntryId: $entryId) is null or not playlist entry: ${tab.value?.toString()}")
+            Log.w(TAG, "Playlist next song clicked while tab (id: $providedTabId, playlistEntryId: $entryId) is null or not playlist entry: ${tab.value?.toString()}")
         }
     }
 
@@ -727,7 +731,7 @@ class TabViewModel
                 Log.w(TAG, "Playlist previous song click event triggered while previous entry id is null")
             }
         } else {
-            Log.w(TAG, "Playlist previous song clicked while tab (tabId: $tabId, playlistEntryId: $entryId) is null or not playlist entry: ${tab.value?.toString()}")
+            Log.w(TAG, "Playlist previous song clicked while tab (tabId: $providedTabId, playlistEntryId: $entryId) is null or not playlist entry: ${tab.value?.toString()}")
         }
     }
 

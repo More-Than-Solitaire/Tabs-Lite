@@ -95,6 +95,7 @@
     <string name="message_tab_creation_failed_title" translation_description="Error message displayed when a tab couldn't be created due to unfilled required fields">Couldn\'t create tab</string>
     <string name="message_tab_creation_failed_missing_arguments" translation_description="Error message displayed when a tab couldn't be created due to unfilled required fields">Couldn\'t create tab. Please fill all required fields.</string>
     <string name="message_tab_creation_failed" translation_description="Error message displayed when a tab couldn't be created due to unknown or other reasons. %s represents the error message returned by the system.">Couldn\'t create tab. %s</string>
+    <string name="message_prefilling_tab_failed" translation_description="Error message displayed in the tab creation screen when the tab content couldn't be prefilled from the tab ID (e.g. if the user clicked Edit Tab from the tab view, but the tab content couldn't be fetched for some reason). %s represents the error message returned by the system.">Couldn\'t prefill tab. %s</string>
     <string name="message_tab_creation_success_title" translation_description="The title of the success dialog shown when a tab was successfully created">Tab created!</string>
     <string name="message_tab_creation_success_description" translation_description="The body of the success dialog shown when a tab was successfully created">Your tab has been created and added to your favorites. It won\'t be visible in search until moderators approve it, so don\'t remove it from your favorites or you won\'t be able to find it again.</string>
     <string name="action_navigate_to_new_tab" translation_description="The text of the action button of the success dialog when a new tab is successfully created, that navigates the user to the new tab">Check it out</string>
@@ -119,5 +120,6 @@
     <string name="tab_version_number">Version %d</string>
     <string name="tab_version_abbreviation" translation_description="Shortened version number for display in places where space is limited (like in search results)">ver. %s</string>
     <string name="tab_favorite_button_accessibility_text" translation_description="Accessibility text used for the favorite button">Favorite</string>
+    <string name="action_edit_tab">Edit tab</string>
 
 </resources>

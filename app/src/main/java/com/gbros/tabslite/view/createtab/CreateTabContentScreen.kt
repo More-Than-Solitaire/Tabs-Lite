@@ -59,8 +59,10 @@ import com.gbros.tabslite.view.tabview.TabText
 import com.gbros.tabslite.viewmodel.CreateTabViewModel
 import kotlinx.coroutines.launch
 
-const val CREATE_TAB_SONG_ID_NAV_ARG = "songId"
-const val CREATE_TAB_CONTENT_ROUTE = "createtab/forSong/%s"
+//#region use case start with blank content
+
+private const val CREATE_TAB_SONG_ID_NAV_ARG = "songId"
+private const val CREATE_TAB_CONTENT_ROUTE = "createtab/forSong/%s"
 
 fun NavController.navigateToCreateTabContent(songId: String) {
     navigate(CREATE_TAB_CONTENT_ROUTE.format(songId))
@@ -88,6 +90,44 @@ fun NavGraphBuilder.createTabContentScreen(onNavigateBack: () -> Unit, onNavigat
         )
     }
 }
+
+//#endregion
+
+//#region use case start with prefilled content
+
+private const val CREATE_TAB_PREFILLED_SONG_ID_NAV_ARG = "songId"
+private const val CREATE_TAB_PREFILLED_TAB_ID_NAV_ARG = "tabId"
+private const val CREATE_TAB_PREFILLED_CONTENT_ROUTE = "createtab/forSong/%s/withContent/%s"
+
+fun NavController.navigateToPrefilledCreateTabContent(songId: String, tabId: String) {
+    navigate(CREATE_TAB_PREFILLED_CONTENT_ROUTE.format(songId, tabId))
+}
+
+fun NavGraphBuilder.createTabContentPrefilledScreen(onNavigateBack: () -> Unit, onNavigateToTabByTabId: (String) -> Unit) {
+    composable(route = CREATE_TAB_PREFILLED_CONTENT_ROUTE.format("{$CREATE_TAB_PREFILLED_SONG_ID_NAV_ARG}", "{$CREATE_TAB_PREFILLED_TAB_ID_NAV_ARG}")) { navBackStackEntry ->
+        val songId = navBackStackEntry.arguments!!.getString(CREATE_TAB_PREFILLED_SONG_ID_NAV_ARG, "")
+        val tabId = navBackStackEntry.arguments!!.getString(CREATE_TAB_PREFILLED_TAB_ID_NAV_ARG, "")
+        val db = AppDatabase.getInstance(LocalContext.current)
+        val createTabViewModel: CreateTabViewModel = hiltViewModel<CreateTabViewModel, CreateTabViewModel.CreateTabViewModelFactory> { factory ->
+            factory.create(dataAccess = db.dataAccess(), selectedSongId = songId, startingContentTabId = tabId)
+        }
+
+        CreateTabContentScreen(
+            viewState = createTabViewModel,
+            capoUpdated = createTabViewModel::capoUpdated,
+            contentUpdated = createTabViewModel::contentUpdated,
+            difficultyUpdated = createTabViewModel::difficultyUpdated,
+            tuningUpdated = createTabViewModel::tuningUpdated,
+            versionDescriptionUpdated = createTabViewModel::versionDescriptionUpdated,
+            insertChord = createTabViewModel::insertChord,
+            saveTab = createTabViewModel::submitTab,
+            navigateBack = onNavigateBack,
+            navigateToTabByTabId = onNavigateToTabByTabId
+        )
+    }
+}
+
+//#endregion
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable

@@ -30,15 +30,27 @@ import kotlin.random.Random
 
 @HiltViewModel(assistedFactory = CreateTabViewModel.CreateTabViewModelFactory::class)
 class CreateTabViewModel @AssistedInject constructor(
+    /**
+     * The data access object for the database, used to save the tab.
+     */
     @Assisted private val dataAccess: DataAccess,
-    @Assisted private val selectedSongId: String
+
+    /**
+     * The ID of the song to create a version of
+     */
+    @Assisted("selectedSongId") private val selectedSongId: String,
+
+    /**
+     * (Optional) Pre-fill the content field with the content of the tab with this ID.
+     */
+    @Assisted("startingContentTabId") private val startingContentTabId: String? = null
 ) : ViewModel() {
 
     //#region dependency injection factory
 
     @AssistedFactory
     interface CreateTabViewModelFactory {
-        fun create(dataAccess: DataAccess, selectedSongId: String): CreateTabViewModel
+        fun create(dataAccess: DataAccess, @Assisted("selectedSongId") selectedSongId: String, @Assisted("startingContentTabId") startingContentTabId: String? = null): CreateTabViewModel
     }
 
     //#endregion dependency injection factory
@@ -176,6 +188,19 @@ class CreateTabViewModel @AssistedInject constructor(
     //#region constructor
 
     init {
-
+        if (startingContentTabId != null) {
+            CoroutineScope(Dispatchers.IO).async {
+                val tabContent = dataAccess.getTabInstance(startingContentTabId)
+                content.postValue(TextFieldValue(tabContent.content))
+                capo.postValue(tabContent.capo)
+                tuning.postValue(TabTuning.fromString(tabContent.tuning))
+                Log.d(TAG, "prefilled tab content: ${tabContent.content}")
+            }.invokeOnCompletion { throwable ->
+                if (throwable != null) {
+                    Log.e(TAG, "Error prefilling tab content", throwable)
+                    submissionStatus.postValue(LoadingState.Error(messageStringRef = R.string.message_prefilling_tab_failed, errorDetails = throwable.message ?: "Unknown error"))
+                }
+            }
+        }
     }
 }

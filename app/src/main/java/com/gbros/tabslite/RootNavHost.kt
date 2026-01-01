@@ -3,10 +3,12 @@ package com.gbros.tabslite
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.gbros.tabslite.view.createtab.createTabContentPrefilledScreen
 import com.gbros.tabslite.view.createtab.createTabContentScreen
 import com.gbros.tabslite.view.createtab.createTabScreen
 import com.gbros.tabslite.view.createtab.navigateToCreateTabContent
 import com.gbros.tabslite.view.createtab.navigateToCreateTab
+import com.gbros.tabslite.view.createtab.navigateToPrefilledCreateTabContent
 import com.gbros.tabslite.view.homescreen.HOME_ROUTE
 import com.gbros.tabslite.view.homescreen.homeScreen
 import com.gbros.tabslite.view.homescreen.popUpToHome
@@ -45,14 +47,16 @@ fun TabsLiteNavGraph() {
         tabScreen (
             onNavigateBack = navController::popBackStack,
             onNavigateToArtistIdSongList = navController::navigateToArtistIdSongList,
-            onNavigateToTabVersionById = navController::swapToTab
+            onNavigateToTabVersionById = navController::swapToTab,
+            onNavigateToEditTab = navController::navigateToPrefilledCreateTabContent
         )
 
         playlistEntryScreen (
             onNavigateToPlaylistEntry = navController::navigateToPlaylistEntry,
             onNavigateBack = navController::popBackStack,
             onNavigateToArtistIdSongList = navController::navigateToArtistIdSongList,
-            onNavigateToTabVersionById = navController::swapToTab
+            onNavigateToTabVersionById = navController::swapToTab,
+            onNavigateToEditTab = navController::navigateToPrefilledCreateTabContent
         )
 
         playlistDetailScreen(
@@ -95,6 +99,11 @@ fun TabsLiteNavGraph() {
         )
 
         createTabContentScreen(
+            onNavigateToTabByTabId = navController::navigateToTab,
+            onNavigateBack = navController::popBackStack
+        )
+
+        createTabContentPrefilledScreen(
             onNavigateToTabByTabId = navController::navigateToTab,
             onNavigateBack = navController::popBackStack
         )
