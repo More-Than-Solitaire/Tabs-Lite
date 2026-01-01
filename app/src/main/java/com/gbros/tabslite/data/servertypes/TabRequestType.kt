@@ -8,11 +8,42 @@ import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.tab.TabDataType
 import com.gbros.tabslite.data.tab.TabTuning
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.PropertyName
 
-class TabRequestType(var id: String = "", var song_id: String = "", var song_name: String = "", var artist_id: String = "", var artist_name: String = "", var type: String = "Chords", var part: String = "", var version: Int = 0, var votes: Int = 0, var rating: Double = 0.0, var date: Int = 0,
-                     var status: String = "pending", var tab_access_type: String = "public", var tonality_name: String = "", val version_description: String? = "", var verified: Int = 0, var unique_chords: String = "",
-                     var difficulty: String = "", var tuning: String = TabTuning.Standard.toString(), var capo: Int = 0, var is_tab_ml: Boolean = false, var song_genre: String = "", var ug_difficulty: String = "", var versions_count: Int = 0,
-                     var contributor: ContributorInfo = ContributorInfo(), val content: String = "") {
+class TabRequestType(
+    var id: String = "",
+    var song_id: String = "",
+    var song_name: String = "",
+    var artist_id: String = "",
+    var artist_name: String = "",
+    var type: String = "Chords",
+    var part: String = "",
+    var version: Int = 0,
+    var votes: Int = 0,
+    var rating: Double = 0.0,
+    var date: Long = 0,
+    var status: String = "pending",
+    var tab_access_type: String = "public",
+    var tonality_name: String = "",
+    val version_description: String? = "",
+    var verified: Int = 0,
+    var unique_chords: String = "",
+    var difficulty: String = "",
+    var tuning: String = TabTuning.Standard.toString(),
+    var capo: Int = 0,
+
+    // firestore uses Java Bean convention for converting between class and data types; this prevents firestore from removing the *is* prefix
+    // @set sets this property when read from firestore, @get reads this property when writing to firestore
+    // https://stackoverflow.com/a/63980376/3437608, https://firebase.google.com/docs/reference/kotlin/com/google/firebase/firestore/PropertyName
+    @get:PropertyName("is_tab_ml") @set:PropertyName("is_tab_ml") var is_tab_ml: Boolean = false,
+
+    var song_genre: String = "",
+    var ug_difficulty: String = "",
+    var versions_count: Int = 0,
+    var contributor: ContributorInfo = ContributorInfo(),
+    val content: String = ""
+) {
     class RecordingInfo(var is_acoustic: Int = 0, var tonality_name: String = "", var performance: PerformanceInfo? = null, var recording_artists: List<RecordingArtistsInfo> = emptyList()) {
         class RecordingArtistsInfo(var join_field: String = "", var artist: ContributorInfo = ContributorInfo()) {
             override fun toString(): String {
@@ -126,6 +157,7 @@ class TabRequestType(var id: String = "", var song_id: String = "", var song_nam
         }
     }
 
+    @Exclude // don't create a property `tabFull` when writing to firestore
     fun getTabFull(): TabDataType {
         val tab = TabDataType(
             tabId = id,

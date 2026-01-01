@@ -49,7 +49,7 @@ data class TabWithDataPlaylistEntry(
     @ColumnInfo(name = "version") override var version: Int = 0,
     @ColumnInfo(name = "votes") override var votes: Int = 0,
     @ColumnInfo(name = "rating") override var rating: Double = 0.0,
-    @ColumnInfo(name = "date") override var date: Int = 0,
+    @ColumnInfo(name = "date") override var date: Long = 0,
     @ColumnInfo(name = "status") override var status: String = "",
     @ColumnInfo(name = "tab_access_type") override var tabAccessType: String = "",
     @ColumnInfo(name = "tonality_name") override var tonalityName: String = "",

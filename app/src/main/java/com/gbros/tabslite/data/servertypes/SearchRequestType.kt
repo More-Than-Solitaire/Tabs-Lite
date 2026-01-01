@@ -10,7 +10,7 @@ class SearchRequestType(private var tabs: List<SearchResultTab>, private var art
                           val version_description: String? = "", var verified: Int = 0
     ) {
         fun tabFull(): TabDataType {
-            val dateToUse = if (date.isNullOrEmpty()) 0 else date!!.toInt()
+            val dateToUse = if (date.isNullOrEmpty()) 0 else date!!.toLong()
             val versionDscToUse = if (version_description.isNullOrEmpty()) "" else version_description
 
             return TabDataType(

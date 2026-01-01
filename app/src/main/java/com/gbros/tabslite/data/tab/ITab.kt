@@ -13,7 +13,7 @@ interface ITab {
     val version: Int
     val votes: Int
     val rating: Double
-    val date: Int
+    val date: Long
     val status: String
     val tabAccessType: String
 

@@ -89,6 +89,9 @@ object BackendConnection {
         tab.song_genre = songDetails["song_genre"] as String
         tab.song_name = songDetails["song_name"] as String
 
+        // set the date to now as an int
+        tab.date = System.currentTimeMillis()
+
         val newTabRef = db.collection("tabs").document()
         tab.id = newTabRef.id
         newTabRef.set(tab).await()

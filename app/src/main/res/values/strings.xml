@@ -89,6 +89,7 @@
     <string name="message_search_suggestion_no_internet" translation_description="Informational message displayed when additional search suggestions can't be fetched because we're not connected to the internet.">You\'re not connected to the internet.</string>
     <string name="message_search_suggestion_unexpected_error" translation_description="Error message displayed when additional search suggestions can't be loaded because of an unknown/unexpected issue.">Unexpected error fetching more search suggestions.</string>
     <string name="message_tab_creation_failed_missing_arguments" translation_description="Error message displayed when a tab couldn't be created due to unfilled required fields">Couldn\'t create tab. Please fill all required fields.</string>
+    <string name="message_tab_creation_failed" translation_description="Error message displayed when a tab couldn't be created due to unknown or other reasons. %s represents the error message returned by the system.">Couldn\'t create tab. %s</string>
 
     <string name="tab_title"><annotation arg="songName">%1$s</annotation><annotation arg="plainText"> by </annotation><annotation arg="artistName">%2$s</annotation></string>
     <string name="tab_difficulty">Difficulty: %s</string>

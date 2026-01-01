@@ -20,7 +20,7 @@ data class TabDataType(
     @ColumnInfo(name = "version") var version: Int = 0,
     @ColumnInfo(name = "votes") var votes: Int = 0,
     @ColumnInfo(name = "rating") var rating: Double = 0.0,
-    @ColumnInfo(name = "date") var date: Int = 0,
+    @ColumnInfo(name = "date") var date: Long = 0,
     @ColumnInfo(name = "status") var status: String = "",
     @ColumnInfo(name = "tab_access_type") var tabAccessType: String = "public",
     @ColumnInfo(name = "tonality_name") var tonalityName: String = "",

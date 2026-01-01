@@ -1,6 +1,8 @@
 package com.gbros.tabslite.viewmodel
 
 import android.util.Log
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -22,6 +24,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -48,7 +51,7 @@ class CreateTabViewModel @AssistedInject constructor(
 
     //#region view state
 
-    val content: MutableLiveData<String> = MutableLiveData("")
+    val content: MutableLiveData<TextFieldValue> = MutableLiveData(TextFieldValue(""))
     val selectedSongName: LiveData<String> = selectedSong.map { tab -> tab?.songName ?: "Error: $selectedSongId not found" }
     val selectedArtistName: LiveData<String> = selectedSong.map { tab -> tab?.artistName ?: "" }
 
@@ -61,7 +64,7 @@ class CreateTabViewModel @AssistedInject constructor(
     val submissionStatus: MutableLiveData<LoadingState> = MutableLiveData(LoadingState.NotStarted)
 
     val dataValidated: LiveData<Boolean> = combine(
-        content.map { !it.isNullOrEmpty() },
+        content.map { it.text.isNotEmpty() },
         selectedSongName.map { it.isNotEmpty() },
         selectedArtistName.map { it.isNotEmpty() },
         difficulty.map { it != TabDifficulty.NotSet },
@@ -79,11 +82,23 @@ class CreateTabViewModel @AssistedInject constructor(
 
     fun capoUpdated(capo: Int) = this.capo.postValue(capo)
 
-    fun contentUpdated(content: String) = this.content.postValue(content)
+    fun contentUpdated(content: TextFieldValue) = this.content.postValue(content)
 
     fun versionDescriptionUpdated(versionDescription: String) = this.versionDescription.postValue(versionDescription)
 
     fun tuningUpdated(tuning: TabTuning) = this.tuning.postValue(tuning)
+
+    fun insertChord(chord: String) {
+        if (chord.isEmpty()) return
+
+        val currentContent = content.value ?: TextFieldValue()
+        val textToInsert = "{ch:$chord}"
+        val selection = currentContent.selection
+        val newText = currentContent.text.replaceRange(selection.start, selection.end, textToInsert)
+        val newSelectionStart = selection.start + textToInsert.length
+        val newContent = TextFieldValue(newText, selection = TextRange(newSelectionStart))
+        content.postValue(newContent)
+    }
 
     //#endregion
 
@@ -94,7 +109,7 @@ class CreateTabViewModel @AssistedInject constructor(
 
         // data checking
         try {
-            val content = content.value ?: throw IllegalArgumentException("Content is null")
+            val content = content.value?.text ?: throw IllegalArgumentException("Content is null")
             if (content.isEmpty()) {
                 throw IllegalArgumentException("Content is empty")
             }
@@ -134,12 +149,18 @@ class CreateTabViewModel @AssistedInject constructor(
                 capo = capo,
             )
 
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.IO).async {
                 val completedTab = BackendConnection.createTab(tab = newTab)
                 dataAccess.upsert(completedTab)
                 dataAccess.insertToFavorites(completedTab.tabId, 0)
                 submissionStatus.postValue(LoadingState.Success)
+            }.invokeOnCompletion { throwable ->
+                if (throwable != null) {
+                    Log.e(TAG, "Error submitting tab", throwable)
+                    submissionStatus.postValue(LoadingState.Error(messageStringRef = R.string.message_tab_creation_failed, errorDetails = throwable.message ?: ""))
+                }
             }
+
         }
         catch (e: IllegalArgumentException) {
             Log.e(TAG, "Missing or invalid data in CreateTabViewModel.submitTab(); the app shouldn't have let the user click Submit", e)
