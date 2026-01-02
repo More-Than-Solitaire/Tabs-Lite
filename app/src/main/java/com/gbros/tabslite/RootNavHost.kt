@@ -3,9 +3,11 @@ package com.gbros.tabslite
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.gbros.tabslite.view.createtab.createSongScreen
 import com.gbros.tabslite.view.createtab.createTabContentPrefilledScreen
 import com.gbros.tabslite.view.createtab.createTabContentScreen
 import com.gbros.tabslite.view.createtab.createTabScreen
+import com.gbros.tabslite.view.createtab.navigateToCreateSong
 import com.gbros.tabslite.view.createtab.navigateToCreateTabContent
 import com.gbros.tabslite.view.createtab.navigateToCreateTab
 import com.gbros.tabslite.view.createtab.navigateToPrefilledCreateTabContent
@@ -83,7 +85,13 @@ fun TabsLiteNavGraph() {
         selectSongByTitleScreen(
             onNavigateToSongId = navController::navigateToCreateTabContent,
             onNavigateToSearch = navController::navigateToSongSelection,
-            onNavigateBack = navController::popUpToHome
+            onNavigateBack = navController::popUpToHome,
+            onNavigateToCreateNewSong = navController::navigateToCreateSong
+        )
+
+        createSongScreen(
+            onNavigateBack = navController::popBackStack,
+            navigateToCreateTabContent = navController::navigateToCreateTabContent
         )
 
         songVersionScreen(

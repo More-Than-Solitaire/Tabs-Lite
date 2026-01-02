@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -20,6 +23,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -166,6 +171,7 @@ fun NavController.navigateToSongSelection(query: String) {
 fun NavGraphBuilder.selectSongByTitleScreen(
     onNavigateToSongId: (String) -> Unit,
     onNavigateToSearch: (String) -> Unit,
+    onNavigateToCreateNewSong: (String) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     composable(
@@ -182,6 +188,7 @@ fun NavGraphBuilder.selectSongByTitleScreen(
             onNavigateToSongVersionsBySongId = onNavigateToSongId,
             onNavigateBack = onNavigateBack,
             onNavigateToSearch = onNavigateToSearch,
+            onNavigateToCreateNewSong = onNavigateToCreateNewSong
         )
     }
 }
@@ -198,7 +205,8 @@ fun SearchScreen(
     onNavigateBack: () -> Unit,
     onNavigateToSearch: (query: String) -> Unit,
     onNavigateToTabByTabId: ((tabId: String) -> Unit)? = null,
-    onNavigateToPlaylistEntryByEntryId: ((playlistEntryId: Int) -> Unit)? = null
+    onNavigateToPlaylistEntryByEntryId: ((playlistEntryId: Int) -> Unit)? = null,
+    onNavigateToCreateNewSong: ((String) -> Unit)? = null
 ) {
     val lazyColumnState = rememberLazyListState()
     var needMoreSearchResults by remember { mutableStateOf(true) }
@@ -227,6 +235,18 @@ fun SearchScreen(
             onNavigateToTabById = onNavigateToTabByTabId,
             onNavigateToPlaylistEntryById = onNavigateToPlaylistEntryByEntryId
         )
+
+        if (onNavigateToCreateNewSong != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    text = "Song doesn't exist yet?",
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = { onNavigateToCreateNewSong(viewState.query) }) { Text(text = "Create a new song") }
+            }
+        }
 
         if (searchState.value is LoadingState.Error) {
             Box(
@@ -350,7 +370,8 @@ private fun SearchScreenPreview() {
             onNavigateToSearch = {},
             onTabSearchBarQueryChange = {},
             onNavigateToTabByTabId = {},
-            onNavigateToPlaylistEntryByEntryId = {}
+            onNavigateToPlaylistEntryByEntryId = {},
+            onNavigateToCreateNewSong = {}
         )
     }
 }

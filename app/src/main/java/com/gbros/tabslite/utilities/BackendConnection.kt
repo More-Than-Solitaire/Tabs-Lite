@@ -12,12 +12,12 @@ import com.gbros.tabslite.data.playlist.Playlist.Companion.TOP_TABS_PLAYLIST_ID
 import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.data.servertypes.SearchSuggestionType
 import com.gbros.tabslite.data.servertypes.ServerTimestampType
+import com.gbros.tabslite.data.servertypes.SongRequestType
 import com.gbros.tabslite.data.servertypes.TabRequestType
 import com.gbros.tabslite.data.tab.TabDataType
 import com.gbros.tabslite.utilities.BackendConnection.apiKey
 import com.gbros.tabslite.utilities.BackendConnection.deviceId
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.gson.Gson
@@ -25,7 +25,6 @@ import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -71,6 +70,22 @@ object BackendConnection {
     //#endregion
 
     //#region public methods
+
+    /**
+     * Create a new song in the database.
+     *
+     * @param [song] the song to create.
+     *
+     * @return The ID of the created song
+     */
+    suspend fun createSong(song: SongRequestType): String {
+        val newSongRef = db.collection("songs").document()
+        song.song_id = newSongRef.id
+        //todo: artist id?
+        newSongRef.set(song).await()
+        Log.v(TAG, "Created song ${newSongRef.id}")
+        return newSongRef.id
+    }
 
     /**
      * Create a new tab in the database. Fetches song info to insert into tab.
@@ -218,44 +233,40 @@ object BackendConnection {
         instrument: Instrument,
     ): Map<String, List<ChordVariation>> = withContext(Dispatchers.IO) {
         if (chordIds.isEmpty()) {
-            return@withContext mapOf()
-        }
-        val resultMap: MutableMap<String, List<ChordVariation>> = mutableMapOf()
-
-        var chordParam = ""
-        for (chord in chordIds) {
-            val uChord = URLEncoder.encode(chord.toString(), "utf-8")
-            chordParam += "&chords[]=$uChord"
+            return@withContext emptyMap()
         }
 
-        var uTuning = ""
-        var uInstrument = ""
-        if (instrument == Instrument.Guitar) {
-            uTuning = URLEncoder.encode("E A D G B E", "utf-8")
-            uInstrument = URLEncoder.encode("guitar", "utf-8")
-        } else if (instrument == Instrument.Ukulele) {
-            uTuning = URLEncoder.encode("g C E A", "utf-8")
-            uInstrument = URLEncoder.encode("ukulele", "utf-8")
-        } else {
-            throw IllegalArgumentException("Invalid instrument selection $instrument; couldn't update chords")
+        val (instrumentPath, tuningPath) = when (instrument) {
+            Instrument.Guitar -> "guitar" to "E A D G B E"
+            Instrument.Ukulele -> "ukulele" to "G C E A"
+            else -> throw IllegalArgumentException("Invalid instrument selection $instrument; couldn't update chords")
         }
 
-        val url = "https://api.ultimate-guitar.com/api/v1/tab/applicature?instrument=$uInstrument&tuning=$uTuning$chordParam"
-        try {
-            val results: List<TabRequestType.ChordInfo> = authenticatedStream(url).use { inputStream ->
-                val jsonReader = JsonReader(inputStream.reader())
-                val chordRequestTypeToken =
-                    object : TypeToken<List<TabRequestType.ChordInfo>>() {}.type
-                gson.fromJson(jsonReader, chordRequestTypeToken)
+        val chordVariationsRef = db.collection("chordVariations")
+            .document(instrumentPath)
+            .collection(tuningPath)
+            .whereIn("chord", chordIds)
+
+        val allChords = chordVariationsRef.get().await()
+
+        val resultMap = mutableMapOf<String, List<ChordVariation>>()
+
+        for (documentSnapshot in allChords) {
+            try {
+                // Assuming the Firestore document can be directly deserialized into a list of ChordVariation objects.
+                // You might need a data class that matches the Firestore structure if it's more complex.
+                val chordDoc = documentSnapshot.toObject<TabRequestType.ChordInfo>()
+                resultMap[chordDoc.chord] = chordDoc.variations.map { variation -> variation.toChordVariation(chordDoc.chord, instrument) }
+                dataAccess.insertAll(resultMap[chordDoc.chord]!!) // Cache the results in the local DB
+            } catch (ex: Exception) {
+                // Log the exception and continue to the next chord
+                Log.e(TAG, "Failed to fetch chord variation for '${documentSnapshot.id}'.", ex)
             }
-            for (result in results) {
-                resultMap[result.chord] = result.getChordVariations(instrument)
-                dataAccess.insertAll(result.getChordVariations(instrument))
-            }
-        } catch (ex: Exception) {
-            val chordCount = chordIds.size
-            Log.i(TAG, "Couldn't fetch chords: '$chordParam'. Chord count that we're looking for: $chordCount. ${ex.message}", ex)
-            cancel("Error fetching chord(s).")
+        }
+
+        if (resultMap.isEmpty() && chordIds.isNotEmpty()) {
+            val message = "Couldn't fetch any of the requested chords: $chordIds"
+            Log.w(TAG, message)
         }
 
         return@withContext resultMap

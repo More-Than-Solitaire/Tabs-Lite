@@ -12,7 +12,14 @@ import androidx.compose.ui.text.withStyle
 import com.gbros.tabslite.utilities.TAG
 
 class TabContent(private val urlHandler: (String) -> Unit, content: String){
-    val content: AnnotatedString = processTabContent(content)
+    val content: AnnotatedString
+    val chords: Set<String>
+
+    init {
+        val processedResult = processTabContent(content)
+        this.content = processedResult.first
+        this.chords = processedResult.second
+    }
 
     //region Process Tab Content
 
@@ -21,25 +28,26 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
      * every chord with tag "chord"
      */
     @OptIn(ExperimentalTextApi::class)
-    private fun processTabContent(tabContent: String): AnnotatedString {
+    private fun processTabContent(tabContent: String): Pair<AnnotatedString, Set<String>> {
         val tagPattern = Regex("\\[tab](.*?)\\[/tab]", RegexOption.DOT_MATCHES_ALL)
+        val chordsSet = mutableSetOf<String>()
 
         val processedTab = buildAnnotatedString {
             var lastIndex = 0
             tagPattern.findAll(tabContent).forEach { matchResult ->
                 // Append text before the match
                 val beforeText = tabContent.substring(lastIndex, matchResult.range.first)
-                appendChordContent(beforeText, this, inline = true)
+                appendChordContent(beforeText, this, chordsSet, inline = true)
 
                 // Append the content inside the [tab] block
-                appendChordContent(matchResult.groupValues[1], this, inline = false)
+                appendChordContent(matchResult.groupValues[1], this, chordsSet, inline = false)
 
                 lastIndex = matchResult.range.last + 1
             }
 
             // Append any remaining text after the last match
             if (lastIndex < tabContent.length) {
-                appendChordContent(tabContent.substring(lastIndex), this, inline = true)
+                appendChordContent(tabContent.substring(lastIndex), this, chordsSet, inline = true)
             }
 
             // add active hyperlinks
@@ -56,7 +64,7 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
             }
         }
 
-        return processedTab
+        return Pair(processedTab, chordsSet)
     }
     /**
      * Represents a found chord match, including its start and end indices in the original text,
@@ -97,7 +105,7 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
      * Annotate, style, and append a line with chords to the given annotated string builder
      */
     @OptIn(ExperimentalTextApi::class)
-    private fun appendChordContent(content: CharSequence, builder: AnnotatedString.Builder, inline: Boolean = false) {
+    private fun appendChordContent(content: CharSequence, builder: AnnotatedString.Builder, chords: MutableSet<String>, inline: Boolean = false) {
         var currentIndex = 0 // the index of the last already-consumed character in text
 
         while (true) {
@@ -107,6 +115,7 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
             builder.append(content.subSequence(currentIndex, chordMatch.start))
 
             currentIndex = chordMatch.end
+            chords.add(chordMatch.chordName)
 
             // get the next character after the chord tag. This is what we will attach the chord annotation to
             var nextContentCharacter = content.elementAtOrNull(currentIndex)

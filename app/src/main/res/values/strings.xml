@@ -25,6 +25,7 @@
     <string name="title_playlists_page" translation_description="The title of the Playlists home tab">Playlists</string>
     <string name="title_add_to_playlist_dialog" translation_description="The title of the Add To Playlist dialog">Add to playlist</string>
     <string name="title_create_playlist_dialog" translation_description="Title for the Create Playlist dialog">Create playlist</string>
+    <string name="title_create_song" translation_description="Title for the Create Song screen">Create Song</string>
 
     <string name="placeholder_playlist_title" translation_description="Placeholder text for Playlist Title entry field">Playlist Title</string>
     <string name="placeholder_playlist_description" translation_description="Placeholder text for Playlist Description entry field">Playlist Description</string>
@@ -50,6 +51,7 @@
     <string name="generic_action_export_to_pdf">Export to PDF</string>
     <string name="generic_action_clear">Clear</string>
     <string name="generic_action_preview">Preview</string>
+    <string name="generic_action_continue">Continue</string>
     <string name="error">Error</string>
     <string name="info">Info</string>
 
@@ -92,6 +94,12 @@
     <string name="message_search_suggestion_unexpected_error" translation_description="Error message displayed when additional search suggestions can't be loaded because of an unknown/unexpected issue.">Unexpected error fetching more search suggestions.</string>
 
     <!-- tab creation -->
+    <string name="label_song_genre">Song Genre</string>
+    <string name="action_create_song_and_continue">Create Song and Continue</string>
+    <string name="message_song_creation_success_title" translation_description="The title of the success dialog shown when a song was successfully created">Song created!</string>
+    <string name="message_song_creation_success_description" translation_description="The body of the success dialog shown when a song was successfully created">Song created successfully. Continue to create the first tab for this song.</string>
+    <string name="message_song_creation_failed_title" translation_description="Error message displayed when a song couldn't be created due to unfilled required fields">Couldn\'t create song</string>
+    <string name="message_error_creating_song" translation_description="Error message displayed when an error occurs while creating a song">Couldn\'t create song. %s</string>
     <string name="message_tab_creation_failed_title" translation_description="Error message displayed when a tab couldn't be created due to unfilled required fields">Couldn\'t create tab</string>
     <string name="message_tab_creation_failed_missing_arguments" translation_description="Error message displayed when a tab couldn't be created due to unfilled required fields">Couldn\'t create tab. Please fill all required fields.</string>
     <string name="message_tab_creation_failed" translation_description="Error message displayed when a tab couldn't be created due to unknown or other reasons. %s represents the error message returned by the system.">Couldn\'t create tab. %s</string>
