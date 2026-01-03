@@ -119,12 +119,14 @@ class TabViewModel
     }
 
     private suspend fun fetchAllChords() {
-        val chordsUsedInThisTab = tab.value?.getAllChordNames()
+        val chordsUsedInThisTab = tabContent.value?.chords?.toList() ?: emptyList()
         val instrument = chordInstrument.value ?: Instrument.Guitar
-        if (!chordsUsedInThisTab.isNullOrEmpty()) {
+        if (!chordsUsedInThisTab.isEmpty()) {
             Chord.ensureAllChordsDownloaded(chordsUsedInThisTab, instrument, dataAccess)
         }
     }
+
+    //#region autoscroll
 
     /**
      * Autoscroll slider midpoint (default starting speed). Should be between [minDelay] and [maxDelay]
@@ -163,6 +165,8 @@ class TabViewModel
 
         return Triple(a, b, c)
     }
+
+    //#endregion autoscroll
 
     private fun load(forceReload: Boolean = false) {
         _state.postValue(LoadingState.Loading)
@@ -481,11 +485,12 @@ class TabViewModel
         return@combine transposedContent
     }
 
+    private val tabContent: LiveData<TabContent> = unformattedContent.map { transposed -> TabContent(urlHandler::openUri, transposed) }
     // transposed content converted to an annotated string (tags are stripped and chords are annotations not text)
-    override val content: LiveData<AnnotatedString> = unformattedContent.map { transposed -> TabContent(urlHandler::openUri, transposed).content }
+    override val content: LiveData<AnnotatedString> = tabContent.map { it.content }
 
     private val _state: MutableLiveData<LoadingState> = MutableLiveData(LoadingState.Loading)
-    override val state: LiveData<LoadingState> = content.combine(_state) { c, _ ->
+    override val state: LiveData<LoadingState> = unformattedContent.combine(_state) { c, _ ->
         // check for an update in status if we're still in Loading (or Failure) state before returning
         if (c != null) {
             if (_state.value != LoadingState.Success && c.isNotEmpty()) {

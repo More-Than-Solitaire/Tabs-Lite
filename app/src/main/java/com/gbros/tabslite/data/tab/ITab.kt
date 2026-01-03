@@ -70,7 +70,7 @@ interface ITab {
      * Get all the chords used in this tab.  Can be used to download all the chords.
      */
     fun getAllChordNames(): List<String> {
-        val chordPattern = Regex("\\[ch](.*?)\\[/ch]")
+        val chordPattern = Regex("\\{ch:(.*?)\\}")
         val allMatches = chordPattern.findAll(content)
         val allChords = allMatches.map { matchResult -> matchResult.groupValues[1] }
         val uniqueChords = allChords.distinct()

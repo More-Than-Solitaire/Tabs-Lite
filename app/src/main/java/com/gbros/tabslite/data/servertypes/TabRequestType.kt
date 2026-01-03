@@ -9,8 +9,10 @@ import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.tab.TabDataType
 import com.gbros.tabslite.data.tab.TabTuning
 import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
 import com.google.firebase.firestore.PropertyName
 
+@IgnoreExtraProperties
 class TabRequestType(
     var id: String = "",
     var song_id: String = "",
@@ -80,6 +82,7 @@ class TabRequestType(
 
     class ContributorInfo(var user_id: String = "0", var username: String = "Unregistered")
     class ChordInfo(var chord: String = "", var variations: List<VarInfo> = emptyList()) {
+        @IgnoreExtraProperties
         class VarInfo(
             var id: String = "", var listCapos: List<CapoInfo> = emptyList(), var noteIndex: Int = 0, var notes: List<Int> = emptyList(), var frets: List<Int> = emptyList(), var fingers: List<Int> = emptyList(), var fret: Int = 0) {
             class CapoInfo(var fret: Int = 0, var startString: Int = 0, var lastString: Int = 0, var finger: Int = 0)

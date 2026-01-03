@@ -155,6 +155,5 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
         return urlPattern.findAll(s)
     }
 
-
-    //endregion
+    //endregion Process Tab Content
 }
