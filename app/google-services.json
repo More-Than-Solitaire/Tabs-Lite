@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "442430777802",
+    "project_id": "tabslite",
+    "storage_bucket": "tabslite.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:442430777802:android:31336e7104a08c0855c733",
+        "android_client_info": {
+          "package_name": "com.gbros.tabslite"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkBy5ak-LT_8dXZdYs-MrKJNRWKQVhGLg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

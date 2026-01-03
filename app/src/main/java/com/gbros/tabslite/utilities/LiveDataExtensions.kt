@@ -37,3 +37,27 @@ fun <T1, T2, T3, R> LiveData<T1>.combine(
         value = combineFn(this@combine.value, liveData2.value, it)
     }
 }
+
+/**
+ * Combines an arbitrary number of LiveData sources into a new LiveData source.
+ * The resulting LiveData will emit a list of all the values from the source LiveData objects.
+ *
+ * @param sources A vararg of LiveData objects to combine.
+ * @param combineFn A function that takes a list of nullable values and returns the combined result.
+ * @return A LiveData that emits the combined value.
+ */
+fun <T, R> combine(
+    vararg sources: LiveData<out T>,
+    combineFn: (values: List<T?>) -> R
+): LiveData<R> {
+    val mediator = MediatorLiveData<R>()
+    val onChange = {
+        val values = sources.map { it.value }
+        mediator.value = combineFn(values)
+    }
+
+    sources.forEach { source ->
+        mediator.addSource(source) { onChange() }
+    }
+    return mediator
+}

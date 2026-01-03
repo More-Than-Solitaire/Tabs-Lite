@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,11 +28,12 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.Clipboard
+import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -43,7 +43,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -71,6 +70,8 @@ import com.gbros.tabslite.view.chorddisplay.ChordModalBottomSheet
 import com.gbros.tabslite.viewmodel.TabViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 private const val FALLBACK_FONT_SIZE_SP = 14f  // fall back to a font size of 14.sp if the system font size can't be read
 
@@ -79,33 +80,34 @@ private const val FALLBACK_FONT_SIZE_SP = 14f  // fall back to a font size of 14
 private const val TAB_NAV_ARG = "tabId"
 const val TAB_ROUTE_TEMPLATE = "tab/%s"
 
-fun NavController.navigateToTab(tabId: Int) {
-    navigate(TAB_ROUTE_TEMPLATE.format(tabId.toString()))
+fun NavController.navigateToTab(tabId: String) {
+    navigate(TAB_ROUTE_TEMPLATE.format(tabId))
 }
 
 /**
  * Navigate to a tab by tab ID, but replace the current item in the back stack.
  */
-fun NavController.swapToTab(tabId: Int) {
-    navigate(TAB_ROUTE_TEMPLATE.format(tabId.toString())) {
+fun NavController.swapToTab(tabId: String) {
+    navigate(TAB_ROUTE_TEMPLATE.format(tabId)) {
         popUpTo(route = TAB_ROUTE_TEMPLATE.format("{$TAB_NAV_ARG}")) { inclusive = true }
     }
 }
 
 fun NavGraphBuilder.tabScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToArtistIdSongList: (artistId: Int) -> Unit,
-    onNavigateToTabVersionById: (id: Int) -> Unit
+    onNavigateToArtistIdSongList: (artistId: String) -> Unit,
+    onNavigateToTabVersionById: (id: String) -> Unit,
+    onNavigateToEditTab: (songId: String, tabId: String) -> Unit
 ) {
     composable(
         route = TAB_ROUTE_TEMPLATE.format("{$TAB_NAV_ARG}"),
-        arguments = listOf(navArgument(TAB_NAV_ARG) { type = NavType.IntType } )
+        arguments = listOf(navArgument(TAB_NAV_ARG) { type = NavType.StringType } )
     ) { navBackStackEntry ->
-        val id = navBackStackEntry.arguments!!.getInt(TAB_NAV_ARG)
+        val id = navBackStackEntry.arguments!!.getString(TAB_NAV_ARG)
         val db = AppDatabase.getInstance(LocalContext.current)
 
         // default the font size to whatever the user default font size is.  This respects system font settings.
-        val defaultFontSize = MaterialTheme.typography.bodyMedium.fontSize
+        val defaultFontSize = MaterialTheme.typography.bodyLarge.fontSize
         val defaultFontSizeInSp = if (defaultFontSize.isSp) {
             defaultFontSize.value
         } else if (defaultFontSize.isEm) {
@@ -114,11 +116,12 @@ fun NavGraphBuilder.tabScreen(
             FALLBACK_FONT_SIZE_SP
         }
 
+        val urlHandler = LocalUriHandler.current
         val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(
-            id = id,
-            idIsPlaylistEntryId = false,
+            tabId = id,
             defaultFontSize = defaultFontSizeInSp,
             dataAccess = db.dataAccess(),
+            urlHandler = urlHandler,
             navigateToPlaylistEntryById = { /* ignore playlist navigation because we're not in a playlist */ }
         )}
 
@@ -132,8 +135,7 @@ fun NavGraphBuilder.tabScreen(
             onTransposeUpClick = viewModel::onTransposeUpClick,
             onTransposeDownClick = viewModel::onTransposeDownClick,
             onTransposeResetClick = viewModel::onTransposeResetClick,
-            onTextClick = viewModel::onContentClick,
-            onScreenMeasured = viewModel::onScreenMeasured,
+            onTextClick = viewModel::onChordClick,
             onZoom = viewModel::onZoom,
             onChordDetailsDismiss = viewModel::onChordDetailsDismiss,
             onAutoscrollButtonClick = viewModel::onAutoscrollButtonClick,
@@ -146,7 +148,8 @@ fun NavGraphBuilder.tabScreen(
             onCreatePlaylist = viewModel::onCreatePlaylist,
             onInstrumentSelected = viewModel::onInstrumentSelected,
             onUseFlatsToggled = viewModel::onUseFlatsToggled,
-            onExportToPdfClick = viewModel::onExportToPdfClick
+            onExportToPdfClick = viewModel::onExportToPdfClick,
+            onEditTabClick = onNavigateToEditTab
         )
     }
 }
@@ -168,8 +171,9 @@ fun NavController.navigateToPlaylistEntry(playlistEntryId: Int) {
 fun NavGraphBuilder.playlistEntryScreen(
     onNavigateToPlaylistEntry: (Int) -> Unit,
     onNavigateBack: () -> Unit,
-    onNavigateToArtistIdSongList: (artistId: Int) -> Unit,
-    onNavigateToTabVersionById: (id: Int) -> Unit
+    onNavigateToArtistIdSongList: (artistId: String) -> Unit,
+    onNavigateToTabVersionById: (id: String) -> Unit,
+    onNavigateToEditTab: (songId: String, tabId: String) -> Unit
 ) {
     composable(
         route = PLAYLIST_ENTRY_ROUTE,
@@ -179,7 +183,7 @@ fun NavGraphBuilder.playlistEntryScreen(
         val db = AppDatabase.getInstance(LocalContext.current)
 
         // default the font size to whatever the user default font size is.  This respects system font settings.
-        val defaultFontSize = MaterialTheme.typography.bodyMedium.fontSize
+        val defaultFontSize = MaterialTheme.typography.bodyLarge.fontSize
         val defaultFontSizeInSp = if (defaultFontSize.isSp) {
             defaultFontSize.value
         } else if (defaultFontSize.isEm) {
@@ -188,11 +192,12 @@ fun NavGraphBuilder.playlistEntryScreen(
             FALLBACK_FONT_SIZE_SP
         }
 
+        val urlHandler = LocalUriHandler.current
         val viewModel: TabViewModel = hiltViewModel<TabViewModel, TabViewModel.TabViewModelFactory> { factory -> factory.create(
-            id = id,
-            idIsPlaylistEntryId = true,
+            entryId = id,
             defaultFontSize = defaultFontSizeInSp,
             dataAccess = db.dataAccess(),
+            urlHandler = urlHandler,
             navigateToPlaylistEntryById = onNavigateToPlaylistEntry
         )}
         TabScreen(
@@ -205,8 +210,7 @@ fun NavGraphBuilder.playlistEntryScreen(
             onTransposeUpClick = viewModel::onTransposeUpClick,
             onTransposeDownClick = viewModel::onTransposeDownClick,
             onTransposeResetClick = viewModel::onTransposeResetClick,
-            onTextClick = viewModel::onContentClick,
-            onScreenMeasured = viewModel::onScreenMeasured,
+            onTextClick = viewModel::onChordClick,
             onZoom = viewModel::onZoom,
             onChordDetailsDismiss = viewModel::onChordDetailsDismiss,
             onAutoscrollButtonClick = viewModel::onAutoscrollButtonClick,
@@ -219,7 +223,8 @@ fun NavGraphBuilder.playlistEntryScreen(
             onCreatePlaylist = viewModel::onCreatePlaylist,
             onInstrumentSelected = viewModel::onInstrumentSelected,
             onUseFlatsToggled = viewModel::onUseFlatsToggled,
-            onExportToPdfClick = viewModel::onExportToPdfClick
+            onExportToPdfClick = viewModel::onExportToPdfClick,
+            onEditTabClick = onNavigateToEditTab
         )
     }
 }
@@ -230,15 +235,14 @@ fun NavGraphBuilder.playlistEntryScreen(
 fun TabScreen(
     viewState: ITabViewState,
     onNavigateBack: () -> Unit,
-    onNavigateToTabByTabId: (id: Int) -> Unit,
-    onArtistClicked: (artistId: Int) -> Unit,
+    onNavigateToTabByTabId: (id: String) -> Unit,
+    onArtistClicked: (artistId: String) -> Unit,
     onPlaylistNextSongClick: () -> Unit,
     onPlaylistPreviousSongClick: () -> Unit,
     onTransposeUpClick: () -> Unit,
     onTransposeDownClick: () -> Unit,
     onTransposeResetClick: () -> Unit,
-    onTextClick: (Int, UriHandler, Clipboard) -> Unit,
-    onScreenMeasured: (screenWidth: Int, localDensity: Density, colorScheme: ColorScheme) -> Unit,
+    onTextClick: (chord: String) -> Unit,
     onZoom: (zoomFactor: Float) -> Unit,
     onChordDetailsDismiss: () -> Unit,
     onAutoscrollSliderValueChange: (Float) -> Unit,
@@ -251,7 +255,8 @@ fun TabScreen(
     onCreatePlaylist: (title: String, description: String) -> Unit,
     onInstrumentSelected: (instrument: Instrument) -> Unit,
     onUseFlatsToggled: (useFlats: Boolean) -> Unit,
-    onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit
+    onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit,
+    onEditTabClick: (songId: String, tabId: String) -> Unit
 ) {
     // handle autoscroll
     val scrollState = rememberScrollState()
@@ -260,6 +265,22 @@ fun TabScreen(
 
     Column(
         modifier = Modifier
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val pointers = event.changes
+                        if (pointers.size > 1) {
+                            val zoom = pointers.calculateZoom()
+                            if (zoom != 1f) {
+                                onZoom(zoom)
+                                // don't consume the pointer events so scrolling still works
+                            }
+                        }
+                    }
+                }
+            }
+            .fillMaxSize()
             .verticalScroll(scrollState)
             .windowInsetsPadding(WindowInsets(
                 left = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(LocalLayoutDirection.current)),
@@ -270,7 +291,7 @@ fun TabScreen(
         val songName = viewState.songName.observeAsState("...").value
         val artistName = viewState.artist.observeAsState("...").value
         val currentContext = LocalContext.current
-        val artistId = viewState.artistId.observeAsState(0).value
+        val artistId = viewState.artistId.observeAsState("").value
         val titleText = remember { currentContext.getText(R.string.tab_title) as SpannedString }
         val annotations = remember { titleText.getSpans(0, titleText.length, Annotation::class.java) }
         val titleBuilder = buildAnnotatedString {
@@ -311,6 +332,8 @@ fun TabScreen(
         }
         val isPlaylistEntry = viewState.isPlaylistEntry.observeAsState(false)
         val playlistTitle = viewState.playlistTitle.observeAsState("...")
+        val songId = viewState.songId.observeAsState()
+        val tabId = viewState.tabId.observeAsState()
 
         TabTopAppBar(
             title = titleBuilder.toString(),
@@ -318,7 +341,6 @@ fun TabScreen(
             selectedPlaylistTitle = viewState.addToPlaylistDialogSelectedPlaylistTitle.observeAsState(null).value,
             shareUrl = viewState.shareUrl.observeAsState("https://tabslite.com/").value,
             isFavorite = viewState.isFavorite.observeAsState(false).value,
-            copyText = viewState.plainTextContent.observeAsState("").value,
             onNavigateBack = onNavigateBack,
             onReloadClick = onReload,
             onFavoriteButtonClick = onFavoriteButtonClick,
@@ -326,7 +348,14 @@ fun TabScreen(
             onCreatePlaylist = onCreatePlaylist,
             onPlaylistSelectionChange = onAddPlaylistDialogPlaylistSelected,
             selectPlaylistConfirmButtonEnabled = viewState.addToPlaylistDialogConfirmButtonEnabled.observeAsState(false).value,
-            onExportToPdfClick = onExportToPdfClick
+            onExportToPdfClick = onExportToPdfClick,
+            onEditTabClick = {
+                if (songId.value != null && tabId.value != null) {
+                    onEditTabClick(songId.value!!, tabId.value!!)
+                } else {
+                    Log.w(TAG, "onEditTabClick called with null songId or tabId: ${viewState.songId.value}, ${viewState.tabId.value}")
+                }
+            }
         )
 
         Column {
@@ -357,7 +386,7 @@ fun TabScreen(
                 key = viewState.key.observeAsState("").value,
                 author = viewState.author.observeAsState("").value,
                 version = viewState.version.observeAsState(-1).value,
-                songVersions = viewState.songVersions.observeAsState(listOf(Tab(tabId = 198052, version = 3))).value,
+                songVersions = viewState.songVersions.observeAsState(listOf(Tab(tabId = "198052", version = 3))).value,
                 onNavigateToTabById = onNavigateToTabByTabId
             )
 
@@ -371,12 +400,10 @@ fun TabScreen(
             // content
             if (viewState.state.observeAsState(LoadingState.Loading).value is LoadingState.Success) {
                 TabText(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxSize(),
                     text = viewState.content.observeAsState(AnnotatedString("")).value,
                     fontSizeSp = viewState.fontSizeSp.observeAsState(FALLBACK_FONT_SIZE_SP).value,
-                    onTextClick = onTextClick,
-                    onScreenMeasured = onScreenMeasured,
-                    onZoom = onZoom
+                    onChordClick = onTextClick,
                 )
                 Spacer(modifier = Modifier.padding(vertical = 24.dp))
 
@@ -405,7 +432,8 @@ fun TabScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     if (viewState.state.value is LoadingState.Error) {
-                        ErrorCard(text = stringResource((viewState.state.value as LoadingState.Error).messageStringRef))
+                        val error = (viewState.state.value as LoadingState.Error)
+                        ErrorCard(text = String.format(stringResource(error.messageStringRef), error.errorDetails))
                     } else {
                         CircularProgressIndicator()  // still loading
                     }
@@ -458,11 +486,24 @@ fun TabScreen(
     }
 }
 
+private fun List<PointerInputChange>.calculateZoom(): Float {
+    if (size < 2) return 1f
+
+    val first = this[0]
+    val second = this[1]
+
+    val prevDist = sqrt((second.previousPosition.x - first.previousPosition.x).pow(2) + (second.previousPosition.y - first.previousPosition.y).pow(2))
+    val currDist = sqrt((second.position.x - first.position.x).pow(2) + (second.position.y - first.position.y).pow(2))
+
+    return if (prevDist > 0f) currDist / prevDist else 1f
+}
 //#region previews
 
 @Composable @Preview
 private fun TabViewPreview() {
     data class TabViewStateForTest(
+        override val tabId: LiveData<String>,
+        override val songId: LiveData<String>,
         override val songName: LiveData<String>,
         override val isFavorite: LiveData<Boolean>,
         override val isPlaylistEntry: LiveData<Boolean>,
@@ -477,7 +518,6 @@ private fun TabViewPreview() {
         override val songVersions: LiveData<List<ITab>>,
         override val transpose: LiveData<Int>,
         override val content: LiveData<AnnotatedString>,
-        override val plainTextContent: LiveData<String>,
         override val state: LiveData<LoadingState>,
         override val autoscrollPaused: LiveData<Boolean>,
         override val autoScrollSpeedSliderPosition: LiveData<Float>,
@@ -489,7 +529,7 @@ private fun TabViewPreview() {
         override val shareUrl: LiveData<String>,
         override val allPlaylists: LiveData<List<Playlist>>,
         override val artist: LiveData<String>,
-        override val artistId: LiveData<Int?>,
+        override val artistId: LiveData<String?>,
         override val addToPlaylistDialogSelectedPlaylistTitle: LiveData<String?>,
         override val addToPlaylistDialogConfirmButtonEnabled: LiveData<Boolean>,
         override val fontSizeSp: LiveData<Float>,
@@ -497,6 +537,8 @@ private fun TabViewPreview() {
         override val useFlats: LiveData<Boolean>
     ) : ITabViewState {
         constructor(tab: ITab): this(
+            tabId = MutableLiveData(tab.tabId),
+            songId = MutableLiveData(tab.songId),
             songName = MutableLiveData(tab.songName),
             isFavorite = MutableLiveData(true),
             isPlaylistEntry = MutableLiveData(false),
@@ -511,7 +553,6 @@ private fun TabViewPreview() {
             songVersions = MutableLiveData(listOf()),
             transpose = MutableLiveData(tab.transpose),
             content = MutableLiveData(AnnotatedString(tab.content)),
-            plainTextContent = MutableLiveData(tab.content),
             state = MutableLiveData(LoadingState.Success),
             autoscrollPaused = MutableLiveData(true),
             fontSizeSp = MutableLiveData(FALLBACK_FONT_SIZE_SP),
@@ -524,7 +565,7 @@ private fun TabViewPreview() {
             shareUrl = MutableLiveData("https://tabslite.com/tab/1234"),
             allPlaylists = MutableLiveData(listOf()),
             artist = MutableLiveData("Artist Name"),
-            artistId = MutableLiveData(1),
+            artistId = MutableLiveData("1"),
             addToPlaylistDialogSelectedPlaylistTitle = MutableLiveData("Playlist1"),
             addToPlaylistDialogConfirmButtonEnabled = MutableLiveData(false),
             chordInstrument = MutableLiveData(Instrument.Guitar),
@@ -569,7 +610,7 @@ private fun TabViewPreview() {
         [tab]            [ch]G[/ch]
         I’m by your side.[/tab]    """.trimIndent()
 
-    val tabForTest = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", 1, false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "C", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow", content = hallelujahTabForTest)
+    val tabForTest = TabWithDataPlaylistEntry(1, 1, "1", 1, 1, 1234, "0", "Long Time Ago", "rock","CoolGuyz", "1", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , "public", "C", "E A D G B E", false, ArrayList(), "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
 
 
     AppTheme {
@@ -581,8 +622,7 @@ private fun TabViewPreview() {
             onTransposeUpClick = { },
             onTransposeDownClick = { },
             onTransposeResetClick = { },
-            onTextClick = { _, _, _ -> },
-            onScreenMeasured = { _, _, _ -> },
+            onTextClick = { },
             onChordDetailsDismiss = { },
             onAutoscrollSliderValueChange = { },
             onAutoscrollButtonClick = { },
@@ -597,7 +637,8 @@ private fun TabViewPreview() {
             onUseFlatsToggled = { },
             onArtistClicked = { },
             onExportToPdfClick = { _, _ -> },
-            onNavigateToTabByTabId = { _ -> }
+            onNavigateToTabByTabId = { _ -> },
+            onEditTabClick = { _, _ -> }
         )
     }
 }

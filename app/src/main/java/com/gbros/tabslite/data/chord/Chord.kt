@@ -4,7 +4,7 @@ import android.util.Log
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.chord.Chord.useFlats
 import com.gbros.tabslite.utilities.TAG
-import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.utilities.BackendConnection
 import kotlin.math.abs
 
 object Chord {
@@ -17,8 +17,8 @@ object Chord {
 
         // download
         if (chordsToDownload.isNotEmpty()) {
-            UgApi.updateChordVariations(chordsToDownload, dataAccess, Instrument.Guitar)
-            UgApi.updateChordVariations(chordsToDownload, dataAccess, Instrument.Ukulele)
+            BackendConnection.updateChordVariations(chordsToDownload, dataAccess, Instrument.Guitar)
+            BackendConnection.updateChordVariations(chordsToDownload, dataAccess, Instrument.Ukulele)
         }
     }
 
@@ -53,8 +53,8 @@ object Chord {
 
     suspend fun getChord(chord: String, instrument: Instrument, dataAccess: DataAccess) {
         dataAccess.getChordVariations(chord, instrument).ifEmpty {
-            UgApi.updateChordVariations(listOf(chord), dataAccess, Instrument.Guitar)
-            UgApi.updateChordVariations(listOf(chord), dataAccess, Instrument.Ukulele)
+            BackendConnection.updateChordVariations(listOf(chord), dataAccess, Instrument.Guitar)
+            BackendConnection.updateChordVariations(listOf(chord), dataAccess, Instrument.Ukulele)
         }
     }
 

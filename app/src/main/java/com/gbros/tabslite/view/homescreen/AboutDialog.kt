@@ -50,6 +50,7 @@ fun AboutDialog(
     onDismissRequest: () -> Unit,
     onExportPlaylistsClicked: () -> Unit,
     onImportPlaylistsClicked: () -> Unit,
+    onNavigateToCreateTab: () -> Unit,
     onSwitchThemeMode: (ThemeSelection) -> Unit,
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
@@ -190,6 +191,9 @@ fun AboutDialog(
                     Icon(modifier = Modifier.padding(all = 8.dp), imageVector = ImageVector.vectorResource(id = R.drawable.ic_upload), contentDescription = "")
                     Text(modifier = Modifier.padding(all = 8.dp), text = stringResource(id = R.string.app_action_export_playlists))
                 }
+                TextButton(onClick = onNavigateToCreateTab) {
+                    Text(text = "Create New Tab")
+                }
             }
 
             Row(
@@ -212,6 +216,6 @@ fun AboutDialog(
 @Composable @Preview
 private fun AboutDialogPreview() {
     AppTheme {
-        AboutDialog(Modifier, ThemeSelection.System, {}, {}, {}, {})
+        AboutDialog(Modifier, ThemeSelection.System, {}, {}, {}, {}, {})
     }
 }

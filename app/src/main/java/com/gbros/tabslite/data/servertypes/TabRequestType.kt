@@ -1,6 +1,5 @@
 package com.gbros.tabslite.data.servertypes
 
-import android.util.Log
 import com.chrynan.chords.model.ChordMarker
 import com.chrynan.chords.model.Finger
 import com.chrynan.chords.model.FretNumber
@@ -8,26 +7,60 @@ import com.chrynan.chords.model.StringNumber
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.tab.TabDataType
+import com.gbros.tabslite.data.tab.TabTuning
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
+import com.google.firebase.firestore.PropertyName
 
-class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var artist_id: Int, var artist_name: String, var type: String, var part: String, var version: Int, var votes: Int, var rating: Double, var date: String,
-                     var status: String, var preset_id: Int, var tab_access_type: String, var tp_version: Int, var tonality_name: String, val version_description: String?, var verified: Int, val recording: RecordingInfo?,
-                     var versions: List<VersionInfo>, var user_rating: Int, var difficulty: String, var tuning: String, var capo: Int, var urlWeb: String, var strumming: List<StrummingInfo>, var videosCount: Int,
-                     var contributor: ContributorInfo, var pros_brother: String?, var recommended: List<VersionInfo>, var applicature: List<ChordInfo>, val content: String?) {
-    class RecordingInfo(var is_acoustic: Int, var tonality_name: String, var performance: PerformanceInfo?, var recording_artists: List<RecordingArtistsInfo>) {
-        class RecordingArtistsInfo(var join_field: String, var artist: ContributorInfo) {
+@IgnoreExtraProperties
+class TabRequestType(
+    var id: String = "",
+    var song_id: String = "",
+    var song_name: String = "",
+    var artist_id: String = "",
+    var artist_name: String = "",
+    var type: String = "Chords",
+    var part: String = "",
+    var version: Int = 0,
+    var votes: Int = 0,
+    var rating: Double = 0.0,
+    var date: Long = 0,
+    var status: String = "pending",
+    var tab_access_type: String = "public",
+    var tonality_name: String = "",
+    val version_description: String? = "",
+    var verified: Int = 0,
+    var unique_chords: String = "",
+    var difficulty: String = "",
+    var tuning: String = TabTuning.Standard.toString(),
+    var capo: Int = 0,
+
+    // firestore uses Java Bean convention for converting between class and data types; this prevents firestore from removing the *is* prefix
+    // @set sets this property when read from firestore, @get reads this property when writing to firestore
+    // https://stackoverflow.com/a/63980376/3437608, https://firebase.google.com/docs/reference/kotlin/com/google/firebase/firestore/PropertyName
+    @get:PropertyName("is_tab_ml") @set:PropertyName("is_tab_ml") var is_tab_ml: Boolean = false,
+
+    var song_genre: String = "",
+    var ug_difficulty: String = "",
+    var versions_count: Int = 0,
+    var contributor: ContributorInfo = ContributorInfo(),
+    val content: String = ""
+) {
+    class RecordingInfo(var is_acoustic: Int = 0, var tonality_name: String = "", var performance: PerformanceInfo? = null, var recording_artists: List<RecordingArtistsInfo> = emptyList()) {
+        class RecordingArtistsInfo(var join_field: String = "", var artist: ContributorInfo = ContributorInfo()) {
             override fun toString(): String {
                 return artist.username
             }
         }
 
-        class PerformanceInfo(var name: String, var serie: SerieInfo?, var venue: VenueInfo?, var date_start: Long, var cancelled: Int, var type: String, var comment: String, var video_urls: List<String>) {
-            class VenueInfo(name: String, area: AreaInfo) {
-                class AreaInfo(name: String, country: CountryInfo) {
-                    class CountryInfo(name_english: String)
+        class PerformanceInfo(var name: String = "", var serie: SerieInfo? = null, var venue: VenueInfo? = null, var date_start: Long = 0, var cancelled: Int = 0, var type: String = "", var comment: String = "", var video_urls: List<String> = emptyList()) {
+            class VenueInfo(var name: String = "", var area: AreaInfo = AreaInfo()) {
+                class AreaInfo(var name: String = "", var country: CountryInfo = CountryInfo()) {
+                    class CountryInfo(var name_english: String = "")
                 }
             }
 
-            class SerieInfo(name: String, type: String)
+            class SerieInfo(var name: String = "", var type: String = "")
 
             override fun toString(): String {
                 return "$name; $comment"
@@ -44,14 +77,15 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
     }
 
     class VersionInfo(
-        var id: Int, var song_id: Int, var song_name: String, var artist_name: String, var type: String, var part: String, var version: Int, var votes: Int, var rating: Double, var date: String, var status: String, var preset_id: Int,
-        var tab_access_type: String, var tp_version: Int, var tonality_name: String, var version_description: String, var verified: Int, var recording: RecordingInfo)
+        var id: Int = 0, var song_id: Int = 0, var song_name: String = "", var artist_name: String = "", var artist_id: String = "", var type: String = "", var part: String = "", var version: Int = 0, var votes: Int = 0, var rating: Double = 0.0, var date: String = "", var status: String = "", var preset_id: Int = 0,
+        var tab_access_type: String = "", var tp_version: Int = 0, var tonality_name: String = "", var version_description: String? = "", var verified: Int = 0, var recording: RecordingInfo = RecordingInfo())
 
-    class ContributorInfo(var user_id: Int, var username: String)
-    class ChordInfo(var chord: String, var variations: List<VarInfo>) {
+    class ContributorInfo(var user_id: String = "0", var username: String = "Unregistered")
+    class ChordInfo(var chord: String = "", var variations: List<VarInfo> = emptyList()) {
+        @IgnoreExtraProperties
         class VarInfo(
-            var id: String, var listCapos: List<CapoInfo>, var noteIndex: Int, var notes: List<Int>, var frets: List<Int>, var fingers: List<Int>, var fret: Int) {
-            class CapoInfo(var fret: Int, var startString: Int, var lastString: Int, var finger: Int)
+            var id: String = "", var listCapos: List<CapoInfo> = emptyList(), var noteIndex: Int = 0, var notes: List<Int> = emptyList(), var frets: List<Int> = emptyList(), var fingers: List<Int> = emptyList(), var fret: Int = 0) {
+            class CapoInfo(var fret: Int = 0, var startString: Int = 0, var lastString: Int = 0, var finger: Int = 0)
 
             private fun Int.toFinger(): Finger {
                 return when (this) {
@@ -126,67 +160,32 @@ class TabRequestType(var id: Int, var song_id: Int, var song_name: String, var a
         }
     }
 
-    class StrummingInfo(
-        var part: String,
-        var denuminator: Int,
-        var bpm: Int,
-        var is_triplet: Int,
-        var measures: List<MeasureInfo>
-    ) {
-        class MeasureInfo(var measure: Int)
-    }
-
+    @Exclude // don't create a property `tabFull` when writing to firestore
     fun getTabFull(): TabDataType {
         val tab = TabDataType(
             tabId = id,
             songId = song_id,
             songName = song_name,
+            songGenre = song_genre,
             artistName = artist_name,
             artistId = artist_id,
             type = type,
             part = part,
             version = version,
             votes = votes,
-            rating = rating.toDouble(),
-            date = date.toInt(),
+            isVerified = verified == 1,
+            rating = rating,
+            date = date,
             status = status,
-            presetId = preset_id,
             tabAccessType = tab_access_type,
-            tpVersion = tp_version,
             tonalityName = tonality_name,
-            isVerified = (verified != 0),
+            capo = capo,
             contributorUserId = contributor.user_id,
             contributorUserName = contributor.username,
-            capo = capo
+            versionsCount = versions_count,
+            versionDescription = version_description ?: "",
+            content = content
         )
-
-        if (version_description != null) {
-            tab.versionDescription = version_description
-        } else {
-            tab.versionDescription = ""
-        }
-
-        if (recording != null) {
-            tab.recordingIsAcoustic = (recording.is_acoustic != 0)
-            tab.recordingPerformance = recording.performance.toString()
-            tab.recordingTonalityName = recording.tonality_name
-            tab.recordingArtists = recording.getArtists()
-        } else {
-            tab.recordingIsAcoustic = false
-            tab.recordingPerformance = ""
-            tab.recordingTonalityName = ""
-            tab.recordingArtists = ArrayList(emptyList<String>())
-        }
-
-        if (content != null) {
-            tab.content = content
-        } else {
-            tab.content = "NO TAB CONTENT - Official tab?"
-            Log.w(
-                javaClass.simpleName,
-                "Warning: tab content is empty for id $id.  This is strange.  Could be an official tab."
-            )
-        }
 
         return tab
     }

@@ -5,25 +5,20 @@ import com.gbros.tabslite.data.tab.TabDataType
 class SearchRequestType(private var tabs: List<SearchResultTab>, private var artists: List<String>){
     class SearchResultTab(var id: Int, var song_id: Int, var song_name: String, val artist_id: Int, var artist_name: String,
                           var type: String = "", var part: String = "", var version: Int = 0, var votes: Int = 0,
-                          var rating: Double = 0.0, var date: String = "", var status: String = "", var preset_id: Int = 0,
-                          var tab_access_type: String = "", var tp_version: Int = 0, var tonality_name: String = "",
-                          val version_description: String? = "", var verified: Int = 0,
-                          val recording: TabRequestType.RecordingInfo?
+                          var difficulty: String = "",var rating: Double = 0.0, var date: String? = "", var status: String = "",
+                          var preset_id: Int, var tab_access_type: String = "", var tp_version: Int, var tonality_name: String = "",
+                          val version_description: String? = "", var verified: Int = 0
     ) {
         fun tabFull(): TabDataType {
-            val dateToUse = if (date.isNullOrEmpty()) 0 else date.toInt()
+            val dateToUse = if (date.isNullOrEmpty()) 0 else date!!.toLong()
             val versionDscToUse = if (version_description.isNullOrEmpty()) "" else version_description
-            val recordingAcoustic = if (recording != null) recording.is_acoustic == 1 else false
-            val recordingTonality = recording?.tonality_name ?: ""
-            val recordingPerformance = recording?.performance.toString()
-            val recordingArtists = recording?.getArtists() ?: ArrayList()
 
             return TabDataType(
-                tabId = id,
-                songId = song_id,
+                tabId = "7567-$id", // todo: fix when search returns prefixed ids
+                songId = "7567-$song_id",
                 songName = song_name,
                 artistName = artist_name,
-                artistId = artist_id,
+                artistId = "7567-$artist_id",
                 type = type,
                 part = part,
                 version = version,
@@ -31,16 +26,10 @@ class SearchRequestType(private var tabs: List<SearchResultTab>, private var art
                 rating = rating,
                 date = dateToUse,
                 status = status,
-                presetId = preset_id,
                 tabAccessType = tab_access_type,
-                tpVersion = tp_version,
                 tonalityName = tonality_name,
                 versionDescription = versionDscToUse,
                 isVerified = verified == 1,
-                recordingIsAcoustic = recordingAcoustic,
-                recordingTonalityName = recordingTonality,
-                recordingPerformance = recordingPerformance,
-                recordingArtists = recordingArtists
             )
         }
     }
@@ -56,8 +45,8 @@ class SearchRequestType(private var tabs: List<SearchResultTab>, private var art
 
     // region private data
 
-    private lateinit var songs: LinkedHashMap<Int, MutableList<Int>>  // songId, List<tabId>
-    private lateinit var tabFulls: HashMap<Int, TabDataType>          // tabId, TabBasic
+    private lateinit var songs: LinkedHashMap<String, MutableList<String>>  // songId, List<tabId>
+    private lateinit var tabFulls: HashMap<String, TabDataType>          // tabId, TabBasic
 
     // endregion
 
@@ -98,13 +87,13 @@ class SearchRequestType(private var tabs: List<SearchResultTab>, private var art
         indexNewTabs(tabs)
     }
 
-    private fun indexNewSongs(newTabs: List<SearchResultTab>) {
-        for (tab: SearchResultTab in newTabs) {
-            if(!songs.containsKey(tab.song_id)){
-                songs.put(tab.song_id, mutableListOf())
+    private fun indexNewSongs(newSongs: List<SearchResultTab>) {
+        for (song: SearchResultTab in newSongs) {
+            if(!songs.containsKey("7567-${song.song_id}")){  // todo: remove 7567 when search results return prefixed ids
+                songs["7567-${song.song_id}"] = mutableListOf()
             }
 
-            songs[tab.song_id]!!.add(tab.id)
+            songs["7567-${song.song_id}"]!!.add("7567-${song.id}")
         }
     }
     private fun indexNewTabs(newTabs: List<SearchResultTab>){
@@ -118,17 +107,10 @@ class SearchRequestType(private var tabs: List<SearchResultTab>, private var art
 
         for (tb in tabs) {
             if (songs[tb.songId]?.size != null){
-                tb.numVersions = songs[tb.songId]?.size!!
+                tb.versionsCount = songs[tb.songId]?.size!!
             }
             tabFulls[tb.tabId] = tb
         }
-    }
-
-    private fun getTabIds(songId: Int): IntArray {
-        initSongs()
-
-        songs[songId]?.let { return it.toIntArray() }
-        return intArrayOf()
     }
 
     // endregion

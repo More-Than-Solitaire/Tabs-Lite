@@ -26,16 +26,12 @@ import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
-fun SuggestedTab(modifier: Modifier = Modifier, tab: TabWithDataPlaylistEntry, navigateToTabByTabId: (tabId: Int) -> Unit, navigateToTabByPlaylistEntryId: (playlistEntryId: Int) -> Unit) {
-    Card(
-        modifier = modifier
-            .clickable(onClick = {
-                when {
-                    tab.entryId > 0 && tab.playlistId > 0 -> navigateToTabByPlaylistEntryId(tab.entryId)
-                    else -> navigateToTabByTabId(tab.tabId)
-                }
-            })
-    ) {
+fun SuggestedTab(
+    modifier: Modifier = Modifier,
+    tab: TabWithDataPlaylistEntry,
+    onClick: () -> Unit,
+) {
+    Card(modifier = modifier.clickable(onClick = onClick)) {
         Row(
             modifier = Modifier
                 .padding(all = 4.dp),
@@ -77,15 +73,14 @@ fun SuggestedTab(modifier: Modifier = Modifier, tab: TabWithDataPlaylistEntry, n
 @Preview
 private fun SuggestedTabPreview() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         songName = "Three Little Birds",
         artistName = "Bob Marley"
     )
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -94,7 +89,7 @@ private fun SuggestedTabPreview() {
 @Preview
 private fun SuggestedTabPreviewFavorite() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         playlistId = -1,
         songName = "Three Little Birds",
         artistName = "Bob Marley"
@@ -102,8 +97,7 @@ private fun SuggestedTabPreviewFavorite() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -112,7 +106,7 @@ private fun SuggestedTabPreviewFavorite() {
 @Preview
 private fun SuggestedTabPreviewPopular() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         playlistId = -2,
         songName = "Three Little Birds",
         artistName = "Bob Marley"
@@ -120,8 +114,7 @@ private fun SuggestedTabPreviewPopular() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -130,7 +123,7 @@ private fun SuggestedTabPreviewPopular() {
 @Preview
 private fun SuggestedTabPreviewPlaylist() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         entryId = 1,
         songName = "Three Little Birds",
         artistName = "Bob Marley"
@@ -138,8 +131,7 @@ private fun SuggestedTabPreviewPlaylist() {
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -148,15 +140,14 @@ private fun SuggestedTabPreviewPlaylist() {
 @Preview
 private fun SuggestedTabPreviewTextOverflow() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         songName = "Three Little Birds and a lot lot more long title",
         artistName = "Bob Marley with a long artist name as well"
     )
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -165,15 +156,14 @@ private fun SuggestedTabPreviewTextOverflow() {
 @Preview
 private fun SuggestedTabPreviewTextOverflowTitleOnly() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         songName = "Three Little Birds and a lot lot more long title",
         artistName = "Bob"
     )
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }
@@ -182,15 +172,14 @@ private fun SuggestedTabPreviewTextOverflowTitleOnly() {
 @Preview
 private fun SuggestedTabPreviewTextOverflowArtistOnly() {
     val suggestion = TabWithDataPlaylistEntry(
-        tabId = 0,
+        tabId = "0",
         songName = "Birds",
         artistName = "Bob with a very very long artist name that should overflow"
     )
     AppTheme {
         SuggestedTab(
             tab = suggestion,
-            navigateToTabByTabId = {},
-            navigateToTabByPlaylistEntryId = {}
+            onClick = {}
         )
     }
 }

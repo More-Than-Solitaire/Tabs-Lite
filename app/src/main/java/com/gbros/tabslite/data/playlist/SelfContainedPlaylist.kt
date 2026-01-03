@@ -2,6 +2,7 @@ package com.gbros.tabslite.data.playlist
 
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.tab.Tab
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -20,8 +20,8 @@ import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.ui.theme.AppTheme
+import com.gbros.tabslite.utilities.BackendConnection
 import com.gbros.tabslite.utilities.TAG
-import com.gbros.tabslite.utilities.UgApi
 import com.gbros.tabslite.view.playlists.PlaylistsSortBy
 import com.gbros.tabslite.view.songlist.SortBy
 import dagger.hilt.android.AndroidEntryPoint
@@ -80,9 +80,9 @@ class HomeActivity : ComponentActivity() {
      */
     private suspend fun fetchTopTabs(dataAccess: DataAccess) {
         try {
-            UgApi.fetchTopTabs(dataAccess)
+            BackendConnection.fetchTopTabs(dataAccess)
             Log.i(TAG, "Initial top tabs fetched successfully.")
-        } catch (ex: UgApi.NoInternetException) {
+        } catch (ex: BackendConnection.NoInternetException) {
             Log.i(TAG, "Initial top tabs fetch failed due to no internet connection.", ex)
         } catch (ex: Exception) {
             Log.e(TAG, "Unexpected exception during initial top tabs fetch: ${ex.message}", ex)
@@ -135,7 +135,7 @@ class HomeActivity : ComponentActivity() {
                     if (tabIds.isNotEmpty()) {
                         Tab(tabIds.first()).load(dataAccess, false)
                     }
-                } catch (ex: UgApi.NoInternetException) {
+                } catch (ex: BackendConnection.NoInternetException) {
                     Log.i(TAG, "Initial empty-playlist-tab fetch failed: no internet connection", ex)
                 } catch (ex: Exception) {
                     Log.e(TAG, "Unexpected exception during initial empty-playlist-tab fetch: ${ex.message}", ex)
