@@ -9,6 +9,7 @@ import com.gbros.tabslite.data.SearchSuggestions
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist.Companion.TOP_TABS_PLAYLIST_ID
+import com.gbros.tabslite.data.servertypes.ArtistRequestType
 import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.data.servertypes.SearchSuggestionType
 import com.gbros.tabslite.data.servertypes.ServerTimestampType
@@ -81,10 +82,46 @@ object BackendConnection {
     suspend fun createSong(song: SongRequestType): String {
         val newSongRef = db.collection("songs").document()
         song.song_id = newSongRef.id
-        //todo: artist id?
+        //todo: artist id?gh
         newSongRef.set(song).await()
         Log.v(TAG, "Created song ${newSongRef.id}")
         return newSongRef.id
+    }
+
+    /**
+     * Get the artist ID of the artist with the passed name.
+     *
+     * @param [artistName] the name of the artist
+     *
+     * @return The ID of the artist with the passed name
+     *
+     * @throws NotFoundException if the artist with the passed name is not found in the database
+     */
+    suspend fun fetchArtistId(artistName: String): String {
+        val artistCollectionRef = db.collection("artists")
+        val query = artistCollectionRef
+            .whereEqualTo("artist_name", artistName)
+            .limit(1)
+        val querySnapshot = query.get().await()
+        if (querySnapshot.isEmpty) {
+            throw NotFoundException("Artist $artistName not found in database")
+        }
+
+        return querySnapshot.documents[0].id
+    }
+
+    /**
+     * Create a new artist in the database.
+     *
+     * @param [artistName] the name of the artist
+     *
+     * @return The ID of the created artist
+     */
+    suspend fun createNewArist(artistName: String): String {
+        val newArtistRef = db.collection("artists").document()
+        val newArtist = ArtistRequestType(artist_name = artistName, artist_id = newArtistRef.id)
+        newArtistRef.set(newArtist).await()
+        return newArtistRef.id
     }
 
     /**
