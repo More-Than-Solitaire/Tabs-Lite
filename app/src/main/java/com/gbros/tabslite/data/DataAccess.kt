@@ -296,6 +296,12 @@ interface DataAccess {
     @Query("SELECT * FROM chord_variation WHERE chord_id = :chordId AND instrument = :instrument")
     suspend fun getChordVariations(chordId: String, instrument: Instrument): List<ChordVariation>
 
+    /**
+     * Get one variation for each chordId
+     */
+    @Query("SELECT * FROM chord_variation WHERE chord_id IN (:chordIds) AND instrument = :instrument GROUP BY chord_id")
+    fun getFirstChordVariations(chordIds: List<String>, instrument: Instrument): LiveData<List<ChordVariation>>
+
     @Query("SELECT * FROM chord_variation WHERE chord_id = :chordId AND instrument = :instrument")
     fun chordVariations(chordId: String, instrument: Instrument): LiveData<List<ChordVariation>>
 

@@ -141,12 +141,7 @@ interface ITabViewState {
     val chordsPinned: LiveData<Boolean>
 
     /**
-     * List of all unique chord names used in this tab
-     */
-    val allChordsInTab: LiveData<List<String>>
-
-    /**
      * Map of chord names to their first chord variation for pinned display
      */
-    val pinnedChordVariations: LiveData<Map<String, ChordVariation?>>
+    val pinnedChordVariations: LiveData<List<ChordVariation>>
 }

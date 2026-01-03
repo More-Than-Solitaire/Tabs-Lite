@@ -493,29 +493,12 @@ class TabViewModel
     // transposed content converted to an annotated string (tags are stripped and chords are annotations not text)
     override val content: LiveData<AnnotatedString> = tabContent.map { it.content }
 
-    override val pinnedChordVariations: LiveData<Map<String, ChordVariation?>> = 
-        tabContent.map{c -> c.chords}.combine(chordInstrument) { chords, instrument ->
-            Pair(chords, instrument)
-        }.switchMap { (chords, instrument) ->
-            liveData(Dispatchers.IO) {
-                if (chords.isNullOrEmpty() || instrument == null) {
-                    emit(emptyMap())
-                } else {
-                    val map = mutableMapOf<String, ChordVariation?>()
-                    chords.forEach { chordName ->
-                        try {
-                            // Force fetch the chord from network if not in database
-                            Chord.getChord(chordName, instrument, dataAccess)
-                            val variations = dataAccess.getChordVariations(chordName, instrument)
-                            map[chordName] = variations.firstOrNull()
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error loading chord variation for $chordName: ${e.message}", e)
-                            map[chordName] = null
-                        }
-                    }
-                    emit(map)
-                }
-            }
+    override val pinnedChordVariations: LiveData<List<ChordVariation>> = tabContent
+        .map{c -> c.chords.toList()}
+        .combine(chordInstrument) { chords, instrument -> Pair(chords, instrument) }
+        .switchMap { (chords, instrument) ->
+            if (chords == null || instrument == null) null
+            else dataAccess.getFirstChordVariations(chords, instrument)
         }
     
     private val _state: MutableLiveData<LoadingState> = MutableLiveData(LoadingState.Loading)

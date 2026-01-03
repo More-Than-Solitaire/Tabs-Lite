@@ -8,15 +8,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,7 +30,6 @@ import com.chrynan.chords.compose.ChordWidget
 import com.chrynan.chords.model.ChordChart
 import com.chrynan.chords.model.ChordViewData
 import com.chrynan.chords.model.FretNumber
-import com.chrynan.chords.model.StringLabelState
 import com.chrynan.chords.util.maxFret
 import com.chrynan.chords.util.minFret
 import com.gbros.tabslite.data.chord.ChordVariation
@@ -48,8 +44,7 @@ import kotlin.math.min
  */
 @Composable
 fun PinnedChords(
-    chords: List<String>,
-    chordVariations: Map<String, ChordVariation?>,
+    chords: List<ChordVariation>,
     instrument: Instrument,
     modifier: Modifier = Modifier,
     onChordClick: (String) -> Unit = {}
@@ -73,10 +68,9 @@ fun PinnedChords(
         ) {
             chords.forEach { chord ->
                 ChordDiagramChip(
-                    chordName = chord,
-                    chordVariation = chordVariations[chord],
+                    chord = chord,
                     instrument = instrument,
-                    onClick = { onChordClick(chord) }
+                    onClick = { onChordClick(chord.chordId) }
                 )
             }
         }
@@ -88,8 +82,7 @@ fun PinnedChords(
  */
 @Composable
 private fun ChordDiagramChip(
-    chordName: String,
-    chordVariation: ChordVariation?,
+    chord: ChordVariation,
     instrument: Instrument,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
@@ -103,7 +96,7 @@ private fun ChordDiagramChip(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = chordName,
+            text = chord.chordId,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
@@ -111,75 +104,42 @@ private fun ChordDiagramChip(
             modifier = Modifier.padding(bottom = 2.dp)
         )
         
-        if (chordVariation != null) {
-            val chord = chordVariation.toChrynanChord()
-            val defaultMaxFret = 3
-            val defaultMinFret = 1
-            val endFret = max(chord.maxFret, defaultMaxFret)
-            val startFret = min(chord.minFret, max(chord.maxFret - 2, defaultMinFret))
+        val chord = chord.toChrynanChord()
+        val defaultMaxFret = 3
+        val defaultMinFret = 1
+        val endFret = max(chord.maxFret, defaultMaxFret)
+        val startFret = min(chord.minFret, max(chord.maxFret - 2, defaultMinFret))
 
-            val chartLayout = if (instrument == Instrument.Guitar) {
-                ChordChart.STANDARD_TUNING_GUITAR_CHART.copy(
-                    fretStart = FretNumber(startFret),
-                    fretEnd = FretNumber(endFret)
-                )
-            } else {
-                ChordChart.STANDARD_TUNING_UKELELE.copy(
-                    fretStart = FretNumber(startFret),
-                    fretEnd = FretNumber(endFret)
-                )
-            }
-
-            ChordWidget(
-                chord = chord,
-                chart = chartLayout,
-                modifier = Modifier
-                    .width(80.dp)
-                    .height(100.dp),
-                viewData = ChordViewData(
-                    noteColor = MaterialTheme.colorScheme.primary.toChrynanRgba(),
-                    noteLabelTextColor = MaterialTheme.colorScheme.onPrimary.toChrynanRgba(),
-                    fretColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                    fretLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                    stringColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                    stringLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
-                    // stringLabelState = StringLabelState.SHOW_LABEL,
-                    mutedStringText = "x",
-                    openStringText = "",
-                    showFingerNumbers = false,
-                    fitToHeight = true
-                )
+        val chartLayout = if (instrument == Instrument.Guitar) {
+            ChordChart.STANDARD_TUNING_GUITAR_CHART.copy(
+                fretStart = FretNumber(startFret),
+                fretEnd = FretNumber(endFret)
             )
         } else {
-            // Placeholder when chord variation is not loaded
-            Box(
-                modifier = Modifier
-                    .width(80.dp)
-                    .height(100.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "...",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 10.sp
-                )
-            }
+            ChordChart.STANDARD_TUNING_UKELELE.copy(
+                fretStart = FretNumber(startFret),
+                fretEnd = FretNumber(endFret)
+            )
         }
-    }
-}
 
-@Composable
-@Preview
-private fun PinnedChordsPreview() {
-    val sampleChords = listOf("C", "Em", "Am", "F", "G", "Dm", "A#m", "D")
-    
-    AppTheme {
-        PinnedChords(
-            chords = sampleChords,
-            chordVariations = emptyMap(),
-            instrument = Instrument.Guitar,
-            onChordClick = { }
+        ChordWidget(
+            chord = chord,
+            chart = chartLayout,
+            modifier = Modifier
+                .width(80.dp)
+                .height(100.dp),
+            viewData = ChordViewData(
+                noteColor = MaterialTheme.colorScheme.primary.toChrynanRgba(),
+                noteLabelTextColor = MaterialTheme.colorScheme.onPrimary.toChrynanRgba(),
+                fretColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                fretLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                stringColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                stringLabelTextColor = MaterialTheme.colorScheme.onBackground.toChrynanRgba(),
+                mutedStringText = "x",
+                openStringText = "",
+                showFingerNumbers = false,
+                fitToHeight = true
+            )
         )
     }
 }

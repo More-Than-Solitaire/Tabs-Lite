@@ -8,17 +8,13 @@ import android.text.Annotation
 import android.text.SpannedString
 import android.util.Log
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.safeDrawing
@@ -34,15 +30,12 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.Clipboard
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -298,15 +291,8 @@ fun TabScreen(
                 left = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(LocalLayoutDirection.current)),
                 right = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(LocalLayoutDirection.current))
             ))
-    ) {
-        Column(
-            modifier = Modifier
-                .verticalScroll(scrollState)
-                .windowInsetsPadding(WindowInsets(
-                    left = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(LocalLayoutDirection.current)),
-                    right = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(LocalLayoutDirection.current))
-                ))
-        ) {
+    )
+    {
         // create clickable title
         val songName = viewState.songName.observeAsState("...").value
         val artistName = viewState.artist.observeAsState("...").value
@@ -468,31 +454,18 @@ fun TabScreen(
             }
         }
 
-        // Sticky pinned chords at the top
-        if (viewState.chordsPinned.observeAsState(false).value) {
-            val allChords = viewState.allChordsInTab.observeAsState(emptyList()).value
-            val chordVariations = viewState.pinnedChordVariations.observeAsState(emptyMap()).value
-            val instrument = viewState.chordInstrument.observeAsState(Instrument.Guitar).value
-            val uriHandler = LocalUriHandler.current
-            val clipboardManager = LocalClipboard.current
-            val clickableText = viewState.content.observeAsState(AnnotatedString("")).value
+    // Sticky pinned chords at the top
+    if (viewState.chordsPinned.observeAsState(false).value) {
+        val chordVariations = viewState.pinnedChordVariations.observeAsState(emptyList()).value
+        val instrument = viewState.chordInstrument.observeAsState(Instrument.Guitar).value
 
-            PinnedChords(
-                chords = allChords,
-                chordVariations = chordVariations,
-                instrument = instrument,
-                modifier = Modifier.align(Alignment.TopCenter),
-                onChordClick = { chord ->
-                    // When a chord is clicked in the pinned section, show its details
-                    val chordAnnotations = clickableText.getStringAnnotations(tag = "chord", 0, clickableText.length)
-                    val chordAnnotation = chordAnnotations.firstOrNull { it.item == chord }
-                    if (chordAnnotation != null) {
-                        onTextClick(chordAnnotation.start, uriHandler, clipboardManager)
-                    }
-                }
-            )
-        }
+        PinnedChords(
+            chords = chordVariations,
+            instrument = instrument,
+            onChordClick = onTextClick
+        )
     }
+
 
     // chord bottom sheet display if a chord was clicked
     if (viewState.chordDetailsActive.observeAsState(false).value) {
@@ -588,8 +561,7 @@ private fun TabViewPreview() {
         override val chordInstrument: LiveData<Instrument>,
         override val useFlats: LiveData<Boolean>,
         override val chordsPinned: LiveData<Boolean>,
-        override val allChordsInTab: LiveData<List<String>>,
-        override val pinnedChordVariations: LiveData<Map<String, ChordVariation?>>
+        override val pinnedChordVariations: LiveData<List<ChordVariation>>
 
     ) : ITabViewState {
         constructor(tab: ITab): this(
@@ -611,7 +583,6 @@ private fun TabViewPreview() {
             content = MutableLiveData(AnnotatedString(tab.content)),
             state = MutableLiveData(LoadingState.Success),
             autoscrollPaused = MutableLiveData(true),
-            fontSizeSp = MutableLiveData(FALLBACK_FONT_SIZE_SP),
             autoScrollSpeedSliderPosition = MutableLiveData(0.5f),
             autoscrollDelay = MutableLiveData(Float.POSITIVE_INFINITY),
             chordDetailsActive = MutableLiveData(false),
@@ -624,11 +595,11 @@ private fun TabViewPreview() {
             artistId = MutableLiveData("1"),
             addToPlaylistDialogSelectedPlaylistTitle = MutableLiveData("Playlist1"),
             addToPlaylistDialogConfirmButtonEnabled = MutableLiveData(false),
+            fontSizeSp = MutableLiveData(FALLBACK_FONT_SIZE_SP),
             chordInstrument = MutableLiveData(Instrument.Guitar),
             useFlats = MutableLiveData(false),
-            chordsPinned = MutableLiveData(false),
-            allChordsInTab = MutableLiveData(listOf("C", "Em", "Am", "G", "F")),
-            pinnedChordVariations = MutableLiveData(emptyMap())
+            chordsPinned = MutableLiveData(true),
+            pinnedChordVariations = MutableLiveData(emptyList())
         )
 
         override fun getCapoText(context: Context): LiveData<String> {
