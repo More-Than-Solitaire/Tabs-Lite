@@ -53,7 +53,11 @@ interface ITabViewState {
     /**
      * The ID of the song author
      */
-    val artistId: LiveData<Int?>
+    val artistId: LiveData<String?>
+
+    val tabId: LiveData<String>
+
+    val songId: LiveData<String>
 
     val version: LiveData<Int>
 
@@ -68,11 +72,6 @@ interface ITabViewState {
      * The wrapped, transposed tab content to display
      */
     val content: LiveData<AnnotatedString>
-
-    /**
-     * The unwrapped, plaintext tab content, for copying to clipboard
-     */
-    val plainTextContent: LiveData<String>
 
     /**
      * The font size that should be used to support the custom wrapping for [content]

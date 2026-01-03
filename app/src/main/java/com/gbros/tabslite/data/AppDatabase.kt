@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.work.impl.Migration_15_16
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.playlist.DataPlaylistEntry
 import com.gbros.tabslite.data.playlist.Playlist
@@ -17,7 +18,7 @@ const val DATABASE_NAME = "local-tabs-db"
 /**
  * The Room database for this app
  */
-@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, DataPlaylistEntry::class, Preference::class, SearchSuggestions::class], version = 14)
+@Database(entities = [TabDataType::class, ChordVariation::class, Playlist::class, DataPlaylistEntry::class, Preference::class, SearchSuggestions::class], version = 16)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dataAccess(): DataAccess
@@ -175,13 +176,110 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_14_15 = object : Migration(14, 15) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // clear content column
+                db.execSQL("UPDATE tabs SET content = ''")
+            }
+        }
+
+        private val MIGRATION_15_16 = object : Migration(15, 16) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Create a new tabs table with the correct schema (new columns and column types)
+                db.execSQL("DROP TABLE IF EXISTS tabs_new")
+                db.execSQL("CREATE TABLE tabs_new (" +
+                        " id TEXT PRIMARY KEY NOT NULL," +
+                        " song_id TEXT NOT NULL DEFAULT ''," +
+                        " song_name TEXT NOT NULL DEFAULT ''," +
+                        " song_genre TEXT NOT NULL DEFAULT ''," +
+                        " artist_name TEXT NOT NULL DEFAULT ''," +
+                        " artist_id TEXT NOT NULL DEFAULT ''," +
+                        " type TEXT NOT NULL DEFAULT ''," +
+                        " part TEXT NOT NULL DEFAULT ''," +
+                        " version INTEGER NOT NULL DEFAULT 0," +
+                        " votes INTEGER NOT NULL DEFAULT 0," +
+                        " rating REAL NOT NULL DEFAULT 0.0," +
+                        " date INTEGER NOT NULL DEFAULT 0," +
+                        " status TEXT NOT NULL DEFAULT ''," +
+                        " tab_access_type TEXT NOT NULL DEFAULT 'public'," +
+                        " tonality_name TEXT NOT NULL DEFAULT ''," +
+                        " version_description TEXT NOT NULL DEFAULT ''," +
+                        " verified INTEGER NOT NULL DEFAULT 0," +
+                        " versions_count INTEGER NOT NULL DEFAULT 1," +
+                        " recommended TEXT NOT NULL DEFAULT ''," +
+                        " difficulty TEXT NOT NULL DEFAULT 'novice'," +
+                        " tuning TEXT NOT NULL DEFAULT 'E A D G B E'," +
+                        " capo INTEGER NOT NULL DEFAULT 0," +
+                        " contributor_user_id TEXT NOT NULL DEFAULT ''," +
+                        " contributor_user_name TEXT NOT NULL DEFAULT 'Unregistered'," +
+                        " content TEXT NOT NULL DEFAULT ''," +
+                        " is_tab_ml INTEGER NOT NULL DEFAULT 0" +
+                        ");")
+
+                // Copy the data from the old table to the new table
+                db.execSQL("INSERT INTO tabs_new (" +
+                        " id, song_id, song_name, artist_name, type, part, version, votes, rating, date, status," +
+                        " tab_access_type, tonality_name, version_description, verified," +
+                        " versions_count, recommended, difficulty, tuning, capo," +
+                        " contributor_user_id, contributor_user_name, content, artist_id" +
+                        ")" +
+                        "SELECT" +
+                        " '7567-' || CAST(id AS TEXT), '7567-' || CAST(song_id AS TEXT), song_name, artist_name, type, part, version, votes, rating, date, status," +
+                        " tab_access_type, tonality_name, version_description, verified," +
+                        " num_versions, recommended, difficulty, tuning, capo," +
+                        " CAST(contributor_user_id AS TEXT), contributor_user_name, content, '7567-' || CAST(artist_id AS TEXT)" +
+                        "FROM tabs;")
+
+                // clear content column
+                db.execSQL("UPDATE tabs SET content = ''")
+
+                // ----------------------------------------------------------------
+
+                // now update the playlist_entry table so tab_id is TEXT
+                db.execSQL("DROP TABLE IF EXISTS playlist_entry_new")
+                db.execSQL("CREATE TABLE playlist_entry_new (" +
+                        " entry_id INTEGER NOT NULL," +
+                        " playlist_id INTEGER NOT NULL," +
+                        " tab_id TEXT NOT NULL, " + // Changed from INTEGER to TEXT
+                        " next_entry_id INTEGER," +
+                        " prev_entry_id INTEGER," +
+                        " date_added INTEGER NOT NULL," +
+                        " transpose INTEGER NOT NULL," +
+                        " PRIMARY KEY(entry_id)" +
+                        ");")
+
+                // Copy data from the old table to the new, converting the tab_id
+                db.execSQL("INSERT INTO playlist_entry_new (entry_id, playlist_id, tab_id, next_entry_id, prev_entry_id, date_added, transpose) " +
+                        "SELECT" +
+                        " entry_id," +
+                        " playlist_id," +
+                        " '7567-' || CAST(tab_id AS TEXT)," + // Convert tab_id from INTEGER to TEXT with prefix
+                        " next_entry_id," +
+                        " prev_entry_id," +
+                        " date_added," +
+                        " transpose " +
+                        "FROM playlist_entry;")
+
+
+                // Drop the old table
+                db.execSQL("DROP TABLE tabs;")
+                // Rename the new table to the original table name"
+                db.execSQL("ALTER TABLE tabs_new RENAME TO tabs;")
+                // Delete the old playlist_entry table
+                db.execSQL("DROP TABLE playlist_entry;")
+                // Rename the new table to the original table name
+                db.execSQL("ALTER TABLE playlist_entry_new RENAME TO playlist_entry;")
+            }
+        }
+
         // Create and pre-populate the database. See this article for more details:
         // https://medium.com/google-developers/7-pro-tips-for-room-fbadea4bfbd1#4785
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
                     .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
                         MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
-                        MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
+                        MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14,
+                        MIGRATION_14_15, MIGRATION_15_16)
                     .build()
         }
     }

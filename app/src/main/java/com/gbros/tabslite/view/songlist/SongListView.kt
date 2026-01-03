@@ -38,7 +38,8 @@ fun SongListView(
     modifier: Modifier = Modifier,
     viewState: ISongListViewState,
     navigateByPlaylistEntryId: Boolean,
-    navigateToTabById: (id: Int) -> Unit,
+    navigateToTabByPlaylistEntryId: (playlistEntryId: Int) -> Unit,
+    navigateToTabById: (id: String) -> Unit,
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp),
     emptyListText: String = stringResource(id = R.string.message_empty_list),
 ){
@@ -68,7 +69,11 @@ fun SongListView(
                 items(songs.value) { song ->
                     SongListItem(
                         modifier = Modifier.clickable {
-                            navigateToTabById(if (navigateByPlaylistEntryId) song.entryId else song.tabId)
+                            if (navigateByPlaylistEntryId) {
+                                navigateToTabByPlaylistEntryId(song.entryId)
+                            } else {
+                                navigateToTabById(song.tabId)
+                            }
                         },
                         song = song,
                     )
@@ -84,8 +89,8 @@ fun SongListView(
 
 @Composable @Preview
 private fun SongListViewPreview(){
-    val tabForTest1 = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", 1, false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
-    val tabForTest2 = TabWithDataPlaylistEntry(1, 1, 1, 1, 1, 1234, 0, "Long Time Ago", "CoolGuyz", 1, false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , 123, "public", 1, "E A D G B E", "description", false, "asdf", "", ArrayList(), ArrayList(), 4, "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
+    val tabForTest1 = TabWithDataPlaylistEntry(1, 1, "1", 1, 1, 1234, "0", "Long Time Ago", "rock","CoolGuyz", "1", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , "public", "C", "E A D G B E", false, ArrayList(), "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
+    val tabForTest2 = TabWithDataPlaylistEntry(1, 1, "1", 1, 1, 1234, "0", "Long Time Ago", "rock","CoolGuyz", "1", false, 5, "Chords", "", 1, 4, 3.6, 1234, "" , "public", "C", "E A D G B E", false, ArrayList(), "expert", playlistDateCreated = 12345, playlistDateModified = 12345, playlistDescription = "Description of our awesome playlist", playlistTitle = "My Playlist", playlistUserCreated = true, capo = 2, contributorUserName = "Joe Blow")
     val tabListForTest = MutableLiveData(listOf(tabForTest1, tabForTest2))
 
     val viewState = SongListViewStateForTest(
@@ -97,6 +102,7 @@ private fun SongListViewPreview(){
         SongListView(
             viewState = viewState,
             navigateToTabById = {},
+            navigateToTabByPlaylistEntryId = {},
             navigateByPlaylistEntryId = false
         )
     }

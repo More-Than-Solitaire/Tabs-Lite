@@ -25,6 +25,7 @@
     <string name="title_playlists_page" translation_description="The title of the Playlists home tab">Playlists</string>
     <string name="title_add_to_playlist_dialog" translation_description="The title of the Add To Playlist dialog">Add to playlist</string>
     <string name="title_create_playlist_dialog" translation_description="Title for the Create Playlist dialog">Create playlist</string>
+    <string name="title_create_song" translation_description="Title for the Create Song screen">Create Song</string>
 
     <string name="placeholder_playlist_title" translation_description="Placeholder text for Playlist Title entry field">Playlist Title</string>
     <string name="placeholder_playlist_description" translation_description="Placeholder text for Playlist Description entry field">Playlist Description</string>
@@ -37,6 +38,7 @@
     <string name="generic_action_confirm">Confirm</string>
     <string name="generic_action_dismiss">Dismiss</string>
     <string name="generic_action_back">Back</string>
+    <string name="generic_action_next">Next</string>
     <string name="generic_action_delete">Delete</string>
     <string name="generic_action_drag_to_reorder">Drag to reorder</string>
     <string name="generic_action_play">Play</string>
@@ -48,6 +50,8 @@
     <string name="generic_action_copy">Copy</string>
     <string name="generic_action_export_to_pdf">Export to PDF</string>
     <string name="generic_action_clear">Clear</string>
+    <string name="generic_action_preview">Preview</string>
+    <string name="generic_action_continue">Continue</string>
     <string name="error">Error</string>
     <string name="info">Info</string>
 
@@ -89,6 +93,36 @@
     <string name="message_search_suggestion_no_internet" translation_description="Informational message displayed when additional search suggestions can't be fetched because we're not connected to the internet.">You\'re not connected to the internet.</string>
     <string name="message_search_suggestion_unexpected_error" translation_description="Error message displayed when additional search suggestions can't be loaded because of an unknown/unexpected issue.">Unexpected error fetching more search suggestions.</string>
 
+    <!-- tab creation -->
+    <string name="label_song_genre">Song Genre</string>
+    <string name="action_create_song_and_continue">Create Song and Continue</string>
+    <string name="message_song_creation_success_title" translation_description="The title of the success dialog shown when a song was successfully created">Song created!</string>
+    <string name="message_song_creation_success_description" translation_description="The body of the success dialog shown when a song was successfully created">Song created successfully. Continue to create the first tab for this song.</string>
+    <string name="message_song_creation_failed_title" translation_description="Error message displayed when a song couldn't be created due to unfilled required fields">Couldn\'t create song</string>
+    <string name="label_create_song_genre" translation_description="The label for the Genre field when creating a new song">Genre</string>
+    <string name="message_artist_name_not_found" translation_description="Warning message displayed when creating a new song and the user enters an artist name that doesn't exist yet">Are you sure about that? We couldn\'t find a matching artist. This field is case sensitive!</string>
+    <string name="action_create_artist" translation_description="Button text for the override button to allow the user to create a brand new artist if they entered an artist name that doesn't exist yet">Create a brand new artist</string>
+    <string name="message_error_fetching_artist_id" translation_description="Error message displayed when an unexpected error occurs during artist name validation.">Whoops! Not sure what happened there... Please send a screenshot of this message to the developer: %s</string>
+    <string name="message_error_creating_artist" translation_description="Error message displayed when an unexpected error occurs while creating a new artist.">Couldn\'t create that new artist: %s</string>
+    <string name="message_error_creating_song" translation_description="Error message displayed when an error occurs while creating a song">Couldn\'t create song. %s</string>
+    <string name="message_tab_creation_failed_title" translation_description="Error message displayed when a tab couldn't be created due to unfilled required fields">Couldn\'t create tab</string>
+    <string name="message_tab_creation_failed_missing_arguments" translation_description="Error message displayed when a tab couldn't be created due to unfilled required fields">Couldn\'t create tab. Please fill all required fields.</string>
+    <string name="message_tab_creation_failed" translation_description="Error message displayed when a tab couldn't be created due to unknown or other reasons. %s represents the error message returned by the system.">Couldn\'t create tab. %s</string>
+    <string name="message_prefilling_tab_failed" translation_description="Error message displayed in the tab creation screen when the tab content couldn't be prefilled from the tab ID (e.g. if the user clicked Edit Tab from the tab view, but the tab content couldn't be fetched for some reason). %s represents the error message returned by the system.">Couldn\'t prefill tab. %s</string>
+    <string name="message_tab_creation_success_title" translation_description="The title of the success dialog shown when a tab was successfully created">Tab created!</string>
+    <string name="message_tab_creation_success_description" translation_description="The body of the success dialog shown when a tab was successfully created">Your tab has been created and added to your favorites. It won\'t be visible in search until moderators approve it, so don\'t remove it from your favorites or you won\'t be able to find it again.</string>
+    <string name="action_navigate_to_new_tab" translation_description="The text of the action button of the success dialog when a new tab is successfully created, that navigates the user to the new tab">Check it out</string>
+    <string name="action_create_tab" translation_description="The text of the action button of create-tab page to submit the created tab">Save tab</string>
+    <string name="action_insert_chord" translation_description="The text of the button used to insert a chord into a tab while creating a new tab">Insert</string>
+    <string name="label_create_tab_content" translation_description="The label for the Content field when creating a new tab">Tab Content</string>
+    <string name="label_create_tab_chord" translation_description="The label for the Chord field to specify a chord to insert when creating a new tab">Chord</string>
+    <string name="label_create_tab_song_name" translation_description="The label for the Song Name field when creating a new tab">Song Name</string>
+    <string name="label_create_tab_artist_name" translation_description="The label for the Artist Name field when creating a new tab">Artist Name</string>
+    <string name="label_create_tab_version_description" translation_description="The label for the Version Description field when creating a new tab">Version Description</string>
+    <string name="label_create_tab_difficulty" translation_description="The label for the Difficulty field when creating a new tab">Difficulty</string>
+    <string name="label_create_tab_tuning" translation_description="The label for the Tuning field when creating a new tab">Tuning</string>
+    <string name="label_create_tab_capo" translation_description="The label for the Capo field when creating a new tab">Capo</string>
+
     <string name="tab_title"><annotation arg="songName">%1$s</annotation><annotation arg="plainText"> by </annotation><annotation arg="artistName">%2$s</annotation></string>
     <string name="tab_difficulty">Difficulty: %s</string>
     <string name="tab_tuning">Tuning: %s</string>
@@ -99,5 +133,6 @@
     <string name="tab_version_number">Version %d</string>
     <string name="tab_version_abbreviation" translation_description="Shortened version number for display in places where space is limited (like in search results)">ver. %s</string>
     <string name="tab_favorite_button_accessibility_text" translation_description="Accessibility text used for the favorite button">Favorite</string>
+    <string name="action_edit_tab">Edit tab</string>
 
 </resources>

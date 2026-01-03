@@ -144,12 +144,11 @@ private fun createListOfTabWithPlaylistEntry(size: Int): List<TabWithDataPlaylis
     val listOfEntries = mutableListOf<TabWithDataPlaylistEntry>()
     for (id in 0..size) {
         listOfEntries.add(
-            TabWithDataPlaylistEntry(entryId = id, playlistId = 1, tabId = id * 20, nextEntryId = if(id<size) id+1 else null,
-            prevEntryId = if(id>0) id-1 else null, dateAdded = 0, songId = 12, songName = "Song $id", artistName ="Artist name",
-            isVerified = false, numVersions = 4, type = "Chords", part = "part", version = 2, votes = 0,
-            rating = 0.0, date = 0, status = "", presetId = 0, tabAccessType = "public", tpVersion = 0,
-            tonalityName = "D", versionDescription = "version desc", recordingIsAcoustic = false, recordingTonalityName = "",
-            recordingPerformance = "", recordingArtists = arrayListOf(), recommended = arrayListOf(), userRating = 0,
+            TabWithDataPlaylistEntry(entryId = id, playlistId = 1, tabId = (id * 20).toString(), nextEntryId = if(id<size) id+1 else null,
+            prevEntryId = if(id>0) id-1 else null, dateAdded = 0, songId = "12", songName = "Song $id", artistName ="Artist name",
+            isVerified = false, versionsCount = 4, type = "Chords", part = "part", version = 2, votes = 0,
+            rating = 0.0, date = 0, status = "", tabAccessType = "public",
+            tonalityName = "D", versionDescription = "version desc", recommended = arrayListOf(),
             playlistUserCreated = false, playlistTitle = "playlist title", playlistDateCreated = 0, playlistDescription = "playlist desc",
             playlistDateModified = 0)
         )

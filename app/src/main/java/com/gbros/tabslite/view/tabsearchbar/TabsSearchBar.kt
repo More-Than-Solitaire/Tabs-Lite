@@ -51,8 +51,8 @@ fun TabsSearchBar(
     viewState: ITabSearchBarViewState,
     onQueryChange: (newQuery: String) -> Unit,
     onSearch: (query: String) -> Unit,
-    onNavigateToTabById: (tabId: Int) -> Unit,
-    onNavigateToPlaylistEntryById: (playlistEntryId: Int) -> Unit
+    onNavigateToTabById: ((tabId: String) -> Unit)? = null,
+    onNavigateToPlaylistEntryById: ((playlistEntryId: Int) -> Unit)? = null
 ) {
     val query = viewState.query.observeAsState("")
     var active by remember { mutableStateOf(false) }
@@ -104,8 +104,13 @@ fun TabsSearchBar(
                             modifier = Modifier
                                 .fillMaxWidth(),
                             tab = suggestedTab,
-                            navigateToTabByTabId = onNavigateToTabById,
-                            navigateToTabByPlaylistEntryId = onNavigateToPlaylistEntryById
+                            onClick = {
+                                when {
+                                    suggestedTab.entryId > 0 && suggestedTab.playlistId > 0 && onNavigateToPlaylistEntryById != null -> onNavigateToPlaylistEntryById(suggestedTab.entryId)
+                                    onNavigateToTabById != null -> onNavigateToTabById(suggestedTab.tabId)
+                                    else -> onSearch(suggestedTab.songName)
+                                }
+                            }
                         )
                     }
                     items(items = searchSuggestions.value) { searchSuggestion ->

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
@@ -54,7 +55,6 @@ import com.gbros.tabslite.view.addtoplaylistdialog.AddToPlaylistDialog
 fun TabTopAppBar(isFavorite: Boolean,
                  title: String,
                  shareUrl: String,
-                 copyText: String,
                  allPlaylists: List<Playlist>,
                  selectedPlaylistTitle: String?,
                  selectPlaylistConfirmButtonEnabled: Boolean,
@@ -66,7 +66,8 @@ fun TabTopAppBar(isFavorite: Boolean,
                  onPlaylistSelectionChange: (Playlist) -> Unit,
                  onFavoriteButtonClick: () -> Unit,
                  onChordsPinnedToggled: () -> Unit = {},
-                 onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit
+                 onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit,
+                 onEditTabClick: () -> Unit
 ) {
     val currentContext = LocalContext.current
 
@@ -173,21 +174,6 @@ fun TabTopAppBar(isFavorite: Boolean,
                         onReloadClick()
                     }
                 )
-                val clipboardManager = LocalClipboard.current
-                DropdownMenuItem(
-                    text = {
-                        Row {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(R.drawable.ic_content_copy),
-                                contentDescription = stringResource(R.string.generic_action_copy),
-                            )
-                            Text(text = stringResource(R.string.generic_action_copy), modifier = Modifier.padding(top = 2.dp, start = 4.dp))
-                        }
-                    },
-                    onClick = {
-                        clipboardManager.nativeClipboard.setPrimaryClip(ClipData.newPlainText(title, copyText))
-                    }
-                )
                 DropdownMenuItem(
                     text = {
                         Row {
@@ -208,6 +194,22 @@ fun TabTopAppBar(isFavorite: Boolean,
 
                         }
                         exportDataFilePickerActivityLauncher.launch(exportFileIntent)
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = stringResource(R.string.action_edit_tab),
+                            )
+                            Text(text = stringResource(R.string.action_edit_tab), modifier = Modifier.padding(top = 2.dp, start = 4.dp))
+                        }
+                    },
+                    onClick = {
+                        showMenu = false
+                        // navigate to tab edit screen
+                        onEditTabClick()
                     }
                 )
             }
@@ -240,7 +242,6 @@ private fun TabTopAppBarPreview() {
             shareUrl = "https://tabslite.com/tab/1234",
             allPlaylists = list,
             selectedPlaylistTitle = "Test",
-            copyText = "",
             selectPlaylistConfirmButtonEnabled = false,
             chordsPinned = false,
             onAddToPlaylist = {},
@@ -251,7 +252,8 @@ private fun TabTopAppBarPreview() {
             onReloadClick = {},
             onChordsPinnedToggled = {},
             onExportToPdfClick = {_, _ ->},
-            title = ""
+            title = "",
+            onEditTabClick = {}
         )
     }
 }

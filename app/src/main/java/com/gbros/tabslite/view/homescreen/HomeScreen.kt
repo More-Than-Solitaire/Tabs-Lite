@@ -86,9 +86,10 @@ fun NavController.popUpToHome() {
 
 fun NavGraphBuilder.homeScreen(
     onNavigateToSearch: (String) -> Unit,
-    onNavigateToTab: (Int) -> Unit,
+    onNavigateToTab: (String) -> Unit,
     onNavigateToPlaylist: (Int) -> Unit,
-    onNavigateToPlaylistEntry: (Int) -> Unit
+    onNavigateToPlaylistEntry: (Int) -> Unit,
+    onNavigateToCreateTab: () -> Unit
 ) {
     composable(HOME_ROUTE) {
         val db = AppDatabase.getInstance(LocalContext.current)
@@ -109,7 +110,8 @@ fun NavGraphBuilder.homeScreen(
             onThemeSelectionChange = viewModel::setAppTheme,
             navigateToPlaylistById = onNavigateToPlaylist,
             navigateToTabByTabId = onNavigateToTab,
-            navigateToPlaylistEntryById = onNavigateToPlaylistEntry
+            navigateToPlaylistEntryById = onNavigateToPlaylistEntry,
+            onNavigateToCreateTab = onNavigateToCreateTab
         )
     }
 }
@@ -129,9 +131,10 @@ fun HomeScreen(
     onImportPlaylists: (sourceFile: Uri, contentResolver: ContentResolver) -> Unit,
     onCreatePlaylist: (title: String, description: String) -> Unit,
     onThemeSelectionChange: (ThemeSelection) -> Unit,
-    navigateToTabByTabId: (id: Int) -> Unit,
+    navigateToTabByTabId: (id: String) -> Unit,
     navigateToPlaylistById: (id: Int) -> Unit,
-    navigateToPlaylistEntryById: (id: Int) -> Unit
+    navigateToPlaylistEntryById: (id: Int) -> Unit,
+    onNavigateToCreateTab: () -> Unit
 ) {
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     val secondaryPagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
@@ -184,7 +187,8 @@ fun HomeScreen(
                 // launch a file picker to choose the file to import
                 importPlaylistsPickerLauncher.launch("application/json")
             },
-            onSwitchThemeMode = onThemeSelectionChange
+            onSwitchThemeMode = onThemeSelectionChange,
+            onNavigateToCreateTab = onNavigateToCreateTab
         )
     }
 
@@ -298,6 +302,7 @@ fun HomeScreen(
                     viewState = favoriteSongListViewState,
                     emptyListText = stringResource(R.string.empty_favorites),
                     navigateToTabById = navigateToTabByTabId,
+                    navigateToTabByPlaylistEntryId = navigateToPlaylistEntryById,
                     navigateByPlaylistEntryId = false,
                 )
 
@@ -306,6 +311,7 @@ fun HomeScreen(
                     viewState = popularSongListViewState,
                     emptyListText = stringResource(R.string.empty_popular),
                     navigateToTabById = navigateToTabByTabId,
+                    navigateToTabByPlaylistEntryId = navigateToPlaylistEntryById,
                     navigateByPlaylistEntryId = false,  // can't navigate by playlisty entry because the playlist entries get cleared and refreshed each time the activity starts (e.g. when device is rotated or dark mode is enabled)
                 )
 
@@ -422,7 +428,8 @@ private fun HomeScreenPreview() {
             onThemeSelectionChange = {},
             navigateToTabByTabId = {},
             navigateToPlaylistById = {},
-            navigateToPlaylistEntryById = {}
+            navigateToPlaylistEntryById = {},
+            onNavigateToCreateTab = {}
         )
     }
 }

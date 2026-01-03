@@ -7,17 +7,15 @@ import com.gbros.tabslite.data.DataAccess
 private const val LOG_NAME = "tabslite.ITab          "
 
 interface ITab {
-    val tabId: Int
+    val tabId: String
     val type: String
     val part: String
     val version: Int
     val votes: Int
     val rating: Double
-    val date: Int
+    val date: Long
     val status: String
-    val presetId: Int
     val tabAccessType: String
-    val tpVersion: Int
 
     /**
      * The key of the song (e.g. key of 'Am')
@@ -25,33 +23,24 @@ interface ITab {
     var tonalityName: String
     val versionDescription: String
 
-    val songId: Int
+    val songId: String
     val songName: String
+    val songGenre: String
 
     /**
      * The author of the original song (not the person who wrote up these chords, that's [contributorUserName])
      */
     val artistName: String
-    val artistId: Int
+    val artistId: String
     val isVerified: Boolean
-    val numVersions: Int
-
-    // in JSON these are in a separate sublevel "recording"
-    val recordingIsAcoustic: Boolean
-    val recordingTonalityName: String
-    val recordingPerformance: String
-    val recordingArtists: ArrayList<String>
+    val versionsCount: Int
+    val isTabMl: Boolean
 
     var recommended: ArrayList<String>
-    var userRating: Int
     var difficulty: String
     var tuning: String
     var capo: Int
-    var urlWeb: String
-    var strumming: ArrayList<String>
-    var videosCount: Int
-    var proBrother: Int
-    var contributorUserId: Int
+    var contributorUserId: String
 
     /**
      * The author of the chord sheet (not the author of the song - that's [artistName])
@@ -81,7 +70,7 @@ interface ITab {
      * Get all the chords used in this tab.  Can be used to download all the chords.
      */
     fun getAllChordNames(): List<String> {
-        val chordPattern = Regex("\\[ch](.*?)\\[/ch]")
+        val chordPattern = Regex("\\{ch:(.*?)\\}")
         val allMatches = chordPattern.findAll(content)
         val allChords = allMatches.map { matchResult -> matchResult.groupValues[1] }
         val uniqueChords = allChords.distinct()

@@ -9,20 +9,25 @@ import com.gbros.tabslite.data.SearchSuggestions
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist.Companion.TOP_TABS_PLAYLIST_ID
+import com.gbros.tabslite.data.servertypes.ArtistRequestType
 import com.gbros.tabslite.data.servertypes.SearchRequestType
 import com.gbros.tabslite.data.servertypes.SearchSuggestionType
 import com.gbros.tabslite.data.servertypes.ServerTimestampType
+import com.gbros.tabslite.data.servertypes.SongRequestType
 import com.gbros.tabslite.data.servertypes.TabRequestType
 import com.gbros.tabslite.data.tab.TabDataType
-import com.gbros.tabslite.utilities.UgApi.apiKey
-import com.gbros.tabslite.utilities.UgApi.deviceId
+import com.gbros.tabslite.utilities.BackendConnection.apiKey
+import com.gbros.tabslite.utilities.BackendConnection.deviceId
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.toObject
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -44,8 +49,10 @@ import kotlin.random.Random
 /**
  * The API interface handling all API-specific logic to get data from the server (or send to the server)
  */
-object UgApi {
+object BackendConnection {
     //#region private data
+
+    private val db = Firebase.firestore
 
     private val gson = Gson()
 
@@ -64,6 +71,85 @@ object UgApi {
     //#endregion
 
     //#region public methods
+
+    /**
+     * Create a new song in the database.
+     *
+     * @param [song] the song to create.
+     *
+     * @return The ID of the created song
+     */
+    suspend fun createSong(song: SongRequestType): String {
+        val newSongRef = db.collection("songs").document()
+        song.song_id = newSongRef.id
+        //todo: artist id?gh
+        newSongRef.set(song).await()
+        Log.v(TAG, "Created song ${newSongRef.id}")
+        return newSongRef.id
+    }
+
+    /**
+     * Get the artist ID of the artist with the passed name.
+     *
+     * @param [artistName] the name of the artist
+     *
+     * @return The ID of the artist with the passed name
+     *
+     * @throws NotFoundException if the artist with the passed name is not found in the database
+     */
+    suspend fun fetchArtistId(artistName: String): String {
+        val artistCollectionRef = db.collection("artists")
+        val query = artistCollectionRef
+            .whereEqualTo("artist_name", artistName)
+            .limit(1)
+        val querySnapshot = query.get().await()
+        if (querySnapshot.isEmpty) {
+            throw NotFoundException("Artist $artistName not found in database")
+        }
+
+        return querySnapshot.documents[0].id
+    }
+
+    /**
+     * Create a new artist in the database.
+     *
+     * @param [artistName] the name of the artist
+     *
+     * @return The ID of the created artist
+     */
+    suspend fun createNewArist(artistName: String): String {
+        val newArtistRef = db.collection("artists").document()
+        val newArtist = ArtistRequestType(artist_name = artistName, artist_id = newArtistRef.id)
+        newArtistRef.set(newArtist).await()
+        return newArtistRef.id
+    }
+
+    /**
+     * Create a new tab in the database. Fetches song info to insert into tab.
+     *
+     * @param [tab] the tab to create. `id`, `artist_id`, `artist_name`, `song_genre`, and `song_name` fields not respected.
+     *
+     * @return The ID of the created tab
+     */
+    suspend fun createTab(tab: TabRequestType): TabDataType {
+        // fetch song info to insert into tab
+        val songDetails = db.collection("songs").document(tab.song_id).get().await().data
+            ?: throw NotFoundException("Song ${tab.song_id} not found in database")
+
+        tab.artist_id = songDetails["artist_id"] as String
+        tab.artist_name = songDetails["artist_name"] as String
+        tab.song_genre = songDetails["song_genre"] as String
+        tab.song_name = songDetails["song_name"] as String
+
+        // set the date to now as an int
+        tab.date = System.currentTimeMillis()
+
+        val newTabRef = db.collection("tabs").document()
+        tab.id = newTabRef.id
+        newTabRef.set(tab).await()
+        Log.v(TAG, "Created tab ${newTabRef.id}")
+        return tab.getTabFull()
+    }
 
     /**
      * Get search suggestions for the given query.  Stores search suggestions to the local database,
@@ -114,9 +200,19 @@ object UgApi {
      *
      * @return A [SearchRequestType] with the search results, or an empty [SearchRequestType] if there are no search results on that page
      */
-    suspend fun search(title: String, artistId: Int? = null, page: Int): SearchRequestType = withContext(Dispatchers.IO) {
+    suspend fun search(title: String, artistId: String? = null, page: Int): SearchRequestType = withContext(Dispatchers.IO) {
+        var artistQuery = artistId
+        if (artistQuery != null) {
+            artistQuery = artistId.replace("7567-", "") // search can't handle prefixed ids
+            artistQuery = URLEncoder.encode(artistQuery, "utf-8")
+            artistQuery = "&artist_id=$artistQuery"
+        }
+        else {
+            artistQuery = ""
+        }
+
         val url =
-            "https://api.ultimate-guitar.com/api/v1/tab/search?title=$title&page=$page&artist_id=$artistId&type[]=300&official[]=0"
+            "https://api.ultimate-guitar.com/api/v1/tab/search?title=$title&page=$page$artistQuery&type[]=300&official[]=0"
 
         val inputStream: InputStream?
         try {
@@ -174,44 +270,40 @@ object UgApi {
         instrument: Instrument,
     ): Map<String, List<ChordVariation>> = withContext(Dispatchers.IO) {
         if (chordIds.isEmpty()) {
-            return@withContext mapOf()
-        }
-        val resultMap: MutableMap<String, List<ChordVariation>> = mutableMapOf()
-
-        var chordParam = ""
-        for (chord in chordIds) {
-            val uChord = URLEncoder.encode(chord.toString(), "utf-8")
-            chordParam += "&chords[]=$uChord"
+            return@withContext emptyMap()
         }
 
-        var uTuning = ""
-        var uInstrument = ""
-        if (instrument == Instrument.Guitar) {
-            uTuning = URLEncoder.encode("E A D G B E", "utf-8")
-            uInstrument = URLEncoder.encode("guitar", "utf-8")
-        } else if (instrument == Instrument.Ukulele) {
-            uTuning = URLEncoder.encode("g C E A", "utf-8")
-            uInstrument = URLEncoder.encode("ukulele", "utf-8")
-        } else {
-            throw IllegalArgumentException("Invalid instrument selection $instrument; couldn't update chords")
+        val (instrumentPath, tuningPath) = when (instrument) {
+            Instrument.Guitar -> "guitar" to "E A D G B E"
+            Instrument.Ukulele -> "ukulele" to "G C E A"
+            else -> throw IllegalArgumentException("Invalid instrument selection $instrument; couldn't update chords")
         }
 
-        val url = "https://api.ultimate-guitar.com/api/v1/tab/applicature?instrument=$uInstrument&tuning=$uTuning$chordParam"
-        try {
-            val results: List<TabRequestType.ChordInfo> = authenticatedStream(url).use { inputStream ->
-                val jsonReader = JsonReader(inputStream.reader())
-                val chordRequestTypeToken =
-                    object : TypeToken<List<TabRequestType.ChordInfo>>() {}.type
-                gson.fromJson(jsonReader, chordRequestTypeToken)
+        val chordVariationsRef = db.collection("chordVariations")
+            .document(instrumentPath)
+            .collection(tuningPath)
+            .whereIn("chord", chordIds)
+
+        val allChords = chordVariationsRef.get().await()
+
+        val resultMap = mutableMapOf<String, List<ChordVariation>>()
+
+        for (documentSnapshot in allChords) {
+            try {
+                // Assuming the Firestore document can be directly deserialized into a list of ChordVariation objects.
+                // You might need a data class that matches the Firestore structure if it's more complex.
+                val chordDoc = documentSnapshot.toObject<TabRequestType.ChordInfo>()
+                resultMap[chordDoc.chord] = chordDoc.variations.map { variation -> variation.toChordVariation(chordDoc.chord, instrument) }
+                dataAccess.insertAll(resultMap[chordDoc.chord]!!) // Cache the results in the local DB
+            } catch (ex: Exception) {
+                // Log the exception and continue to the next chord
+                Log.e(TAG, "Failed to fetch chord variation for '${documentSnapshot.id}'.", ex)
             }
-            for (result in results) {
-                resultMap[result.chord] = result.getChordVariations(instrument)
-                dataAccess.insertAll(result.getChordVariations(instrument))
-            }
-        } catch (ex: Exception) {
-            val chordCount = chordIds.size
-            Log.i(TAG, "Couldn't fetch chords: '$chordParam'. Chord count that we're looking for: $chordCount. ${ex.message}", ex)
-            cancel("Error fetching chord(s).")
+        }
+
+        if (resultMap.isEmpty() && chordIds.isNotEmpty()) {
+            val message = "Couldn't fetch any of the requested chords: $chordIds"
+            Log.w(TAG, message)
         }
 
         return@withContext resultMap
@@ -261,38 +353,80 @@ object UgApi {
      *
      * @param tabId         The ID of the tab to load
      * @param dataAccess      The database instance to load a tab from (or into)
-     * @param tabAccessType (Optional) string parameter for internet tab load request
      */
     suspend fun fetchTabFromInternet(
-        tabId: Int,
+        tabId: String,
         dataAccess: DataAccess,
-        tabAccessType: String = "public"
     ): TabDataType = withContext(Dispatchers.IO) {
         // get the tab and put it in the database, then return true
         Log.v(TAG, "Loading tab $tabId.")
-        val url =
-            "https://api.ultimate-guitar.com/api/v1/tab/info?tab_id=$tabId&tab_access_type=$tabAccessType"
-        val requestResponse: TabRequestType = with(authenticatedStream(url)) {
-            val jsonReader = JsonReader(reader())
-            val tabRequestTypeToken = object : TypeToken<TabRequestType>() {}.type
-            Gson().fromJson(jsonReader, tabRequestTypeToken)
+
+        val tabDocRef = db.collection("tabs").document(tabId)
+        val tabDoc = tabDocRef.get().await()
+        if (!tabDoc.exists()) {
+            throw NotFoundException("Tab $tabId not found in database")
+        }
+        try {
+            val requestResponse = tabDoc.toObject<TabRequestType>() ?: throw TabFetchException("Couldn't parse tab $tabId from database")
+            Log.v(TAG, "Parsed response for tab $tabId. Name: ${requestResponse.song_name}, capo ${requestResponse.capo}")
+
+            val result = requestResponse.getTabFull()
+            if (result.content.isNotBlank()) {
+                if (result.tabId != tabDocRef.id) {
+                    result.tabId = tabDocRef.id  // workaround since some or most tabs in database don't have the id prefixed
+                }
+                dataAccess.upsert(result)
+                Log.v(TAG, "Successfully inserted tab ${result.songName} (${result.tabId})")
+            } else {
+                val message = "Tab $tabId fetch completed successfully but had no content! This shouldn't happen. Might be a pro tab?"
+                Log.e(TAG, message)
+                throw TabFetchException(message)
+            }
+            return@withContext result
+        } catch (ex: Exception) {
+            throw TabFetchException("Error parsing tab $tabId from firestore", ex)
         }
 
-        Log.v(
-            TAG,
-            "Parsed response for tab $tabId. Name: ${requestResponse.song_name}, capo ${requestResponse.capo}"
-        )
+    }
 
-        val result = requestResponse.getTabFull()
-        if (result.content.isNotBlank()) {
-            dataAccess.upsert(result)
-            Log.v(TAG, "Successfully inserted tab ${result.songName} (${result.tabId})")
-        } else {
-            val message = "Tab $tabId fetch completed successfully but had no content! This shouldn't happen."
-            Log.e(TAG, message)
-            throw TabFetchException(message)
+    /**
+     * Fetch all tabs from Firestore with the passed songId and insert them into the database. This is useful for search results to ensure
+     * that user-generated tabs are included in the song version list.
+     *
+     * @param songId The ID of the song to fetch tabs for
+     * @param dataAccess The database to insert the tabs into
+     */
+    suspend fun fetchAllTabsBySongId(songId: String, dataAccess: DataAccess) = withContext(Dispatchers.IO) {
+        val tabCollectionRef = db.collection("tabs")
+        val query = tabCollectionRef
+                        .whereEqualTo("status", "approved")
+                        .whereEqualTo("song_id", songId)
+                        .limit(150)
+
+        try {
+            val querySnapshot = query.get().await()
+            if (querySnapshot.isEmpty) {
+                Log.i(TAG, "No tabs found for songId: $songId")
+                return@withContext // No tabs found, so we're done.
+            }
+
+            for (document in querySnapshot.documents) {
+                try {
+                    val tabRequest = document.toObject<TabRequestType>()
+                    val tab = tabRequest?.getTabFull()
+                    if (tab?.content?.isBlank() == false) {
+                        dataAccess.upsert(tab)
+                    } else {
+                        Log.e(TAG, "Fetched tab ${document.id} for song $songId couldn't be parsed, or has blank content. Skipping.")
+                    }
+                } catch (ex: Exception) {
+                    Log.e(TAG, "Error processing a tab document (${document.id}) for songId $songId", ex)
+                    // Continue processing other tabs
+                }
+            }
+        } catch (ex: Exception) {
+            throw TabFetchException("Error fetching tabs for songId $songId from Firestore.", ex)
         }
-        return@withContext result
     }
 
     //#endregion

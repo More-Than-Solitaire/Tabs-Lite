@@ -10,7 +10,7 @@ import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.utilities.TAG
-import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.utilities.BackendConnection
 import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,8 +68,8 @@ class TabSearchBarViewModel(
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                UgApi.searchSuggest(newQuery, dataAccess = dataAccess)
-            } catch (ex: UgApi.NoInternetException) {
+                BackendConnection.searchSuggest(newQuery, dataAccess = dataAccess)
+            } catch (ex: BackendConnection.NoInternetException) {
                 // no internet access to fetch search results.
                 loadingState.postValue(LoadingState.Error(R.string.message_search_suggestion_no_internet))
                 Log.i(TAG, "No internet connection: ${ex.message}", ex)

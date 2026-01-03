@@ -9,7 +9,7 @@ import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Search
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.utilities.TAG
-import com.gbros.tabslite.utilities.UgApi
+import com.gbros.tabslite.utilities.BackendConnection
 import com.gbros.tabslite.view.searchresultsonglist.ISearchViewState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -27,8 +27,8 @@ import kotlin.time.Duration.Companion.seconds
 @HiltViewModel(assistedFactory = SearchViewModel.SearchViewModelFactory::class)
 class SearchViewModel
 @AssistedInject constructor(
-    @Assisted override val query: String,
-    @Assisted val artistId: Int?,
+    @Assisted("query") override val query: String,
+    @Assisted("artistId") val artistId: String?,
     @Assisted dataAccess: DataAccess
 ) : ViewModel(), ISearchViewState {
 
@@ -36,7 +36,7 @@ class SearchViewModel
 
     @AssistedFactory
     interface SearchViewModelFactory {
-        fun create(query: String, artistId: Int?, dataAccess: DataAccess): SearchViewModel
+        fun create(@Assisted("query") query: String, @Assisted("artistId") artistId: String?, dataAccess: DataAccess): SearchViewModel
     }
 
     //#endregion
@@ -108,7 +108,7 @@ class SearchViewModel
                         // success
                         searchState.postValue(LoadingState.Success)
                     }
-                    is UgApi.NoInternetException -> {
+                    is BackendConnection.NoInternetException -> {
                         searchState.postValue(LoadingState.Error(R.string.message_search_no_internet))
                     }
                     is CancellationException -> {
