@@ -263,7 +263,7 @@ fun TabScreen(
     onCreatePlaylist: (title: String, description: String) -> Unit,
     onInstrumentSelected: (instrument: Instrument) -> Unit,
     onUseFlatsToggled: (useFlats: Boolean) -> Unit,
-    onChordsPinnedToggled: () -> Unit,
+    onChordsPinnedToggled: (pinChords: Boolean) -> Unit,
     onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit,
     onEditTabClick: (songId: String, tabId: String) -> Unit
 ) {
@@ -353,6 +353,7 @@ fun TabScreen(
                 selectedPlaylistTitle = viewState.addToPlaylistDialogSelectedPlaylistTitle.observeAsState(null).value,
                 shareUrl = viewState.shareUrl.observeAsState("https://tabslite.com/").value,
                 isFavorite = viewState.isFavorite.observeAsState(false).value,
+                chordsPinned = chordsPinned,
                 onNavigateBack = onNavigateBack,
                 onReloadClick = onReload,
                 onFavoriteButtonClick = onFavoriteButtonClick,

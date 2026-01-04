@@ -59,5 +59,10 @@ data class Preference(
          * The preference name for the [ThemeSelection] to use
          */
         const val APP_THEME: String = "APP_THEME"
+
+        /**
+         * The preference name for whether to display chord fingerings pinned to the top of the tab screen
+         */
+        const val PIN_CHORDS: String = "PIN_CHORDS"
     }
 }

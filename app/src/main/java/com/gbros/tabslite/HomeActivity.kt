@@ -100,6 +100,7 @@ class HomeActivity : ComponentActivity() {
         dataAccess.insert(Preference(Preference.INSTRUMENT, Instrument.Guitar.name))
         dataAccess.insert(Preference(Preference.USE_FLATS, false.toString()))
         dataAccess.insert(Preference(Preference.APP_THEME, ThemeSelection.System.name))
+        dataAccess.insert(Preference(Preference.PIN_CHORDS, false.toString()))
     }
 
     /**

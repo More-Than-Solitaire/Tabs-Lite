@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,8 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chrynan.chords.compose.ChordWidget
 import com.chrynan.chords.model.ChordChart
+import com.chrynan.chords.model.ChordMarker
 import com.chrynan.chords.model.ChordViewData
 import com.chrynan.chords.model.FretNumber
+import com.chrynan.chords.model.StringNumber
 import com.chrynan.chords.util.maxFret
 import com.chrynan.chords.util.minFret
 import com.gbros.tabslite.data.chord.ChordVariation
@@ -53,14 +55,14 @@ fun PinnedChords(
     // Calculate top padding: status bar
     val topPadding = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
 
-    Box(
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = topPadding)
+            .padding(bottom = 4.dp)
             .shadow(elevation = 4.dp)
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(vertical = 4.dp)
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
     ) {
+        Spacer(Modifier.height(topPadding))
         Row(
             modifier = Modifier
                 .horizontalScroll(rememberScrollState())
@@ -142,5 +144,58 @@ private fun ChordDiagramChip(
                 fitToHeight = true
             )
         )
+    }
+}
+
+
+@Preview
+@Composable
+private fun PinnedChordsPreview() {
+    val chords = listOf(
+        ChordVariation("Am_1", "Am", arrayListOf(
+            ChordMarker.Note(fret = FretNumber(1), string = StringNumber(2)),
+            ChordMarker.Note(fret = FretNumber(2), string = StringNumber(3)),
+            ChordMarker.Note(fret = FretNumber(2), string = StringNumber(4))
+        ), arrayListOf(
+            ChordMarker.Open(string = StringNumber(1))
+        ), arrayListOf(
+            ChordMarker.Muted(string = StringNumber(6))
+        ), arrayListOf(), Instrument.Guitar),
+        ChordVariation("G_1", "G", arrayListOf(
+            ChordMarker.Note(fret = FretNumber(3), string = StringNumber(1)),
+            ChordMarker.Note(fret = FretNumber(2), string = StringNumber(5)),
+            ChordMarker.Note(fret = FretNumber(3), string = StringNumber(6))
+        ), arrayListOf(
+            ChordMarker.Open(string = StringNumber(2)),
+            ChordMarker.Open(string = StringNumber(3)),
+            ChordMarker.Open(string = StringNumber(4))
+        ), arrayListOf(), arrayListOf(), Instrument.Guitar),
+        ChordVariation("C_1", "C", arrayListOf(
+            ChordMarker.Note(fret = FretNumber(1), string = StringNumber(2)),
+            ChordMarker.Note(fret = FretNumber(2), string = StringNumber(4)),
+            ChordMarker.Note(fret = FretNumber(3), string = StringNumber(5))
+        ), arrayListOf(
+            ChordMarker.Open(string = StringNumber(1)),
+            ChordMarker.Open(string = StringNumber(3))
+        ), arrayListOf(
+            ChordMarker.Muted(string = StringNumber(6))
+        ), arrayListOf(), Instrument.Guitar),
+        ChordVariation(
+            "F_1",
+            "F",
+            arrayListOf(
+                ChordMarker.Note(fret = FretNumber(2), string = StringNumber(3)),
+                ChordMarker.Note(fret = FretNumber(3), string = StringNumber(4)),
+                ChordMarker.Note(fret = FretNumber(3), string = StringNumber(5))
+            ),
+            arrayListOf(),
+            arrayListOf(),
+            arrayListOf(ChordMarker.Bar(fret = FretNumber(1), startString = StringNumber(1), endString = StringNumber(6)),),
+            Instrument.Guitar
+        )
+    )
+
+    AppTheme {
+        PinnedChords(chords = chords, instrument = Instrument.Guitar)
     }
 }

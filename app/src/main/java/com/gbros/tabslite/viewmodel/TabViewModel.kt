@@ -410,8 +410,7 @@ class TabViewModel
 
     override val useFlats: LiveData<Boolean> = dataAccess.getLivePreference(Preference.USE_FLATS).map { p -> p?.value?.toBoolean() == true }
 
-    private val _chordsPinned: MutableLiveData<Boolean> = MutableLiveData(false)
-    override val chordsPinned: LiveData<Boolean> = _chordsPinned
+    override val chordsPinned: LiveData<Boolean> = dataAccess.getLivePreference(Preference.PIN_CHORDS).map { p -> p?.value?.toBoolean() == true }
 
     override val songName: LiveData<String> = tab.map { t -> t?.songName ?: "" }
 
@@ -778,8 +777,10 @@ class TabViewModel
     /**
      * Handle user toggling the pinned chords display
      */
-    fun onChordsPinnedToggled() {
-        _chordsPinned.postValue(_chordsPinned.value != true)
+    fun onChordsPinnedToggled(pinChords: Boolean) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataAccess.upsert(Preference(Preference.PIN_CHORDS, pinChords.toString()))
+        }
     }
 
     //#endregion

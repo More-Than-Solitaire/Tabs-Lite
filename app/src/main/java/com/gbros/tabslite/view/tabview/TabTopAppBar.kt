@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,14 +59,14 @@ fun TabTopAppBar(isFavorite: Boolean,
                  allPlaylists: List<Playlist>,
                  selectedPlaylistTitle: String?,
                  selectPlaylistConfirmButtonEnabled: Boolean,
-                 chordsPinned: Boolean = false,
+                 chordsPinned: Boolean,
                  onNavigateBack: () -> Unit,
                  onReloadClick: () -> Unit,
                  onAddToPlaylist: () -> Unit,
                  onCreatePlaylist: (title: String, description: String) -> Unit,
                  onPlaylistSelectionChange: (Playlist) -> Unit,
                  onFavoriteButtonClick: () -> Unit,
-                 onChordsPinnedToggled: () -> Unit = {},
+                 onChordsPinnedToggled: (pinChords: Boolean) -> Unit = {},
                  onExportToPdfClick: (exportFile: Uri, contentResolver: ContentResolver) -> Unit,
                  onEditTabClick: () -> Unit
 ) {
@@ -104,11 +105,10 @@ fun TabTopAppBar(isFavorite: Boolean,
             }
         },
         actions = {
-            IconButton(onClick = onChordsPinnedToggled) {
+            IconButton(onClick = {onChordsPinnedToggled(!chordsPinned)}) {
                 Icon(
-                    imageVector = Icons.Default.PushPin,
+                    imageVector = if (chordsPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
                     contentDescription = "Pin chords",
-                    tint = if (chordsPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
             }
             
