@@ -101,11 +101,14 @@ interface DataAccess {
     /**
      * Get top 7 downloaded tabs whose id, title, or artist matches the provided query
      */
-    @Query("SELECT id as tab_id, * FROM tabs " +
+    @Query("SELECT * FROM (" +
+            "SELECT id as tab_id, * FROM tabs " +
             "LEFT JOIN playlist_entry ON tabs.id = playlist_entry.tab_id " +
             "LEFT JOIN (SELECT id AS playlist_id, user_created, title, date_created, date_modified, description FROM playlist ) AS playlist ON playlist_entry.playlist_id = playlist.playlist_id " +
-            "WHERE content != '' AND (id = :query OR song_name LIKE '%' || :query || '%' OR artist_name LIKE '%' || :query || '%') GROUP BY tabs.id LIMIT 7")
-    fun findMatchingTabs(query: String): LiveData<List<TabWithDataPlaylistEntry>>
+            "WHERE content != '' AND (id = :query OR song_name LIKE '%' || :query || '%' OR artist_name LIKE '%' || :query || '%')" +
+            "ORDER BY playlist.playlist_id DESC, tabs.votes DESC" + // start with the most recently created user playlists, then sort by popularity so for recent songs the one that shows up is the most popular
+            ") as q GROUP BY song_id LIMIT 7") // only show one version of each song; user can navigate to a different version if they want
+    fun findMatchingSongs(query: String): LiveData<List<TabWithDataPlaylistEntry>>
 
     //#endregion
 

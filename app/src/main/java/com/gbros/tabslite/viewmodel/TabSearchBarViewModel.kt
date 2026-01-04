@@ -43,7 +43,7 @@ class TabSearchBarViewModel(
      * A couple suggested tabs already loaded in the database
      */
     override val tabSuggestions: LiveData<List<TabWithDataPlaylistEntry>> = query.switchMap { currentQuery ->
-        dataAccess.findMatchingTabs(currentQuery).map { a -> a }
+        dataAccess.findMatchingSongs(currentQuery).map { a -> a }
     }
 
     /**

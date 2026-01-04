@@ -401,6 +401,7 @@ object BackendConnection {
         val query = tabCollectionRef
                         .whereEqualTo("status", "approved")
                         .whereEqualTo("song_id", songId)
+                        .whereEqualTo("type", "Chords") //todo: support Tabs, Ukulele Chords, etc
                         .limit(150)
 
         try {
