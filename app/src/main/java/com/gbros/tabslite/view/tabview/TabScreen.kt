@@ -7,6 +7,7 @@ import android.net.Uri
 import android.text.Annotation
 import android.text.SpannedString
 import android.util.Log
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -264,11 +268,60 @@ fun TabScreen(
     onEditTabClick: (songId: String, tabId: String) -> Unit
 ) {
     // handle autoscroll
-    val scrollState = rememberScrollState()
+    val scrollState = rememberLazyListState()
+    // create clickable title
+    val songName by viewState.songName.observeAsState("...")
+    val artistName by viewState.artist.observeAsState("...")
+    val currentContext = LocalContext.current
+    val artistId = viewState.artistId.observeAsState("").value
+    val titleText = remember { currentContext.getText(R.string.tab_title) as SpannedString }
+    val annotations = remember { titleText.getSpans(0, titleText.length, Annotation::class.java) }
+    val titleBuilder = buildAnnotatedString {
+        annotations.forEach { annotation ->
+            if (annotation.key == "arg") {
+                when (annotation.value) {
+                    "songName" -> {
+                        append(songName)
+                    }  // do nothing to the song name
+
+                    "artistName" -> {
+                        // make the artist name clickable
+                        withLink(
+                            link = LinkAnnotation.Clickable(
+                                tag = "artistId",
+                                linkInteractionListener = LinkInteractionListener {
+                                    Log.d(TAG, "artist $artistId ($artistName) clicked")
+                                    if (artistId != null) {
+                                        onArtistClicked(artistId)
+                                    }
+                                }
+                            )) {
+                            append(artistName)
+                        }
+                    }
+
+                    "plainText" -> {
+                        append(
+                            titleText.subSequence(
+                                titleText.getSpanStart(annotation),
+                                titleText.getSpanEnd(annotation)
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+    val isPlaylistEntry by viewState.isPlaylistEntry.observeAsState(false)
+    val playlistTitle by viewState.playlistTitle.observeAsState("...")
+    val songId by viewState.songId.observeAsState()
+    val tabId by viewState.tabId.observeAsState()
+    val chordsPinned by viewState.chordsPinned.observeAsState(false)
 
     KeepScreenOn()
 
-    Column(
+    LazyColumn (
+        state = scrollState,
         modifier = Modifier
             .pointerInput(Unit) {
                 awaitPointerEventScope {
@@ -285,93 +338,39 @@ fun TabScreen(
                     }
                 }
             }
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .windowInsetsPadding(WindowInsets(
-                left = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(LocalLayoutDirection.current)),
-                right = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(LocalLayoutDirection.current))
-            ))
+            .windowInsetsPadding(
+                WindowInsets(
+                    left = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(LocalLayoutDirection.current)),
+                    right = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(LocalLayoutDirection.current))
+                )
+            )
     )
     {
-        // create clickable title
-        val songName = viewState.songName.observeAsState("...").value
-        val artistName = viewState.artist.observeAsState("...").value
-        val currentContext = LocalContext.current
-        val artistId = viewState.artistId.observeAsState("").value
-        val titleText = remember { currentContext.getText(R.string.tab_title) as SpannedString }
-        val annotations = remember { titleText.getSpans(0, titleText.length, Annotation::class.java) }
-        val titleBuilder = buildAnnotatedString {
-            annotations.forEach { annotation ->
-                if (annotation.key == "arg") {
-                    when (annotation.value) {
-                        "songName" -> {
-                            append(songName)
-                        }  // do nothing to the song name
-
-                        "artistName" -> {
-                            // make the artist name clickable
-                            withLink(
-                                link = LinkAnnotation.Clickable(
-                                    tag = "artistId",
-                                    linkInteractionListener = LinkInteractionListener {
-                                        Log.d(TAG, "artist $artistId ($artistName) clicked")
-                                        if (artistId != null){
-                                            onArtistClicked(artistId)
-                                        }
-                                    }
-                                )) {
-                                append(artistName)
-                            }
-                        }
-
-                        "plainText" -> {
-                            append(
-                                titleText.subSequence(
-                                    titleText.getSpanStart(annotation),
-                                    titleText.getSpanEnd(annotation)
-                                )
-                            )
-                        }
+        item {
+            TabTopAppBar(
+                title = titleBuilder.toString(),
+                allPlaylists = viewState.allPlaylists.observeAsState(listOf()).value,
+                selectedPlaylistTitle = viewState.addToPlaylistDialogSelectedPlaylistTitle.observeAsState(null).value,
+                shareUrl = viewState.shareUrl.observeAsState("https://tabslite.com/").value,
+                isFavorite = viewState.isFavorite.observeAsState(false).value,
+                onNavigateBack = onNavigateBack,
+                onReloadClick = onReload,
+                onFavoriteButtonClick = onFavoriteButtonClick,
+                onAddToPlaylist = onAddToPlaylist,
+                onCreatePlaylist = onCreatePlaylist,
+                onPlaylistSelectionChange = onAddPlaylistDialogPlaylistSelected,
+                selectPlaylistConfirmButtonEnabled = viewState.addToPlaylistDialogConfirmButtonEnabled.observeAsState(false).value,
+                onExportToPdfClick = onExportToPdfClick,
+                onChordsPinnedToggled = onChordsPinnedToggled,
+                onEditTabClick = {
+                    if (songId != null && tabId != null) {
+                        onEditTabClick(songId!!, tabId!!)
+                    } else {
+                        Log.w(TAG, "onEditTabClick called with null songId or tabId: ${viewState.songId.value}, ${viewState.tabId.value}")
                     }
                 }
-            }
-        }
-        val isPlaylistEntry = viewState.isPlaylistEntry.observeAsState(false)
-        val playlistTitle = viewState.playlistTitle.observeAsState("...")
-        val songId = viewState.songId.observeAsState()
-        val tabId = viewState.tabId.observeAsState()
+            )
 
-        TabTopAppBar(
-            title = titleBuilder.toString(),
-            allPlaylists = viewState.allPlaylists.observeAsState(listOf()).value,
-            selectedPlaylistTitle = viewState.addToPlaylistDialogSelectedPlaylistTitle.observeAsState(null).value,
-            shareUrl = viewState.shareUrl.observeAsState("https://tabslite.com/").value,
-            isFavorite = viewState.isFavorite.observeAsState(false).value,
-            onNavigateBack = onNavigateBack,
-            onReloadClick = onReload,
-            onFavoriteButtonClick = onFavoriteButtonClick,
-            onAddToPlaylist = onAddToPlaylist,
-            onCreatePlaylist = onCreatePlaylist,
-            onPlaylistSelectionChange = onAddPlaylistDialogPlaylistSelected,
-            selectPlaylistConfirmButtonEnabled = viewState.addToPlaylistDialogConfirmButtonEnabled.observeAsState(false).value,
-            onExportToPdfClick = onExportToPdfClick,
-            onChordsPinnedToggled = onChordsPinnedToggled,
-            onEditTabClick = {
-                if (songId.value != null && tabId.value != null) {
-                    onEditTabClick(songId.value!!, tabId.value!!)
-                } else {
-                    Log.w(TAG, "onEditTabClick called with null songId or tabId: ${viewState.songId.value}, ${viewState.tabId.value}")
-                }
-            }
-        )
-
-            // Add spacing for pinned chords when they are shown
-            // Height = status bar (~40-50dp) + app bar (64dp) + chord banner (~106dp with padding)
-            if (viewState.chordsPinned.observeAsState(false).value) {
-                val topInset = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
-                Spacer(modifier = Modifier.height(topInset + 64.dp + 106.dp))
-            }
-            
             Text(  // Tab title
                 text = titleBuilder,
                 style = MaterialTheme.typography.headlineMedium,
@@ -382,9 +381,9 @@ fun TabScreen(
                     .fillMaxWidth()
                     .padding(bottom = 4.dp,)
             )
-            if (isPlaylistEntry.value) {
+            if (isPlaylistEntry) {
                 TabPlaylistNavigation(
-                    title = playlistTitle.value,
+                    title = playlistTitle,
                     nextSongButtonEnabled = viewState.playlistNextSongButtonEnabled.observeAsState(false).value,
                     previousSongButtonEnabled = viewState.playlistPreviousSongButtonEnabled.observeAsState(false).value,
                     onNextSongClick = onPlaylistNextSongClick,
@@ -409,21 +408,36 @@ fun TabScreen(
                 onTransposeUpClick = onTransposeUpClick,
                 onTransposeDownClick = onTransposeDownClick
             )
+        }
 
-            // content
+        // Sticky pinned chords header
+        if (chordsPinned) {
+            stickyHeader {
+                val chordVariations = viewState.pinnedChordVariations.observeAsState(emptyList()).value
+                val instrument = viewState.chordInstrument.observeAsState(Instrument.Guitar).value
+
+                PinnedChords(
+                    chords = chordVariations,
+                    instrument = instrument,
+                    onChordClick = onTextClick
+                )
+            }
+        }
+
+        // content
+        item {
             if (viewState.state.observeAsState(LoadingState.Loading).value is LoadingState.Success) {
                 TabText(
-                    modifier = Modifier.fillMaxSize(),
                     text = viewState.content.observeAsState(AnnotatedString("")).value,
                     fontSizeSp = viewState.fontSizeSp.observeAsState(FALLBACK_FONT_SIZE_SP).value,
                     onChordClick = onTextClick,
                 )
                 Spacer(modifier = Modifier.padding(vertical = 24.dp))
 
-                if (isPlaylistEntry.value) {
+                if (isPlaylistEntry) {
                     TabPlaylistNavigation(
                         modifier = Modifier.padding(end = 96.dp),  // extra for the autoscroll button
-                        title = playlistTitle.value,
+                        title = playlistTitle,
                         nextSongButtonEnabled = viewState.playlistNextSongButtonEnabled.observeAsState(false).value,
                         previousSongButtonEnabled = viewState.playlistPreviousSongButtonEnabled.observeAsState(false).value,
                         onNextSongClick = onPlaylistNextSongClick,
@@ -433,14 +447,20 @@ fun TabScreen(
                     Spacer(Modifier.padding(vertical = 16.dp))
                 }
 
-                Spacer(Modifier.windowInsetsPadding(WindowInsets(
-                    bottom = max(WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding() + 16.dp,  // leave room between the navigation bar
-                        WindowInsets.safeContent.asPaddingValues().calculateBottomPadding())  // if we're just leaving room for gestures, that's fine
-                )))
+                Spacer(
+                    Modifier.windowInsetsPadding(
+                        WindowInsets(
+                            bottom = max(
+                                WindowInsets.safeDrawing.asPaddingValues()
+                                    .calculateBottomPadding() + 16.dp,  // leave room between the navigation bar
+                                WindowInsets.safeContent.asPaddingValues().calculateBottomPadding()
+                            )  // if we're just leaving room for gestures, that's fine
+                        )
+                    )
+                )
             } else {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
                         .padding(all = 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -453,19 +473,7 @@ fun TabScreen(
                 }
             }
         }
-
-    // Sticky pinned chords at the top
-    if (viewState.chordsPinned.observeAsState(false).value) {
-        val chordVariations = viewState.pinnedChordVariations.observeAsState(emptyList()).value
-        val instrument = viewState.chordInstrument.observeAsState(Instrument.Guitar).value
-
-        PinnedChords(
-            chords = chordVariations,
-            instrument = instrument,
-            onChordClick = onTextClick
-        )
     }
-
 
     // chord bottom sheet display if a chord was clicked
     if (viewState.chordDetailsActive.observeAsState(false).value) {
@@ -488,23 +496,16 @@ fun TabScreen(
         paused = viewState.autoscrollPaused.observeAsState(false).value,
         onValueChangeFinished = onAutoscrollSliderValueChangeFinished,
 
-    )
+        )
 
     // scroll if autoscroll isn't paused
     if (!viewState.autoscrollPaused.observeAsState(true).value) {
         val autoscrollDelay = viewState.autoscrollDelay.observeAsState(Float.POSITIVE_INFINITY)
         LaunchedEffect(key1 = autoscrollDelay.value) {
-            val maxScrollValue = scrollState.maxValue
             while (isActive) {
                 delay(autoscrollDelay.value.toLong())
-                if (!scrollState.isScrollInProgress) {  // pause autoscroll while user is manually scrolling
-                    val newScrollPosition = scrollState.value + 1
-
-                    if (newScrollPosition > maxScrollValue) {
-                        // we got to the end of the song; skip scrolling to minimize jitters
-                        continue
-                    }
-                    scrollState.scrollTo(newScrollPosition)
+                if (!scrollState.isScrollInProgress && scrollState.canScrollForward) {  // pause autoscroll while user is manually scrolling
+                    scrollState.scrollBy(1f)
                 }
             }
         }
@@ -524,7 +525,7 @@ private fun List<PointerInputChange>.calculateZoom(): Float {
 }
 //#region previews
 
-@Composable @Preview
+@Composable @Preview(showBackground = true)
 private fun TabViewPreview() {
     data class TabViewStateForTest(
         override val tabId: LiveData<String>,

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -49,8 +50,8 @@ fun PinnedChords(
     modifier: Modifier = Modifier,
     onChordClick: (String) -> Unit = {}
 ) {
-    // Calculate top padding: status bar + app bar height (approximately 64dp for Material3)
-    val topPadding = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding() + 64.dp
+    // Calculate top padding: status bar
+    val topPadding = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
 
     Box(
         modifier = modifier
