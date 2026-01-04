@@ -58,6 +58,8 @@ import com.gbros.tabslite.view.card.InfoCard
 import com.gbros.tabslite.view.tabsearchbar.ITabSearchBarViewState
 import com.gbros.tabslite.view.tabsearchbar.TabsSearchBar
 import com.gbros.tabslite.viewmodel.SearchViewModel
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 
 //#region Use Case: Find a tab to view (by title)
@@ -69,7 +71,7 @@ private const val TITLE_SEARCH_ROUTE_TEMPLATE = "search/%s"
  * NavController extension to allow navigation to the search screen based on a query
  */
 fun NavController.navigateToSearch(query: String) {
-    navigate(TITLE_SEARCH_ROUTE_TEMPLATE.format(query))
+    navigate(TITLE_SEARCH_ROUTE_TEMPLATE.format(URLEncoder.encode(query, "utf-8")))
 }
 
 /**
@@ -86,7 +88,7 @@ fun NavGraphBuilder.searchByTitleScreen(
     composable(
         route = TITLE_SEARCH_ROUTE_TEMPLATE.format("{$TITLE_SEARCH_NAV_ARG}")
     ) { navBackStackEntry ->
-        val query = navBackStackEntry.arguments!!.getString(TITLE_SEARCH_NAV_ARG, "")
+        val query = URLDecoder.decode(navBackStackEntry.arguments!!.getString(TITLE_SEARCH_NAV_ARG, ""), "utf-8")
         val db = AppDatabase.getInstance(LocalContext.current)
         val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create(query, null, db.dataAccess()) }
         SearchScreen(
