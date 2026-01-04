@@ -9,21 +9,14 @@ import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.util.Log
 import androidx.compose.material3.ColorScheme
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withAnnotation
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.gbros.tabslite.LoadingState
@@ -93,7 +86,7 @@ class TabViewModel
         val currentTranspose = transpose.value
         if (currentTab != null && currentTranspose != null) {
 
-            val newTranspose = currentTranspose + numHalfSteps  // update tab.transpose variable
+            val newTranspose = (currentTranspose + numHalfSteps) % 12  // update tab.transpose variable
 
             // if tab is in a playlist or favorite, save the transposition preference to the db
             CoroutineScope(Dispatchers.IO).launch {
@@ -109,21 +102,8 @@ class TabViewModel
                 // backup transposition in case this tab's not in a playlist or favorited. This is only used when the tab.transpose value from the database is null
                 nonPlaylistTranspose.postValue(newTranspose)
             }
-
-            // preload all the new chords
-            CoroutineScope(Dispatchers.IO).launch {
-                fetchAllChords()
-            }
         } else {
             Log.e(TAG, "Transpose button clicked while tab was null.")
-        }
-    }
-
-    private suspend fun fetchAllChords() {
-        val chordsUsedInThisTab = tabContent.value?.chords?.toList() ?: emptyList()
-        val instrument = chordInstrument.value ?: Instrument.Guitar
-        if (!chordsUsedInThisTab.isEmpty()) {
-            Chord.ensureAllChordsDownloaded(chordsUsedInThisTab, instrument, dataAccess)
         }
     }
 
@@ -271,7 +251,7 @@ class TabViewModel
             color = android.graphics.Color.BLACK
         }
 
-        val annotatedContent: AnnotatedString = TabContent(urlHandler::openUri, unformattedContent.value ?: "").content
+        val annotatedContent: AnnotatedString = TabContent(urlHandler::openUri, transposedContentString.value ?: "").content
         val lineRegex = Regex(".*\\R?") // Regex to match a full line including its newline characters
 
         lineRegex.findAll(annotatedContent.text).forEach { lineMatchResult ->
@@ -475,7 +455,7 @@ class TabViewModel
     }
 
     // tab content after transposition and useFlats
-    private val unformattedContent: LiveData<String> = tab.combine(transpose, useFlats) { t, tr, f ->
+    private val transposedContentString: LiveData<String> = tab.combine(transpose, useFlats) { t, tr, f ->
         val currentDbContent = t?.content ?: ""
         val currentTranspose = tr ?: 0
         val useFlats = f == true
@@ -489,20 +469,30 @@ class TabViewModel
         return@combine transposedContent
     }
 
-    private val tabContent: LiveData<TabContent> = unformattedContent.map { transposed -> TabContent(urlHandler::openUri, transposed) }
+    private val tabContent: LiveData<TabContent> = transposedContentString.map { transposed -> TabContent(urlHandler::openUri, transposed) }
     // transposed content converted to an annotated string (tags are stripped and chords are annotations not text)
-    override val content: LiveData<AnnotatedString> = tabContent.map { it.content }
+    override val content: LiveData<AnnotatedString> = tabContent.map { tc ->
+        tc.content
+    }
 
     override val pinnedChordVariations: LiveData<List<ChordVariation>> = tabContent
-        .map{c -> c.chords.toList()}
-        .combine(chordInstrument) { chords, instrument -> Pair(chords, instrument) }
+        .map{c -> c.chords.toList() }
+        .combine(chordInstrument) { chords, instrument ->
+            if (chords != null && instrument != null) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    // anytime chords or instrument are updated, download the new chords
+                    Chord.ensureAllChordsDownloaded(chords, instrument, dataAccess)
+                }
+            }
+            Pair(chords, instrument)
+        }
         .switchMap { (chords, instrument) ->
             if (chords == null || instrument == null) null
             else dataAccess.getFirstChordVariations(chords, instrument)
         }
     
     private val _state: MutableLiveData<LoadingState> = MutableLiveData(LoadingState.Loading)
-    override val state: LiveData<LoadingState> = unformattedContent.combine(_state) { c, _ ->
+    override val state: LiveData<LoadingState> = transposedContentString.combine(_state) { c, _ ->
         // check for an update in status if we're still in Loading (or Failure) state before returning
         if (c != null) {
             if (_state.value != LoadingState.Success && c.isNotEmpty()) {
@@ -767,7 +757,6 @@ class TabViewModel
         _chordDetailsState.value = LoadingState.Loading
         CoroutineScope(Dispatchers.IO).launch {
             dataAccess.upsert(Preference(Preference.INSTRUMENT, instrument.name))
-            fetchAllChords()
             _chordDetailsState.postValue(LoadingState.Success)
         }
     }
@@ -783,7 +772,6 @@ class TabViewModel
 
         CoroutineScope(Dispatchers.IO).launch {
             dataAccess.upsert(Preference(Preference.USE_FLATS, useFlats.toString()))
-            fetchAllChords()
         }
     }
 
@@ -815,11 +803,6 @@ class TabViewModel
                 val result = autoscrollPreferenceJob.getCompleted()
                 _autoscrollSpeedSliderPosition.postValue(result ?: 0.5f)
             }
-        }
-
-        // preload all chords for fast access on click
-        scope.launch {
-            fetchAllChords()
         }
     }
 
