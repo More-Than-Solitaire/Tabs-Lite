@@ -19,6 +19,15 @@ data class SelfContainedPlaylist(
      * Imports this instance of [SelfContainedPlaylist] to the database. If this [playlistId] is equal to [Playlist.FAVORITES_PLAYLIST_ID], skips any duplicate entries
      */
     suspend fun importToDatabase(dataAccess: DataAccess, onProgressChange: (progress: Float) -> Unit = {}) {
+        // if any of the tabIds are prefixed or contain a non-numeric character we don't need to worry about compatibility
+        val compatibilityMode = !entries.any { e -> e.tabId.contains(Regex("[A-Za-z\\-]")) }
+        if (compatibilityMode) {
+            // prefix the entries for the new database style
+            for (entry in entries) {
+                entry.tabId = "7567-${entry.tabId}"
+            }
+        }
+
         var currentlyImportedEntries = 0f
         if (playlistId == Playlist.FAVORITES_PLAYLIST_ID) {
             // get current favorite tabs (to not reimport tabs that are already favorite tabs)

@@ -14,7 +14,7 @@ import com.gbros.tabslite.utilities.TAG
 data class DataPlaylistEntry(
         @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "entry_id") override val entryId: Int = 0,
         @ColumnInfo(name = "playlist_id") override val playlistId: Int,        // what playlist this entry is in
-        @ColumnInfo(name = "tab_id") override val tabId: String,               // which tab we added to the playlist (references TabFull tabId)
+        @ColumnInfo(name = "tab_id") override var tabId: String,               // which tab we added to the playlist (references TabFull tabId)
         @ColumnInfo(name = "next_entry_id") override val nextEntryId: Int?,    // the id of the next entry in this playlist
         @ColumnInfo(name = "prev_entry_id") override val prevEntryId: Int?,    // the id of the previous entry in this playlist
         @ColumnInfo(name = "date_added") override val dateAdded: Long,         // when this entry was added to the playlist

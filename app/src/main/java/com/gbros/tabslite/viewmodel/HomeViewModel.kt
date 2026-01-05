@@ -203,7 +203,9 @@ class HomeViewModel
             }
 
             if (!dataToImport.isNullOrBlank()) {
-                val importedData = Json.decodeFromString<PlaylistFileExportType>(dataToImport)
+
+                // this will fail if it's an old export with int tabIds instead of string
+                val importedData: PlaylistFileExportType = PlaylistFileExportType(Json.parseToJsonElement(dataToImport))
 
                 // import all playlists (except Favorites and Top Tabs)
                 val totalEntriesToImport = importedData.playlists.sumOf { pl -> pl.entries.size }.toFloat()
@@ -222,20 +224,23 @@ class HomeViewModel
                             })
                     } catch (ex: BackendConnection.NoInternetException) {
                         playlistImportState.postValue(LoadingState.Error(R.string.message_playlist_import_delayed_internet_access))
-                        Log.i(TAG, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) completed without internet access.")
+                        Log.i(
+                            TAG,
+                            "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) completed without internet access."
+                        )
                     } catch (ex: Exception) {
                         Log.e(TAG, "Import of playlist ${playlist.title} (id: ${playlist.playlistId}) failed: ${ex.message}", ex)
                     }
 
                     progressFromPreviouslyImportedPlaylists += progressForThisPlaylist
                 }
+
             }
 
             // pause at 100% progress for a moment before setting progress to 0
             playlistImportProgress.postValue(1f)
             delay(700)
-        }
-        importJob.invokeOnCompletion { ex ->
+        }.invokeOnCompletion { ex ->
             if (ex != null) {
                 playlistImportState.postValue(LoadingState.Error(R.string.message_playlist_import_export_unexpected_error))
                 Log.e(TAG, "Unexpected error during playlist import: ${ex.message}")
