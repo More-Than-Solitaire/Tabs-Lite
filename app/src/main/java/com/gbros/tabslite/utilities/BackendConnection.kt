@@ -21,6 +21,7 @@ import com.gbros.tabslite.utilities.BackendConnection.deviceId
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
+import com.google.firebase.firestore.toObjects
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -347,6 +348,34 @@ object BackendConnection {
         return@withContext
     }
 
+    suspend fun fetchTabsFromInternet(
+        tabIds: List<String>,
+        dataAccess: DataAccess,
+    ): List<TabDataType> = withContext(Dispatchers.IO) {
+        // get the tab and put it in the database, then return true
+        Log.v(TAG, "Loading tabs ${tabIds.joinToString()}.")
+
+        val tabCollection = db.collection("tabs")
+        val tabQuery = tabCollection
+            .whereIn("status", listOf("approved", "pending")) // must filter so firestore rules know that this is a valid query
+            .whereIn("id", tabIds)
+        val tabDocs = tabQuery.get().await()
+        if (tabDocs.isEmpty) {
+            throw NotFoundException("Tabs (${tabIds.joinToString()}) not found in database")
+        }
+        try {
+            val requestResponse = tabDocs.toObjects<TabRequestType>()
+            Log.v(TAG, "Parsed response for tabs ${requestResponse.joinToString { tab -> "${tab.id} (${tab.song_name})" }}")
+
+            val result = requestResponse.map { requestType -> requestType.getTabFull() }
+            dataAccess.upsertAll(result)
+            return@withContext result
+        } catch (ex: Exception) {
+            throw TabFetchException("Error parsing tabs from firestore", ex)
+        }
+    }
+
+
     /**
      * Gets tab based on tabId.  Loads tab from internet and caches the result automatically in the
      * app database.
@@ -357,36 +386,8 @@ object BackendConnection {
     suspend fun fetchTabFromInternet(
         tabId: String,
         dataAccess: DataAccess,
-    ): TabDataType = withContext(Dispatchers.IO) {
-        // get the tab and put it in the database, then return true
-        Log.v(TAG, "Loading tab $tabId.")
-
-        val tabDocRef = db.collection("tabs").document(tabId)
-        val tabDoc = tabDocRef.get().await()
-        if (!tabDoc.exists()) {
-            throw NotFoundException("Tab $tabId not found in database")
-        }
-        try {
-            val requestResponse = tabDoc.toObject<TabRequestType>() ?: throw TabFetchException("Couldn't parse tab $tabId from database")
-            Log.v(TAG, "Parsed response for tab $tabId. Name: ${requestResponse.song_name}, capo ${requestResponse.capo}")
-
-            val result = requestResponse.getTabFull()
-            if (result.content.isNotBlank()) {
-                if (result.tabId != tabDocRef.id) {
-                    result.tabId = tabDocRef.id  // workaround since some or most tabs in database don't have the id prefixed
-                }
-                dataAccess.upsert(result)
-                Log.v(TAG, "Successfully inserted tab ${result.songName} (${result.tabId})")
-            } else {
-                val message = "Tab $tabId fetch completed successfully but had no content! This shouldn't happen. Might be a pro tab?"
-                Log.e(TAG, message)
-                throw TabFetchException(message)
-            }
-            return@withContext result
-        } catch (ex: Exception) {
-            throw TabFetchException("Error parsing tab $tabId from firestore", ex)
-        }
-
+    ): TabDataType {
+        return fetchTabsFromInternet(listOf(tabId), dataAccess).first()
     }
 
     /**

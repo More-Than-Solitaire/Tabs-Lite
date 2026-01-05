@@ -95,6 +95,10 @@ interface DataAccess {
     @Upsert
     suspend fun upsert(tab: TabDataType)
 
+    @Upsert
+    suspend fun upsertAll(tabs: List<TabDataType>)
+
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(tab: TabDataType)
 
