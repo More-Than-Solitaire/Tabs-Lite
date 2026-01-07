@@ -344,6 +344,7 @@ fun TabScreen(
                     right = max(4.dp, WindowInsets.safeDrawing.asPaddingValues().calculateRightPadding(LocalLayoutDirection.current))
                 )
             )
+            .fillMaxWidth()
     )
     {
         item {
