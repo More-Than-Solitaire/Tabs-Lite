@@ -1,39 +1,38 @@
 [versions]
-activityCompose = "1.11.0"
+activityCompose = "1.12.2"
 agp = "8.13.2"
 appcompat = "1.7.1"
 composeMaterial = "1.7.8"
 composeMaterial3 = "1.4.0"
 composeReorderable = "3.0.0"
-composeRuntimeLivedata = "1.9.3"
-composeUiTest = "1.9.3"
+composeRuntimeLivedata = "1.10.1"
+composeUiTest = "1.10.1"
 constraintlayout = "2.2.1"
 coreKtx = "1.17.0"
 daggerHilt = "2.57.2"
-firebaseBom = "34.6.0"
+firebaseBom = "34.8.0"
 fragmentKtx = "1.8.9"
 gson = "2.13.2"
 hiltNavigationCompose = "1.3.0"
 kotlin = "2.2.20"
 kotlinCoroutines = "1.10.2"
-kotlinSerializationJson = "1.9.0"
+kotlinSerializationJson = "1.10.0"
 kotlinStdlibJdk8 = "2.2.0"
 ksp = "2.2.20-2.0.4"
 legacySupport = "1.0.0"
 lifecycleExtensions = "2.2.0"
-lifecycleKtx = "2.9.4"
+lifecycleKtx = "2.10.0"
 material = "1.13.0"
-navigation = "2.9.5"
-navigationSafeArgs = "2.9.5"
+navigation = "2.9.6"
 recyclerview = "1.4.0"
 room = "2.8.4"
-spotless = "8.0.0"
+spotless = "8.2.0"
 viewpager2 = "1.1.0"
-workRuntime = "2.10.5"
+workRuntime = "2.11.0"
 chrynanChords = "2.4.1"
 composeExtendedGestures = "3.1"
 googleServices = "4.4.4"
-uiText = "1.9.5"
+uiText = "1.10.1"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -85,6 +84,6 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlinParcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin"}
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-navigationSafeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationSafeArgs" }
+navigationSafeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
