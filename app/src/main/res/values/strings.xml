@@ -20,6 +20,10 @@
     <string name="theme_selection_dark" translation_description="Title of the theme option that means use dark mode regardless of system setting.">Force dark</string>
     <string name="theme_selection_title" translation_description="Label shown next to the theme selection dropdown">Theming</string>
 
+    <string name="font_style_selection_mono" translation_description="Title of the font style option that means use a monospace font.">Monospace</string>
+    <string name="font_style_selection_modern" translation_description="Title of the font style option that means use a modern font.">Modern</string>
+    <string name="font_style_selection_title" translation_description="Label shown next to the font style selection dropdown">Font style</string>
+
     <string name="title_favorites_playlist" translation_description="The title of the Favorites playlist/home tab">Favorites</string>
     <string name="title_popular_playlist" translation_description="The title of the Popular playlist/home tab">Popular</string>
     <string name="title_playlists_page" translation_description="The title of the Playlists home tab">Playlists</string>
