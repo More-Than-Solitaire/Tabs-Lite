@@ -172,14 +172,14 @@ object BackendConnection {
             val suggestions = connection.inputStream.use {inputStream ->
                 val jsonReader = JsonReader(inputStream.reader())
                 val searchSuggestionTypeToken = object : TypeToken<SearchSuggestionType>() {}.type
-                gson.fromJson<SearchSuggestionType?>(jsonReader, searchSuggestionTypeToken).suggestions
+                gson.fromJson<SearchSuggestionType>(jsonReader, searchSuggestionTypeToken).suggestions
             }
 
             if (suggestions.isNotEmpty()) {
                 dataAccess.upsert(SearchSuggestions(query = query, suggestions))
             }
             return@withContext
-        } catch (ex: FileNotFoundException) {
+        } catch (_: FileNotFoundException) {
             // no search suggestions for this query
             return@withContext
         } catch (ex: UnknownHostException) {
@@ -218,7 +218,7 @@ object BackendConnection {
         val inputStream: InputStream?
         try {
             inputStream = authenticatedStream(url)
-        } catch (ex: NotFoundException) {
+        } catch (_: NotFoundException) {
             // end of search results
             return@withContext SearchRequestType()
         } catch (ex: NoInternetException) {
@@ -242,7 +242,7 @@ object BackendConnection {
                 val suggestedSearch: String = gson.fromJson(jsonReader, stringTypeToken)
 
                 result = SearchRequestType(suggestedSearch)
-            } catch (ex: IllegalStateException) {
+            } catch (_: IllegalStateException) {
                 inputStream.close()
                 val message = "Search illegal state exception!  Check SearchRequestType for consistency with data.  Query: $title, page $page"
                 Log.e(TAG, message, syntaxException)
@@ -277,7 +277,6 @@ object BackendConnection {
         val (instrumentPath, tuningPath) = when (instrument) {
             Instrument.Guitar -> "guitar" to "E A D G B E"
             Instrument.Ukulele -> "ukulele" to "G C E A"
-            else -> throw IllegalArgumentException("Invalid instrument selection $instrument; couldn't update chords")
         }
 
         val chordVariationsRef = db.collection("chordVariations")

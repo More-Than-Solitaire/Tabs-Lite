@@ -5,10 +5,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,7 +30,7 @@ fun SortByDropdown(selectedSort: SortBy?, onOptionSelected: (SortBy) -> Unit) {
         Button(
             onClick = { expanded = !expanded},
             modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
         ) {
@@ -60,7 +60,7 @@ fun SortByDropdown(selectedSort: PlaylistsSortBy?, onOptionSelected: (PlaylistsS
         Button(
             onClick = { expanded = !expanded},
             modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
         ) {

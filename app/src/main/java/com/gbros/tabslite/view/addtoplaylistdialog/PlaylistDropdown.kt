@@ -2,9 +2,9 @@ package com.gbros.tabslite.view.addtoplaylistdialog
 
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -31,7 +31,7 @@ fun PlaylistDropdown(playlists: List<Playlist>, title: String, onSelectionChange
             onValueChange = {},
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable, playlists.isNotEmpty()),
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, playlists.isNotEmpty()),
             enabled = playlists.isNotEmpty()
         )
 

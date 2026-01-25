@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -270,7 +268,7 @@ fun SearchScreen(
             LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp), state = lazyColumnState) {
                 items(items = searchResults.value) { song ->
                     SearchResultCard(song) {
-                        onNavigateToSongVersionsBySongId(song.songId.toString())
+                        onNavigateToSongVersionsBySongId(song.songId)
                     }
                 }
 

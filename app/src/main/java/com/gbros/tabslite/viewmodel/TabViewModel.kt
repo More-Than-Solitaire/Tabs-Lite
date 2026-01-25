@@ -8,12 +8,9 @@ import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.util.Log
-import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -30,8 +27,8 @@ import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
-import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.BackendConnection
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.tabview.ITabViewState
 import com.google.firebase.Firebase
@@ -45,7 +42,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlin.math.floor
 
 // font size constraints, measured in sp
 private const val MIN_FONT_SIZE_SP = 6f
@@ -328,22 +324,6 @@ class TabViewModel
         return doc
     }
 
-    /**
-     * Calculates the number of characters that can fit in the screen.
-     *\
-     * @param availableWidthInPx The width of the screen in pixels
-     * @param fontSizeSp The font size in sp
-     * @param currentDensity The current density of the screen
-     *\
-     * @return The number of characters that can fit in the screen
-     */
-    private fun getAvailableWidthInChars(availableWidthInPx: Int, fontSizeSp: Float, currentDensity: Density):UInt {
-        val characterHeightInPixels = with (currentDensity) { fontSizeSp.sp.toPx() }
-        val characterWidthInPixels = characterHeightInPixels * ROBOTO_ASPECT_RATIO
-        val charsPerLine = floor(availableWidthInPx / characterWidthInPixels).toUInt()
-        return charsPerLine
-    }
-
     //#endregion
 
     //#region private data
@@ -362,29 +342,7 @@ class TabViewModel
             Pair(chord, instrument)
         } as MutableLiveData<Pair<String?, Instrument?>>
 
-    /**
-     * To calculate the aspect ratio of a ttf font, run this in python (after pip install fonttools):
-     * aspect_ratio = ttLib.TTFont(r'path\to\font.ttf')['hmtx']['space'][0] / ttLib.TTFont(r'path\to/font.ttf')['head'].unitsPerEm
-     */
-    private val ROBOTO_ASPECT_RATIO = 0.60009765625  // the empirical width-to-height ratio of roboto mono Regular.
-
-    private val screenDensity: MutableLiveData<Density> = MutableLiveData()
-
-    /**
-     * The last measured screen width in pixels, used for calculating how many characters can fit in the screen for custom word wrapping
-     */
-    private val screenWidthInPx: MutableLiveData<Int> = MutableLiveData()
-
     override val fontSizeSp: MutableLiveData<Float> = MutableLiveData(defaultFontSize)
-
-    private val availableWidthInChars: LiveData<UInt> = screenWidthInPx.combine(fontSizeSp, screenDensity) { currentWidthPx, currentFontSizeSp, currentDensity ->
-        if (currentWidthPx == null || currentFontSizeSp == null || currentDensity == null) {
-            return@combine 0u
-        }
-        return@combine getAvailableWidthInChars(currentWidthPx, currentFontSizeSp, currentDensity)
-    }
-
-    private val currentTheme: MutableLiveData<ColorScheme> = MutableLiveData()
 
     override val allPlaylists: LiveData<List<Playlist>> = dataAccess.getLivePlaylists()
 
@@ -416,7 +374,7 @@ class TabViewModel
 
     override val version: LiveData<Int> = tab.map { t -> t?.version ?: 0 }
 
-    override val songVersions: LiveData<List<ITab>> = tab.switchMap { t -> if(t == null) MutableLiveData(listOf()) else dataAccess.getTabsBySongId(t.songId.toString()).map { t -> t } }
+    override val songVersions: LiveData<List<ITab>> = tab.switchMap { t -> if(t == null) MutableLiveData(listOf()) else dataAccess.getTabsBySongId(t.songId).map { t -> t } }
 
     override val isFavorite: LiveData<Boolean> = if (entryId != null) dataAccess.playlistEntryExistsInFavorites(entryId) else if (providedTabId != null) dataAccess.tabExistsInFavoritesLive(providedTabId) else MutableLiveData(false)
 
@@ -715,23 +673,6 @@ class TabViewModel
             val newPlaylistId = dataAccess.upsert(playlistToSave)
             val newPlaylist = dataAccess.getPlaylist(newPlaylistId.toInt())
             _addToPlaylistDialogSelectedPlaylist.postValue(newPlaylist)
-        }
-    }
-
-    /**
-     * Save the current screen details to enable custom wrapping
-     */
-    fun onScreenMeasured(screenWidth: Int, localDensity: Density, colorScheme: ColorScheme) {
-        if (screenDensity.value != localDensity){
-            screenDensity.value = localDensity
-        }
-
-        if (screenWidthInPx.value != screenWidth) {
-            screenWidthInPx.value = screenWidth
-        }
-
-        if (currentTheme.value != colorScheme) {
-            currentTheme.value = colorScheme
         }
     }
 
