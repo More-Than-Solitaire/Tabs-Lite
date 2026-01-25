@@ -15,6 +15,7 @@ import androidx.lifecycle.asFlow
 import androidx.lifecycle.map
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.DataAccess
+import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.ThemeSelection
 import com.gbros.tabslite.data.chord.Instrument
@@ -37,8 +38,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.Collections
-import kotlin.collections.filter
-import kotlin.collections.isNotEmpty
 
 @AndroidEntryPoint
 class HomeActivity : ComponentActivity() {
@@ -112,6 +111,7 @@ class HomeActivity : ComponentActivity() {
         dataAccess.insert(Preference(Preference.USE_FLATS, false.toString()))
         dataAccess.insert(Preference(Preference.APP_THEME, ThemeSelection.System.name))
         dataAccess.insert(Preference(Preference.PIN_CHORDS, false.toString()))
+        dataAccess.insert(Preference(Preference.FONT_STYLE, FontStyle.Modern.name))
     }
 
     /**

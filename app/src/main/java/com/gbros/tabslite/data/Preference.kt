@@ -64,5 +64,11 @@ data class Preference(
          * The preference name for whether to display chord fingerings pinned to the top of the tab screen
          */
         const val PIN_CHORDS: String = "PIN_CHORDS"
+
+        /**
+         * The preference name for the font style to use
+         */
+        const val FONT_STYLE: String = "FONT_STYLE"
+
     }
 }
