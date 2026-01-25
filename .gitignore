@@ -151,3 +151,4 @@ fastlane/readme.md
 .idea/studiobot.xml
 .idea/markdown.xml
 *.salive
+/.idea/copilot.*.xml
