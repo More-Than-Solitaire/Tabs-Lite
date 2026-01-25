@@ -4,8 +4,6 @@ package com.gbros.tabslite.view.tabview
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import android.text.Annotation
-import android.text.SpannedString
 import android.util.Log
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
@@ -56,7 +54,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.gbros.tabslite.LoadingState
-import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
@@ -270,45 +267,24 @@ fun TabScreen(
     val songName by viewState.songName.observeAsState("...")
     val artistName by viewState.artist.observeAsState("...")
     val artistId = viewState.artistId.observeAsState("").value
-    val titleText = SpannedString(stringResource(R.string.tab_title, songName, artistName))
-    val annotations = remember(songName, artistName) { titleText.getSpans(0, titleText.length, Annotation::class.java) }
     val titleBuilder = remember(songName, artistName, artistId) {
         buildAnnotatedString {
-        annotations.forEach { annotation ->
-            if (annotation.key == "arg") {
-                when (annotation.value) {
-                    "songName" -> {
-                        append(songName)
-                    }  // do nothing to the song name
-
-                    "artistName" -> {
-                        // make the artist name clickable
-                        withLink(
-                            link = LinkAnnotation.Clickable(
-                                tag = "artistId",
-                                linkInteractionListener = LinkInteractionListener {
-                                    Log.d(TAG, "artist $artistId ($artistName) clicked")
-                                    if (artistId != null) {
-                                        onArtistClicked(artistId)
-                                    }
-                                }
-                            )) {
-                            append(artistName)
+            append(songName)
+            append(" by ")
+            // make the artist name clickable
+            withLink(
+                link = LinkAnnotation.Clickable(
+                    tag = "artistId",
+                    linkInteractionListener = LinkInteractionListener {
+                        Log.d(TAG, "artist $artistId ($artistName) clicked")
+                        if (!artistId.isNullOrEmpty()) {
+                            onArtistClicked(artistId)
                         }
                     }
-
-                    "plainText" -> {
-                        append(
-                            titleText.subSequence(
-                                titleText.getSpanStart(annotation),
-                                titleText.getSpanEnd(annotation)
-                            )
-                        )
-                    }
-                }
+                )) {
+                append(artistName)
             }
         }
-    }
     }
     val isPlaylistEntry by viewState.isPlaylistEntry.observeAsState(false)
     val playlistTitle by viewState.playlistTitle.observeAsState("...")
