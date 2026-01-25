@@ -1,5 +1,10 @@
 package com.gbros.tabslite.view.tabview
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,11 +21,15 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.withAnnotation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.gbros.tabslite.data.tab.TabContentBlock
+import com.gbros.tabslite.ui.theme.AppTheme
 
 /**
  * Displays a single TabContentBlock with chords positioned above the text
@@ -36,36 +45,40 @@ fun TabContentBlockView(
     val chordAnnotations = remember(block.content) {
         block.content.getStringAnnotations("chord", 0, block.content.length)
     }
+    Column(modifier = modifier) {
+        val spacerSize = if (block.tab) 4.dp else 24.dp
+        Spacer(modifier = Modifier.height(spacerSize))
 
-    Layout(
-        modifier = modifier,
-        content = {
-            Text(
-                text = block.content,
-                onTextLayout = {
-                    textLayoutResult.value = it
-                },
-                style = TextStyle(
-                    fontSize = TextUnit(fontSizeSp, TextUnitType.Sp),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = if (block.tab) 2.8.em else 1.5.em, // double spaced for tabs, normal for non-tab content
-                    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Bottom, LineHeightStyle.Trim.None),
-                    baselineShift = if (block.tab) BaselineShift(.15f) else BaselineShift(0f)
+        Layout(
+            modifier = modifier,
+            content = {
+                Text(
+                    text = block.content,
+                    onTextLayout = {
+                        textLayoutResult.value = it
+                    },
+                    style = TextStyle(
+                        fontSize = TextUnit(fontSizeSp, TextUnitType.Sp),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = if (block.tab) 2.8.em else 1.5.em, // double spaced for tabs, normal for non-tab content
+                        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Bottom, LineHeightStyle.Trim.None),
+                        baselineShift = if (block.tab) BaselineShift(.15f) else BaselineShift(0f)
+                    )
                 )
-            )
 
-            for (annotation in chordAnnotations) {
-                val chord = if (annotation.item.startsWith("{il}")) annotation.item.substring(4) else annotation.item
-                ChordButton(
-                    text = chord,
-                    fontSizeSp = fontSizeSp,
-                ) {
-                    onChordClick(chord)
+                for (annotation in chordAnnotations) {
+                    val chord = if (annotation.item.startsWith("{il}")) annotation.item.substring(4) else annotation.item
+                    ChordButton(
+                        text = chord,
+                        fontSizeSp = fontSizeSp,
+                    ) {
+                        onChordClick(chord)
+                    }
                 }
             }
+        ) { measurables, constraints ->
+            placeChordButtons(chordAnnotations, textLayoutResult, measurables, constraints)
         }
-    ) { measurables, constraints ->
-        placeChordButtons(chordAnnotations, textLayoutResult, measurables, constraints)
     }
 }
 
@@ -108,6 +121,51 @@ private fun MeasureScope.placeChordButtons(
                 // Update the right edge for the next button on this line
                 lastButtonRightEdge = x + chordButton.width + 16 // 16 is some extra space between buttons
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TabContentBlockViewTabPreview() {
+    AppTheme {
+        val builder = AnnotatedString.Builder()
+        builder.append("I ")
+        builder.withAnnotation("chord", "C") {
+            append("h")
+        }
+        builder.append("eard there was a ")
+        builder.withAnnotation("chord", "Am") {
+            append("s")
+        }
+        builder.append("ecret chord")
+
+        TabContentBlockView(
+            block = TabContentBlock(builder.toAnnotatedString(), true),
+            fontSizeSp = 14f,
+            onChordClick = {}
+        )
+    }
+}
+@Preview(showBackground = true)
+@Composable
+private fun TabContentBlockViewNonTabPreview() {
+    AppTheme {
+        val builder = AnnotatedString.Builder("[Intro]\n")
+        builder.withAnnotation("chord", "C", block = {append(" ")})
+        builder.append(" ")
+        builder.withAnnotation("chord", "Am", block = {append(" ")})
+        builder.withAnnotation("chord", "C", block = {append(" ")})
+        builder.withAnnotation("chord", "Am", block = {append(" ")})
+        builder.append("\n")
+
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            TabContentBlockView(
+                block = TabContentBlock(builder.toAnnotatedString(), false),
+                fontSizeSp = 14f,
+                onChordClick = {}
+            )
         }
     }
 }

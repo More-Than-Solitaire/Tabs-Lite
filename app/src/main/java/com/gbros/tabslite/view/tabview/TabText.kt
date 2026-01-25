@@ -37,29 +37,26 @@ fun TabText(
 @Composable @Preview(showBackground = true)
 private fun TabTextTestCase1() {
     AppTheme {
-        val builder = AnnotatedString.Builder("[Intro]\n")
-        builder.withAnnotation("chord", "{il}C", block = {append(" ")})
-        builder.append(" ")
-        builder.withAnnotation("chord", "{il}Am", block = {append(" ")})
-        builder.withAnnotation("chord", "{il}C", block = {append(" ")})
-        builder.withAnnotation("chord", "{il}Am", block = {append(" ")})
-        builder.append("\n\n[Verse 1]\nI ")
-        builder.withAnnotation("chord", "C", block = {append("h")})
-        builder.append("eard there was a ")
-        builder.withAnnotation("chord", "Am", block = {append("s")})
-        builder.append("ecret chord \nThat ")
-        builder.withAnnotation("chord", "C", block = {append("D")})
-        builder.append("avid played and it ")
-        builder.withAnnotation("chord", "Am", block = {append("p")})
-        builder.append("leased the Lord")
+        val builder1 = AnnotatedString.Builder("[Intro]\n")
+        builder1.withAnnotation("chord", "C", block = {append(" ")})
+        builder1.append(" ")
+        builder1.withAnnotation("chord", "Am", block = {append(" ")})
+        builder1.withAnnotation("chord", "C", block = {append(" ")})
+        builder1.withAnnotation("chord", "Am", block = {append(" ")})
+        builder1.append("\n")
+        val block1 = TabContentBlock(builder1.toAnnotatedString(), false)
 
-        val blocks = listOf(
-            TabContentBlock(builder.toAnnotatedString(), tab = true)
-        )
+        val builder2 = AnnotatedString.Builder()
+        builder2.append("I ")
+        builder2.withAnnotation("chord", "C") { append("h") }
+        builder2.append("eard there was a ")
+        builder2.withAnnotation("chord", "Am") { append("s") }
+        builder2.append("ecret chord")
+        val block2 = TabContentBlock(builder2.toAnnotatedString(), true)
 
         TabText(
             modifier = Modifier.padding(16.dp),
-            blocks = blocks,
+            blocks = listOf(block1, block2),
             fontSizeSp = 14f,
             onChordClick = {}
         )

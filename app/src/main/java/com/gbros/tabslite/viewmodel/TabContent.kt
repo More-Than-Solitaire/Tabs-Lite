@@ -37,14 +37,14 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
         var lastIndex = 0
         tagPattern.findAll(tabContent).forEach { matchResult ->
             // Process text before the match (outside [tab] block)
-            val beforeText = tabContent.substring(lastIndex, matchResult.range.first)
+            val beforeText = tabContent.substring(lastIndex, matchResult.range.first).trim()
             if (beforeText.isNotEmpty()) {
                 val beforeBlock = buildContentBlock(beforeText, chordsSet, inline = true)
                 contentBlocks.add(TabContentBlock(beforeBlock, tab = false))
             }
 
             // Process the content inside the [tab] block
-            val tabBlockContent = matchResult.groupValues[1]
+            val tabBlockContent = matchResult.groupValues[1].trim()
             if (tabBlockContent.isNotEmpty()) {
                 val tabBlock = buildContentBlock(tabBlockContent, chordsSet, inline = false)
                 contentBlocks.add(TabContentBlock(tabBlock, tab = true))
@@ -55,7 +55,7 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
 
         // Process any remaining text after the last match (outside [tab] block)
         if (lastIndex < tabContent.length) {
-            val remainingText = tabContent.substring(lastIndex)
+            val remainingText = tabContent.substring(lastIndex).trim()
             if (remainingText.isNotEmpty()) {
                 val remainingBlock = buildContentBlock(remainingText, chordsSet, inline = true)
                 contentBlocks.add(TabContentBlock(remainingBlock, tab = false))
