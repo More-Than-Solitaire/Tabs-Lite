@@ -1,7 +1,6 @@
 package com.gbros.tabslite.view.tabview
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -117,7 +116,17 @@ private fun MeasureScope.placeChordButtons(
 @Composable @Preview(showBackground = true)
 private fun TabTextTestCase1() {
     AppTheme {
-        val builder = AnnotatedString.Builder("That ")
+        val builder = AnnotatedString.Builder("[Intro]\n")
+        builder.withAnnotation("chord", "{il}C", block = {append(" ")})
+        builder.append(" ")
+        builder.withAnnotation("chord", "{il}Am", block = {append(" ")})
+        builder.withAnnotation("chord", "{il}C", block = {append(" ")})
+        builder.withAnnotation("chord", "{il}Am", block = {append(" ")})
+        builder.append("\n\n[Verse 1]\nI ")
+        builder.withAnnotation("chord", "C", block = {append("h")})
+        builder.append("eard there was a ")
+        builder.withAnnotation("chord", "Am", block = {append("s")})
+        builder.append("ecret chord \nThat ")
         builder.withAnnotation("chord", "C", block = {append("D")})
         builder.append("avid played and it ")
         builder.withAnnotation("chord", "Am", block = {append("p")})
@@ -125,27 +134,6 @@ private fun TabTextTestCase1() {
 
         TabText(
             modifier = Modifier.padding(16.dp),
-            text = builder.toAnnotatedString(),
-            fontSizeSp = 14f,
-            onChordClick = {}
-        )
-    }
-}
-
-@Composable @Preview(showBackground = true)
-private fun TabTextTestCase2() {
-    AppTheme {
-        val builder = AnnotatedString.Builder("[Intro]\n")
-        builder.withAnnotation("chord", "C", block = {append(" ")})
-        builder.append(" ")
-        builder.withAnnotation("chord", "Am", block = {append(" ")})
-        builder.append(" ")
-        builder.withAnnotation("chord", "C", block = {append(" ")})
-        builder.append(" ")
-        builder.withAnnotation("chord", "Am", block = {append(" ")})
-
-        TabText(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
             text = builder.toAnnotatedString(),
             fontSizeSp = 14f,
             onChordClick = {}
