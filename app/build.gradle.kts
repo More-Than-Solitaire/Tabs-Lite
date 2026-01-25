@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlinParcelize)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.daggerHilt)
     alias(libs.plugins.navigationSafeargs)
     alias(libs.plugins.compose.compiler)
