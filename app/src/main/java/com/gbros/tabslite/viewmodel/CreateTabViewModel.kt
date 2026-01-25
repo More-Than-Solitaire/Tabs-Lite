@@ -1,8 +1,6 @@
 package com.gbros.tabslite.viewmodel
 
 import android.util.Log
-import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.LiveData
@@ -13,10 +11,10 @@ import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.servertypes.TabRequestType
+import com.gbros.tabslite.data.tab.Tab
+import com.gbros.tabslite.data.tab.TabContentBlock
 import com.gbros.tabslite.data.tab.TabDifficulty
 import com.gbros.tabslite.data.tab.TabTuning
-import com.gbros.tabslite.data.tab.Tab
-import com.gbros.tabslite.data.tab.TabDataType
 import com.gbros.tabslite.utilities.BackendConnection
 import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.combine
@@ -27,8 +25,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 @HiltViewModel(assistedFactory = CreateTabViewModel.CreateTabViewModelFactory::class)
 class CreateTabViewModel @AssistedInject constructor(
@@ -66,7 +62,7 @@ class CreateTabViewModel @AssistedInject constructor(
     //#region view state
 
     val content: MutableLiveData<TextFieldValue> = MutableLiveData(TextFieldValue(""))
-    val annotatedContent: LiveData<AnnotatedString> = content.map { content -> TabContent(urlHandler = {}, content = content.text).content }
+    val annotatedContent: LiveData<List<TabContentBlock>> = content.map { textFieldValue -> TabContent(urlHandler = {}, content = textFieldValue.text).contentBlocks }
     val selectedSongName: LiveData<String> = selectedSong.map { tab -> tab?.songName ?: "Error: $selectedSongId not found" }
     val selectedArtistName: LiveData<String> = selectedSong.map { tab -> tab?.artistName ?: "" }
 

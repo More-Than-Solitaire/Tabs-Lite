@@ -9,15 +9,16 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withAnnotation
 import androidx.compose.ui.text.withStyle
+import com.gbros.tabslite.data.tab.TabContentBlock
 import com.gbros.tabslite.utilities.TAG
 
 class TabContent(private val urlHandler: (String) -> Unit, content: String){
-    val content: AnnotatedString
+    val contentBlocks: List<TabContentBlock>
     val chords: Set<String>
 
     init {
         val processedResult = processTabContent(content)
-        this.content = processedResult.first
+        this.contentBlocks = processedResult.first
         this.chords = processedResult.second
     }
 
@@ -28,29 +29,51 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
      * every chord with tag "chord"
      */
     @OptIn(ExperimentalTextApi::class)
-    private fun processTabContent(tabContent: String): Pair<AnnotatedString, Set<String>> {
+    private fun processTabContent(tabContent: String): Pair<List<TabContentBlock>, Set<String>> {
         val tagPattern = Regex("\\[tab](.*?)\\[/tab]", RegexOption.DOT_MATCHES_ALL)
         val chordsSet = mutableSetOf<String>()
+        val contentBlocks = mutableListOf<TabContentBlock>()
 
-        val processedTab = buildAnnotatedString {
-            var lastIndex = 0
-            tagPattern.findAll(tabContent).forEach { matchResult ->
-                // Append text before the match
-                val beforeText = tabContent.substring(lastIndex, matchResult.range.first)
-                appendChordContent(beforeText, this, chordsSet, inline = true)
-
-                // Append the content inside the [tab] block
-                appendChordContent(matchResult.groupValues[1], this, chordsSet, inline = false)
-
-                lastIndex = matchResult.range.last + 1
+        var lastIndex = 0
+        tagPattern.findAll(tabContent).forEach { matchResult ->
+            // Process text before the match (outside [tab] block)
+            val beforeText = tabContent.substring(lastIndex, matchResult.range.first)
+            if (beforeText.isNotEmpty()) {
+                val beforeBlock = buildContentBlock(beforeText, chordsSet, inline = true)
+                contentBlocks.add(TabContentBlock(beforeBlock, tab = false))
             }
 
-            // Append any remaining text after the last match
-            if (lastIndex < tabContent.length) {
-                appendChordContent(tabContent.substring(lastIndex), this, chordsSet, inline = true)
+            // Process the content inside the [tab] block
+            val tabBlockContent = matchResult.groupValues[1]
+            if (tabBlockContent.isNotEmpty()) {
+                val tabBlock = buildContentBlock(tabBlockContent, chordsSet, inline = false)
+                contentBlocks.add(TabContentBlock(tabBlock, tab = true))
             }
 
-            // add active hyperlinks
+            lastIndex = matchResult.range.last + 1
+        }
+
+        // Process any remaining text after the last match (outside [tab] block)
+        if (lastIndex < tabContent.length) {
+            val remainingText = tabContent.substring(lastIndex)
+            if (remainingText.isNotEmpty()) {
+                val remainingBlock = buildContentBlock(remainingText, chordsSet, inline = true)
+                contentBlocks.add(TabContentBlock(remainingBlock, tab = false))
+            }
+        }
+
+        return Pair(contentBlocks, chordsSet)
+    }
+
+    /**
+     * Build an AnnotatedString block with chord annotations and hyperlinks
+     */
+    @OptIn(ExperimentalTextApi::class)
+    private fun buildContentBlock(content: String, chordsSet: MutableSet<String>, inline: Boolean): AnnotatedString {
+        return buildAnnotatedString {
+            appendChordContent(content, this, chordsSet, inline)
+
+            // Add active hyperlinks
             val hyperlinks = getHyperLinks(this.toAnnotatedString().text)
             for (hyperlink in hyperlinks) {
                 this.addLink(
@@ -63,8 +86,6 @@ class TabContent(private val urlHandler: (String) -> Unit, content: String){
                 )
             }
         }
-
-        return Pair(processedTab, chordsSet)
     }
     /**
      * Represents a found chord match, including its start and end indices in the original text,

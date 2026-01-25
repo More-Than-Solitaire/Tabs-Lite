@@ -26,6 +26,7 @@ import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
+import com.gbros.tabslite.data.tab.TabContentBlock
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.utilities.BackendConnection
 import com.gbros.tabslite.utilities.TAG
@@ -247,10 +248,12 @@ class TabViewModel
             color = android.graphics.Color.BLACK
         }
 
-        val annotatedContent: AnnotatedString = TabContent(urlHandler::openUri, transposedContentString.value ?: "").content
+        val annotatedContent: AnnotatedString = TabContent(urlHandler::openUri, transposedContentString.value ?: "").contentBlocks
+            .map { tabContent -> tabContent.content }
+            .reduce { acc, annotatedString -> acc + annotatedString }
         val lineRegex = Regex(".*\\R?") // Regex to match a full line including its newline characters
 
-        lineRegex.findAll(annotatedContent.text).forEach { lineMatchResult ->
+        lineRegex.findAll(annotatedContent).forEach { lineMatchResult ->
             val line = lineMatchResult.value.trimEnd() // The actual line content without trailing newline
             val lineStartOffset = lineMatchResult.range.first
 
@@ -427,10 +430,8 @@ class TabViewModel
     }
 
     private val tabContent: LiveData<TabContent> = transposedContentString.map { transposed -> TabContent(urlHandler::openUri, transposed) }
-    // transposed content converted to an annotated string (tags are stripped and chords are annotations not text)
-    override val content: LiveData<AnnotatedString> = tabContent.map { tc ->
-        tc.content
-    }
+    // transposed content converted to a list of TabContentBlock (tags are stripped and chords are annotations not text)
+    override val content: LiveData<List<TabContentBlock>> = tabContent.map { tc -> tc.contentBlocks }
 
     override val pinnedChordVariations: LiveData<List<ChordVariation>> = tabContent
         .map{c -> c.chords.toList() }

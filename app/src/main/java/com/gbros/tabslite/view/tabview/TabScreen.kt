@@ -9,21 +9,16 @@ import android.text.SpannedString
 import android.util.Log
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -67,6 +62,7 @@ import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
 import com.gbros.tabslite.data.tab.Tab
+import com.gbros.tabslite.data.tab.TabContentBlock
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.utilities.KeepScreenOn
@@ -272,9 +268,8 @@ fun TabScreen(
     // create clickable title
     val songName by viewState.songName.observeAsState("...")
     val artistName by viewState.artist.observeAsState("...")
-    val currentContext = LocalContext.current
     val artistId = viewState.artistId.observeAsState("").value
-    val titleText = remember { currentContext.getText(R.string.tab_title) as SpannedString }
+    val titleText = SpannedString(stringResource(R.string.tab_title))
     val annotations = remember { titleText.getSpans(0, titleText.length, Annotation::class.java) }
     val titleBuilder = buildAnnotatedString {
         annotations.forEach { annotation ->
@@ -430,7 +425,7 @@ fun TabScreen(
         item {
             if (viewState.state.observeAsState(LoadingState.Loading).value is LoadingState.Success) {
                 TabText(
-                    text = viewState.content.observeAsState(AnnotatedString("")).value,
+                    blocks = viewState.content.observeAsState(emptyList()).value,
                     fontSizeSp = viewState.fontSizeSp.observeAsState(FALLBACK_FONT_SIZE_SP).value,
                     onChordClick = onTextClick,
                 )
@@ -545,7 +540,7 @@ private fun TabViewPreview() {
         override val version: LiveData<Int>,
         override val songVersions: LiveData<List<ITab>>,
         override val transpose: LiveData<Int>,
-        override val content: LiveData<AnnotatedString>,
+        override val content: LiveData<List<TabContentBlock>>,
         override val state: LiveData<LoadingState>,
         override val autoscrollPaused: LiveData<Boolean>,
         override val autoScrollSpeedSliderPosition: LiveData<Float>,
@@ -583,7 +578,7 @@ private fun TabViewPreview() {
             version = MutableLiveData(tab.version),
             songVersions = MutableLiveData(listOf()),
             transpose = MutableLiveData(tab.transpose),
-            content = MutableLiveData(AnnotatedString(tab.content)),
+            content = MutableLiveData(listOf(TabContentBlock(AnnotatedString(tab.content), tab = true))),
             state = MutableLiveData(LoadingState.Success),
             autoscrollPaused = MutableLiveData(true),
             autoScrollSpeedSliderPosition = MutableLiveData(0.5f),

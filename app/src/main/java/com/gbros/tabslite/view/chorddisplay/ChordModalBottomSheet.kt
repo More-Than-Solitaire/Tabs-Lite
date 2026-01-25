@@ -33,6 +33,7 @@ import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
+import com.gbros.tabslite.data.tab.TabContentBlock
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.card.ErrorCard
 import com.gbros.tabslite.view.tabview.TabText
@@ -161,8 +162,10 @@ private fun ChordModalBottomSheetPreview (showModal: Boolean) {
         )
     )
 
+        val blocks = listOf(TabContentBlock(testCase1, tab = true))
+
         TabText(
-            text = testCase1,
+            blocks = blocks,
             fontSizeSp = 14f,
             modifier = Modifier.fillMaxSize(),
             onChordClick = { }

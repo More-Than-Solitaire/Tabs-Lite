@@ -8,6 +8,7 @@ import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.ITab
+import com.gbros.tabslite.data.tab.TabContentBlock
 
 /**
  * The view state for [TabScreen] to control the state of each UI element in the view
@@ -71,7 +72,7 @@ interface ITabViewState {
     /**
      * The wrapped, transposed tab content to display
      */
-    val content: LiveData<AnnotatedString>
+    val content: LiveData<List<TabContentBlock>>
 
     /**
      * The font size that should be used to support the custom wrapping for [content]
