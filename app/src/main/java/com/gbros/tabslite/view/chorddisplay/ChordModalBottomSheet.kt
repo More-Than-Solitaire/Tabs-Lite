@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -36,7 +35,6 @@ import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.tab.TabContentBlock
 import com.gbros.tabslite.ui.theme.AppTheme
 import com.gbros.tabslite.view.card.ErrorCard
-import com.gbros.tabslite.view.tabview.TabText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -163,13 +161,6 @@ private fun ChordModalBottomSheetPreview (showModal: Boolean) {
     )
 
         val blocks = listOf(TabContentBlock(testCase1, tab = true))
-
-        TabText(
-            blocks = blocks,
-            fontSizeSp = 14f,
-            modifier = Modifier.fillMaxSize(),
-            onChordClick = { }
-        )
 
         if (bottomSheetTrigger) {
             ChordModalBottomSheet(

@@ -53,7 +53,7 @@ import com.gbros.tabslite.data.AppDatabase
 import com.gbros.tabslite.data.tab.TabDifficulty
 import com.gbros.tabslite.data.tab.TabTuning
 import com.gbros.tabslite.utilities.KeepScreenOn
-import com.gbros.tabslite.view.tabview.TabText
+import com.gbros.tabslite.view.tabview.TabContentBlockView
 import com.gbros.tabslite.viewmodel.CreateTabViewModel
 import kotlinx.coroutines.launch
 
@@ -370,18 +370,16 @@ fun CreateTabContentScreen(
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
                     ) {
                         val content by viewState.annotatedContent.observeAsState(emptyList())
-                        val scrollState = rememberScrollState()
-                        TabText(
-                            blocks = content,
-                            fontSizeSp = 14f,
-                            onChordClick = {},
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                                .verticalScroll(scrollState)
-                        )
+                        content.forEach { annotation ->
+                            TabContentBlockView (
+                                block = annotation,
+                                fontSizeSp = 14f,
+                                onChordClick = {}
+                            )
+                        }
 
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Button(

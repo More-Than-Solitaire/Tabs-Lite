@@ -270,9 +270,10 @@ fun TabScreen(
     val songName by viewState.songName.observeAsState("...")
     val artistName by viewState.artist.observeAsState("...")
     val artistId = viewState.artistId.observeAsState("").value
-    val titleText = SpannedString(stringResource(R.string.tab_title))
-    val annotations = remember { titleText.getSpans(0, titleText.length, Annotation::class.java) }
-    val titleBuilder = buildAnnotatedString {
+    val titleText = SpannedString(stringResource(R.string.tab_title, songName, artistName))
+    val annotations = remember(songName, artistName) { titleText.getSpans(0, titleText.length, Annotation::class.java) }
+    val titleBuilder = remember(songName, artistName, artistId) {
+        buildAnnotatedString {
         annotations.forEach { annotation ->
             if (annotation.key == "arg") {
                 when (annotation.value) {
@@ -307,6 +308,7 @@ fun TabScreen(
                 }
             }
         }
+    }
     }
     val isPlaylistEntry by viewState.isPlaylistEntry.observeAsState(false)
     val playlistTitle by viewState.playlistTitle.observeAsState("...")
@@ -379,7 +381,7 @@ fun TabScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 4.dp,)
+                    .padding(bottom = 4.dp)
             )
             if (isPlaylistEntry) {
                 TabPlaylistNavigation(
