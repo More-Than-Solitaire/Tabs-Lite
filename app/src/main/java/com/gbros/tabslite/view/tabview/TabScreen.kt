@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -312,6 +313,8 @@ fun TabScreen(
     val songId by viewState.songId.observeAsState()
     val tabId by viewState.tabId.observeAsState()
     val chordsPinned by viewState.chordsPinned.observeAsState(false)
+    val chordBlocks = viewState.content.observeAsState(emptyList()).value
+    val loadingState = viewState.state.observeAsState(LoadingState.Loading).value
 
     KeepScreenOn()
 
@@ -421,16 +424,17 @@ fun TabScreen(
             }
         }
 
-        // content
-        item {
-            if (viewState.state.observeAsState(LoadingState.Loading).value is LoadingState.Success) {
-                TabText(
-                    blocks = viewState.content.observeAsState(emptyList()).value,
+        if (loadingState is LoadingState.Success) {
+            // content
+            items(items = chordBlocks) {
+                TabContentBlockView(
+                    block = it,
                     fontSizeSp = viewState.fontSizeSp.observeAsState(FALLBACK_FONT_SIZE_SP).value,
-                    onChordClick = onTextClick,
+                    onChordClick = onTextClick
                 )
+            }
+            item {
                 Spacer(modifier = Modifier.padding(vertical = 24.dp))
-
                 if (isPlaylistEntry) {
                     TabPlaylistNavigation(
                         modifier = Modifier.padding(end = 96.dp),  // extra for the autoscroll button
@@ -455,7 +459,10 @@ fun TabScreen(
                         )
                     )
                 )
-            } else {
+            }
+        } else {
+            // loading
+            item {
                 Box(
                     modifier = Modifier
                         .padding(all = 24.dp),
