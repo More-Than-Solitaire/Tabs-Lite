@@ -19,6 +19,7 @@ import androidx.lifecycle.switchMap
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
+import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.chord.Chord
 import com.gbros.tabslite.data.chord.ChordVariation
@@ -405,6 +406,11 @@ class TabViewModel
     override val author: LiveData<String> = tab.map { t -> t?.contributorUserName ?: "" }
 
     override val artist: LiveData<String> = tab.map { t -> t?.artistName ?: "" }
+
+    override val fontStylePreference: LiveData<FontStyle> = dataAccess.getLivePreference(Preference.FONT_STYLE).map { p ->
+        if (p != null) FontStyle.valueOf(p.value) else FontStyle.Modern
+    }
+
 
     /**
      * Fallback method of saving transposition while this tab is open, if this tab is not in a playlist or favorites. This is only used when the tab.transpose value from the database is null

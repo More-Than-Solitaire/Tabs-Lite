@@ -55,6 +55,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
@@ -408,6 +409,7 @@ fun TabScreen(
                 TabContentBlockView(
                     block = it,
                     fontSizeSp = viewState.fontSizeSp.observeAsState(FALLBACK_FONT_SIZE_SP).value,
+                    fontStyle = viewState.fontStylePreference.observeAsState(FontStyle.Modern).value,
                     onChordClick = onTextClick
                 )
             }
@@ -544,7 +546,8 @@ private fun TabViewPreview() {
         override val chordInstrument: LiveData<Instrument>,
         override val useFlats: LiveData<Boolean>,
         override val chordsPinned: LiveData<Boolean>,
-        override val pinnedChordVariations: LiveData<List<ChordVariation>>
+        override val pinnedChordVariations: LiveData<List<ChordVariation>>,
+        override val fontStylePreference: LiveData<FontStyle>
 
     ) : ITabViewState {
         constructor(tab: ITab): this(
@@ -582,7 +585,8 @@ private fun TabViewPreview() {
             chordInstrument = MutableLiveData(Instrument.Guitar),
             useFlats = MutableLiveData(false),
             chordsPinned = MutableLiveData(true),
-            pinnedChordVariations = MutableLiveData(emptyList())
+            pinnedChordVariations = MutableLiveData(emptyList()),
+            fontStylePreference = MutableLiveData(FontStyle.Modern)
         )
 
         override fun getCapoText(context: Context): LiveData<String> {

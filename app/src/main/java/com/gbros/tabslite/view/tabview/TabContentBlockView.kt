@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.tab.TabContentBlock
 import com.gbros.tabslite.ui.theme.AppTheme
 
@@ -39,6 +40,7 @@ fun TabContentBlockView(
     modifier: Modifier = Modifier,
     block: TabContentBlock,
     fontSizeSp: Float,
+    fontStyle: FontStyle,
     onChordClick: (chord: String) -> Unit
 ) {
     val textLayoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
@@ -70,6 +72,7 @@ fun TabContentBlockView(
                     val chord = if (annotation.item.startsWith("{il}")) annotation.item.substring(4) else annotation.item
                     ChordButton(
                         text = chord,
+                        fontStyle = fontStyle,
                         fontSizeSp = fontSizeSp,
                     ) {
                         onChordClick(chord)
@@ -143,6 +146,7 @@ private fun TabContentBlockViewTabPreview() {
         TabContentBlockView(
             block = TabContentBlock(builder.toAnnotatedString(), true),
             fontSizeSp = 14f,
+            fontStyle = FontStyle.Modern,
             onChordClick = {}
         )
     }
@@ -164,6 +168,7 @@ private fun TabContentBlockViewNonTabPreview() {
             TabContentBlockView(
                 block = TabContentBlock(builder.toAnnotatedString(), false),
                 fontSizeSp = 14f,
+                fontStyle = FontStyle.Mono,
                 onChordClick = {}
             )
         }

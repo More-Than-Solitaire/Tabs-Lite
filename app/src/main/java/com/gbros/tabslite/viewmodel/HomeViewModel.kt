@@ -10,18 +10,17 @@ import androidx.lifecycle.map
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
+import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.Preference
 import com.gbros.tabslite.data.ThemeSelection
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.playlist.PlaylistFileExportType
-import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.BackendConnection
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.homescreen.IHomeViewState
 import com.gbros.tabslite.view.playlists.PlaylistsSortBy
 import com.gbros.tabslite.view.songlist.SortBy
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -86,6 +85,13 @@ class HomeViewModel
         themePreference?.let { ThemeSelection.valueOf(themePreference.value) } ?: ThemeSelection.System
     }
 
+    /**
+     * The user's selected font style. Defaults to modern
+     */
+    override val selectedFontStyle: LiveData<FontStyle> = dataAccess.getLivePreference(Preference.FONT_STYLE).map { stylePreference ->
+        stylePreference?.let { FontStyle.valueOf(stylePreference.value) } ?: FontStyle.Modern
+    }
+
     //#endregion
 
     //#region public data
@@ -125,6 +131,15 @@ class HomeViewModel
     fun setAppTheme(theme: ThemeSelection) {
         CoroutineScope(Dispatchers.IO).launch {
             dataAccess.upsert(Preference(Preference.APP_THEME, theme.name))
+        }
+    }
+
+    /**
+     * Set the font style (modern or mono) by saving it to preferences
+     */
+    fun setTextStyle(style: FontStyle) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataAccess.upsert(Preference(Preference.FONT_STYLE, style.name))
         }
     }
 

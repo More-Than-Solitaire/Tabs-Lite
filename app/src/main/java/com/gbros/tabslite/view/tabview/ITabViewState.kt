@@ -1,9 +1,9 @@
 package com.gbros.tabslite.view.tabview
 
 import android.content.Context
-import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.LiveData
 import com.gbros.tabslite.LoadingState
+import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.chord.ChordVariation
 import com.gbros.tabslite.data.chord.Instrument
 import com.gbros.tabslite.data.playlist.Playlist
@@ -145,4 +145,9 @@ interface ITabViewState {
      * Map of chord names to their first chord variation for pinned display
      */
     val pinnedChordVariations: LiveData<List<ChordVariation>>
+
+    /**
+     * The user's selected font style preference for viewing tabs
+     */
+    val fontStylePreference: LiveData<FontStyle>
 }

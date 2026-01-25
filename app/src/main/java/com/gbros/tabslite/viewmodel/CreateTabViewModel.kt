@@ -10,6 +10,7 @@ import androidx.lifecycle.map
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
+import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.servertypes.TabRequestType
 import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabContentBlock
@@ -86,6 +87,10 @@ class CreateTabViewModel @AssistedInject constructor(
     )
 
     val createdTabId: MutableLiveData<String> = MutableLiveData("")
+
+    val fontStylePreference: LiveData<FontStyle> = dataAccess.getLivePreference(com.gbros.tabslite.data.Preference.FONT_STYLE).map { p ->
+        if (p != null) FontStyle.valueOf(p.value) else FontStyle.Modern
+    }
 
     //#endregion view state
 

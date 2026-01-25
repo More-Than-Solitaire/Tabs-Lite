@@ -62,6 +62,7 @@ import androidx.navigation.compose.composable
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.ThemeSelection
 import com.gbros.tabslite.data.playlist.Playlist
 import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
@@ -108,6 +109,7 @@ fun NavGraphBuilder.homeScreen(
             onImportPlaylists = viewModel::importPlaylists,
             onCreatePlaylist = viewModel::createPlaylist,
             onThemeSelectionChange = viewModel::setAppTheme,
+            onFontStyleSelectionChange = viewModel::setTextStyle,
             navigateToPlaylistById = onNavigateToPlaylist,
             navigateToTabByTabId = onNavigateToTab,
             navigateToPlaylistEntryById = onNavigateToPlaylistEntry,
@@ -131,6 +133,7 @@ fun HomeScreen(
     onImportPlaylists: (sourceFile: Uri, contentResolver: ContentResolver) -> Unit,
     onCreatePlaylist: (title: String, description: String) -> Unit,
     onThemeSelectionChange: (ThemeSelection) -> Unit,
+    onFontStyleSelectionChange: (FontStyle) -> Unit,
     navigateToTabByTabId: (id: String) -> Unit,
     navigateToPlaylistById: (id: Int) -> Unit,
     navigateToPlaylistEntryById: (id: Int) -> Unit,
@@ -169,6 +172,7 @@ fun HomeScreen(
     if (showAboutDialog) {
         AboutDialog(
             selectedTheme = viewState.selectedAppTheme.observeAsState(ThemeSelection.System).value,
+            selectedFontStyle = viewState.selectedFontStyle.observeAsState(FontStyle.Modern).value,
             onDismissRequest = { showAboutDialog = false },
             onExportPlaylistsClicked = {
                 showAboutDialog = false
@@ -188,7 +192,8 @@ fun HomeScreen(
                 importPlaylistsPickerLauncher.launch("application/json")
             },
             onSwitchThemeMode = onThemeSelectionChange,
-            onNavigateToCreateTab = onNavigateToCreateTab
+            onNavigateToCreateTab = onNavigateToCreateTab,
+            onSwitchFontStyle = onFontStyleSelectionChange
         )
     }
 
@@ -396,7 +401,8 @@ private fun HomeScreenPreview() {
         playlistImportProgress = MutableLiveData(0.6f),
         playlists = MutableLiveData(listOf()),
         playlistsSortBy = MutableLiveData(PlaylistsSortBy.Name),
-        selectedAppTheme = MutableLiveData(ThemeSelection.System)
+        selectedAppTheme = MutableLiveData(ThemeSelection.System),
+        selectedFontStyle = MutableLiveData(FontStyle.Modern)
     )
 
     val songListState = SongListViewStateForTest(
@@ -426,6 +432,7 @@ private fun HomeScreenPreview() {
             onImportPlaylists = {_,_->},
             onCreatePlaylist = {_,_->},
             onThemeSelectionChange = {},
+            onFontStyleSelectionChange = {},
             navigateToTabByTabId = {},
             navigateToPlaylistById = {},
             navigateToPlaylistEntryById = {},
@@ -439,7 +446,8 @@ private class HomeViewStateForTest(
     override val playlistImportState: LiveData<LoadingState>,
     override val playlists: LiveData<List<Playlist>>,
     override val playlistsSortBy: LiveData<PlaylistsSortBy>,
-    override val selectedAppTheme: LiveData<ThemeSelection>
+    override val selectedAppTheme: LiveData<ThemeSelection>,
+    override val selectedFontStyle: LiveData<FontStyle>
 ) : IHomeViewState
 
 private class SongListViewStateForTest(

@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.ui.theme.AppTheme
 
 @Composable
@@ -19,6 +20,7 @@ fun ChordButton(
     modifier: Modifier = Modifier,
     text: String,
     fontSizeSp: Float,
+    fontStyle: FontStyle,
     onClick: () -> Unit
 ){
     BasicText(
@@ -38,6 +40,6 @@ fun ChordButton(
 @Composable
 private fun ChordButtonPreview() {
     AppTheme {
-        ChordButton(text = "Am", fontSizeSp = 14f, onClick = {})
+        ChordButton(text = "Am", fontSizeSp = 14f, fontStyle = FontStyle.Modern, onClick = {})
     }
 }

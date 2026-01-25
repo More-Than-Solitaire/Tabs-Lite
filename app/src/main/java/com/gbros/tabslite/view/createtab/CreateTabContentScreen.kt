@@ -50,6 +50,7 @@ import androidx.navigation.compose.composable
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.AppDatabase
+import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.tab.TabDifficulty
 import com.gbros.tabslite.data.tab.TabTuning
 import com.gbros.tabslite.utilities.KeepScreenOn
@@ -377,6 +378,7 @@ fun CreateTabContentScreen(
                             TabContentBlockView (
                                 block = annotation,
                                 fontSizeSp = 14f,
+                                fontStyle = viewState.fontStylePreference.observeAsState(FontStyle.Modern).value,
                                 onChordClick = {}
                             )
                         }
