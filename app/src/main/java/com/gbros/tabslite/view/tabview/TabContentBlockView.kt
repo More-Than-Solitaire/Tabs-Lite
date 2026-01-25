@@ -19,6 +19,8 @@ import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.withAnnotation
@@ -28,6 +30,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import com.gbros.tabslite.R
 import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.tab.TabContentBlock
 import com.gbros.tabslite.ui.theme.AppTheme
@@ -47,6 +50,11 @@ fun TabContentBlockView(
     val chordAnnotations = remember(block.content) {
         block.content.getStringAnnotations("chord", 0, block.content.length)
     }
+
+    // only Android 8+ supports variable weight fonts
+    val selectedContentFontFamily = if (fontStyle == FontStyle.Mono) Font(R.font.roboto_mono_regular).toFontFamily() else null
+    val selectedChordFontFamily = if (fontStyle == FontStyle.Mono) Font(R.font.roboto_mono_bold).toFontFamily() else null
+
     Column(modifier = modifier) {
         val spacerSize = if (block.tab) 4.dp else 24.dp
         Spacer(modifier = Modifier.height(spacerSize))
@@ -61,6 +69,7 @@ fun TabContentBlockView(
                     },
                     style = TextStyle(
                         fontSize = TextUnit(fontSizeSp, TextUnitType.Sp),
+                        fontFamily = selectedContentFontFamily,
                         color = MaterialTheme.colorScheme.onSurface,
                         lineHeight = if (block.tab) 2.8.em else 1.5.em, // double spaced for tabs, normal for non-tab content
                         lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Bottom, LineHeightStyle.Trim.None),
@@ -72,7 +81,7 @@ fun TabContentBlockView(
                     val chord = if (annotation.item.startsWith("{il}")) annotation.item.substring(4) else annotation.item
                     ChordButton(
                         text = chord,
-                        fontStyle = fontStyle,
+                        fontFamily = selectedChordFontFamily,
                         fontSizeSp = fontSizeSp,
                     ) {
                         onChordClick(chord)
