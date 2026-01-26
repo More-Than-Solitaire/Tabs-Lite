@@ -152,3 +152,5 @@ fastlane/readme.md
 .idea/markdown.xml
 *.salive
 /.idea/copilot.*.xml
+/.idea/migrations.xml
+/.idea/runConfigurations.xml
