@@ -10,7 +10,6 @@ import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.servertypes.SongRequestType
 import com.gbros.tabslite.data.tab.SongGenre
-import com.gbros.tabslite.data.tab.TabDifficulty
 import com.gbros.tabslite.utilities.BackendConnection
 import com.gbros.tabslite.utilities.combine
 import com.gbros.tabslite.view.createtab.ICreateSongViewState
@@ -67,6 +66,7 @@ class CreateSongViewModel @AssistedInject constructor(
             val song = SongRequestType(
                 song_name = songName.value ?: "",
                 artist_name = artistName.value ?: "",
+                artist_id = artistId.value ?: "",
                 song_genre = (songGenre.value ?: SongGenre.Other).toString(),
                 total_votes = 0,
                 versions_count = 0,

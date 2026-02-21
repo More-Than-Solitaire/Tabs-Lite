@@ -1,11 +1,11 @@
 package com.gbros.tabslite.data.servertypes
 
-import com.google.firebase.firestore.ServerTimestamp
-import java.util.Date
+import kotlinx.serialization.Serializable
 
 /**
  * A new song to be created in the database.
  */
+@Serializable
 data class SongRequestType(
     var song_id: String = "",
     var song_name: String = "",
@@ -15,5 +15,4 @@ data class SongRequestType(
     var total_votes: Int = 0,
     var versions_count: Int = 0,
     var status: String = "pending",
-    @ServerTimestamp var created_at: Date? = null
 )
