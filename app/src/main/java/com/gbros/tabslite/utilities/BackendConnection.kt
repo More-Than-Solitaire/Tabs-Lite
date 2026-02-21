@@ -30,7 +30,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -87,9 +86,20 @@ object BackendConnection {
         require(song.artist_id.isNotBlank()) { "Artist ID cannot be blank - ensure the artist has been created first." }
         require(song.song_genre.isNotBlank()) { "Song genre cannot be blank" }
 
+        // check if an existing song exists with the same name and artist
+        val query = db.collection("songs")
+            .whereEqualTo("song_name", song.song_name)
+            .whereEqualTo("artist_name", song.artist_name)
+            .whereEqualTo("artist_id", song.artist_id)
+            .whereEqualTo("song_genre", song.song_genre)
+            .limit(1)
+        val querySnapshot = query.get().await()
+        if (!querySnapshot.isEmpty) {
+            return querySnapshot.documents[0].id
+        }
+
         val newSongRef = db.collection("songs").document()
         song.song_id = newSongRef.id
-        val json = Json.encodeToString(song)
         newSongRef.set(song).await()
         Log.v(TAG, "Created song ${newSongRef.id}")
         return newSongRef.id
