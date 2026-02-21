@@ -154,3 +154,6 @@ fastlane/readme.md
 /.idea/copilot.*.xml
 /.idea/migrations.xml
 /.idea/runConfigurations.xml
+
+# Sentry Config File
+sentry.properties

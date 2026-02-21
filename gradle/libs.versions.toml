@@ -33,6 +33,7 @@ chrynanChords = "2.4.1"
 composeExtendedGestures = "3.1"
 googleServices = "4.4.4"
 uiText = "1.10.3"
+sentry = "6.1.0"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -86,3 +87,4 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 navigationSafeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+sentry = { id = "io.sentry.android.gradle", version.ref = "sentry" }
