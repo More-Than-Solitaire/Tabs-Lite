@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -145,7 +146,7 @@ fun CreateTabContentScreen(
     val pagerState = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
-    val submissionStatus = viewState.submissionStatus.observeAsState(LoadingState.NotStarted)
+    val submissionStatus = viewState.submissionStatus.collectAsState(LoadingState.NotStarted)
     KeepScreenOn()
 
     // success dialog
@@ -215,7 +216,7 @@ fun CreateTabContentScreen(
                             .verticalScroll(rememberScrollState())
                     ) {
                         OutlinedTextField(
-                            value = viewState.selectedSongName.observeAsState(" ").value,
+                            value = viewState.selectedSongName.collectAsState(" ").value,
                             onValueChange = {},
                             label = { Text(stringResource(id = R.string.label_create_tab_song_name)) },
                             enabled = false,
@@ -223,7 +224,7 @@ fun CreateTabContentScreen(
                         )
 
                         OutlinedTextField(
-                            value = viewState.selectedArtistName.observeAsState(" ").value,
+                            value = viewState.selectedArtistName.collectAsState(" ").value,
                             onValueChange = { },
                             label = { Text(stringResource(id = R.string.label_create_tab_artist_name)) },
                             enabled = false,
@@ -231,14 +232,14 @@ fun CreateTabContentScreen(
                         )
 
                         OutlinedTextField(
-                            value = viewState.versionDescription.observeAsState("").value,
+                            value = viewState.versionDescription.collectAsState("").value,
                             onValueChange = versionDescriptionUpdated,
                             label = { Text(stringResource(id = R.string.label_create_tab_version_description)) },
                             singleLine = false,
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        val difficultyState = viewState.difficulty.observeAsState(TabDifficulty.NotSet)
+                        val difficultyState = viewState.difficulty.collectAsState(TabDifficulty.NotSet)
                         var difficultyExpanded by remember { mutableStateOf(false) }
                         ExposedDropdownMenuBox(
                             expanded = difficultyExpanded,
@@ -271,7 +272,7 @@ fun CreateTabContentScreen(
                             }
                         }
 
-                        val tuningState = viewState.tuning.observeAsState(TabTuning.Standard)
+                        val tuningState = viewState.tuning.collectAsState(TabTuning.Standard)
                         var tuningExpanded by remember { mutableStateOf(false) }
                         ExposedDropdownMenuBox(
                             expanded = tuningExpanded,
@@ -304,7 +305,7 @@ fun CreateTabContentScreen(
                             }
                         }
 
-                        val capo = viewState.capo.observeAsState(0)
+                        val capo = viewState.capo.collectAsState(0)
                         OutlinedTextField(
                             value = capo.value.toString(),
                             onValueChange = { capoUpdated(it.toIntOrNull() ?: 0) },
@@ -328,7 +329,7 @@ fun CreateTabContentScreen(
                             .padding(16.dp)
                             .fillMaxSize()
                     ) {
-                        val tabContent by viewState.content.observeAsState(TextFieldValue())
+                        val tabContent by viewState.content.collectAsState(TextFieldValue())
                         var chordToInsert by remember { mutableStateOf("") }
 
                         OutlinedTextField(
@@ -373,7 +374,7 @@ fun CreateTabContentScreen(
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
-                        val content by viewState.annotatedContent.observeAsState(emptyList())
+                        val content by viewState.annotatedContent.collectAsState(emptyList())
                         content.forEach { annotation ->
                             TabContentBlockView (
                                 block = annotation,
@@ -393,7 +394,7 @@ fun CreateTabContentScreen(
                             Button(
                                 onClick = saveTab,
                                 modifier = Modifier.weight(1f),
-                                enabled = viewState.dataValidated.observeAsState(false).value && (submissionStatus.value is LoadingState.NotStarted || submissionStatus.value is LoadingState.Error)
+                                enabled = viewState.dataValidated.collectAsState(false).value && (submissionStatus.value is LoadingState.NotStarted || submissionStatus.value is LoadingState.Error)
                             ) {
                                 Text(stringResource(id = R.string.action_create_tab))
                             }

@@ -4,21 +4,19 @@ import android.util.Log
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.FontStyle
 import com.gbros.tabslite.data.servertypes.TabRequestType
-import com.gbros.tabslite.data.tab.Tab
 import com.gbros.tabslite.data.tab.TabContentBlock
 import com.gbros.tabslite.data.tab.TabDifficulty
 import com.gbros.tabslite.data.tab.TabTuning
 import com.gbros.tabslite.utilities.BackendConnection
 import com.gbros.tabslite.utilities.TAG
-import com.gbros.tabslite.utilities.combine
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -26,6 +24,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = CreateTabViewModel.CreateTabViewModelFactory::class)
 class CreateTabViewModel @AssistedInject constructor(
@@ -54,28 +57,28 @@ class CreateTabViewModel @AssistedInject constructor(
 
     //#endregion dependency injection factory
 
-    //#region private data
-
-    val selectedSong: LiveData<Tab?> = dataAccess.getFirstTabBySongId(selectedSongId)
-
-    //#endregion
-
     //#region view state
 
-    val content: MutableLiveData<TextFieldValue> = MutableLiveData(TextFieldValue(""))
-    val annotatedContent: LiveData<List<TabContentBlock>> = content.map { textFieldValue -> TabContent(urlHandler = {}, content = textFieldValue.text).contentBlocks }
-    val selectedSongName: LiveData<String> = selectedSong.map { tab -> tab?.songName ?: "Error: $selectedSongId not found" }
-    val selectedArtistName: LiveData<String> = selectedSong.map { tab -> tab?.artistName ?: "" }
+    val content: MutableStateFlow<TextFieldValue> = MutableStateFlow(TextFieldValue(""))
+    val annotatedContent: StateFlow<List<TabContentBlock>> = content.map { textFieldValue ->
+        TabContent(urlHandler = {}, content = textFieldValue.text).contentBlocks
+    }.stateIn(
+        scope = viewModelScope,
+        started = kotlinx.coroutines.flow.SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
+    val selectedSongName: MutableStateFlow<String> = MutableStateFlow("")
+    val selectedArtistName: MutableStateFlow<String> = MutableStateFlow("")
 
-    val capo: MutableLiveData<Int> = MutableLiveData(0)
-    val difficulty: MutableLiveData<TabDifficulty> = MutableLiveData(TabDifficulty.NotSet)
-    val versionDescription: MutableLiveData<String> = MutableLiveData("")
-    val tuning: MutableLiveData<TabTuning> = MutableLiveData(TabTuning.Standard)
+    val capo: MutableStateFlow<Int> = MutableStateFlow(0)
+    val difficulty: MutableStateFlow<TabDifficulty> = MutableStateFlow(TabDifficulty.NotSet)
+    val versionDescription: MutableStateFlow<String> = MutableStateFlow("")
+    val tuning: MutableStateFlow<TabTuning> = MutableStateFlow(TabTuning.Standard)
 
     // track status of Submit action. Once it's complete, the view should navigate to the next page; this page's actions are done
-    val submissionStatus: MutableLiveData<LoadingState> = MutableLiveData(LoadingState.NotStarted)
+    val submissionStatus: MutableStateFlow<LoadingState> = MutableStateFlow(LoadingState.NotStarted)
 
-    val dataValidated: LiveData<Boolean> = combine(
+    val dataValidated: StateFlow<Boolean> = kotlinx.coroutines.flow.combine(
         content.map { it.text.isNotEmpty() },
         selectedSongName.map { it.isNotEmpty() },
         selectedArtistName.map { it.isNotEmpty() },
@@ -83,10 +86,14 @@ class CreateTabViewModel @AssistedInject constructor(
         versionDescription.map { it.length <= 10000 },
         tuning.map { it != null },
         capo.map { it in 0..30 },
-        combineFn = { values -> values.all { it == true } }
+        transform = { values: Array<Boolean> -> values.all { it } }
+    ).stateIn(
+        scope = viewModelScope,
+        started = kotlinx.coroutines.flow.SharingStarted.Eagerly,
+        initialValue = false
     )
 
-    val createdTabId: MutableLiveData<String> = MutableLiveData("")
+    val createdTabId: MutableStateFlow<String> = MutableStateFlow("")
 
     val fontStylePreference: LiveData<FontStyle> = dataAccess.getLivePreference(com.gbros.tabslite.data.Preference.FONT_STYLE).map { p ->
         if (p != null) FontStyle.valueOf(p.value) else FontStyle.Modern
@@ -96,15 +103,15 @@ class CreateTabViewModel @AssistedInject constructor(
 
     //#region view actions
 
-    fun difficultyUpdated(difficulty: TabDifficulty) = this.difficulty.postValue(difficulty)
+    fun difficultyUpdated(difficulty: TabDifficulty) { this.difficulty.value = difficulty }
 
-    fun capoUpdated(capo: Int) = this.capo.postValue(capo)
+    fun capoUpdated(capo: Int) { this.capo.value = capo }
 
-    fun contentUpdated(content: TextFieldValue) = this.content.postValue(content)
+    fun contentUpdated(content: TextFieldValue) { this.content.value = content }
 
-    fun versionDescriptionUpdated(versionDescription: String) = this.versionDescription.postValue(versionDescription)
+    fun versionDescriptionUpdated(versionDescription: String) { this.versionDescription.value = versionDescription }
 
-    fun tuningUpdated(tuning: TabTuning) = this.tuning.postValue(tuning)
+    fun tuningUpdated(tuning: TabTuning) { this.tuning.value = tuning }
 
     fun insertChord(chord: String) {
         if (chord.isEmpty()) return
@@ -115,7 +122,7 @@ class CreateTabViewModel @AssistedInject constructor(
         val newText = currentContent.text.replaceRange(selection.start, selection.end, textToInsert)
         val newSelectionStart = selection.start + textToInsert.length
         val newContent = TextFieldValue(newText, selection = TextRange(newSelectionStart))
-        content.postValue(newContent)
+        content.value = newContent
     }
 
     //#endregion
@@ -169,21 +176,21 @@ class CreateTabViewModel @AssistedInject constructor(
 
             CoroutineScope(Dispatchers.IO).async {
                 val completedTab = BackendConnection.createTab(tab = newTab)
-                createdTabId.postValue(completedTab.tabId)
+                createdTabId.value = completedTab.tabId
                 dataAccess.upsert(completedTab)
                 dataAccess.insertToFavorites(completedTab.tabId, 0)
-                submissionStatus.postValue(LoadingState.Success)
+                submissionStatus.value = LoadingState.Success
             }.invokeOnCompletion { throwable ->
                 if (throwable != null) {
                     Log.e(TAG, "Error submitting tab", throwable)
-                    submissionStatus.postValue(LoadingState.Error(messageStringRef = R.string.message_tab_creation_failed, errorDetails = throwable.message ?: ""))
+                    submissionStatus.value = LoadingState.Error(messageStringRef = R.string.message_tab_creation_failed, errorDetails = throwable.message ?: "")
                 }
             }
 
         }
         catch (e: IllegalArgumentException) {
             Log.e(TAG, "Missing or invalid data in CreateTabViewModel.submitTab(); the app shouldn't have let the user click Submit", e)
-            submissionStatus.postValue(LoadingState.Error(messageStringRef = R.string.message_tab_creation_failed_missing_arguments))
+            submissionStatus.value = LoadingState.Error(messageStringRef = R.string.message_tab_creation_failed_missing_arguments)
         }
     }
 
@@ -195,15 +202,34 @@ class CreateTabViewModel @AssistedInject constructor(
         if (startingContentTabId != null) {
             CoroutineScope(Dispatchers.IO).async {
                 val tabContent = dataAccess.getTabInstance(startingContentTabId)
-                content.postValue(TextFieldValue(tabContent.content))
-                capo.postValue(tabContent.capo)
-                tuning.postValue(TabTuning.fromString(tabContent.tuning))
+                content.value = TextFieldValue(tabContent.content)
+                capo.value = tabContent.capo
+                tuning.value = TabTuning.fromString(tabContent.tuning)
                 Log.d(TAG, "prefilled tab content: ${tabContent.content}")
             }.invokeOnCompletion { throwable ->
                 if (throwable != null) {
                     Log.e(TAG, "Error prefilling tab content", throwable)
-                    submissionStatus.postValue(LoadingState.Error(messageStringRef = R.string.message_prefilling_tab_failed, errorDetails = throwable.message ?: "Unknown error"))
+                    submissionStatus.value = LoadingState.Error(messageStringRef = R.string.message_prefilling_tab_failed, errorDetails = throwable.message ?: "Unknown error")
                 }
+            }
+        }
+
+        // ensure that the song name has been fetched
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val songDetails = BackendConnection.fetchSongDetails(selectedSongId)
+                if (songDetails == null) {
+                    Log.e(TAG, "Error fetching song details for tab creation")
+                    selectedSongName.value = "Error: $selectedSongId not found."
+                    selectedArtistName.value = ""
+                } else {
+                    selectedSongName.value = songDetails.song_name
+                    selectedArtistName.value = songDetails.artist_name
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching song details for tab creation", e)
+                selectedSongName.value = "Error: $selectedSongId not found."
+                selectedArtistName.value = ""
             }
         }
     }

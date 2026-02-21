@@ -129,6 +129,18 @@ object BackendConnection {
         return querySnapshot.documents[0].id
     }
 
+    suspend fun fetchSongDetails(songId: String): SongRequestType? {
+        if (songId.isBlank()) return null
+
+        val songRef = db.collection("songs").document(songId)
+        val song = songRef.get().await()
+        if (!song.exists()) {
+            return null
+        }
+
+        return song.toObject<SongRequestType>()
+    }
+
     /**
      * Create a new artist in the database.
      *
