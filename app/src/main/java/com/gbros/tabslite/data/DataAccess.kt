@@ -28,6 +28,7 @@ import com.gbros.tabslite.data.tab.TabWithDataPlaylistEntry
 import com.gbros.tabslite.utilities.TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 /**
@@ -88,6 +89,9 @@ interface DataAccess {
 
     @Query("SELECT *, 0 as transpose FROM tabs WHERE song_id = :songId")
     fun getTabsBySongId(songId: String): LiveData<List<Tab>>
+
+    @Query("SELECT *, 0 as transpose FROM tabs WHERE song_name = :songName AND (:allowPending OR status == 'approved')")
+    fun getTabsBySongName(songName: String, allowPending: Boolean = false): Flow<List<Tab>>
 
     @Query("SELECT *, 0 as transpose FROM tabs WHERE song_id = :songId LIMIT 1")
     fun getFirstTabBySongId(songId: String): LiveData<Tab?>

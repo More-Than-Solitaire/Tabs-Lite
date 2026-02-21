@@ -438,6 +438,44 @@ object BackendConnection {
         }
     }
 
+    /**
+     * Fetch all tabs from Firestore with the passed song name and insert them into the database.
+     */
+    suspend fun fetchAllTabsBySongName(songName: String, dataAccess: DataAccess, allowPending: Boolean = false) = withContext(Dispatchers.IO) {
+        val tabCollectionRef = db.collection("tabs")
+        val allowedStatuses = if (allowPending) listOf("approved", "pending") else listOf("approved")
+        val query = tabCollectionRef
+            .whereIn("status", allowedStatuses)
+            .whereEqualTo("song_name", songName)
+            .limit(20)
+
+        try {
+            val querySnapshot = query.get().await()
+            if (querySnapshot.isEmpty) {
+                Log.d(TAG, "No tabs found for song: $songName")
+                return@withContext // No tabs found, so we're done.
+            }
+
+            for (document in querySnapshot.documents) {
+                try {
+                    val tabRequest = document.toObject<TabRequestType>()
+                    val tab = tabRequest?.getTabFull()
+                    if (tab?.content?.isBlank() == false) {
+                        dataAccess.upsert(tab)
+                    } else {
+                        Log.e(TAG, "Fetched tab ${document.id} for song $songName couldn't be parsed, or has blank content. Skipping.")
+                    }
+                } catch (ex: Exception) {
+                    Log.e(TAG, "Error processing a tab document (${document.id}) for songId $songName", ex)
+                    // Continue processing other tabs
+                }
+            }
+        } catch (ex: Exception) {
+            throw TabFetchException("Error fetching tabs for songName $songName from Firestore.", ex)
+        }
+    }
+
+
     //#endregion
 
     //#region private methods

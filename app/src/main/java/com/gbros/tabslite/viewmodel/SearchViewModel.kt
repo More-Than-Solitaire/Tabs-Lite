@@ -3,13 +3,14 @@ package com.gbros.tabslite.viewmodel
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.gbros.tabslite.LoadingState
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.DataAccess
 import com.gbros.tabslite.data.Search
 import com.gbros.tabslite.data.tab.ITab
-import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.utilities.BackendConnection
+import com.gbros.tabslite.utilities.TAG
 import com.gbros.tabslite.view.searchresultsonglist.ISearchViewState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -21,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlin.time.Duration.Companion.seconds
 
@@ -29,6 +31,7 @@ class SearchViewModel
 @AssistedInject constructor(
     @Assisted("query") override val query: String,
     @Assisted("artistId") val artistId: String?,
+    @Assisted private val allowPending: Boolean,
     @Assisted dataAccess: DataAccess
 ) : ViewModel(), ISearchViewState {
 
@@ -36,7 +39,7 @@ class SearchViewModel
 
     @AssistedFactory
     interface SearchViewModelFactory {
-        fun create(@Assisted("query") query: String, @Assisted("artistId") artistId: String?, dataAccess: DataAccess): SearchViewModel
+        fun create(@Assisted("query") query: String, @Assisted("artistId") artistId: String?, allowPending: Boolean, dataAccess: DataAccess): SearchViewModel
     }
 
     //#endregion
@@ -71,6 +74,8 @@ class SearchViewModel
 
     private var searchMutex = Mutex(locked = false)
 
+    private val exactMatches = dataAccess.getTabsBySongName(query, allowPending)
+
     //#endregion
 
     //#region public data
@@ -94,10 +99,11 @@ class SearchViewModel
             val fetchSearchResultsJob = CoroutineScope(Dispatchers.IO).async {
                 searchState.postValue(LoadingState.Loading)
                 val newSearchResults = searchSession.fetchNextSearchResults()
+                val currentResults = results.value
                 if (newSearchResults.isNotEmpty()) {
-                    val updatedResults = results.value?.toMutableList()
-                    updatedResults?.addAll(newSearchResults)
-                    results.postValue(updatedResults?.distinct() ?: newSearchResults)
+                    val updatedResults = currentResults?.toMutableList() ?: mutableListOf()
+                    updatedResults.addAll(newSearchResults)
+                    results.postValue(updatedResults.distinct())
                 } else {
                     allResultsLoaded.postValue(true)
                 }
@@ -148,6 +154,20 @@ class SearchViewModel
     //#region init
 
     init {
+        viewModelScope.launch {
+            // fetch exact matches for the query
+            BackendConnection.fetchAllTabsBySongName(query, dataAccess, allowPending)
+        }
+
+        viewModelScope.launch {
+            exactMatches.collect {
+                if (it.isNotEmpty()) {
+                    val previousResults = results.value?.toMutableList() ?: mutableListOf()
+                    results.postValue((previousResults + it).distinct())
+                }
+            }
+        }
+
         onMoreSearchResultsNeeded()  // preload the first page of search results
     }
 

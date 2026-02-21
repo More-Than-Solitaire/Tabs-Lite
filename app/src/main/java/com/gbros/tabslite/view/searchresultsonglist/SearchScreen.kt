@@ -88,7 +88,7 @@ fun NavGraphBuilder.searchByTitleScreen(
     ) { navBackStackEntry ->
         val query = URLDecoder.decode(navBackStackEntry.arguments!!.getString(TITLE_SEARCH_NAV_ARG, ""), "utf-8")
         val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create(query, null, db.dataAccess()) }
+        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create(query, null, false, db.dataAccess()) }
         SearchScreen(
             viewState = viewModel,
             tabSearchBarViewState = viewModel.tabSearchBarViewModel,
@@ -135,7 +135,7 @@ fun NavGraphBuilder.listSongsByArtistIdScreen(
     ) { navBackStackEntry ->
         val artistId = navBackStackEntry.arguments!!.getString(ARTIST_SONG_LIST_NAV_ARG)
         val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create("", artistId, db.dataAccess()) }
+        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create("", artistId, false, db.dataAccess()) }
         SearchScreen(
             viewState = viewModel,
             tabSearchBarViewState = viewModel.tabSearchBarViewModel,
@@ -179,7 +179,7 @@ fun NavGraphBuilder.selectSongByTitleScreen(
     ) { navBackStackEntry ->
         val query = navBackStackEntry.arguments!!.getString(SONG_SELECTION_NAV_ARG, "")
         val db = AppDatabase.getInstance(LocalContext.current)
-        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create(query, null, db.dataAccess()) }
+        val viewModel: SearchViewModel = hiltViewModel<SearchViewModel, SearchViewModel.SearchViewModelFactory> { factory -> factory.create(query, null, true, db.dataAccess()) }
         SearchScreen(
             viewState = viewModel,
             tabSearchBarViewState = viewModel.tabSearchBarViewModel,
