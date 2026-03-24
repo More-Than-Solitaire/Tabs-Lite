@@ -3,13 +3,17 @@ package com.gbros.tabslite.view.homescreen
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
@@ -30,14 +34,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.Dialog
 import com.gbros.tabslite.R
 import com.gbros.tabslite.data.FontStyle
@@ -58,50 +66,86 @@ fun AboutDialog(
     onSwitchFontStyle: (FontStyle) -> Unit
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
-        Card(
-            modifier = modifier,
-            shape = MaterialTheme.shapes.extraLarge
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
+        BoxWithConstraints {
+            val dialogMaxHeight = maxHeight * 0.98f
+            Card(
+                modifier = modifier.heightIn(max = dialogMaxHeight),
+                shape = MaterialTheme.shapes.extraLarge
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    IconButton(modifier = Modifier.padding(all = 4.dp), onClick = onDismissRequest) {
-                        Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(id = R.string.generic_action_close))
+                Column(modifier = Modifier.heightIn(max = dialogMaxHeight)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            IconButton(modifier = Modifier.padding(all = 4.dp), onClick = onDismissRequest) {
+                                Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(id = R.string.generic_action_close))
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .matchParentSize(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(text = stringResource(id = R.string.app_name), style = MaterialTheme.typography.titleLarge)
+                        }
                     }
-                }
-                Row(
-                    modifier = Modifier
-                        .matchParentSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(text = stringResource(id = R.string.app_name), style = MaterialTheme.typography.titleLarge)
-                }
-            }
 
-            Card(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .fillMaxWidth(),
-                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                shape = MaterialTheme.shapes.extraLarge.copy(bottomStart = MaterialTheme.shapes.extraSmall.bottomStart, bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd)
-            ) {
-                Text(modifier = Modifier.padding(all = 16.dp), text = stringResource(id = R.string.app_about))
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Card(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .fillMaxWidth(),
-                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                shape = MaterialTheme.shapes.extraSmall
-            ) {
-                Column {
+                    Card(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .fillMaxWidth()
+                            .weight(1f, fill = false),
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                        shape = MaterialTheme.shapes.extraLarge.copy(bottomStart = MaterialTheme.shapes.extraSmall.bottomStart, bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd)
+                    ) {
+                        BoxWithConstraints {
+                            val scrollState = rememberScrollState()
+                            val contentMaxHeight = maxHeight
+                            val scrollbarTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                            val scrollbarThumbColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                            val textHeightModifier = Modifier
+                                .padding(all = 16.dp)
+                                .verticalScroll(scrollState)
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Text(
+                                    modifier = textHeightModifier.weight(1f),
+                                    text = stringResource(id = R.string.app_about)
+                                )
+                                if (scrollState.maxValue > 0) {
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(top = 16.dp, end = 8.dp)
+                                            .width(4.dp)
+                                            .height(contentMaxHeight)
+                                            .drawBehind {
+                                                drawRect(color = scrollbarTrackColor)
+                                                val thumbHeight = size.height * (size.height / (size.height + scrollState.maxValue))
+                                                val thumbTop = (size.height - thumbHeight) * (scrollState.value.toFloat() / scrollState.maxValue.toFloat())
+                                                drawRect(
+                                                    color = scrollbarThumbColor,
+                                                    topLeft = Offset(0f, thumbTop),
+                                                    size = androidx.compose.ui.geometry.Size(size.width, thumbHeight)
+                                                )
+                                            }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Card(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .fillMaxWidth(),
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                        shape = MaterialTheme.shapes.extraSmall
+                    ) {
+                        Column {
                     // theme selection
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -281,6 +325,11 @@ fun AboutDialog(
         }
     }
 }
+
+}
+
+}
+
 
 @Composable @Preview
 private fun AboutDialogPreview() {
