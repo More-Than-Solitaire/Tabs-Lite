@@ -90,6 +90,7 @@ dependencies {
     implementation(libs.google.dagger.hilt.android)
     implementation(libs.room.ktx)
     implementation(libs.androidx.compose.ui.text)
+    implementation(libs.androidx.uiautomator)
     ksp(libs.room.compiler)
     ksp(libs.google.dagger.hilt.android.compiler)
     implementation(libs.org.jetbrains.kotlin.stdlib.jdk8)
@@ -104,6 +105,12 @@ dependencies {
     // Debug dependencies
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Android instrumented UI tests
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.10.3")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
 }
 
 
