@@ -157,3 +157,6 @@ fastlane/readme.md
 
 # Sentry Config File
 sentry.properties
+
+# Android Test Results User Preferences
+.idea/androidTestResultsUserPreferences.xml

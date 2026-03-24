@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
@@ -213,7 +214,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth(),
                 leadingIcon = {
-                    IconButton(onClick = { showAboutDialog = true }) {
+                    IconButton(onClick = { showAboutDialog = true }, modifier = Modifier.testTag("aboutButton")) {
                         Box(modifier = Modifier) {
                             val importProgress = viewState.playlistImportProgress.observeAsState(0f)
                             CircularProgressIndicator(progress = { importProgress.value })
