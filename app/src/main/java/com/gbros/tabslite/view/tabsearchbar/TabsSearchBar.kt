@@ -50,13 +50,14 @@ fun TabsSearchBar(
     viewState: ITabSearchBarViewState,
     onQueryChange: (newQuery: String) -> Unit,
     onSearch: (query: String) -> Unit,
+    blockReExpansionAfterSearch: Boolean = false,
     onNavigateToTabById: ((tabId: String) -> Unit)? = null,
     onNavigateToPlaylistEntryById: ((playlistEntryId: Int) -> Unit)? = null
 ) {
     val initialQuery = viewState.query.value ?: ""
     val query = viewState.query.observeAsState("")
     var active by remember { mutableStateOf(false) }
-    var searchSubmitted by remember { mutableStateOf(initialQuery.isNotBlank()) }
+    var searchSubmitted by remember { mutableStateOf(initialQuery.isNotBlank() && blockReExpansionAfterSearch) }
     val lazyColumnState = rememberLazyListState()
     val searchSuggestions = viewState.searchSuggestions.observeAsState(listOf())
     val suggestedTabs = viewState.tabSuggestions.observeAsState(listOf())

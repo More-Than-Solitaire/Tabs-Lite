@@ -212,6 +212,7 @@ fun SearchScreen(
     var needMoreSearchResults by remember { mutableStateOf(true) }
     val searchResults = viewState.results.observeAsState(listOf())
     val searchState = viewState.searchState.observeAsState(LoadingState.Loading)
+    var blockReExpansionAfterSearch by remember { mutableStateOf(onNavigateToCreateNewSong != null) }
 
     // remember that we bumped into the end until we get more results
     needMoreSearchResults = needMoreSearchResults || !lazyColumnState.canScrollForward
@@ -225,13 +226,17 @@ fun SearchScreen(
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
             leadingIcon = {
-                IconButton(onClick = onNavigateBack) {
+                IconButton(onClick = {
+                    blockReExpansionAfterSearch = false
+                    onNavigateBack()
+                }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.generic_action_back))
                 }
             },
             viewState = tabSearchBarViewState,
             onSearch = onNavigateToSearch,
             onQueryChange = onTabSearchBarQueryChange,
+            blockReExpansionAfterSearch = blockReExpansionAfterSearch,
             onNavigateToTabById = onNavigateToTabByTabId,
             onNavigateToPlaylistEntryById = onNavigateToPlaylistEntryByEntryId
         )
