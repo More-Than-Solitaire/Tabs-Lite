@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -84,8 +85,13 @@ fun AboutDialog(
                 shape = MaterialTheme.shapes.extraLarge
             ) {
                 Column(modifier = Modifier.heightIn(max = dialogMaxHeight)) {
-                    // Header
-                    AboutDialogHeader(onDismissRequest)
+                    if (isLandscape) {
+                        // Landscape: Custom header with title left, buttons right
+                        LandscapeAboutDialogHeader(onDismissRequest)
+                    } else {
+                        // Portrait: Standard centered header
+                        AboutDialogHeader(onDismissRequest)
+                    }
 
                     if (isLandscape) {
                         // Landscape: Two-column layout
@@ -94,38 +100,53 @@ fun AboutDialog(
                                 .fillMaxWidth()
                                 .weight(1f, fill = false)
                         ) {
-                            // Left column: About text (30%)
+                            // Left column: About text (40%) - rounded corners on left side
                             Card(
                                 modifier = Modifier
                                     .padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
-                                    .weight(0.4f),
+                                    .weight(0.4f)
+                                    .fillMaxHeight(),
                                 colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
-                                shape = MaterialTheme.shapes.extraLarge.copy(bottomStart = MaterialTheme.shapes.extraSmall.bottomStart, bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd)
+                                shape = MaterialTheme.shapes.extraLarge.copy(
+                                    topEnd = MaterialTheme.shapes.extraSmall.topEnd,
+                                    bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd
+                                )
                             ) {
                                 AboutTextCard()
                             }
 
-                            // Right column: Settings and actions (70%)
-                            Column(
+                            // Right column: Settings and actions (60%) - rounded corners on right side
+                            Card(
                                 modifier = Modifier
                                     .padding(end = 8.dp, top = 4.dp, bottom = 4.dp)
                                     .weight(0.6f)
+                                    .fillMaxHeight(),
+                                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer),
+                                shape = MaterialTheme.shapes.extraLarge.copy(
+                                    topStart = MaterialTheme.shapes.extraSmall.topStart,
+                                    bottomStart = MaterialTheme.shapes.extraSmall.bottomStart
+                                )
                             ) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                ThemeFontSettingsCard(
-                                    selectedTheme = selectedTheme,
-                                    selectedFontStyle = selectedFontStyle,
-                                    onSwitchThemeMode = onSwitchThemeMode,
-                                    onSwitchFontStyle = onSwitchFontStyle
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                ImportExportActionsCard(
-                                    onImportPlaylistsClicked = onImportPlaylistsClicked,
-                                    onExportPlaylistsClicked = onExportPlaylistsClicked,
-                                    onNavigateToCreateTab = onNavigateToCreateTab,
-                                    compact = true
-                                )
-                                ReviewDonateButtons()
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    // Top: Import/Export with Create New Tab
+                                    ImportExportActionsCompact(
+                                        onImportPlaylistsClicked = onImportPlaylistsClicked,
+                                        onExportPlaylistsClicked = onExportPlaylistsClicked,
+                                        onNavigateToCreateTab = onNavigateToCreateTab
+                                    )
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    // Bottom: Theme/Font Settings
+                                    ThemeFontSettingsCard(
+                                        selectedTheme = selectedTheme,
+                                        selectedFontStyle = selectedFontStyle,
+                                        onSwitchThemeMode = onSwitchThemeMode,
+                                        onSwitchFontStyle = onSwitchFontStyle
+                                    )
+                                }
                             }
                         }
                     } else {
@@ -178,6 +199,40 @@ private fun AboutDialogHeader(onDismissRequest: () -> Unit) {
             horizontalArrangement = Arrangement.Center
         ) {
             Text(text = stringResource(id = R.string.app_name), style = MaterialTheme.typography.titleLarge)
+        }
+    }
+}
+
+@Composable
+private fun LandscapeAboutDialogHeader(onDismissRequest: () -> Unit) {
+    val uriHandler = LocalUriHandler.current
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Close button
+        IconButton(modifier = Modifier.padding(all = 4.dp), onClick = onDismissRequest) {
+            Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(id = R.string.generic_action_close))
+        }
+
+        // Title - left aligned
+        Text(
+            text = stringResource(id = R.string.app_name),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(start = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Review and Donate buttons - right aligned
+        TextButton(onClick = { uriHandler.openUri("https://play.google.com/store/apps/details?id=com.gbros.tabslite") }) {
+            Text(text = stringResource(id = R.string.app_action_leave_review))
+        }
+        TextButton(onClick = { uriHandler.openUri("https://github.com/sponsors/More-Than-Solitaire") }) {
+            Text(text = stringResource(id = R.string.app_action_donate))
         }
     }
 }
@@ -410,6 +465,52 @@ private fun ImportExportActionsCard(
                     style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ImportExportActionsCompact(
+    onImportPlaylistsClicked: () -> Unit,
+    onExportPlaylistsClicked: () -> Unit,
+    onNavigateToCreateTab: () -> Unit
+) {
+    val rowPadding = 4.dp
+    val iconPadding = 4.dp
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(all = rowPadding)
+                .fillMaxWidth()
+                .clickable { onImportPlaylistsClicked() }
+        ) {
+            Icon(modifier = Modifier.padding(all = iconPadding), imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), contentDescription = "")
+            Text(
+                modifier = Modifier.padding(all = iconPadding),
+                text = stringResource(id = R.string.app_action_import_playlists),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(all = rowPadding)
+                .fillMaxWidth()
+                .clickable { onExportPlaylistsClicked() }
+        ) {
+            Icon(modifier = Modifier.padding(all = iconPadding), imageVector = ImageVector.vectorResource(id = R.drawable.ic_upload), contentDescription = "")
+            Text(
+                modifier = Modifier.padding(all = iconPadding),
+                text = stringResource(id = R.string.app_action_export_playlists),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        TextButton(onClick = onNavigateToCreateTab) {
+            Text(
+                text = "Create New Tab",
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
