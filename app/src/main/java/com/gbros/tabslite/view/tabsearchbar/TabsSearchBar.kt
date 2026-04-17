@@ -25,8 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -51,27 +50,46 @@ fun TabsSearchBar(
     viewState: ITabSearchBarViewState,
     onQueryChange: (newQuery: String) -> Unit,
     onSearch: (query: String) -> Unit,
+    blockReExpansionAfterSearch: Boolean = false,
     onNavigateToTabById: ((tabId: String) -> Unit)? = null,
     onNavigateToPlaylistEntryById: ((playlistEntryId: Int) -> Unit)? = null
 ) {
+    val initialQuery = viewState.query.value ?: ""
     val query = viewState.query.observeAsState("")
     var active by remember { mutableStateOf(false) }
+    var searchSubmitted by remember { mutableStateOf(initialQuery.isNotBlank() && blockReExpansionAfterSearch) }
     val lazyColumnState = rememberLazyListState()
     val searchSuggestions = viewState.searchSuggestions.observeAsState(listOf())
     val suggestedTabs = viewState.tabSuggestions.observeAsState(listOf())
-    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
-    val onActiveChange = {expanded: Boolean -> active = expanded}
+    val onActiveChange = {expanded: Boolean ->
+        if (expanded && searchSubmitted) {
+            // block re-expansion after a search was submitted
+        } else {
+            active = expanded
+        }
+    }
     SearchBar(
-        modifier = modifier.focusRequester(focusRequester),
+        modifier = modifier,
         expanded = active,
         onExpandedChange = onActiveChange,
         windowInsets = WindowInsets.safeDrawing,
         inputField = {
             SearchBarDefaults.InputField(
                 query = query.value,
-                onQueryChange = onQueryChange,
-                onSearch = {q -> if(q.isNotBlank()) {onSearch(q)}},
+                onQueryChange = { newQuery ->
+                    searchSubmitted = false
+                    onQueryChange(newQuery)
+                },
+                onSearch = { q ->
+                    if (q.isNotBlank()) {
+                        searchSubmitted = true
+                        active = false
+                        focusManager.clearFocus(force = true)
+                        onSearch(q)
+                    }
+                },
                 expanded = active,
                 onExpandedChange = onActiveChange,
                 enabled = true,
@@ -82,7 +100,6 @@ fun TabsSearchBar(
                 trailingIcon = {
                     IconButton(onClick = {
                         onQueryChange("")
-                        focusRequester.requestFocus()
                     }) {
                         if (query.value.isNotEmpty()) {
                             Icon(Icons.Filled.Clear, stringResource(R.string.generic_action_clear))
@@ -118,8 +135,12 @@ fun TabsSearchBar(
                             suggestionText = searchSuggestion,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            if (searchSuggestion.isNotBlank())
+                            if (searchSuggestion.isNotBlank()) {
+                                searchSubmitted = true
+                                active = false
+                                focusManager.clearFocus(force = true)
                                 onSearch(searchSuggestion)
+                            }
                         }
                     }
                 }
